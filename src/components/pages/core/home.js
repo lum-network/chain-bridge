@@ -1,8 +1,41 @@
 import React, { Component } from 'react';
+import {dispatchAction} from "../../../utils/redux";
+import {getLatestBlock} from "../../../store/actions/blocks";
+import { connect } from 'react-redux';
 
-class HomePage extends Component {
+type Props = {
+    latestBlock: {},
+    error: string,
+    loading: boolean
+};
+
+type State = { latestBlock: {} };
+
+class HomePage extends Component<Props, State> {
+
+    constructor(props){
+        super(props);
+
+        this.state = {
+            latestBlock: null
+        }
+    }
+
+    componentDidMount(): void {
+        dispatchAction(getLatestBlock());
+    }
+
+    componentWillReceiveProps(nextProps: Readonly<P>, nextContext: any): void {
+        if(nextProps.latestBlock !== null) {
+            this.setState({latestBlock: nextProps.latestBlock});
+        }
+    }
 
     render() {
+        if(this.props.loading || this.state.latestBlock == null){
+            return null;
+        }
+
         return (
             <React.Fragment>
                 <section className="block-explorer-wrapper bg-bottom-center" id="welcome-1">
@@ -13,7 +46,7 @@ class HomePage extends Component {
                                     <h1>Sandblock Blockchain Explorer</h1>
                                 </div>
                                 <div className="offset-lg-3 col-lg-6">
-                                    <p>Up To Block 1883224</p>
+                                    <p>Current Block Height: {this.state.latestBlock.block.header.height}</p>
                                 </div>
                             </div>
                         </div>
@@ -38,7 +71,7 @@ class HomePage extends Component {
                         <div className="row">
                             <div className="col-lg-12">
                                 <div className="center-heading">
-                                    <h2 className="section-title">General Information</h2>
+                                    <h2 className="section-title">General Informations</h2>
                                 </div>
                             </div>
                             <div className="offset-lg-3 col-lg-6">
@@ -55,7 +88,7 @@ class HomePage extends Component {
                                         <h5>Last Block Height</h5>
                                     </div>
                                     <div className="text">
-                                        <span>12345</span>
+                                        <span>{this.state.latestBlock.block.header.height}</span>
                                     </div>
                                 </div>
                             </div>
@@ -99,7 +132,7 @@ class HomePage extends Component {
                                         <h5>Last Block Time</h5>
                                     </div>
                                     <div className="text">
-                                        <span>2019-02-01 10:00:00 </span>
+                                        <span>{this.state.latestBlock.block.header.time}</span>
                                     </div>
                                 </div>
                             </div>
@@ -143,4 +176,16 @@ class HomePage extends Component {
         );
     }
 }
-export default HomePage;
+
+const matchStateToProps = state => {
+    return {
+        latestBlock: state.blocks.data,
+        error: state.blocks.error,
+        loading: state.blocks.loading
+    };
+};
+
+export default connect(
+    matchStateToProps,
+    { getLatestBlock }
+)(HomePage);

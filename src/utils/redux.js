@@ -11,7 +11,7 @@ import storage from 'redux-persist/lib/storage';
 import autoMergeLevel2 from 'redux-persist/lib/stateReconciler/autoMergeLevel2';
 
 const client = axios.create({
-    baseURL: 'https://satify-222617.appspot.com/_ah/api/satify-api/v1.0',
+    baseURL: process.env.REACT_APP_ENV === 'debug' ? process.env.REACT_APP_CHAIN_RPC_DEV : process.env.REACT_APP_CHAIN_RPC_PROD,
     headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json'
