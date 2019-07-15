@@ -8,6 +8,7 @@ const initialState = {
 
 const reducer = (state = initialState, action) => {
     switch(action.type){
+        case actionTypes.BLOCKS_GET_START:
         case actionTypes.BLOCKS_GET_LATEST_START:
             return {
                 ...state,
@@ -16,12 +17,22 @@ const reducer = (state = initialState, action) => {
                 data: null
             };
 
+        case actionTypes.BLOCKS_GET_FAILURE:
         case actionTypes.BLOCKS_GET_LATEST_FAILURE:
             return {
                 ...state,
                 error: action.error,
                 loading: false,
                 data: null
+            };
+
+        case actionTypes.BLOCKS_GET_SUCCESS:
+            const blocks = action.payload.data.result || [];
+            return {
+                ...state,
+                loading: false,
+                data: blocks,
+                error: null
             };
 
         case actionTypes.BLOCKS_GET_LATEST_SUCCESS:
