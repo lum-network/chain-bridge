@@ -39,7 +39,7 @@ class AddressShowPage extends Component<Props, State> {
         this.state.account.account.value.coins.map((elem, index)=>{
             coins.push(`${elem.amount} ${elem.denom}`);
         });
-
+        
         return (
             <React.Fragment>
                 <section className="block-explorer-wrapper bg-bottom-center" id="welcome-1">
@@ -74,7 +74,7 @@ class AddressShowPage extends Component<Props, State> {
                                             </tr>
                                             <tr>
                                                 <td><strong>Public Key</strong></td>
-                                                <td>{this.state.account.account.value.public_key.value}</td>
+                                                <td>{this.state.account.account.value.public_key && this.state.account.account.value.public_key.value || 'None'}</td>
                                             </tr>
                                             <tr>
                                                 <td><strong>Account Number</strong></td>
