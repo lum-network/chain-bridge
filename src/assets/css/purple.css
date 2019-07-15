@@ -956,6 +956,7 @@ header
   -moz-transition: all 0.3s ease 0s;
   -o-transition: all 0.3s ease 0s;
   transition: all 0.3s ease 0s;
+  height: 5vh !important;
 }
 
 .header-area .main-nav .dark-logo {
@@ -1358,6 +1359,7 @@ header
   }
   .header-area .light-logo {
     display: none !important;
+    height: 5vh !important;
   }
   .header-area .dark-logo {
     display: block !important;

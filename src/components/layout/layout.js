@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { NavLink } from 'react-router-dom';
-import sandblockLogo from '../../assets/images/logos/sandblock.png';
+import sandblockLogo from '../../assets/images/logos/sat_logo_title_white.svg';
 
 class Layout extends Component {
     render() {
@@ -13,7 +13,6 @@ class Layout extends Component {
                                 <nav className="main-nav">
                                     <a href="index.html" className="logo">
                                         <img src={sandblockLogo} className="light-logo" alt="Sandblock"/>
-                                        <img src={sandblockLogo} className="dark-logo" alt="Sandblock"/>
                                     </a>
                                     <ul className="nav">
                                         <li><NavLink to="/home">HOME</NavLink></li>

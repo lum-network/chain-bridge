@@ -10,7 +10,7 @@ class HomePage extends Component {
                         <div className="container text-center">
                             <div className="row">
                                 <div className="col-lg-12 align-self-center">
-                                    <h1>Surprise Blockchain Explorer</h1>
+                                    <h1>Sandblock Blockchain Explorer</h1>
                                 </div>
                                 <div className="offset-lg-3 col-lg-6">
                                     <p>Up To Block 1883224</p>
@@ -43,7 +43,7 @@ class HomePage extends Component {
                             </div>
                             <div className="offset-lg-3 col-lg-6">
                                 <div className="center-text">
-                                    <p>Surprise is a decentralized network designed to connect brands loyalty programs</p>
+                                    <p>Sandblock is designing solutions to acquire, engage and retain customers using blockchain and crypto-assets</p>
                                 </div>
                             </div>
                         </div>
