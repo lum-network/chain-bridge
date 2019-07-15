@@ -7,6 +7,8 @@ import './assets/css/bootstrap.min.css';
 import 'font-awesome/css/font-awesome.min.css';
 import './assets/css/purple.css';
 
+import * as serviceWorker from './serviceWorker';
+
 import App from './App';
 
 import { store } from './utils/redux';
@@ -20,3 +22,4 @@ const app = (
 );
 
 ReactDOM.render(app, document.getElementById('root'));
+serviceWorker.unregister();

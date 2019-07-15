@@ -19,7 +19,6 @@
   "bugs": {
     "url": "https://github.com/SandBlockio/surprise-chain-explorer/issues"
   },
-  "homepage": "https://github.com/SandBlockio/surprise-chain-explorer#readme",
   "dependencies": {
     "axios": "^0.19.0",
     "bootstrap": "^4.3.1",
