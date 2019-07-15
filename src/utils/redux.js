@@ -1,5 +1,5 @@
 import axios from 'axios';
-import axiosMiddleware from 'redux-axios-middleware';
+import { multiClientMiddleware } from 'redux-axios-middleware';
 import { createStore, applyMiddleware } from 'redux';
 
 import thunk from 'redux-thunk';
@@ -9,14 +9,26 @@ import reducers from '../store/reducers/index';
 import { persistStore, persistReducer } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
 import autoMergeLevel2 from 'redux-persist/lib/stateReconciler/autoMergeLevel2';
-
-const client = axios.create({
-    baseURL: process.env.REACT_APP_ENV === 'debug' ? process.env.REACT_APP_CHAIN_RPC_DEV : process.env.REACT_APP_CHAIN_RPC_PROD,
-    headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json'
+const clients = {
+    cosmos: {
+        client: axios.create({
+            baseURL: `${process.env.REACT_APP_CHAIN_HOST}:${process.env.REACT_APP_CHAIN_COSMOS_PORT}`,
+            headers: {
+                'Content-Type': 'application/json',
+                Accept: 'application/json'
+            }
+        })
+    },
+    tendermint: {
+        client: axios.create({
+            baseURL: `${process.env.REACT_APP_CHAIN_HOST}:${process.env.REACT_APP_CHAIN_TENDERMINT_PORT}`,
+            headers: {
+                'Content-Type': 'application/json',
+                Accept: 'application/json'
+            }
+        })
     }
-});
+}
 
 const axiosMiddlewareOptions = {
     interceptors: {
@@ -80,7 +92,7 @@ const persistedReducer = persistReducer(persistConfig, rootReducer);
 export const store = createStore(
     persistedReducer,
     {},
-    applyMiddleware(thunk, axiosMiddleware(client, axiosMiddlewareOptions))
+    applyMiddleware(thunk, multiClientMiddleware(clients, axiosMiddlewareOptions))
 );
 
 export const persistor = persistStore(store);
