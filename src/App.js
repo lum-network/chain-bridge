@@ -5,6 +5,7 @@ import { Route, Switch, Redirect } from 'react-router-dom';
 
 import Layout from './components/layout/layout';
 import HomePage from "./components/pages/core/home";
+import AddressShowPage from './components/pages/account/show/show';
 
 import {withRouter} from "react-router";
 
@@ -38,6 +39,7 @@ class App extends Component {
             <Layout>
                 <Switch>
                     <Route path="/home" exact component={HomePage}/>
+                    <Route path="/account/:accountId" exact component={AddressShowPage}/>
                     <Redirect to={'/home'}/>
                     {/*<Route component={NotFound}/>*/}
                 </Switch>
