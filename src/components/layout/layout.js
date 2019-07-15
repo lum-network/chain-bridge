@@ -11,9 +11,9 @@ class Layout extends Component {
                         <div className="row">
                             <div className="col-12">
                                 <nav className="main-nav">
-                                    <a href="index.html" className="logo">
+                                    <NavLink to="/home" className="logo">
                                         <img src={sandblockLogo} className="light-logo" alt="Sandblock"/>
-                                    </a>
+                                    </NavLink>
                                     <ul className="nav">
                                         <li><NavLink to="/home">HOME</NavLink></li>
                                         <li><NavLink to="/blocks">BLOCKS</NavLink></li>
