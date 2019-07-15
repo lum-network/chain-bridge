@@ -1,7 +1,9 @@
 import { combineReducers } from 'redux';
 
 import BlocksReducer from './blocks';
+import ValidatorsReducer from './validators';
 
 export default combineReducers({
-    blocks: BlocksReducer
+    blocks: BlocksReducer,
+    validators: ValidatorsReducer
 });

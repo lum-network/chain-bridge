@@ -1,7 +1,10 @@
 import React, { Component } from 'react';
 import {dispatchAction} from "../../../utils/redux";
 import {getLatestBlock} from "../../../store/actions/blocks";
+import {getValidatorsLatest} from "../../../store/actions/validators";
 import { connect } from 'react-redux';
+
+import moment from 'moment';
 
 type Props = {
     latestBlock: {},
@@ -9,7 +12,7 @@ type Props = {
     loading: boolean
 };
 
-type State = { latestBlock: {} };
+type State = { latestBlock: {}, latestValidators: {} };
 
 class HomePage extends Component<Props, State> {
 
@@ -17,17 +20,22 @@ class HomePage extends Component<Props, State> {
         super(props);
 
         this.state = {
-            latestBlock: null
+            latestBlock: null,
+            latestValidators: null
         }
     }
 
     componentDidMount(): void {
         dispatchAction(getLatestBlock());
+        dispatchAction(getValidatorsLatest());
     }
 
     componentWillReceiveProps(nextProps: Readonly<P>, nextContext: any): void {
         if(nextProps.latestBlock !== null) {
             this.setState({latestBlock: nextProps.latestBlock});
+        }
+        if(nextProps.latestValidators !== null){
+            this.setState({latestValidators: nextProps.latestValidators});
         }
     }
 
@@ -99,7 +107,7 @@ class HomePage extends Component<Props, State> {
                                         <h5>Active Validators</h5>
                                     </div>
                                     <div className="text">
-                                        <span>3</span>
+                                        <span>{this.state.latestValidators.validators.length}</span>
                                     </div>
                                 </div>
                             </div>
@@ -132,7 +140,7 @@ class HomePage extends Component<Props, State> {
                                         <h5>Last Block Time</h5>
                                     </div>
                                     <div className="text">
-                                        <span>{this.state.latestBlock.block.header.time}</span>
+                                        <span>{moment(this.state.latestBlock.block.header.time).format('MM-DD-YYYY HH:mm:ss')}</span>
                                     </div>
                                 </div>
                             </div>
@@ -143,7 +151,7 @@ class HomePage extends Component<Props, State> {
                                         <h5>Total Validators</h5>
                                     </div>
                                     <div className="text">
-                                        <span>4</span>
+                                        <span>{this.state.latestValidators.validators.length}</span>
                                     </div>
                                 </div>
                             </div>
@@ -180,12 +188,13 @@ class HomePage extends Component<Props, State> {
 const matchStateToProps = state => {
     return {
         latestBlock: state.blocks.data,
-        error: state.blocks.error,
-        loading: state.blocks.loading
+        latestValidators: state.validators.data,
+        error: state.blocks.error || state.validators.error,
+        loading: state.blocks.loading || state.validators.loading
     };
 };
 
 export default connect(
     matchStateToProps,
-    { getLatestBlock }
+    { getLatestBlock, getValidatorsLatest }
 )(HomePage);
