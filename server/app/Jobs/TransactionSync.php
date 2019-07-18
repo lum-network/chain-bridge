@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Events\NewTransaction;
 use App\Libraries\SandblockChain;
 use App\Models\Block;
 use App\Models\Transaction;
@@ -41,11 +42,11 @@ class TransactionSync implements ShouldQueue
             }
         }
 
-        Transaction::create([
+        $tx = Transaction::create([
             'height'            =>  $tx['height'],
             'action'            =>  $action,
             'block_id'          =>  $this->blockID,
-            'code'              =>  $tx['code'],
+            'code'              =>  (isset($tx['code'])) ? $tx['code'] : NULL,
             'success'           =>  (isset($tx['logs'][0])) ? $tx['logs'][0]['success'] : false,
             'log'               =>  (isset($tx['logs'][0])) ? $tx['logs'][0]['log'] : NULL,
             'gas_wanted'        =>  $tx['gas_wanted'],
@@ -56,7 +57,8 @@ class TransactionSync implements ShouldQueue
             'amount'            =>  (isset($tx['tx']['value']['msg'][0]) && isset($tx['tx']['value']['msg'][0]['value']['amount'])) ? $tx['tx']['value']['msg'][0]['value']['amount'] : NULL,
             'raw'               =>  json_encode($tx)
         ]);
-
+        $tx->refresh();
+        event(new NewTransaction($tx));
         Log::info('Transaction ingested');
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Events\NewBlock;
 use App\Libraries\SandblockChain;
 use App\Models\Block;
 use Illuminate\Bus\Queueable;
@@ -46,9 +47,12 @@ class BlocksSync implements ShouldQueue
                 "raw"           =>  json_encode($block)
             ];
 
+            // Here is a little trick to prevent double adding
             $test = Block::where(['height'=>$block['header']['height']]);
             if($test->exists() == false) {
                 $blockDB = Block::create($datas);
+                $blockDB->refresh();
+                event(new NewBlock($blockDB));
             } else {
                 $blockDB = $test->first();
             }
