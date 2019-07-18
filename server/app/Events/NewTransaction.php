@@ -24,7 +24,7 @@ class NewTransaction implements ShouldBroadcast
 
     public function broadcastOn()
     {
-        return ['new-transactions'];
+        return ['transactions'];
     }
 
     public function broadcastAs()

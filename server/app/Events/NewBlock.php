@@ -25,7 +25,7 @@ class NewBlock implements ShouldBroadcast
 
     public function broadcastOn()
     {
-        return ['new-blocks'];
+        return ['blocks'];
     }
 
     public function broadcastAs()
