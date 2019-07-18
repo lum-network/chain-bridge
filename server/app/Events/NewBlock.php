@@ -12,7 +12,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 
 use App\Models\Block;
 
-class NewBlock
+class NewBlock implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
@@ -25,7 +25,12 @@ class NewBlock
 
     public function broadcastOn()
     {
-        return new PrivateChannel('new-blocks');
+        return ['new-blocks'];
+    }
+
+    public function broadcastAs()
+    {
+        return 'new-block';
     }
 
     public function broadcastWith()
