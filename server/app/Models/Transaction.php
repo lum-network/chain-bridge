@@ -9,7 +9,7 @@ class Transaction extends Model
     protected $table = "transactions";
 
     protected $fillable = [
-        "height", "action", "block_id",
+        "height", "hash", "action", "block_id",
         "code", "success", "log",
         "gas_wanted", "gas_used",
         "from_address", "to_address",

@@ -17,6 +17,7 @@ class CreateTransactionsTable extends Migration
             $table->bigIncrements('id');
 
             $table->bigInteger('height');
+            $table->string('hash');
 
             $table->string('action')->nullable();
 

@@ -42,13 +42,17 @@ class TransactionSync implements ShouldQueue
             }
         }
 
+        //Prevent JSON parsing error
+        $tx['raw_log'] = json_decode($tx['raw_log'], true);
+
         $tx = Transaction::create([
             'height'            =>  $tx['height'],
+            'hash'              =>  $this->hash,
             'action'            =>  $action,
             'block_id'          =>  $this->blockID,
             'code'              =>  (isset($tx['code'])) ? $tx['code'] : NULL,
             'success'           =>  (isset($tx['logs'][0])) ? $tx['logs'][0]['success'] : false,
-            'log'               =>  (isset($tx['logs'][0])) ? $tx['logs'][0]['log'] : NULL,
+            'log'               =>  (isset($tx['logs'][0])) ? json_encode($tx['logs'][0]['log']) : NULL,
             'gas_wanted'        =>  $tx['gas_wanted'],
             'gas_used'          =>  $tx['gas_used'],
             'from_address'      =>  (isset($tx['tx']['value']['msg'][0]) && isset($tx['tx']['value']['msg'][0]['value']['from_address'])) ? $tx['tx']['value']['msg'][0]['value']['from_address'] : NULL,
