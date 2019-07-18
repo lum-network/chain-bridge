@@ -26,4 +26,14 @@ class SandblockChain
         $res = $this->client->get('tendermint/blockchain?minHeight='.$minHeight.'&maxHeight='.$maxHeight);
         return json_decode($res->getBody(), true)['result'];
     }
+
+    public function getBlock($height){
+        $res = $this->client->get('cosmos/blocks/'.$height);
+        return json_decode($res->getBody(), true);
+    }
+
+    public function getTransaction($hash){
+        $res = $this->client->get('cosmos/txs/'.$hash);
+        return json_decode($res->getBody(), true);
+    }
 }

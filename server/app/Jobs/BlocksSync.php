@@ -4,7 +4,6 @@ namespace App\Jobs;
 
 use App\Libraries\SandblockChain;
 use App\Models\Block;
-use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
@@ -46,7 +45,23 @@ class BlocksSync implements ShouldQueue
                 "total_txs"     =>  $block['header']['total_txs'],
                 "raw"           =>  json_encode($block)
             ];
-            Block::create($datas);
+
+            $test = Block::where(['height'=>$block['header']['height']]);
+            if($test->exists() == false) {
+                $blockDB = Block::create($datas);
+            } else {
+                $blockDB = $test->first();
+            }
+
+            $remoteBlock = $sbc->getBlock($block['header']['height']);
+
+            // Transactions to ingest
+            if($blockDB->num_txs > 0 && count($remoteBlock['block']['data']['txs']) > 0){
+                foreach($remoteBlock['block']['data']['txs'] as $key=>$tx){
+                    $txHash = strtoupper(hash("sha256", base64_decode($tx)));
+                    TransactionSync::dispatch($txHash, $blockDB->id);
+                }
+            }
         }
     }
 }
