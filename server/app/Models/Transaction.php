@@ -21,4 +21,9 @@ class Transaction extends Model
     protected $hidden = [];
 
     protected $with = [];
+
+    public function block()
+    {
+        return self::belongsTo(Block::class, 'height');
+    }
 }

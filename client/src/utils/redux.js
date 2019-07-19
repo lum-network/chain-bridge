@@ -4,12 +4,21 @@ import { createStore, applyMiddleware } from 'redux';
 
 import thunk from 'redux-thunk';
 
-import reducers from '../store/reducers/index';
+import reducers from '../store/reducers';
 
 import { persistStore, persistReducer } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
 import autoMergeLevel2 from 'redux-persist/lib/stateReconciler/autoMergeLevel2';
 const clients = {
+    api: {
+        client: axios.create({
+            baseURL: `http://localhost:8000/api/v1`,
+            headers: {
+                'Content-Type': 'application/json',
+                Accept: 'application/json'
+            }
+        })
+    },
     cosmos: {
         client: axios.create({
             baseURL: `${process.env.REACT_APP_CHAIN_HOST}${process.env.REACT_APP_CHAIN_COSMOS_PORT}`,

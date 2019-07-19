@@ -7,6 +7,7 @@ import Layout from './components/layout/layout';
 import HomePage from "./components/pages/core/home";
 import AddressShowPage from './components/pages/accounts/show/show';
 import BlocksPage from './components/pages/blocks/list/blocks';
+import BlockShowPage from './components/pages/blocks/show/block';
 
 import {withRouter} from "react-router";
 
@@ -42,6 +43,7 @@ class App extends Component {
                     <Route path="/home" exact component={HomePage}/>
                     <Route path="/account/:accountId" exact component={AddressShowPage}/>
                     <Route path="/blocks" exact component={BlocksPage}/>
+                    <Route path="/block/:blockId" exact component={BlockShowPage}/>
                     <Redirect to={'/home'}/>
                     {/*<Route component={NotFound}/>*/}
                 </Switch>

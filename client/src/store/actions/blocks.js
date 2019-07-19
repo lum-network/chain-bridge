@@ -1,4 +1,6 @@
 import {
+    BLOCK_GET_FAILURE,
+    BLOCK_GET_START, BLOCK_GET_SUCCESS,
     BLOCKS_GET_FAILURE,
     BLOCKS_GET_LATEST_FAILURE,
     BLOCKS_GET_LATEST_START,
@@ -10,7 +12,7 @@ export const getLatestBlock = () => {
     return {
         types: [BLOCKS_GET_LATEST_START, BLOCKS_GET_LATEST_SUCCESS, BLOCKS_GET_LATEST_FAILURE],
         payload: {
-            client: 'cosmos',
+            client: 'api',
             request: {
                 method: `GET`,
                 url: `/blocks/latest`
@@ -19,19 +21,32 @@ export const getLatestBlock = () => {
     };
 };
 
+export const getBlock = (height: string) => {
+    return {
+        types: [BLOCK_GET_START, BLOCK_GET_SUCCESS, BLOCK_GET_FAILURE],
+        payload: {
+            client: 'api',
+            request: {
+                method: `GET`,
+                url: `/blocks/${height}`
+            }
+        }
+    };
+};
+
 export const getBlocks = (minHeight?: string, maxHeight?: string) => {
     let url;
     if(minHeight === undefined && maxHeight === undefined){
-        url = `/blockchain`;
+        url = `/blocks`;
     } else if (minHeight !== undefined && maxHeight !== undefined){
-        url = `/blockchain?minHeight=${minHeight}&maxHeight=${maxHeight}`;
+        url = `/blocks?minHeight=${minHeight}&maxHeight=${maxHeight}`;
     } else {
-        url = `/blockchain`;
+        url = `/blocks`;
     }
     return {
         types: [BLOCKS_GET_START, BLOCKS_GET_SUCCESS, BLOCKS_GET_FAILURE],
         payload: {
-            client: "tendermint",
+            client: "api",
             request: {
                 method: `GET`,
                 url

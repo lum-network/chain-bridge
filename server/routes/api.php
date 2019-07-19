@@ -16,7 +16,8 @@ use Illuminate\Http\Request;
 Route::prefix('v1')->group(function(){
    Route::prefix('blocks')->group(function(){
        Route::get('/', 'BlockController@index');
-       Route::get('/{height}', 'BlockController@show');
+       Route::get('/{height}', 'BlockController@show')->where('height', '[0-9]+');
+       Route::get('/latest', 'BlockController@latest');
    });
 
    Route::prefix('transactions')->group(function(){

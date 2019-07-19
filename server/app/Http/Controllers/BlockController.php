@@ -20,12 +20,18 @@ class BlockController extends Controller
 
     public function show(Request $req, $height)
     {
-        $block = Block::where(['height'=>$height]);
+        $block = Block::where(['height'=>$height])->with(['transactions']);
         if(!$block->exists()){
             return parent::apiAnswer(404, [], "No block with that height");
         }
 
         $block = $block->first();
+        return parent::apiAnswer(200, $block, "");
+    }
+
+    public function latest(Request $req)
+    {
+        $block = Block::latest()->first();
         return parent::apiAnswer(200, $block, "");
     }
 }

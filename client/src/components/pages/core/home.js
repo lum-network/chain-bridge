@@ -54,7 +54,7 @@ class HomePage extends Component<Props, State> {
                                     <h1>Sandblock Blockchain Explorer</h1>
                                 </div>
                                 <div className="offset-lg-3 col-lg-6">
-                                    <p>Current Block Height: {this.state.latestBlock.block.header.height}</p>
+                                    <p>Current Block Height: {this.state.latestBlock.height}</p>
                                 </div>
                             </div>
                         </div>
@@ -96,7 +96,7 @@ class HomePage extends Component<Props, State> {
                                         <h5>Last Block Height</h5>
                                     </div>
                                     <div className="text">
-                                        <span>{this.state.latestBlock.block.header.height}</span>
+                                        <span>{this.state.latestBlock.height}</span>
                                     </div>
                                 </div>
                             </div>
@@ -140,7 +140,7 @@ class HomePage extends Component<Props, State> {
                                         <h5>Last Block Time</h5>
                                     </div>
                                     <div className="text">
-                                        <span>{moment(this.state.latestBlock.block.header.time).format('MM-DD-YYYY HH:mm:ss')}</span>
+                                        <span>{moment(this.state.latestBlock.time).format('MM-DD-YYYY HH:mm:ss')}</span>
                                     </div>
                                 </div>
                             </div>

@@ -3,6 +3,7 @@ import {dispatchAction} from "../../../../utils/redux";
 import {getBlocks} from "../../../../store/actions/blocks";
 import {connect} from "react-redux";
 import moment from 'moment';
+import {NavLink} from "react-router-dom";
 
 type Props = {
     blocks: [],
@@ -30,10 +31,7 @@ class BlocksPage extends Component<Props, State> {
     componentWillReceiveProps(nextProps: Readonly<P>, nextContext: any): void {
         if(nextProps.blocks !== null){
             this.setState({
-                totalHeight: nextProps.blocks.last_height,
-                blocks: nextProps.blocks.block_metas,
-                maxHeight: nextProps.blocks.block_metas[0].header.height,
-                minHeight: nextProps.blocks.block_metas[nextProps.blocks.block_metas.length - 1].header.height
+                blocks: nextProps.blocks
             });
         }
     }
@@ -53,7 +51,7 @@ class BlocksPage extends Component<Props, State> {
                                     <h1>Blocks</h1>
                                 </div>
                                 <div className="offset-lg-3 col-lg-6">
-                                    <p>Block <b>#{this.state.minHeight}</b> to <b>#{this.state.maxHeight}</b> (Total of <b>{this.state.totalHeight}</b> blocks)</p>
+                                    <p>Block <b>#{this.state.blocks[this.state.blocks.length - 1].height}</b> to <b>#{this.state.blocks[0].height}</b> (Total of <b>{this.state.blocks[0].height}</b> blocks)</p>
                                 </div>
                             </div>
                         </div>
@@ -73,18 +71,25 @@ class BlocksPage extends Component<Props, State> {
                                                 <td className="text-center">Transactions</td>
                                                 <td className="text-center">Proposer</td>
                                                 <td className="text-center">Fees</td>
+                                                <td className="text-center"></td>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             {this.state.blocks.map((elem, index)=>{
+                                                const url = `/block/${elem.height}`;
                                                 return (
                                                     <tr key={index}>
-                                                        <td className="text-center">{elem.header.height}</td>
-                                                        <td className="text-center">{moment(elem.header.time).format('MM-DD-YYYY HH:mm:ss')}</td>
-                                                        <td className="text-center">{moment(elem.header.time).fromNow()}</td>
-                                                        <td className="text-center">{elem.header.num_txs}</td>
-                                                        <td className="text-center">{elem.header.proposer_address}</td>
-                                                        <td className="text-center">{elem.header.height}</td>
+                                                        <td className="text-center">{elem.height}</td>
+                                                        <td className="text-center">{moment(elem.dispatched_at).format('MM-DD-YYYY HH:mm:ss')}</td>
+                                                        <td className="text-center">{moment(elem.dispatched_at).fromNow()}</td>
+                                                        <td className="text-center">{elem.num_txs}</td>
+                                                        <td className="text-center">{elem.proposer_address || ''}</td>
+                                                        <td className="text-center">0</td>
+                                                        <td className="text-center">
+                                                            <NavLink className="btn btn-xsm btn-primary" to={url}>
+                                                                <i className="fa fa-eye text-white"/>
+                                                            </NavLink>
+                                                        </td>
                                                     </tr>
                                                 )
                                             })}

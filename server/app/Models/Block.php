@@ -15,4 +15,9 @@ class Block extends Model {
     protected $hidden = [];
 
     protected $with = [];
+
+    public function transactions()
+    {
+        return self::hasMany(Transaction::class);
+    }
 }

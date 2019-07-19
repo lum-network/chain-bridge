@@ -18,7 +18,7 @@ class Layout extends Component {
                                         <li><NavLink to="/home">HOME</NavLink></li>
                                         <li><NavLink to="/blocks">BLOCKS</NavLink></li>
                                         <li><NavLink to="/validators">VALIDATORS</NavLink></li>
-                                        <li><NavLink to="/proposals">PROPOSALS</NavLink></li>
+                                        <li><NavLink to="/about">ABOUT</NavLink></li>
                                     </ul>
                                     <a className='menu-trigger'>
                                         <span>Menu</span>
