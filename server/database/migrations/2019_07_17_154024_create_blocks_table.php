@@ -18,7 +18,7 @@ class CreateBlocksTable extends Migration
 
             $table->string("chain_id")->default("sandblockchain");
 
-            $table->string("hash");
+            $table->string("hash")->unique();
             $table->bigInteger("height");
 
             $table->timestamp("dispatched_at")->nullable();

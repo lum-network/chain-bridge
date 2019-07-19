@@ -18,4 +18,13 @@ Route::prefix('v1')->group(function(){
        Route::get('/', 'BlockController@index');
        Route::get('/{height}', 'BlockController@show');
    });
+
+   Route::prefix('transactions')->group(function(){
+       Route::get('/', 'TransactionController@index');
+       Route::get('/{hash}', 'TransactionController@show');
+   });
+
+   Route::prefix('accounts')->group(function(){
+       Route::get('/{address}', 'AccountController@show');
+   });
 });

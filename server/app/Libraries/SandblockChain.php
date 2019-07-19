@@ -3,7 +3,6 @@
 namespace App\Libraries;
 
 use GuzzleHttp\Client as HttpClient;
-use http\Exception;
 
 class SandblockChain
 {
@@ -34,6 +33,11 @@ class SandblockChain
 
     public function getTransaction($hash){
         $res = $this->client->get('cosmos/txs/'.$hash);
+        return json_decode($res->getBody(), true);
+    }
+
+    public function getAccount($address){
+        $res = $this->client->get('cosmos/auth/accounts/'.$address);
         return json_decode($res->getBody(), true);
     }
 }
