@@ -130,7 +130,13 @@ class BlockShowPage extends Component<Props, State> {
                                                 return (
                                                     <tr key={index}>
                                                         <td className="text-center"><EllipsisText text={elem.hash} length={20}/></td>
-                                                        <td className="text-center">{elem.success ? 'Success' : 'Error'}</td>
+                                                        <td className="text-center">
+                                                            {
+                                                                (elem.success)
+                                                                    ? <span className="badge badge-success">Success</span>
+                                                                    : <span className="badge badge-danger">Error</span>
+                                                            }
+                                                        </td>
                                                         <td className="text-center">{elem.action}</td>
                                                         <td className="text-center">{elem.height}</td>
                                                         <td className="text-center">{moment(elem.created_at).fromNow()}</td>

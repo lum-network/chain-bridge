@@ -36,13 +36,26 @@ class TransactionSync implements ShouldQueue
         }
 
         $action = NULL;
+        $sender = NULL;
+        $recipient = NULL;
         foreach($tx['tags'] as $tag){
-            if($tag['key'] == 'action'){
-                $action = $tag['value'];
+            switch($tag['key'])
+            {
+                case "action":
+                    $action = $tag['value'];
+                    break;
+
+                case "sender":
+                    $sender = $tag['value'];
+                    break;
+
+                case "recipient":
+                    $recipient = $tag['value'];
+                    break;
             }
         }
 
-        //Prevent JSON parsing error
+        //Prevent JSON parsing error for subfield
         $tx['raw_log'] = json_decode($tx['raw_log'], true);
 
         $tx = Transaction::create([
@@ -57,8 +70,8 @@ class TransactionSync implements ShouldQueue
             'gas_used'          =>  $tx['gas_used'],
             'from_address'      =>  (isset($tx['tx']['value']['msg'][0]) && isset($tx['tx']['value']['msg'][0]['value']['from_address'])) ? $tx['tx']['value']['msg'][0]['value']['from_address'] : NULL,
             'to_address'        =>  (isset($tx['tx']['value']['msg'][0]) && isset($tx['tx']['value']['msg'][0]['value']['to_address'])) ? $tx['tx']['value']['msg'][0]['value']['to_address'] : NULL,
-            'name'              =>  (isset($tx['tx']['value']['msg'][0]) && isset($tx['tx']['value']['msg'][0]['value']['name'])) ? $tx['tx']['value']['msg'][0]['value']['name'] : NULL,
-            'amount'            =>  (isset($tx['tx']['value']['msg'][0]) && isset($tx['tx']['value']['msg'][0]['value']['amount'])) ? $tx['tx']['value']['msg'][0]['value']['amount'] : NULL,
+            'name'              =>  (isset($tx['tx']['value']['msg'][0]) && isset($tx['tx']['value']['msg'][0]['value']['amount'][0])) ? $tx['tx']['value']['msg'][0]['value']['amount'][0]['denom'] : NULL,
+            'amount'            =>  (isset($tx['tx']['value']['msg'][0]) && isset($tx['tx']['value']['msg'][0]['value']['amount'][0])) ? $tx['tx']['value']['msg'][0]['value']['amount'][0]['amount'] : NULL,
             'dispatched_at'     =>  $tx['timestamp'],
             'raw'               =>  json_encode($tx)
         ]);
