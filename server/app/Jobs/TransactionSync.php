@@ -34,23 +34,60 @@ class TransactionSync implements ShouldQueue
         if(isset($tx['error'])){
             return Log::error('Cannot find the transaction');
         }
-
+        
         $action = NULL;
         $sender = NULL;
         $recipient = NULL;
-        foreach($tx['tags'] as $tag){
-            switch($tag['key'])
+        $amount = NULL;
+        $name = NULL;
+        /* Fetch the different datas */
+        if(isset($tx['tx']['value']['msg'][0])){
+            $msg = $tx['tx']['value']['msg'][0];
+            if(isset($msg['value']['from_address'])) {
+                $sender = $msg['value']['from_address'];
+            }
+            if(isset($msg['value']['from_address'])) {
+                $recipient = $msg['value']['to_address'];
+            }
+            switch($msg['type'])
             {
-                case "action":
-                    $action = $tag['value'];
+                case "cosmos-sdk/MsgSend":
+                    $action = "send";
+                    $amount = (isset($msg['value']['amount'][0])) ? $msg['value']['amount'][0]['amount'] : NULL;
+                    $name = (isset($msg['value']['amount'][0])) ? $msg['value']['amount'][0]['denom'] : NULL;
                     break;
 
-                case "sender":
-                    $sender = $tag['value'];
+                case "surprise/CreateBrandedToken":
+                    $action = "create_branded_token";
+                    $amount = (isset($msg['value']['amount'])) ? $msg['value']['amount'] : NULL;
+                    $name = (isset($msg['value']['name'])) ? $msg['value']['name'] : NULL;
                     break;
 
-                case "recipient":
-                    $recipient = $tag['value'];
+                case "surprise/TransferBrandedToken":
+                    $action = "transfer_branded_token";
+                    $amount = (isset($msg['value']['amount'])) ? $msg['value']['amount'] : NULL;
+                    $name = (isset($msg['value']['name'])) ? $msg['value']['name'] : NULL;
+                    break;
+
+                case "surprise/TransferBrandedTokenOwnership":
+                    $action = "transfer_branded_token_ownership";
+                    $name = (isset($msg['value']['name'])) ? $msg['value']['name'] : NULL;
+                    break;
+
+                case "surprise/MintBrandedToken":
+                    $action = "mint_branded_token";
+                    $amount = (isset($msg['value']['amount'])) ? $msg['value']['amount'] : NULL;
+                    $name = (isset($msg['value']['name'])) ? $msg['value']['name'] : NULL;
+                    break;
+
+                case "surprise/BurnBrandedToken":
+                    $action = "burn_branded_token";
+                    $amount = (isset($msg['value']['amount'])) ? $msg['value']['amount'] : NULL;
+                    $name = (isset($msg['value']['name'])) ? $msg['value']['name'] : NULL;
+                    break;
+
+                default:
+                    $action = "unregistered";
                     break;
             }
         }
@@ -68,10 +105,10 @@ class TransactionSync implements ShouldQueue
             'log'               =>  (isset($tx['logs'][0])) ? json_encode($tx['logs'][0]['log']) : NULL,
             'gas_wanted'        =>  $tx['gas_wanted'],
             'gas_used'          =>  $tx['gas_used'],
-            'from_address'      =>  (isset($tx['tx']['value']['msg'][0]) && isset($tx['tx']['value']['msg'][0]['value']['from_address'])) ? $tx['tx']['value']['msg'][0]['value']['from_address'] : NULL,
-            'to_address'        =>  (isset($tx['tx']['value']['msg'][0]) && isset($tx['tx']['value']['msg'][0]['value']['to_address'])) ? $tx['tx']['value']['msg'][0]['value']['to_address'] : NULL,
-            'name'              =>  (isset($tx['tx']['value']['msg'][0]) && isset($tx['tx']['value']['msg'][0]['value']['amount'][0])) ? $tx['tx']['value']['msg'][0]['value']['amount'][0]['denom'] : NULL,
-            'amount'            =>  (isset($tx['tx']['value']['msg'][0]) && isset($tx['tx']['value']['msg'][0]['value']['amount'][0])) ? $tx['tx']['value']['msg'][0]['value']['amount'][0]['amount'] : NULL,
+            'from_address'      =>  $sender,
+            'to_address'        =>  $recipient,
+            'name'              =>  $name,
+            'amount'            =>  $amount,
             'dispatched_at'     =>  $tx['timestamp'],
             'raw'               =>  json_encode($tx)
         ]);
