@@ -8,7 +8,7 @@ class Block extends Model {
 
     protected $fillable = [
         "chain_id", "hash", "height", "dispatched_at",
-        "num_txs", "total_txs",
+        "num_txs", "total_txs", "proposer_address",
         "raw"
     ];
 

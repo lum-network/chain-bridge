@@ -38,12 +38,13 @@ class BlocksSync implements ShouldQueue
 
         foreach($blocks as $block){
             $datas = [
-                "chain_id"      =>  $block['header']['chain_id'],
-                "hash"          =>  $block['block_id']['hash'],
-                "height"        =>  $block['header']['height'],
-                "dispatched_at" =>  $block['header']['time'],
-                "num_txs"       =>  $block['header']['num_txs'],
-                "total_txs"     =>  $block['header']['total_txs'],
+                "chain_id"          =>  $block['header']['chain_id'],
+                "hash"              =>  $block['block_id']['hash'],
+                "height"            =>  $block['header']['height'],
+                "dispatched_at"     =>  $block['header']['time'],
+                "num_txs"           =>  $block['header']['num_txs'],
+                "total_txs"         =>  $block['header']['total_txs'],
+                "proposer_address"  =>  $block['header']['proposer_address'],
                 "raw"           =>  json_encode($block)
             ];
 
