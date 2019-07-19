@@ -4,6 +4,7 @@ import {getBlock} from "../../../../store/actions/blocks";
 import {connect} from "react-redux";
 import moment from 'moment';
 import EllipsisText from "react-ellipsis-text";
+import {NavLink} from "react-router-dom";
 
 type Props = {
     block: {},
@@ -120,10 +121,12 @@ class BlockShowPage extends Component<Props, State> {
                                             <th className="text-center">From</th>
                                             <th className="text-center">To</th>
                                             <th className="text-center">Value</th>
+                                            <th className="text-center"></th>
                                         </tr>
                                         </thead>
                                         <tbody>
                                             {this.state.block.transactions.map((elem, index)=>{
+                                                const url = `/transaction/${elem.hash}`;
                                                 return (
                                                     <tr key={index}>
                                                         <td className="text-center"><EllipsisText text={elem.hash} length={20}/></td>
@@ -134,6 +137,11 @@ class BlockShowPage extends Component<Props, State> {
                                                         <td className="text-center"><EllipsisText text={elem.from_address || 'Unknown'} length={20}/></td>
                                                         <td className="text-center"><EllipsisText text={elem.to_address || 'Unknown'} length={20}/></td>
                                                         <td className="text-center">{elem.amount || 0}</td>
+                                                        <td className="text-center">
+                                                            <NavLink className="btn btn-xsm btn-primary" to={url} >
+                                                                <i className="fa fa-eye text-white"/>
+                                                            </NavLink>
+                                                        </td>
                                                     </tr>
                                                 );
                                             })}
