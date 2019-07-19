@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import {connect} from "react-redux";
 import {getTransaction} from "../../../../store/actions/transactions";
 import {dispatchAction} from "../../../../utils/redux";
+import {NavLink} from "react-router-dom";
 
 type Props = {
     transaction: {},
@@ -65,19 +66,19 @@ class TransactionShowPage extends Component<Props, State> {
                     </tr>
                     <tr>
                         <td><strong>From</strong></td>
-                        <td>{this.state.transaction.from_address}</td>
+                        <td><NavLink to={`/account/${this.state.transaction.from_address}`}>{this.state.transaction.from_address}</NavLink></td>
                     </tr>
                     <tr>
                         <td><strong>To</strong></td>
-                        <td>{this.state.transaction.to_address}</td>
+                        <td><NavLink to={`/account/${this.state.transaction.to_address}`}>{this.state.transaction.to_address}</NavLink></td>
                     </tr>
                     <tr>
                         <td><strong>Action</strong></td>
                         <td>{this.state.transaction.action}</td>
                     </tr>
                     <tr>
-                        <td><strong>Name / Amount</strong></td>
-                        <td>{this.state.transaction.name} / {this.state.transaction.amount}</td>
+                        <td><strong>Value</strong></td>
+                        <td>{this.state.transaction.amount} {this.state.transaction.name}</td>
                     </tr>
                     <tr>
                         <td><strong>Gas Wanted</strong></td>
