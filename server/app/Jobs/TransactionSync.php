@@ -34,7 +34,7 @@ class TransactionSync implements ShouldQueue
         if(isset($tx['error'])){
             return Log::error('Cannot find the transaction');
         }
-        
+
         $action = NULL;
         $sender = NULL;
         $recipient = NULL;
@@ -46,7 +46,7 @@ class TransactionSync implements ShouldQueue
             if(isset($msg['value']['from_address'])) {
                 $sender = $msg['value']['from_address'];
             }
-            if(isset($msg['value']['from_address'])) {
+            if(isset($msg['value']['to_address'])) {
                 $recipient = $msg['value']['to_address'];
             }
             switch($msg['type'])
