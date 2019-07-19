@@ -36,8 +36,6 @@ class BlockShowPage extends Component<Props, State> {
             return null;
         }
 
-        console.log(this.state.block);
-
         return (
             <React.Fragment>
                 <section className="block-explorer-wrapper bg-bottom-center" id="welcome-1">
