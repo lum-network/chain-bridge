@@ -14,8 +14,7 @@ class Transaction extends Model
         "gas_wanted", "gas_used",
         "from_address", "to_address",
         "name", "amount",
-
-        "raw"
+        "raw", "dispatched_at",
     ];
 
     protected $hidden = [];

@@ -59,6 +59,7 @@ class TransactionSync implements ShouldQueue
             'to_address'        =>  (isset($tx['tx']['value']['msg'][0]) && isset($tx['tx']['value']['msg'][0]['value']['to_address'])) ? $tx['tx']['value']['msg'][0]['value']['to_address'] : NULL,
             'name'              =>  (isset($tx['tx']['value']['msg'][0]) && isset($tx['tx']['value']['msg'][0]['value']['name'])) ? $tx['tx']['value']['msg'][0]['value']['name'] : NULL,
             'amount'            =>  (isset($tx['tx']['value']['msg'][0]) && isset($tx['tx']['value']['msg'][0]['value']['amount'])) ? $tx['tx']['value']['msg'][0]['value']['amount'] : NULL,
+            'dispatched_at'     =>  $tx['timestamp'],
             'raw'               =>  json_encode($tx)
         ]);
         $tx->refresh();
