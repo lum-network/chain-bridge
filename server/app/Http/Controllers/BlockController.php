@@ -13,7 +13,7 @@ class BlockController extends Controller
 
     public function index()
     {
-        $blocks = Block::latest()->take(50)->get();
+        $blocks = Block::latest()->take(50)->orderBy('height', 'desc')->get();
 
         return parent::apiAnswer(200, $blocks, "");
     }
