@@ -13,16 +13,27 @@ class Transaction extends Model
         "code", "success", "log",
         "gas_wanted", "gas_used",
         "from_address", "to_address",
+        "sender_id", "recipient_id",
         "name", "amount",
         "raw", "dispatched_at",
     ];
 
-    protected $hidden = [];
+    protected $hidden = ['raw'];
 
     protected $with = [];
 
     public function block()
     {
         return self::belongsTo(Block::class, 'height');
+    }
+
+    public function sender()
+    {
+        return self::belongsTo(Account::class);
+    }
+
+    public function recipient()
+    {
+        return self::belongsTo(Account::class);
     }
 }

@@ -29,17 +29,6 @@ class Layout extends Component {
                     </div>
                 </header>
                 {this.props.children}
-                <footer id="contact">
-                    <div className="footer-bottom slim">
-                        <div className="container">
-                            <div className="row">
-                                <div className="col-lg-12">
-                                    <p className="copyright">Made with <i className="fa fa-heart"/> in Paris </p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </footer>
             </React.Fragment>
         )
     }

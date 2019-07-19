@@ -25,11 +25,11 @@ const reducer = (state = initialState, action) => {
             };
 
         case actionTypes.ACCOUNT_GET_SUCCESS:
-            const block = action.payload.data || {};
+            const account = action.payload.data.result || {};
             return {
                 ...state,
                 loading: false,
-                data: block,
+                data: account,
                 error: null
             }
 

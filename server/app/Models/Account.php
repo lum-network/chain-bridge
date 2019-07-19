@@ -17,4 +17,14 @@ class Account extends Model
     protected $with = [];
 
     protected $hidden = [];
+
+    public function transactionsSent()
+    {
+        return $this->hasMany(Transaction::class, 'sender_id');
+    }
+
+    public function transactionsReceived()
+    {
+        return $this->hasMany(Transaction::class, 'recipient_id');
+    }
 }

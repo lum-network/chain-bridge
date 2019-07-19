@@ -12,7 +12,7 @@ class Block extends Model {
         "raw"
     ];
 
-    protected $hidden = [];
+    protected $hidden = ['raw'];
 
     protected $with = [];
 

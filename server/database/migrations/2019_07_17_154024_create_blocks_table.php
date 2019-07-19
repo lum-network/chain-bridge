@@ -26,7 +26,7 @@ class CreateBlocksTable extends Migration
             $table->integer("num_txs");
             $table->integer("total_txs");
 
-            $table->json("raw");
+            $table->longText("raw");
 
             $table->timestamps();
         });

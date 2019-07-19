@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Events\NewTransaction;
 use App\Libraries\SandblockChain;
+use App\Models\Account;
 use App\Models\Block;
 use App\Models\Transaction;
 use Illuminate\Bus\Queueable;
@@ -24,6 +25,36 @@ class TransactionSync implements ShouldQueue
     {
         $this->hash = $hash;
         $this->blockID = $blockID;
+    }
+
+    private function getAccountByAddress($address)
+    {
+        if(strlen($address) <= 0){
+            return NULL;
+        }
+
+        $account = Account::where(['address'=>$address]);
+
+        if(!$account->exists()){
+            $sbc = new SandblockChain();
+            $remoteAcc = $sbc->getAccount(strtolower($address));
+            if(!isset($remoteAcc['account']['value']['address']) || strlen($remoteAcc['account']['value']['address']) <= 0){
+                return NULL;
+            }
+
+            $acc = Account::create([
+                "address"           =>  strtolower($address),
+                "coins"             =>  json_encode($remoteAcc['account']['value']['coins']),
+                "public_key_type"   =>  $remoteAcc['account']['value']['public_key']['type'],
+                "public_key_value"  =>  $remoteAcc['account']['value']['public_key']['value'],
+                "account_number"    =>  $remoteAcc['account']['value']['account_number'],
+                "sequence"          =>  $remoteAcc['account']['value']['sequence']
+            ]);
+        } else {
+            $acc = $account->first();
+        }
+
+        return $acc;
     }
 
     public function handle()
@@ -95,6 +126,9 @@ class TransactionSync implements ShouldQueue
         //Prevent JSON parsing error for subfield
         $tx['raw_log'] = json_decode($tx['raw_log'], true);
 
+        $senderAccount = $this->getAccountByAddress($sender);
+        $recipientAccount = $this->getAccountByAddress($recipient);
+
         $tx = Transaction::create([
             'height'            =>  $tx['height'],
             'hash'              =>  $this->hash,
@@ -106,6 +140,8 @@ class TransactionSync implements ShouldQueue
             'gas_wanted'        =>  $tx['gas_wanted'],
             'gas_used'          =>  $tx['gas_used'],
             'from_address'      =>  $sender,
+            'sender_id'         =>  ($senderAccount) ? $senderAccount->id : NULL,
+            'recipient_id'      =>  ($recipientAccount) ? $recipientAccount->id : NULL,
             'to_address'        =>  $recipient,
             'name'              =>  $name,
             'amount'            =>  $amount,

@@ -5,6 +5,7 @@ import {connect} from "react-redux";
 import moment from 'moment';
 import EllipsisText from "react-ellipsis-text";
 import {NavLink} from "react-router-dom";
+import TransactionsListComponent from "../../../parts/TransactionsList";
 
 type Props = {
     block: {},
@@ -110,49 +111,7 @@ class BlockShowPage extends Component<Props, State> {
                         <div className="row">
                             <div className="col-lg-12">
                                 <div className="table-responsive">
-                                    <table className="table table-striped table-latests">
-                                        <thead>
-                                        <tr>
-                                            <th className="text-center">Hash</th>
-                                            <th className="text-center">Status</th>
-                                            <th className="text-center">Type</th>
-                                            <th className="text-center">Block</th>
-                                            <th className="text-center">Age</th>
-                                            <th className="text-center">From</th>
-                                            <th className="text-center">To</th>
-                                            <th className="text-center">Value</th>
-                                            <th className="text-center"></th>
-                                        </tr>
-                                        </thead>
-                                        <tbody>
-                                            {this.state.block.transactions.map((elem, index)=>{
-                                                const url = `/transaction/${elem.hash}`;
-                                                return (
-                                                    <tr key={index}>
-                                                        <td className="text-center"><EllipsisText text={elem.hash} length={20}/></td>
-                                                        <td className="text-center">
-                                                            {
-                                                                (elem.success)
-                                                                    ? <span className="badge badge-success">Success</span>
-                                                                    : <span className="badge badge-danger">Error</span>
-                                                            }
-                                                        </td>
-                                                        <td className="text-center">{elem.action}</td>
-                                                        <td className="text-center">{elem.height}</td>
-                                                        <td className="text-center">{moment(elem.created_at).fromNow()}</td>
-                                                        <td className="text-center"><EllipsisText text={elem.from_address || 'Unknown'} length={20}/></td>
-                                                        <td className="text-center"><EllipsisText text={elem.to_address || 'Unknown'} length={20}/></td>
-                                                        <td className="text-center">{elem.amount || 0}</td>
-                                                        <td className="text-center">
-                                                            <NavLink className="btn btn-xsm btn-primary" to={url} >
-                                                                <i className="fa fa-eye text-white"/>
-                                                            </NavLink>
-                                                        </td>
-                                                    </tr>
-                                                );
-                                            })}
-                                        </tbody>
-                                    </table>
+                                    <TransactionsListComponent transactions={this.state.block.transactions}/>
                                 </div>
                             </div>
                         </div>

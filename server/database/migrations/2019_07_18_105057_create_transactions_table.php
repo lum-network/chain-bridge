@@ -26,7 +26,7 @@ class CreateTransactionsTable extends Migration
 
             $table->integer('code')->nullable();
             $table->boolean('success')->default(false);
-            $table->json('log')->nullable();
+            $table->longText('log')->nullable();
 
             $table->bigInteger('gas_wanted')->default(0);
             $table->bigInteger('gas_used')->default(0);
@@ -37,7 +37,7 @@ class CreateTransactionsTable extends Migration
             $table->string('name')->nullable();
             $table->string('amount')->nullable();
 
-            $table->json('raw');
+            $table->longText('raw');
 
             $table->timestamps();
         });

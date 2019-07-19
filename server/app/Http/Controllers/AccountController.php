@@ -17,7 +17,27 @@ class AccountController extends Controller
         $sbc = new SandblockChain();
         $remoteAcc = $sbc->getAccount(strtolower($address));
 
-        $acc = Account::where(['address'=>strtolower($address)]);
+        // If we had an error while running the query
+        if(isset($remoteAcc['error'])){
+            return parent::apiAnswer(500, [], $remoteAcc['error']);
+        }
+
+        // Account has no existence inside the chain, we return empty object
+        if(!isset($remoteAcc['account']['value']['address']) || strlen($remoteAcc['account']['value']['address']) <= 0){
+            $retn = [
+                "address"           =>  "",
+                "coins"             =>  [],
+                "public_key_type"   =>  "",
+                "public_key_value"  =>  "",
+                "account_number"    =>  0,
+                "sequence"          =>  0
+            ];
+            return parent::apiAnswer(200, $retn, "Account does not exists");
+        }
+
+        $acc = Account::where(['address'=>strtolower($address)])->with(['transactionsSent', 'transactionsReceived']);
+
+        // Account does not exists atm
         if(!$acc->exists()){
             $acc = Account::create([
                 "address"           =>  strtolower($address),
@@ -27,7 +47,9 @@ class AccountController extends Controller
                 "account_number"    =>  $remoteAcc['account']['value']['account_number'],
                 "sequence"          =>  $remoteAcc['account']['value']['sequence']
             ]);
-        } else {
+        }
+        // Account exists we sync everything up
+        else {
             $acc = $acc->first();
             $acc->coins = json_encode($remoteAcc['account']['value']['coins']);
             $acc->sequence = $remoteAcc['account']['value']['sequence'];

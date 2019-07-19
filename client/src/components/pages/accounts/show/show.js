@@ -3,6 +3,7 @@ import {connect} from "react-redux";
 import QRCode from 'qrcode.react';
 import {getAccount} from "../../../../store/actions/accounts";
 import {dispatchAction} from "../../../../utils/redux";
+import TransactionsListComponent from "../../../parts/TransactionsList";
 
 type Props = {
     account: {},
@@ -10,13 +11,14 @@ type Props = {
     loading: boolean
 };
 
-type State = { account: {} };
+type State = { account: {}, transactions: [] };
 
 class AddressShowPage extends Component<Props, State> {
     constructor(props){
         super(props);
         this.state = {
-            account: null
+            account: null,
+            transactions: null
         }
     }
 
@@ -24,68 +26,29 @@ class AddressShowPage extends Component<Props, State> {
         dispatchAction(getAccount(this.props.match.params.accountId));
     }
 
-    componentWillReceiveProps(nextProps: Readonly<P>, nextContext: any): void {
+    async componentWillReceiveProps(nextProps: Readonly<P>, nextContext: any): void {
         if(nextProps.account !== null){
-            this.setState({account: nextProps.account});
+            let newTxs = [...nextProps.account.transactions_sent, ...nextProps.account.transactions_received];
+            await newTxs.sort((a, b)=>{
+                return new Date(b.dispatched_at) - new Date(a.dispatched_at);
+            });
+            this.setState({
+                account: nextProps.account,
+                transactions: newTxs
+            });
         }
     }
 
     renderTransactions() {
+        if(this.state.transactions === null){
+            return null;
+        }
+
         return (
             <div className="row">
                 <div className="col-lg-12">
                     <div className="table-responsive">
-                        <table className="table table-striped table-latests">
-                            <thead>
-                                <tr>
-                                    <th className="text-center">Hash</th>
-                                    <th className="text-center">Type</th>
-                                    <th className="text-center">Block</th>
-                                    <th className="text-center">Age</th>
-                                    <th className="text-center">From</th>
-                                    <th className="text-center">To</th>
-                                    <th className="text-center">Value</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td className="text-center">d3e4f72db22777a3...</td>
-                                    <td className="text-center">Coins Transfer</td>
-                                    <td className="text-center">1234</td>
-                                    <td className="text-center">A few seconds ago</td>
-                                    <td className="text-center">surprise1xr8vqhhvek...</td>
-                                    <td className="text-center">surprise1jxwkalwgl8...</td>
-                                    <td className="text-center"><span className="red">- 5</span></td>
-                                </tr>
-                                <tr>
-                                    <td className="text-center">29a7e2f30d424248...</td>
-                                    <td className="text-center">Branded Token Minting</td>
-                                    <td className="text-center">1234</td>
-                                    <td className="text-center">10 minutes ago</td>
-                                    <td className="text-center">surprise1xr8vqhhvek...</td>
-                                    <td className="text-center">surprise1xr8vqhhvek...</td>
-                                    <td className="text-center"><span className="green">+ 50</span></td>
-                                </tr>
-                                <tr>
-                                    <td className="text-center">2f04876ba83f63d6...</td>
-                                    <td className="text-center">Branded Token Transfer</td>
-                                    <td className="text-center">1234</td>
-                                    <td className="text-center">1 hour ago</td>
-                                    <td className="text-center">surprise1xr8vqhhvek...</td>
-                                    <td className="text-center">surprise1jxwkalwgl8...</td>
-                                    <td className="text-center"><span className="red">- 10</span></td>
-                                </tr>
-                                <tr>
-                                    <td className="text-center">24dadeea863c4cb6...</td>
-                                    <td className="text-center">Branded Token Creation</td>
-                                    <td className="text-center">1234</td>
-                                    <td className="text-center">1 day ago</td>
-                                    <td className="text-center">surprise1xr8vqhhvek...</td>
-                                    <td className="text-center">surprise1xr8vqhhvek...</td>
-                                    <td className="text-center"><span className="green">+ 1000</span></td>
-                                </tr>
-                            </tbody>
-                        </table>
+                        <TransactionsListComponent transactions={this.state.transactions}/>
                     </div>
                 </div>
             </div>
@@ -98,7 +61,7 @@ class AddressShowPage extends Component<Props, State> {
         }
 
         let coins = [];
-        this.state.account.account.value.coins.map((elem, index)=>{
+        JSON.parse(this.state.account.coins).map((elem, index)=>{
             coins.push(`${elem.amount} ${elem.denom}`);
         });
 
@@ -112,7 +75,7 @@ class AddressShowPage extends Component<Props, State> {
                                     <h1>Address Details</h1>
                                 </div>
                                 <div className="offset-lg-3 col-lg-6">
-                                    <p>{this.state.account.account.value.address}</p>
+                                    <p>{this.state.account.address}</p>
                                 </div>
                             </div>
                         </div>
@@ -132,19 +95,19 @@ class AddressShowPage extends Component<Props, State> {
                                         <tbody>
                                             <tr>
                                                 <td><strong>Address</strong></td>
-                                                <td>{this.state.account.account.value.address}</td>
+                                                <td>{this.state.account.address}</td>
                                             </tr>
                                             <tr>
                                                 <td><strong>Public Key</strong></td>
-                                                <td>{this.state.account.account.value.public_key && this.state.account.account.value.public_key.value || 'None'}</td>
+                                                <td>{this.state.account.public_key && this.state.account.public_key || 'None'}</td>
                                             </tr>
                                             <tr>
                                                 <td><strong>Account Number</strong></td>
-                                                <td>{this.state.account.account.value.account_number}</td>
+                                                <td>{this.state.account.account_number}</td>
                                             </tr>
                                             <tr>
                                                 <td><strong>Account Sequence</strong></td>
-                                                <td>{this.state.account.account.value.sequence}</td>
+                                                <td>{this.state.account.sequence}</td>
                                             </tr>
                                             <tr>
                                                 <td><strong>Owned Coins</strong></td>
@@ -158,7 +121,7 @@ class AddressShowPage extends Component<Props, State> {
                             </div>
                             <div className="col-lg-3 col-md-3 col-sm-12">
                                 <div className="qr">
-                                    <QRCode value={"EcGbgDMaxhEhe9spbGjhqAPuWDTcfUopQY"} className="img-fluid d-block mx-auto"/>
+                                    <QRCode value={this.state.account.address} className="img-fluid d-block mx-auto"/>
                                 </div>
                             </div>
                         </div>

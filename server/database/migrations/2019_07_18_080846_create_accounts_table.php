@@ -18,7 +18,7 @@ class CreateAccountsTable extends Migration
 
             $table->string("address")->unique();
 
-            $table->json('coins')->nullable();
+            $table->longText('coins')->nullable();
 
             $table->string('public_key_type')->nullable();
             $table->string('public_key_value')->nullable();

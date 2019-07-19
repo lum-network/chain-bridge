@@ -51,7 +51,7 @@ class HomePage extends Component<Props, State> {
                         <div className="container text-center">
                             <div className="row">
                                 <div className="col-lg-12 align-self-center">
-                                    <h1>Sandblock Blockchain Explorer</h1>
+                                    <h1>Sandblock Chain Explorer</h1>
                                 </div>
                                 <div className="offset-lg-3 col-lg-6">
                                     <p>Current Block Height: {this.state.latestBlock.height}</p>
@@ -115,28 +115,6 @@ class HomePage extends Component<Props, State> {
                                 <div className="item">
                                     <div className="title">
                                         <div className="icon"></div>
-                                        <h5>Branded Tokens Created</h5>
-                                    </div>
-                                    <div className="text">
-                                        <span>120</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="col-lg-3 col-md-6 col-sm-6 col-xs-12">
-                                <div className="item">
-                                    <div className="title">
-                                        <div className="icon"></div>
-                                        <h5>Surprise Coin Value</h5>
-                                    </div>
-                                    <div className="text">
-                                        <span>$0.07 <i className="green fa fa-long-arrow-up"></i></span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="col-lg-3 col-md-6 col-sm-6 col-xs-12">
-                                <div className="item">
-                                    <div className="title">
-                                        <div className="icon"></div>
                                         <h5>Last Block Time</h5>
                                     </div>
                                     <div className="text">
@@ -152,28 +130,6 @@ class HomePage extends Component<Props, State> {
                                     </div>
                                     <div className="text">
                                         <span>{this.state.latestValidators.validators.length}</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="col-lg-3 col-md-6 col-sm-6 col-xs-12">
-                                <div className="item">
-                                    <div className="title">
-                                        <div className="icon"></div>
-                                        <h5>Branded Tokens Minted</h5>
-                                    </div>
-                                    <div className="text">
-                                        <span>123,456,789</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="col-lg-3 col-md-6 col-sm-6 col-xs-12">
-                                <div className="item">
-                                    <div className="title">
-                                        <div className="icon"></div>
-                                        <h5>Trade Volume</h5>
-                                    </div>
-                                    <div className="text">
-                                        <span>$479,093,652.91</span>
                                     </div>
                                 </div>
                             </div>
