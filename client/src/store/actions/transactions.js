@@ -1,4 +1,9 @@
-import {TRANSACTION_GET_FAILURE, TRANSACTION_GET_START, TRANSACTION_GET_SUCCESS} from "./actionTypes";
+import {
+    TRANSACTION_GET_FAILURE,
+    TRANSACTION_GET_START,
+    TRANSACTION_GET_SUCCESS, TRANSACTIONS_GET_FAILURE,
+    TRANSACTIONS_GET_START, TRANSACTIONS_GET_SUCCESS
+} from "./actionTypes";
 
 export const getTransaction = (hash: string) => {
     return {
@@ -11,4 +16,17 @@ export const getTransaction = (hash: string) => {
             }
         }
     };
+}
+
+export const listTransactions = () => {
+    return {
+        types: [TRANSACTIONS_GET_START, TRANSACTIONS_GET_SUCCESS, TRANSACTIONS_GET_FAILURE],
+        payload: {
+            client: 'api',
+            request: {
+                method: `GET`,
+                url: `/transactions`
+            }
+        }
+    }
 }

@@ -17,6 +17,7 @@ class Layout extends Component {
                                     <ul className="nav">
                                         <li><NavLink to="/home">HOME</NavLink></li>
                                         <li><NavLink to="/blocks">BLOCKS</NavLink></li>
+                                        <li><NavLink to="/transactions">TRANSACTIONS</NavLink></li>
                                         <li><NavLink to="/validators">VALIDATORS</NavLink></li>
                                         <li><NavLink to="/about">ABOUT</NavLink></li>
                                     </ul>

@@ -55,7 +55,7 @@ class AddressShowPage extends Component<Props, State> {
         );
     }
 
-    render() {
+    renderAccount(){
         if(this.props.loading || this.state.account === null){
             return null;
         }
@@ -67,6 +67,48 @@ class AddressShowPage extends Component<Props, State> {
 
         return (
             <React.Fragment>
+                <div className="col-lg-9 col-md-9 col-sm-12">
+                    <div className="table-responsive">
+                        <table className="table table-striped table-latests table-detail">
+                            <tbody>
+                            <tr>
+                                <td><strong>Address</strong></td>
+                                <td>{this.state.account.address}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Public Key</strong></td>
+                                <td>{this.state.account.public_key && this.state.account.public_key || 'None'}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Account Number</strong></td>
+                                <td>{this.state.account.account_number}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Account Sequence</strong></td>
+                                <td>{this.state.account.sequence}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Owned Coins</strong></td>
+                                <td>
+                                    {coins.join(', ')}
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div className="col-lg-3 col-md-3 col-sm-12">
+                    <div className="qr">
+                        <QRCode value={this.state.account.address} className="img-fluid d-block mx-auto"/>
+                    </div>
+                </div>
+            </React.Fragment>
+        )
+    }
+
+    render() {
+        return (
+            <React.Fragment>
                 <section className="block-explorer-wrapper bg-bottom-center" id="welcome-1">
                     <div className="block-explorer text">
                         <div className="container text-center">
@@ -75,7 +117,7 @@ class AddressShowPage extends Component<Props, State> {
                                     <h1>Address Details</h1>
                                 </div>
                                 <div className="offset-lg-3 col-lg-6">
-                                    <p>{this.state.account.address}</p>
+                                    <p>{this.state.account !== null && this.state.account.address}</p>
                                 </div>
                             </div>
                         </div>
@@ -89,41 +131,7 @@ class AddressShowPage extends Component<Props, State> {
                                     <h2 className="section-title">General</h2>
                                 </div>
                             </div>
-                            <div className="col-lg-9 col-md-9 col-sm-12">
-                                <div className="table-responsive">
-                                    <table className="table table-striped table-latests table-detail">
-                                        <tbody>
-                                            <tr>
-                                                <td><strong>Address</strong></td>
-                                                <td>{this.state.account.address}</td>
-                                            </tr>
-                                            <tr>
-                                                <td><strong>Public Key</strong></td>
-                                                <td>{this.state.account.public_key && this.state.account.public_key || 'None'}</td>
-                                            </tr>
-                                            <tr>
-                                                <td><strong>Account Number</strong></td>
-                                                <td>{this.state.account.account_number}</td>
-                                            </tr>
-                                            <tr>
-                                                <td><strong>Account Sequence</strong></td>
-                                                <td>{this.state.account.sequence}</td>
-                                            </tr>
-                                            <tr>
-                                                <td><strong>Owned Coins</strong></td>
-                                                <td>
-                                                    {coins.join(', ')}
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                            <div className="col-lg-3 col-md-3 col-sm-12">
-                                <div className="qr">
-                                    <QRCode value={this.state.account.address} className="img-fluid d-block mx-auto"/>
-                                </div>
-                            </div>
+                            {this.renderAccount()}
                         </div>
                         <div className="row">
                             <div className="col-lg-12">

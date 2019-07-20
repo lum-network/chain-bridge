@@ -9,6 +9,7 @@ import AddressShowPage from './components/pages/accounts/show/show';
 import BlocksPage from './components/pages/blocks/list/blocks';
 import BlockShowPage from './components/pages/blocks/show/block';
 import TransactionShowPage from './components/pages/transactions/show/transaction';
+import TransactionsListPage from './components/pages/transactions/list/transactions';
 
 import {withRouter} from "react-router";
 
@@ -45,6 +46,7 @@ class App extends Component {
                     <Route path="/account/:accountId" exact component={AddressShowPage}/>
                     <Route path="/blocks" exact component={BlocksPage}/>
                     <Route path="/block/:blockId" exact component={BlockShowPage}/>
+                    <Route path="/transactions" exact component={TransactionsListPage}/>
                     <Route path="/transaction/:hash" exact component={TransactionShowPage}/>
                     <Redirect to={'/home'}/>
                     {/*<Route component={NotFound}/>*/}
