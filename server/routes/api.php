@@ -1,7 +1,5 @@
 <?php
 
-use Illuminate\Http\Request;
-
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -12,6 +10,8 @@ use Illuminate\Http\Request;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
+
+use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function(){
    Route::prefix('blocks')->group(function(){
@@ -27,5 +27,9 @@ Route::prefix('v1')->group(function(){
 
    Route::prefix('accounts')->group(function(){
        Route::get('/{address}', 'AccountController@show');
+   });
+
+   Route::prefix('search')->group(function(){
+       Route::post('/', 'SearchController@search');
    });
 });
