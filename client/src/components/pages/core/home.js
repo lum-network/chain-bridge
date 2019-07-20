@@ -40,10 +40,6 @@ class HomePage extends Component<Props, State> {
     }
 
     render() {
-        if(this.props.loading || this.state.latestBlock == null){
-            return null;
-        }
-
         return (
             <React.Fragment>
                 <section className="block-explorer-wrapper bg-bottom-center" id="welcome-1">
@@ -54,7 +50,7 @@ class HomePage extends Component<Props, State> {
                                     <h1>Sandblock Chain Explorer</h1>
                                 </div>
                                 <div className="offset-lg-3 col-lg-6">
-                                    <p>Current Block Height: {this.state.latestBlock.height}</p>
+                                    <p>Current Block Height: {this.state.latestBlock !== null && this.state.latestBlock.height}</p>
                                 </div>
                             </div>
                         </div>
@@ -96,7 +92,7 @@ class HomePage extends Component<Props, State> {
                                         <h5>Last Block Height</h5>
                                     </div>
                                     <div className="text">
-                                        <span>{this.state.latestBlock.height}</span>
+                                        <span>{this.state.latestBlock !== null && this.state.latestBlock.height}</span>
                                     </div>
                                 </div>
                             </div>
@@ -107,7 +103,7 @@ class HomePage extends Component<Props, State> {
                                         <h5>Active Validators</h5>
                                     </div>
                                     <div className="text">
-                                        <span>{this.state.latestValidators.validators.length}</span>
+                                        <span>{this.state.latestValidators !== null && this.state.latestValidators.validators.length}</span>
                                     </div>
                                 </div>
                             </div>
@@ -118,7 +114,7 @@ class HomePage extends Component<Props, State> {
                                         <h5>Last Block Time</h5>
                                     </div>
                                     <div className="text">
-                                        <span>{moment(this.state.latestBlock.time).format('MM-DD-YYYY HH:mm:ss')}</span>
+                                        <span>{this.state.latestBlock !== null && moment(this.state.latestBlock.time).format('MM-DD-YYYY HH:mm:ss')}</span>
                                     </div>
                                 </div>
                             </div>
@@ -129,7 +125,7 @@ class HomePage extends Component<Props, State> {
                                         <h5>Total Validators</h5>
                                     </div>
                                     <div className="text">
-                                        <span>{this.state.latestValidators.validators.length}</span>
+                                        <span>{this.state.latestValidators !== null && this.state.latestValidators.validators.length}</span>
                                     </div>
                                 </div>
                             </div>
