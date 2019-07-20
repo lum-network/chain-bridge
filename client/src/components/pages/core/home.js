@@ -12,7 +12,7 @@ type Props = {
     loading: boolean
 };
 
-type State = { latestBlock: {}, latestValidators: {} };
+type State = { latestBlock: {}, latestValidators: {}, searchInput: '' };
 
 class HomePage extends Component<Props, State> {
 
@@ -21,8 +21,11 @@ class HomePage extends Component<Props, State> {
 
         this.state = {
             latestBlock: null,
-            latestValidators: null
+            latestValidators: null,
+            searchInput: ''
         }
+
+        this.triggerSearch = this.triggerSearch.bind(this);
     }
 
     componentDidMount(): void {
@@ -37,6 +40,10 @@ class HomePage extends Component<Props, State> {
         if(nextProps.latestValidators !== null){
             this.setState({latestValidators: nextProps.latestValidators});
         }
+    }
+
+    triggerSearch(){
+        this.props.history.push(`/search/${this.state.searchInput}`);
     }
 
     render() {
@@ -61,8 +68,18 @@ class HomePage extends Component<Props, State> {
                                 <div className="col-lg-12">
                                     <div className="input-wrapper">
                                         <div className="input">
-                                            <input type="text" placeholder="Search by Address / Txn Hash / Block #"/>
-                                                <button><i className="fa fa-search"></i></button>
+                                            <input
+                                                type="text"
+                                                defaultValue={this.state.searchInput}
+                                                onChange={(ev)=>{this.setState({searchInput: ev.target.value})}}
+                                                onSubmit={this.triggerSearch}
+                                                onKeyPress={ev => {
+                                                    if(ev.key == 'Enter'){
+                                                        this.triggerSearch();
+                                                    }
+                                                }}
+                                                placeholder="Search by Address / Txn Hash / Block #"/>
+                                            <button onClick={this.triggerSearch}><i className="fa fa-search"></i></button>
                                         </div>
                                     </div>
                                 </div>

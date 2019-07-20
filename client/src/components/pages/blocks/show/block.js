@@ -2,9 +2,6 @@ import React, { Component } from 'react';
 import {dispatchAction} from "../../../../utils/redux";
 import {getBlock} from "../../../../store/actions/blocks";
 import {connect} from "react-redux";
-import moment from 'moment';
-import EllipsisText from "react-ellipsis-text";
-import {NavLink} from "react-router-dom";
 import TransactionsListComponent from "../../../parts/TransactionsList";
 
 type Props = {
@@ -33,11 +30,70 @@ class BlockShowPage extends Component<Props, State> {
         }
     }
 
-    render() {
-        if(this.props.loading || this.state.block === null){
+    renderBlock(){
+        if(this.state.block === null){
             return null;
         }
 
+        return (
+            <React.Fragment>
+                <div className="row">
+                    <div className="col-lg-12">
+                        <div className="table-responsive">
+                            <table className="table table-striped table-latests table-detail">
+                                <tbody>
+                                <tr>
+                                    <td><strong>Block Height</strong></td>
+                                    <td>{this.state.block.height}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Block Hash</strong></td>
+                                    <td>{this.state.block.hash}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Chain ID</strong></td>
+                                    <td>{this.state.block.chain_id}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Timestamp</strong></td>
+                                    <td>{this.state.block.dispatched_at}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Proposed By</strong></td>
+                                    <td>{this.state.block.proposer_address}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Transactions in the block</strong></td>
+                                    <td>{this.state.block.num_txs}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Transactions since Genesis</strong></td>
+                                    <td>{this.state.block.total_txs}</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div className="row">
+                    <div className="col-lg-12">
+                        <div className="center-heading">
+                            <h2 className="section-title">Transactions</h2>
+                        </div>
+                    </div>
+                </div>
+                <div className="row">
+                    <div className="col-lg-12">
+                        <div className="table-responsive">
+                            <TransactionsListComponent transactions={this.state.block.transactions}/>
+                        </div>
+                    </div>
+                </div>
+            </React.Fragment>
+        );
+    }
+
+    render() {
         return (
             <React.Fragment>
                 <section className="block-explorer-wrapper bg-bottom-center" id="welcome-1">
@@ -63,58 +119,7 @@ class BlockShowPage extends Component<Props, State> {
                                 </div>
                             </div>
                         </div>
-                        <div className="row">
-                            <div className="col-lg-12">
-                                <div className="table-responsive">
-                                    <table className="table table-striped table-latests table-detail">
-                                        <tbody>
-                                            <tr>
-                                                <td><strong>Block Height</strong></td>
-                                                <td>{this.state.block.height}</td>
-                                            </tr>
-                                            <tr>
-                                                <td><strong>Block Hash</strong></td>
-                                                <td>{this.state.block.hash}</td>
-                                            </tr>
-                                            <tr>
-                                                <td><strong>Chain ID</strong></td>
-                                                <td>{this.state.block.chain_id}</td>
-                                            </tr>
-                                            <tr>
-                                                <td><strong>Timestamp</strong></td>
-                                                <td>{this.state.block.dispatched_at}</td>
-                                            </tr>
-                                            <tr>
-                                                <td><strong>Proposed By</strong></td>
-                                                <td>{this.state.block.proposer_address}</td>
-                                            </tr>
-                                            <tr>
-                                                <td><strong>Transactions in the block</strong></td>
-                                                <td>{this.state.block.num_txs}</td>
-                                            </tr>
-                                            <tr>
-                                                <td><strong>Transactions since Genesis</strong></td>
-                                                <td>{this.state.block.total_txs}</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="row">
-                            <div className="col-lg-12">
-                                <div className="center-heading">
-                                    <h2 className="section-title">Transactions</h2>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="row">
-                            <div className="col-lg-12">
-                                <div className="table-responsive">
-                                    <TransactionsListComponent transactions={this.state.block.transactions}/>
-                                </div>
-                            </div>
-                        </div>
+                        {this.renderBlock()}
                     </div>
                 </section>
             </React.Fragment>
