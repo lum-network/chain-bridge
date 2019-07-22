@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import {connect} from "react-redux";
-import { crypto } from 'sandblock-chain-sdk';
+import { crypto, utils } from 'sandblock-chain-sdk';
 import { save } from 'save-file';
 
 class MigrationPortalPage extends Component{
@@ -13,11 +13,16 @@ class MigrationPortalPage extends Component{
             passphrase: null,
             passphraseConfirm: null,
             loading: false,
-            keyStore: null
+            keyStore: null,
+            destinationAddress: '0x5937E671965c0C43DC9842B79d74aa70A36Bd308',
+            sendPayload: null
         }
 
         this.generateNewWallet = this.generateNewWallet.bind(this);
         this.downloadGeneratedWallet = this.downloadGeneratedWallet.bind(this);
+        this.sendWithMEW = this.sendWithMEW.bind(this);
+        this.sendWithMetaMask = this.sendWithMetaMask.bind(this);
+        this.sendWithLedger = this.sendWithLedger.bind(this);
     }
 
     componentDidMount(): void {
@@ -40,14 +45,34 @@ class MigrationPortalPage extends Component{
 
         const privateKey = crypto.generatePrivateKey();
         const keyStore = crypto.generateKeyStore(privateKey, this.state.passphrase);
+        const publicKey = crypto.getPublicKeyFromPrivateKey(privateKey);
+        const address = crypto.getAddressFromPublicKey(publicKey);
 
-        this.setState({keyStore, loading: false, walletGenerated: true});
+        this.setState({
+            keyStore,
+            loading: false,
+            walletGenerated: true,
+            sendPayload: utils.str2hexstring(JSON.stringify({destination: address}))
+        });
     }
 
     async downloadGeneratedWallet(){
         var blob = new Blob([JSON.stringify(this.state.keyStore)], {type: "application/json"});
         await save(blob, 'keystore.json');
         this.setState({currentStep: 3});
+    }
+
+    sendWithMEW(){
+        const url = `https://vintage.myetherwallet.com/?to=${this.state.destinationAddress}&sendMode=token&tokenSymbol=NUG&data=${this.state.sendPayload}#send-transaction`;
+        window.open(url, '_blank');
+    }
+
+    sendWithMetaMask(){
+
+    }
+
+    sendWithLedger(){
+
     }
 
     renderStep1(){
@@ -146,6 +171,38 @@ class MigrationPortalPage extends Component{
         );
     }
 
+    renderStep3(){
+        return (
+            <div className="item">
+                <div className="title text-center"><h5>Sandblock Tokens Sending</h5></div>
+                <div className="text">
+                    <div className="row">
+                        <div className="col-lg-12">
+                            <div className="alert alert-warning text-center">
+                                <p>
+                                    Everything is now ready. The destination Ethereum Address is:<br/>
+                                    <b>{this.state.destinationAddress}</b><br/>
+                                    Please send all your SAT tokens. Your transaction <b>must contain</b> the following payload in the data field:
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="row">
+                        <div className="col-lg-12 form-group">
+                            <label>Payload</label>
+                            <input type="text" disabled value={this.state.sendPayload} className="form-control"/>
+                        </div>
+                    </div>
+                    <div className="row">
+                        <div className="col-lg-4 offset-4">
+                            <button className="btn btn-sm btn-success" onClick={this.sendWithMEW}>Send via KeyStore/Ledger/Metamask on MyEtherwallet</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     renderStep(){
         switch(this.state.currentStep)
         {
@@ -154,6 +211,9 @@ class MigrationPortalPage extends Component{
 
             case 2:
                 return this.renderStep2();
+
+            case 3:
+                return this.renderStep3();
 
             default:
                 return this.renderStep1();
