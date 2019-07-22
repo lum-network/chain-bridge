@@ -11,7 +11,7 @@ type Props = {
 
 type State = { result: {} };
 
-class SearchPage extends Component {
+class SearchPage extends Component<Props, State> {
     constructor(props){
         super(props);
         this.state = {
@@ -42,6 +42,9 @@ class SearchPage extends Component {
 
                 case "account":
                     return this.props.history.push(`/account/${this.state.result.data}`);
+
+                default:
+                    return;
             }
         }
     }

@@ -62,7 +62,7 @@ class AddressShowPage extends Component<Props, State> {
 
         let coins = [];
         JSON.parse(this.state.account.coins).map((elem, index)=>{
-            coins.push(`${elem.amount} ${elem.denom}`);
+            return coins.push(`${elem.amount} ${elem.denom}`);
         });
 
         return (
@@ -77,7 +77,7 @@ class AddressShowPage extends Component<Props, State> {
                             </tr>
                             <tr>
                                 <td><strong>Public Key</strong></td>
-                                <td>{this.state.account.public_key && this.state.account.public_key || 'None'}</td>
+                                <td>{(this.state.account.public_key && this.state.account.public_key) || 'None'}</td>
                             </tr>
                             <tr>
                                 <td><strong>Account Number</strong></td>

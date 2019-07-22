@@ -11,6 +11,7 @@ import BlockShowPage from './components/pages/blocks/show/block';
 import TransactionShowPage from './components/pages/transactions/show/transaction';
 import TransactionsListPage from './components/pages/transactions/list/transactions';
 import SearchPage from './components/pages/core/search';
+import MigrationPortalPage from './components/pages/core/migration';
 
 import {withRouter} from "react-router";
 
@@ -50,6 +51,7 @@ class App extends Component {
                     <Route path="/transactions" exact component={TransactionsListPage}/>
                     <Route path="/transaction/:hash" exact component={TransactionShowPage}/>
                     <Route path="/search/:data" exact component={SearchPage}/>
+                    <Route path="/migration" exact component={MigrationPortalPage}/>
                     <Redirect to={'/home'}/>
                     {/*<Route component={NotFound}/>*/}
                 </Switch>

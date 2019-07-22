@@ -4,10 +4,6 @@ import moment from "moment";
 import {NavLink} from "react-router-dom";
 
 export default class TransactionsListComponent extends Component {
-    constructor(props){
-        super(props);
-    }
-
     render() {
         return (
             <table className="table table-striped table-latests">

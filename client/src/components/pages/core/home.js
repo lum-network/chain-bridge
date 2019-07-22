@@ -74,7 +74,7 @@ class HomePage extends Component<Props, State> {
                                                 onChange={(ev)=>{this.setState({searchInput: ev.target.value})}}
                                                 onSubmit={this.triggerSearch}
                                                 onKeyPress={ev => {
-                                                    if(ev.key == 'Enter'){
+                                                    if(ev.key === 'Enter'){
                                                         this.triggerSearch();
                                                     }
                                                 }}
