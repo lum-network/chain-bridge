@@ -53,18 +53,13 @@ const axiosMiddlewareOptions = {
                     return Promise.resolve(req);
                 },
                 error({ getState, dispatch, getSourceAction }, error) {
-                    if (error.config.reduxSourceAction.payload.options) {
-                        //console.log(`[debug] ${JSON.stringify(error)}`);
-                        return Promise.reject(error);
-                    }
-
                     if (
-                        error.response &&
-                        error.response.data &&
-                        error.response.data.error &&
-                        error.response.data.error.message
+                        error &&
+                        error.data &&
+                        error.data &&
+                        error.data.message
                     ) {
-                        const message = error.response.data.error.message;
+                        const message = error.data.message;
 
                         return Promise.reject(new Error(message));
                     }

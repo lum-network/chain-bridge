@@ -117,10 +117,10 @@ class HomePage extends Component<Props, State> {
                                 <div className="item">
                                     <div className="title">
                                         <div className="icon"></div>
-                                        <h5>Active Validators</h5>
+                                        <h5>Last Block Time</h5>
                                     </div>
                                     <div className="text">
-                                        <span>{this.state.latestValidators !== null && this.state.latestValidators.validators.length}</span>
+                                        <span>{this.state.latestBlock !== null && moment(this.state.latestBlock.time).format('MM-DD-YYYY HH:mm:ss')}</span>
                                     </div>
                                 </div>
                             </div>
@@ -128,10 +128,10 @@ class HomePage extends Component<Props, State> {
                                 <div className="item">
                                     <div className="title">
                                         <div className="icon"></div>
-                                        <h5>Last Block Time</h5>
+                                        <h5>Active Validators</h5>
                                     </div>
                                     <div className="text">
-                                        <span>{this.state.latestBlock !== null && moment(this.state.latestBlock.time).format('MM-DD-YYYY HH:mm:ss')}</span>
+                                        <span>{this.state.latestValidators !== null && this.state.latestValidators.validators.length}</span>
                                     </div>
                                 </div>
                             </div>

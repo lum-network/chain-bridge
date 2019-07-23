@@ -2,10 +2,12 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 import { BrowserRouter } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
 
 import './assets/css/bootstrap.min.css';
 import 'font-awesome/css/font-awesome.min.css';
 import './assets/css/purple.css';
+import 'react-toastify/dist/ReactToastify.css';
 
 import * as serviceWorker from './serviceWorker';
 
@@ -18,6 +20,7 @@ const app = (
         <BrowserRouter>
             <App />
         </BrowserRouter>
+        <ToastContainer />
     </Provider>
 );
 
