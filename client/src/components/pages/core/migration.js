@@ -7,7 +7,7 @@ class MigrationPortalPage extends Component{
     constructor(props){
         super(props);
         this.state = {
-            currentStep: 2,
+            currentStep: 1,
             walletGenerated: false,
             walletDatas: null,
             passphrase: null,
