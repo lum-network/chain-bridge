@@ -16,14 +16,15 @@ export const fetchMigration = (reference: string) => {
     };
 }
 
-export const submitMigration = (msg: string) => {
+export const submitMigration = (msg) => {
     return {
         types: [MIGRATION_SUBMIT_START, MIGRATION_SUBMIT_SUCCESS, MIGRATION_SUBMIT_FAILURE],
         payload: {
             client: 'api',
             request: {
                 method: `POST`,
-                url: `/migration`
+                url: `/migration`,
+                data: msg
             }
         }
     };

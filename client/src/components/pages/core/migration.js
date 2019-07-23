@@ -21,8 +21,9 @@ type State = {
     passphraseConfirm: string,
     loading: boolean,
     keyStore: {},
-    destinationAddress: string,
     sendPayload: {},
+    signedMessage: string,
+    signedMessageSent: boolean,
     migrationRequestReference: string,
     migration: {}
 };
@@ -38,26 +39,32 @@ class MigrationPortalPage extends Component<Props, State>{
             passphraseConfirm: null,
             loading: false,
             keyStore: null,
-            destinationAddress: '0x5937E671965c0C43DC9842B79d74aa70A36Bd308',
             sendPayload: null,
+            signedMessage: null,
+            signedMessageSent: false,
             migrationRequestReference: null,
             migration: null
         }
 
         this.generateNewWallet = this.generateNewWallet.bind(this);
         this.downloadGeneratedWallet = this.downloadGeneratedWallet.bind(this);
-        this.sendWithMEW = this.sendWithMEW.bind(this);
+        this.signWithMEW = this.signWithMEW.bind(this);
         this.searchRequest = this.searchRequest.bind(this);
+        this.sendSignedMessage = this.sendSignedMessage.bind(this);
     }
 
     componentDidMount(): void {
     }
 
     componentWillReceiveProps(nextProps: Readonly<Props>, nextContext: any): void {
-        this.setState({migration: nextProps.migration});
-        
+        this.setState({migration: nextProps.migration, loading: nextProps.loading});
+
         if(nextProps.error !== null){
-            toast.error('We were unable to process your request');
+            toast.error('We were unable to process your request, please make sure you have no pending request');
+        }
+        if(this.state.signedMessageSent && !nextProps.loading && nextProps.error === null){
+            toast.success('We have successfully received your migration request!');
+            this.setState({currentStep: 1});
         }
     }
 
@@ -82,6 +89,8 @@ class MigrationPortalPage extends Component<Props, State>{
             keyStore,
             loading: false,
             walletGenerated: true,
+            passphrase: '',
+            passphraseConfirm: '',
             sendPayload: utils.str2hexstring(JSON.stringify({destination: address}))
         });
     }
@@ -89,12 +98,21 @@ class MigrationPortalPage extends Component<Props, State>{
     async downloadGeneratedWallet(){
         var blob = new Blob([JSON.stringify(this.state.keyStore)], {type: "application/json"});
         await save(blob, `sandblock_chain_wallet_${new Date().getTime()}.json`);
-        this.setState({currentStep: 3});
+        this.setState({currentStep: 3, walletGenerated: false});
     }
 
-    sendWithMEW(){
-        const url = `https://www.myetherwallet.com/interface/send-transaction?to=${this.state.destinationAddress}&data=${this.state.sendPayload}&tokensymbol=SAT`;
+    signWithMEW(){
+        const url = `https://www.myetherwallet.com/interface/sign-message?message=${this.state.sendPayload}`;
         window.open(url, '_blank');
+    }
+
+    async sendSignedMessage(){
+        if(this.state.signedMessage === null || this.state.signedMessage.length <= 0){
+            return;
+        }
+
+        await dispatchAction(submitMigration(this.state.signedMessage));
+        this.setState({signedMessageSent: true});
     }
 
     searchRequest(){
@@ -210,22 +228,29 @@ class MigrationPortalPage extends Component<Props, State>{
                         <div className="col-lg-12">
                             <div className="alert alert-warning text-center">
                                 <p>
-                                    Everything is now ready. The destination Ethereum Address is:<br/>
-                                    <b>{this.state.destinationAddress}</b><br/>
-                                    Please send all your SAT tokens. Your transaction <b>must contain</b> the following payload in the data field:
+                                    Everything is now ready. Please sign the following message using your Ethereum Wallet and then paste the signed message.
                                 </p>
                             </div>
                         </div>
                     </div>
                     <div className="row">
                         <div className="col-lg-12 form-group">
-                            <label>Payload</label>
+                            <label>Message to sign: </label>
                             <input type="text" disabled value={this.state.sendPayload} className="form-control"/>
                         </div>
                     </div>
                     <div className="row">
-                        <div className="col-lg-4 offset-4">
-                            <button className="btn btn-sm btn-success" onClick={this.sendWithMEW}>Send via KeyStore/Ledger/Metamask on MyEtherwallet</button>
+                        <div className="col-lg-12 form-group">
+                            <label>Signed Message: </label>
+                            <textarea className="form-control" onChange={(ev) => {this.setState({signedMessage: ev.target.value})}}/>
+                        </div>
+                    </div>
+                    <div className="row">
+                        <div className="col-lg-6">
+                            <button className="btn btn-sm btn-info" onClick={this.signWithMEW}>Help me to sign via MyEtherWallet</button>
+                        </div>
+                        <div className="col-lg-6">
+                            <button className="btn btn-sm btn-success" onClick={this.sendSignedMessage}>Send the signed message</button>
                         </div>
                     </div>
                 </div>
@@ -251,7 +276,7 @@ class MigrationPortalPage extends Component<Props, State>{
     }
 
     renderProcedureCheck(){
-        if(this.state.currentStep != 1){
+        if(this.state.currentStep !== 1){
             return null;
         }
 
@@ -275,10 +300,14 @@ class MigrationPortalPage extends Component<Props, State>{
                                         <table className="table table-bordered">
                                             <tbody>
                                                 <tr>
+                                                    <td className="text-center font-weight-bold">Reference</td>
+                                                    <td>{this.state.migration.reference}</td>
+                                                </tr>
+                                                <tr>
                                                     <td className="text-center font-weight-bold">Current State</td>
                                                     <td>{this.state.migration.state}</td>
                                                 </tr>
-                                                {this.state.migration.state == 'SUCCESS' && (
+                                                {this.state.migration.state === 'SUCCESS' && (
                                                     <tr>
                                                         <td className="text-center font-weight-bold">Transaction</td>
                                                         <td>
@@ -288,7 +317,7 @@ class MigrationPortalPage extends Component<Props, State>{
                                                         </td>
                                                     </tr>
                                                 )}
-                                                {this.state.migration.state == 'REFUSED' && (
+                                                {this.state.migration.state === 'REFUSED' && (
                                                     <tr>
                                                         <td className="text-center font-weight-bold">Denial Reason</td>
                                                         <td>{this.state.migration.message}</td>
