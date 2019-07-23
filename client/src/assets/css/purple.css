@@ -930,7 +930,7 @@ header
 --------------------------------------------- 
 */
 .header-area {
-  position: fixed;
+  position: absolute;
   top: 0px;
   left: 0px;
   right: 0px;
@@ -2683,7 +2683,11 @@ block explorer
 }
 
 .block-explorer-features {
-  padding-top: 130px;
+  padding-top: 30px;
+}
+
+.block-explorer-features-large {
+  padding-top: 130px !important;
 }
 
 .block-explorer-features .item {
@@ -2786,7 +2790,11 @@ block explorer
 }
 
 .block-explorer-section {
-  padding-top: 130px;
+  padding-top: 30px;
+}
+
+.block-explorer-section-large {
+  padding-top: 130px !important;
 }
 
 .block-explorer-section .table-latests {

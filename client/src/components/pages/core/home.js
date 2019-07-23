@@ -87,7 +87,7 @@ class HomePage extends Component<Props, State> {
                         </div>
                     </div>
                 </section>
-                <section className="block-explorer-features section bg-bottom">
+                <section className="block-explorer-features block-explorer-features-large section bg-bottom">
                     <div className="container">
                         <div className="row">
                             <div className="col-lg-12">
