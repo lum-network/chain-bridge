@@ -32,4 +32,9 @@ Route::prefix('v1')->group(function(){
    Route::prefix('search')->group(function(){
        Route::post('/', 'SearchController@search');
    });
+
+   Route::prefix('migration')->group(function(){
+       Route::post('/', 'MigrationController@store');
+       Route::get('/{reference}', 'MigrationController@show');
+   });
 });
