@@ -63,7 +63,7 @@ class MigrationPortalPage extends Component{
     }
 
     sendWithMEW(){
-        const url = `https://vintage.myetherwallet.com/?to=${this.state.destinationAddress}&sendMode=token&tokenSymbol=NUG&data=${this.state.sendPayload}#send-transaction`;
+        const url = `https://www.myetherwallet.com/interface/send-transaction?to=${this.state.destinationAddress}&data=${this.state.sendPayload}&tokensymbol=SAT`;
         window.open(url, '_blank');
     }
 
