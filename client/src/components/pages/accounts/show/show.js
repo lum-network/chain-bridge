@@ -11,10 +11,10 @@ type Props = {
     loading: boolean
 };
 
-type State = { account: {}, transactions: [] };
+type State = { account: {transactions_sent: [], transactions_received:[]}, transactions: [] };
 
 class AddressShowPage extends Component<Props, State> {
-    constructor(props){
+    constructor(props: Props){
         super(props);
         this.state = {
             account: null,
@@ -26,12 +26,15 @@ class AddressShowPage extends Component<Props, State> {
         dispatchAction(getAccount(this.props.match.params.accountId));
     }
 
-    async componentWillReceiveProps(nextProps: Readonly<P>, nextContext: any): void {
-        if(nextProps.account !== null){
-            let newTxs = [...nextProps.account.transactions_sent, ...nextProps.account.transactions_received];
-            await newTxs.sort((a, b)=>{
-                return new Date(b.dispatched_at) - new Date(a.dispatched_at);
-            });
+    async componentWillReceiveProps(nextProps: Readonly<Props>, nextContext: any): void {
+        if(nextProps.account !== null && nextProps.error === null){
+            let newTxs = [];
+            if(nextProps.account.transactions_sent !== undefined && nextProps.account.transactions_received !== undefined){
+                newTxs = [...nextProps.account.transactions_sent, ...nextProps.account.transactions_received];
+                await newTxs.sort((a, b)=>{
+                    return new Date(b.dispatched_at) - new Date(a.dispatched_at);
+                });
+            }
             this.setState({
                 account: nextProps.account,
                 transactions: newTxs
@@ -61,9 +64,11 @@ class AddressShowPage extends Component<Props, State> {
         }
 
         let coins = [];
-        JSON.parse(this.state.account.coins).map((elem, index)=>{
-            return coins.push(`${elem.amount} ${elem.denom}`);
-        });
+        if(this.state.account.coins.length > 0) {
+            JSON.parse(this.state.account.coins).map((elem, index) => {
+                return coins.push(`${elem.amount} ${elem.denom}`);
+            });
+        }
 
         return (
             <React.Fragment>
@@ -73,7 +78,7 @@ class AddressShowPage extends Component<Props, State> {
                             <tbody>
                             <tr>
                                 <td><strong>Address</strong></td>
-                                <td>{this.state.account.address}</td>
+                                <td>{this.state.account.address || this.props.match.params.accountId}</td>
                             </tr>
                             <tr>
                                 <td><strong>Public Key</strong></td>
@@ -81,11 +86,11 @@ class AddressShowPage extends Component<Props, State> {
                             </tr>
                             <tr>
                                 <td><strong>Account Number</strong></td>
-                                <td>{this.state.account.account_number}</td>
+                                <td>{this.state.account.account_number | 0}</td>
                             </tr>
                             <tr>
                                 <td><strong>Account Sequence</strong></td>
-                                <td>{this.state.account.sequence}</td>
+                                <td>{this.state.account.sequence | 0}</td>
                             </tr>
                             <tr>
                                 <td><strong>Owned Coins</strong></td>

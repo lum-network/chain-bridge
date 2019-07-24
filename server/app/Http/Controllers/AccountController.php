@@ -23,7 +23,7 @@ class AccountController extends Controller
         }
 
         // Account has no existence inside the chain, we return empty object
-        if(!isset($remoteAcc['account']['value']['address']) || strlen($remoteAcc['account']['value']['address']) <= 0){
+        if(!isset($remoteAcc['value']['address']) || strlen($remoteAcc['value']['address']) <= 0){
             $retn = [
                 "address"           =>  "",
                 "coins"             =>  [],
@@ -41,18 +41,18 @@ class AccountController extends Controller
         if(!$acc->exists()){
             $acc = Account::create([
                 "address"           =>  strtolower($address),
-                "coins"             =>  json_encode($remoteAcc['account']['value']['coins']),
-                "public_key_type"   =>  $remoteAcc['account']['value']['public_key']['type'],
-                "public_key_value"  =>  $remoteAcc['account']['value']['public_key']['value'],
-                "account_number"    =>  $remoteAcc['account']['value']['account_number'],
-                "sequence"          =>  $remoteAcc['account']['value']['sequence']
+                "coins"             =>  json_encode($remoteAcc['value']['coins']),
+                "public_key_type"   =>  $remoteAcc['value']['public_key']['type'],
+                "public_key_value"  =>  $remoteAcc['value']['public_key']['value'],
+                "account_number"    =>  $remoteAcc['value']['account_number'],
+                "sequence"          =>  $remoteAcc['value']['sequence']
             ]);
         }
         // Account exists we sync everything up
         else {
             $acc = $acc->first();
-            $acc->coins = json_encode($remoteAcc['account']['value']['coins']);
-            $acc->sequence = $remoteAcc['account']['value']['sequence'];
+            $acc->coins = json_encode($remoteAcc['value']['coins']);
+            $acc->sequence = $remoteAcc['value']['sequence'];
             $acc->save();
         }
 

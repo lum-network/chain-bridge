@@ -38,17 +38,18 @@ class TransactionSync implements ShouldQueue
         if(!$account->exists()){
             $sbc = new SandblockChain();
             $remoteAcc = $sbc->getAccount(strtolower($address));
-            if(!isset($remoteAcc['account']['value']['address']) || strlen($remoteAcc['account']['value']['address']) <= 0){
+            if(!isset($remoteAcc['value']['address']) || strlen($remoteAcc['value']['address']) <= 0){
+                Log::error('Unable to fetch account');
                 return NULL;
             }
 
             $acc = Account::create([
                 "address"           =>  strtolower($address),
-                "coins"             =>  json_encode($remoteAcc['account']['value']['coins']),
-                "public_key_type"   =>  $remoteAcc['account']['value']['public_key']['type'],
-                "public_key_value"  =>  $remoteAcc['account']['value']['public_key']['value'],
-                "account_number"    =>  $remoteAcc['account']['value']['account_number'],
-                "sequence"          =>  $remoteAcc['account']['value']['sequence']
+                "coins"             =>  json_encode($remoteAcc['value']['coins']),
+                "public_key_type"   =>  $remoteAcc['value']['public_key']['type'],
+                "public_key_value"  =>  $remoteAcc['value']['public_key']['value'],
+                "account_number"    =>  $remoteAcc['value']['account_number'],
+                "sequence"          =>  $remoteAcc['value']['sequence']
             ]);
         } else {
             $acc = $account->first();
@@ -129,27 +130,32 @@ class TransactionSync implements ShouldQueue
         $senderAccount = $this->getAccountByAddress($sender);
         $recipientAccount = $this->getAccountByAddress($recipient);
 
-        $tx = Transaction::create([
-            'height'            =>  $tx['height'],
-            'hash'              =>  $this->hash,
-            'action'            =>  $action,
-            'block_id'          =>  $this->blockID,
-            'code'              =>  (isset($tx['code'])) ? $tx['code'] : NULL,
-            'success'           =>  (isset($tx['logs'][0])) ? $tx['logs'][0]['success'] : false,
-            'log'               =>  (isset($tx['logs'][0])) ? json_encode($tx['logs'][0]['log']) : NULL,
-            'gas_wanted'        =>  $tx['gas_wanted'],
-            'gas_used'          =>  $tx['gas_used'],
-            'from_address'      =>  $sender,
-            'sender_id'         =>  ($senderAccount) ? $senderAccount->id : NULL,
-            'recipient_id'      =>  ($recipientAccount) ? $recipientAccount->id : NULL,
-            'to_address'        =>  $recipient,
-            'name'              =>  $name,
-            'amount'            =>  $amount,
-            'dispatched_at'     =>  $tx['timestamp'],
-            'raw'               =>  json_encode($tx)
-        ]);
-        $tx->refresh();
-        event(new NewTransaction($tx));
-        Log::info('Transaction ingested');
+
+        if(Transaction::where(['hash'=>$this->hash])->exists() == false) {
+            $tx = Transaction::create([
+                'height' => $tx['height'],
+                'hash' => $this->hash,
+                'action' => $action,
+                'block_id' => $this->blockID,
+                'code' => (isset($tx['code'])) ? $tx['code'] : NULL,
+                'success' => (isset($tx['logs'][0])) ? $tx['logs'][0]['success'] : false,
+                'log' => (isset($tx['logs'][0])) ? json_encode($tx['logs'][0]['log']) : NULL,
+                'gas_wanted' => $tx['gas_wanted'],
+                'gas_used' => $tx['gas_used'],
+                'from_address' => $sender,
+                'sender_id' => ($senderAccount) ? $senderAccount->id : NULL,
+                'recipient_id' => ($recipientAccount) ? $recipientAccount->id : NULL,
+                'to_address' => $recipient,
+                'name' => $name,
+                'amount' => $amount,
+                'dispatched_at' => $tx['timestamp'],
+                'raw' => json_encode($tx)
+            ]);
+            $tx->refresh();
+            event(new NewTransaction($tx));
+            Log::info('Transaction ingested');
+        } else {
+            Log::info('Transaction already present, updated');
+        }
     }
 }
