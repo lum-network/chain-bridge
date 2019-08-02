@@ -2759,11 +2759,14 @@ block explorer
 .block-explorer-features .item .title h5 {
   float: left;
   width: 100%;
-  padding-left: 60px;
   font-weight: 400;
   font-size: 16px;
   color: #3B566E;
   margin-top: 16px;
+}
+
+.block-explorer-features .item .title-center h5 {
+  padding-left: 60px;
 }
 
 .block-explorer-features .item .text {

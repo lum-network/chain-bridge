@@ -12,6 +12,7 @@ import TransactionShowPage from './components/pages/transactions/show/transactio
 import TransactionsListPage from './components/pages/transactions/list/transactions';
 import SearchPage from './components/pages/core/search';
 import MigrationPortalPage from './components/pages/core/migration';
+import WalletShowPage from './components/pages/wallet/show/show';
 
 import {withRouter} from "react-router";
 
@@ -52,6 +53,7 @@ class App extends Component {
                     <Route path="/transaction/:hash" exact component={TransactionShowPage}/>
                     <Route path="/search/:data" exact component={SearchPage}/>
                     <Route path="/migration" exact component={MigrationPortalPage}/>
+                    <Route path="/wallet" exact component={WalletShowPage}/>
                     <Redirect to={'/home'}/>
                     {/*<Route component={NotFound}/>*/}
                 </Switch>

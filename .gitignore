@@ -1,0 +1,11 @@
+client/.idea/*
+client/node_modules/
+client/.DS_STORE
+client/build/
+client/.firebase/
+
+server/.idea/*
+server/.DS_STORE
+
+.DS_STORE
+.idea/*

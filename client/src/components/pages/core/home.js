@@ -104,7 +104,7 @@ class HomePage extends Component<Props, State> {
                         <div className="row">
                             <div className="col-lg-3 col-md-6 col-sm-6 col-xs-12">
                                 <div className="item">
-                                    <div className="title">
+                                    <div className="title title-center">
                                         <div className="icon"></div>
                                         <h5>Last Block Height</h5>
                                     </div>
@@ -115,7 +115,7 @@ class HomePage extends Component<Props, State> {
                             </div>
                             <div className="col-lg-3 col-md-6 col-sm-6 col-xs-12">
                                 <div className="item">
-                                    <div className="title">
+                                    <div className="title title-center">
                                         <div className="icon"></div>
                                         <h5>Last Block Time</h5>
                                     </div>
@@ -126,7 +126,7 @@ class HomePage extends Component<Props, State> {
                             </div>
                             <div className="col-lg-3 col-md-6 col-sm-6 col-xs-12">
                                 <div className="item">
-                                    <div className="title">
+                                    <div className="title title-center">
                                         <div className="icon"></div>
                                         <h5>Active Validators</h5>
                                     </div>
@@ -137,7 +137,7 @@ class HomePage extends Component<Props, State> {
                             </div>
                             <div className="col-lg-3 col-md-6 col-sm-6 col-xs-12">
                                 <div className="item">
-                                    <div className="title">
+                                    <div className="title title-center">
                                         <div className="icon"></div>
                                         <h5>Total Validators</h5>
                                     </div>
