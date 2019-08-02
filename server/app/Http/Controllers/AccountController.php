@@ -25,7 +25,7 @@ class AccountController extends Controller
         // Account has no existence inside the chain, we return empty object
         if(!isset($remoteAcc['value']['address']) || strlen($remoteAcc['value']['address']) <= 0){
             $retn = [
-                "address"           =>  "",
+                "address"           =>  $address,
                 "coins"             =>  [],
                 "public_key_type"   =>  "",
                 "public_key_value"  =>  "",
