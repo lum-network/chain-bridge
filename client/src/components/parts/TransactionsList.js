@@ -21,7 +21,7 @@ export default class TransactionsListComponent extends Component {
                 </tr>
                 </thead>
                 <tbody>
-                {this.props.transactions !== null && this.props.transactions.map((elem, index)=>{
+                {this.props.transactions && this.props.transactions.map && this.props.transactions.map((elem, index)=>{
                     const url = `/transaction/${elem.hash}`;
                     return (
                         <tr key={index}>

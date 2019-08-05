@@ -1,8 +1,14 @@
 import React, { Component } from 'react';
 import {connect} from "react-redux";
 import { crypto } from 'sandblock-chain-sdk';
-import { Button, Modal, ModalHeader, ModalBody, ModalFooter, Alert } from 'reactstrap';
-
+import {
+    Button,
+    Modal,
+    ModalHeader,
+    ModalBody,
+    ModalFooter,
+    Alert
+} from 'reactstrap';
 import hardwareButton from '../../../../assets/images/buttons/hardware.svg';
 import softwareButton from '../../../../assets/images/buttons/software.svg';
 import mnemonicButton from '../../../../assets/images/buttons/mnemonic.svg';
@@ -11,6 +17,8 @@ import ledgerButton from '../../../../assets/images/buttons/ledger.svg';
 import {dispatchAction} from "../../../../utils/redux";
 import {getAccount} from "../../../../store/actions/accounts";
 import { toast } from 'react-toastify';
+import QRCode from "qrcode.react";
+import TransactionsListComponent from "../../../parts/TransactionsList";
 
 
 type Props = {
@@ -23,13 +31,17 @@ type State = {
     walletUnlocked: boolean,
     walletPrivateKey: string,
     accountInfos: {},
+    accountTransactions: [],
     selectedMethod: string,
 
     openedModal: string,
 
     deciphering: boolean,
 
-    input: any
+    input: any,
+    passphrase: string,
+
+    activeTab: number
 };
 
 class WalletShow extends Component<Props, State> {
@@ -37,16 +49,20 @@ class WalletShow extends Component<Props, State> {
     constructor(props: Props){
         super(props);
         this.state = {
-            walletUnlocked: false,
-            walletPrivateKey: '',
+            walletUnlocked: true,
+            walletPrivateKey: '12af61a94691d459c2bc1779f66a2e45911f282e1395c7ca07a08a73ff889265',
             accountInfos: null,
+            accountTransactions: [],
             selectedMethod: '',
 
             openedModal: '',
 
             deciphering: false,
 
-            input: null
+            input: null,
+            passphrase: null,
+
+            activeTab: 1
         }
 
         this.openModal = this.openModal.bind(this);
@@ -54,13 +70,28 @@ class WalletShow extends Component<Props, State> {
         this.toggleSoftwareModal = this.toggleSoftwareModal.bind(this);
         this.processSelectedMethod = this.processSelectedMethod.bind(this);
         this.unlockWallet = this.unlockWallet.bind(this);
+        this.decipherKeystore = this.decipherKeystore.bind(this);
     }
 
     componentDidMount(): void {
+        //DEBUG STUFF TO REMOVE
+        this.retrieveWallet();
     }
 
-    componentWillReceiveProps(nextProps: Readonly<Props>, nextContext: any): void {
-        this.setState({accountInfos: nextProps.account});
+    async componentWillReceiveProps(nextProps: Readonly<Props>, nextContext: any): void {
+        let newTxs = [];
+        if(nextProps.account !== null && nextProps.account.transactions_sent !== undefined && nextProps.account.transactions_received !== undefined){
+            newTxs = [...nextProps.account.transactions_sent, ...nextProps.account.transactions_received];
+            await newTxs.sort((a, b)=>{
+                return new Date(b.dispatched_at) - new Date(a.dispatched_at);
+            });
+        }
+        this.setState({accountInfos: nextProps.account, accountTransactions: newTxs});
+    }
+
+    retrieveWallet(){
+        const address = crypto.getAddressFromPrivateKey(this.state.walletPrivateKey, 'sand');
+        dispatchAction(getAccount(address));
     }
 
     openModal(type: string) {
@@ -93,19 +124,21 @@ class WalletShow extends Component<Props, State> {
             try {
                 const pk = crypto.getPrivateKeyFromMnemonic(this.state.input);
                 const address = crypto.getAddressFromPrivateKey(pk, 'sand');
-                this.setState({walletUnlocked: true, walletPrivateKey: pk, mnemonicModalOpened: false});
+                this.setState({walletUnlocked: true, walletPrivateKey: pk, openedModal: ''});
                 dispatchAction(getAccount(address));
             } catch(error) {
                 console.warn(error);
+                toast.warn('Unable to access your wallet using mnemonic phrase');
             }
         } else if(this.state.selectedMethod === "privatekey" && String(this.state.input).length > 0){
             try {
                  const pk = crypto.getPublicKeyFromPrivateKey(this.state.input);
                 const address = crypto.getAddressFromPublicKey(pk, 'sand');
-                this.setState({walletUnlocked: true, walletPrivateKey: this.state.input, privateKeyModalOpened: false});
+                this.setState({walletUnlocked: true, walletPrivateKey: this.state.input, openedModal: ''});
                 dispatchAction(getAccount(address));
             } catch(error){
                 console.warn(error);
+                toast.warn('Unable to access your wallet using the private key');
             }
         } else if(this.state.selectedMethod === "keystore"){
             if(value.target.files === undefined || value.target.files.length <= 0){
@@ -118,21 +151,28 @@ class WalletShow extends Component<Props, State> {
                 return false;
             }
 
-            this.setState({deciphering: true});
-
             const fileReader = new FileReader();
             fileReader.onloadend = () => {
-                try {
-                    const keystoreContent = fileReader.result;
-                    const pk = crypto.getPrivateKeyFromKeyStore(keystoreContent, "caca");
-                    console.log(pk);
-                    this.setState({deciphering: false});
-                } catch(error) {
-                    this.setState({deciphering: false});
-                    toast.warn('Unable to decipher your keystore file, please check passphrase');
-                }
+                const keystoreContent = fileReader.result;
+                this.setState({input: keystoreContent, openedModal: 'keystore'});
             };
             fileReader.readAsText(file);
+        }
+    }
+
+    decipherKeystore(){
+        if(!this.state.input || this.state.input.length <= 0){
+            return false;
+        }
+        this.setState({deciphering: true});
+        try {
+            const pk = crypto.getPrivateKeyFromKeyStore(this.state.input, this.state.passphrase);
+            const address = crypto.getAddressFromPrivateKey(pk, 'sand');
+            dispatchAction(getAccount(address));
+            this.setState({walletUnlocked: true, walletPrivateKey: pk, openedModal: '', deciphering: false});
+        } catch(error){
+            this.setState({deciphering: false});
+            toast.warn('Unable to decipher your keystore file, please check passphrase');
         }
     }
 
@@ -170,117 +210,256 @@ class WalletShow extends Component<Props, State> {
     }
 
     renderWalletUnlocked(){
-        console.log(this.state.accountInfos);
+        if(!this.state.accountInfos){
+            return null;
+        }
+
+        let coins = [];
+        if(this.state.accountInfos.coins.length > 0) {
+            JSON.parse(this.state.accountInfos.coins).map((elem, index) => {
+                return coins.push(`${elem.amount} ${elem.denom}`);
+            });
+        }
         return (
             <React.Fragment>
-
+                <section className="block-explorer-section section bg-bottom">
+                    <div className="container">
+                        <div className="row m-bottom-70">
+                            <div className="col-lg-9 col-md-9 col-sm-12">
+                                <div className="table-responsive">
+                                    <table className="table table-striped table-latests table-detail">
+                                        <tbody>
+                                        <tr>
+                                            <td><strong>Address</strong></td>
+                                            <td>{this.state.accountInfos.address || ''}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Public Key</strong></td>
+                                            <td>{this.state.accountInfos.public_key || 'None'}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Account Number</strong></td>
+                                            <td>{this.state.accountInfos.account_number | 0}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Account Sequence</strong></td>
+                                            <td>{this.state.accountInfos.sequence | 0}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Owned Coins</strong></td>
+                                            <td>
+                                                {coins.join(', ')}
+                                            </td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div className="col-lg-3 col-md-3 col-sm-12">
+                                <div className="qr">
+                                    <QRCode value={this.state.accountInfos.address} className="img-fluid d-block mx-auto"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="row">
+                            <div className="col-lg-12">
+                                <div className="table-responsive">
+                                    <TransactionsListComponent transactions={this.state.accountTransactions}/>
+                                    <button className="btn btn-sm btn-primary" onClick={() => {this.setState({openedModal: 'new_transaction'})}}>Emit a new transaction</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
             </React.Fragment>
+        );
+    }
+
+    renderNewTransactionModal(){
+        return (
+            <Modal isOpen={this.state.openedModal === 'new_transaction'} toggle={() => {this.setState({openedModal: ''})}}>
+                <ModalHeader toggle={() => {this.setState({openedModal: ''})}}>Init a new transaction</ModalHeader>
+                <ModalBody>
+                    <div className="row">
+                        <div className="col-lg-12 form-group">
+                            <label>Destination Address</label>
+                            <input type="text" className="form-control" onChange={(ev)=>{this.setState({input: {destination: ev.target.value}})}}/>
+                        </div>
+                    </div>
+                    <div className="row">
+                        <div className="col-lg-6 form-group">
+                            <label>Amount</label>
+                            <input type="number" className="form-control" onChange={(ev)=>{this.setState({input: {amount: ev.target.value}})}}/>
+                        </div>
+                        <div className="col-lg-6 form-group">
+                            <label>Currency</label>
+                            <select className="form-control" onChange={(ev)=>{this.setState({input: {currency: ev.target.value}})}}>
+                                {
+                                    this.state.accountInfos && this.state.accountInfos.coins && JSON.parse(this.state.accountInfos.coins).map((elem, index) => {
+                                        return (<option value={elem.denom} key={index}>{elem.denom}</option>);
+                                    })
+                                }
+                            </select>
+                        </div>
+                    </div>
+                </ModalBody>
+                <ModalFooter>
+                    <Button color="primary" onClick={this.unlockWallet}>Confirm</Button>{' '}
+                    <Button color="secondary" onClick={() => {this.setState({openedModal: ''})}}>Cancel</Button>
+                </ModalFooter>
+            </Modal>
+        );
+    }
+
+    renderMnemonicModal(){
+        return (
+            <Modal isOpen={this.state.openedModal === 'mnemonic'} toggle={() => {this.setState({openedModal: ''})}}>
+                <ModalHeader toggle={() => {this.setState({openedModal: ''})}}>Access by Mnemonic Phrase</ModalHeader>
+                <ModalBody>
+                    <div className="row">
+                        <div className="col-lg-12">
+                            <label>Please enter your mnemonic phrase</label>
+                            <input type="text" className="form-control" onChange={(ev) => {this.setState({input: ev.target.value})}}/>
+                        </div>
+                    </div>
+                </ModalBody>
+                <ModalFooter>
+                    <Button color="success" onClick={this.unlockWallet} disabled={this.state.input === null || String(this.state.input).length <= 0 || !crypto.validateMnemonic(this.state.input)}>Unlock Wallet</Button>{' '}
+                    <Button color="secondary" onClick={() => {this.setState({openedModal: ''})}}>Cancel</Button>
+                </ModalFooter>
+            </Modal>
+        );
+    }
+
+    renderPrivateKeyModal(){
+        return (
+            <Modal isOpen={this.state.openedModal === 'privatekey'} toggle={() => {this.setState({openedModal: ''})}}>
+                <ModalHeader toggle={() => {this.setState({openedModal: ''})}}>Access by Private Key</ModalHeader>
+                <ModalBody>
+                    <div className="row">
+                        <div className="col-lg-12">
+                            <label>Please enter your private key</label>
+                            <input type="text" className="form-control" onChange={(ev) => {this.setState({input: ev.target.value})}}/>
+                        </div>
+                    </div>
+                </ModalBody>
+                <ModalFooter>
+                    <Button color="success" onClick={this.unlockWallet} disabled={this.state.input === null || String(this.state.input).length <= 0}>Unlock Wallet</Button>{' '}
+                    <Button color="secondary" onClick={() => {this.setState({openedModal: ''})}}>Cancel</Button>
+                </ModalFooter>
+            </Modal>
+        );
+    }
+
+    renderKeystoreModal(){
+        return (
+            <Modal isOpen={this.state.openedModal === 'keystore'} toggle={() => {this.setState({openedModal: ''})}}>
+                <ModalHeader toggle={() => {this.setState({openedModal: ''})}}>Access by Keystore File</ModalHeader>
+                <ModalBody>
+                    <div className="row">
+                        <div className="col-lg-12">
+                            <label>Please enter your passphrase if you have one</label>
+                            <input type="text" className="form-control" onChange={(ev) => {this.setState({passphrase: ev.target.value})}}/>
+                        </div>
+                    </div>
+                </ModalBody>
+                <ModalFooter>
+                    <Button color="success" onClick={this.decipherKeystore}>Unlock Wallet</Button>{' '}
+                    <Button color="secondary" onClick={() => {this.setState({openedModal: 'software', input: null})}}>Cancel</Button>
+                </ModalFooter>
+            </Modal>
+        );
+    }
+
+    renderHardwareModal(){
+        return (
+            <Modal isOpen={this.state.openedModal === 'hardware'} toggle={() => {this.setState({openedModal: ''})}}>
+                <ModalHeader toggle={() => {this.setState({openedModal: ''})}}>Access by Hardware</ModalHeader>
+                <ModalBody>
+                    <div className="button-wallet-options">
+                        <div
+                            className={"button-wallet-option " + (this.state.selectedMethod === 'ledger' ? 'selected': '')}
+                            onClick={() => {this.setState({selectedMethod: 'ledger'})}}
+                        >
+                            <div className="img-title-container">
+                                <img src={ledgerButton} className="icon" alt="icon"/>
+                                <div className="title-link-container">
+                                    <span>Ledger</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </ModalBody>
+                <ModalFooter>
+                    <Button color="success" onClick={this.processSelectedMethod} disabled={this.state.selectedMethod === ''}>Continue</Button>{' '}
+                    <Button color="secondary" onClick={() => {this.setState({openedModal: ''})}}>Cancel</Button>
+                </ModalFooter>
+            </Modal>
+        );
+    }
+
+    renderSoftwareModal(){
+        return (
+            <Modal isOpen={this.state.openedModal === 'software'} toggle={() => {this.setState({openedModal: ''})}}>
+                <ModalHeader toggle={() => {this.setState({openedModal: ''})}}>Access by Software</ModalHeader>
+                <ModalBody>
+                    <Alert color="warning" className="text-center">
+                        This is not a recommended way to access your wallet.
+                        Due to the sensitivity of the information involved, these options should only be used by experienced users.
+                    </Alert>
+                    <div className="button-wallet-options">
+                        <div
+                            className={"button-wallet-option " + (this.state.selectedMethod === 'keystore' ? 'selected': '')}
+                            onClick={() => {this.setState({selectedMethod: 'keystore'})}}
+                        >
+                            <div className="img-title-container">
+                                <img src={softwareButton} className="icon" alt="icon"/>
+                                <div className="title-link-container">
+                                    <span>Keystore File</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div
+                            className={"button-wallet-option " + (this.state.selectedMethod === 'mnemonic' ? 'selected': '')}
+                            onClick={() => {this.setState({selectedMethod: 'mnemonic'})}}
+                        >
+                            <div className="img-title-container">
+                                <img src={mnemonicButton} className="icon" alt="icon"/>
+                                <div className="title-link-container">
+                                    <span>Mnemonic Phrase</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div
+                            className={"button-wallet-option " + (this.state.selectedMethod === 'privatekey' ? 'selected': '')}
+                            onClick={() => {this.setState({selectedMethod: 'privatekey'})}}
+                        >
+                            <div className="img-title-container">
+                                <img src={privateKeyButton} className="icon" alt="icon"/>
+                                <div className="title-link-container">
+                                    <span>Private Key</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </ModalBody>
+                <ModalFooter>
+                    <Button color="success" onClick={this.processSelectedMethod} disabled={this.state.selectedMethod === '' || this.state.deciphering}>Continue</Button>
+                    <Button color="secondary" onClick={() => {this.setState({openedModal: ''})}}>Cancel</Button>
+                </ModalFooter>
+            </Modal>
         );
     }
 
     renderModals(){
         return (
             <React.Fragment>
-                <Modal isOpen={this.state.openedModal === 'mnemonic'} toggle={() => {this.setState({openedModal: ''})}}>
-                    <ModalHeader toggle={() => {this.setState({openedModal: ''})}}>Access by Mnemonic Phrase</ModalHeader>
-                    <ModalBody>
-                        <div className="row">
-                            <div className="col-lg-12">
-                                <label>Please enter your mnemonic phrase</label>
-                                <input type="text" className="form-control" onChange={(ev) => {this.setState({input: ev.target.value})}}/>
-                            </div>
-                        </div>
-                    </ModalBody>
-                    <ModalFooter>
-                        <Button color="success" onClick={this.unlockWallet} disabled={this.state.input === null || String(this.state.input).length <= 0 || !crypto.validateMnemonic(this.state.input)}>Unlock Wallet</Button>{' '}
-                        <Button color="secondary" onClick={() => {this.setState({openedModal: ''})}}>Cancel</Button>
-                    </ModalFooter>
-                </Modal>
-                <Modal isOpen={this.state.openedModal === 'privatekey'} toggle={() => {this.setState({openedModal: ''})}}>
-                    <ModalHeader toggle={() => {this.setState({openedModal: ''})}}>Access by Private Key</ModalHeader>
-                    <ModalBody>
-                        <div className="row">
-                            <div className="col-lg-12">
-                                <label>Please enter your private key</label>
-                                <input type="text" className="form-control" onChange={(ev) => {this.setState({input: ev.target.value})}}/>
-                            </div>
-                        </div>
-                    </ModalBody>
-                    <ModalFooter>
-                        <Button color="success" onClick={this.unlockWallet} disabled={this.state.input === null || String(this.state.input).length <= 0}>Unlock Wallet</Button>{' '}
-                        <Button color="secondary" onClick={() => {this.setState({openedModal: ''})}}>Cancel</Button>
-                    </ModalFooter>
-                </Modal>
-                <Modal isOpen={this.state.openedModal === 'hardware'} toggle={() => {this.setState({openedModal: ''})}}>
-                    <ModalHeader toggle={() => {this.setState({openedModal: ''})}}>Access by Hardware</ModalHeader>
-                    <ModalBody>
-                        <div className="button-wallet-options">
-                            <div
-                                className={"button-wallet-option " + (this.state.selectedMethod === 'ledger' ? 'selected': '')}
-                                onClick={() => {this.setState({selectedMethod: 'ledger'})}}
-                            >
-                                <div className="img-title-container">
-                                    <img src={ledgerButton} className="icon" alt="icon"/>
-                                    <div className="title-link-container">
-                                        <span>Ledger</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </ModalBody>
-                    <ModalFooter>
-                        <Button color="success" onClick={this.processSelectedMethod} disabled={this.state.selectedMethod === ''}>Continue</Button>{' '}
-                        <Button color="secondary" onClick={() => {this.setState({openedModal: ''})}}>Cancel</Button>
-                    </ModalFooter>
-                </Modal>
-                <Modal isOpen={this.state.openedModal === 'software'} toggle={() => {this.setState({openedModal: ''})}}>
-                    <ModalHeader toggle={() => {this.setState({openedModal: ''})}}>Access by Software</ModalHeader>
-                    <ModalBody>
-                        <Alert color="warning" className="text-center">
-                            This is not a recommended way to access your wallet.
-                            Due to the sensitivity of the information involved, these options should only be used by experienced users.
-                        </Alert>
-                        <div className="button-wallet-options">
-                            <div
-                                className={"button-wallet-option " + (this.state.selectedMethod === 'keystore' ? 'selected': '')}
-                                onClick={() => {this.setState({selectedMethod: 'keystore'})}}
-                            >
-                                <div className="img-title-container">
-                                    <img src={softwareButton} className="icon" alt="icon"/>
-                                    <div className="title-link-container">
-                                        <span>Keystore File</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div
-                                className={"button-wallet-option " + (this.state.selectedMethod === 'mnemonic' ? 'selected': '')}
-                                onClick={() => {this.setState({selectedMethod: 'mnemonic'})}}
-                            >
-                                <div className="img-title-container">
-                                    <img src={mnemonicButton} className="icon" alt="icon"/>
-                                    <div className="title-link-container">
-                                        <span>Mnemonic Phrase</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div
-                                className={"button-wallet-option " + (this.state.selectedMethod === 'privatekey' ? 'selected': '')}
-                                onClick={() => {this.setState({selectedMethod: 'privatekey'})}}
-                            >
-                                <div className="img-title-container">
-                                    <img src={privateKeyButton} className="icon" alt="icon"/>
-                                    <div className="title-link-container">
-                                        <span>Private Key</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </ModalBody>
-                    <ModalFooter>
-                        <Button color="success" onClick={this.processSelectedMethod} disabled={this.state.selectedMethod === '' || this.state.deciphering}>Continue</Button>
-                        <Button color="secondary" onClick={() => {this.setState({openedModal: ''})}}>Cancel</Button>
-                    </ModalFooter>
-                </Modal>
+                {this.renderMnemonicModal()}
+                {this.renderPrivateKeyModal()}
+                {this.renderKeystoreModal()}
+                {this.renderHardwareModal()}
+                {this.renderSoftwareModal()}
+                {this.renderNewTransactionModal()}
             </React.Fragment>
         );
     }
