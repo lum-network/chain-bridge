@@ -13,18 +13,26 @@ class TransactionController extends Controller
 
     public function index(Request $req)
     {
-        $transactions = Transaction::latest()->take(50)->get();
+        try {
+            $transactions = Transaction::latest()->take(50)->get();
 
-        return parent::apiAnswer(200, $transactions, "");
+            return parent::apiAnswer(200, $transactions, "");
+        } catch (\Exception $e){
+            return parent::apiAnswer(($e->getCode() != NULL) ? $e->getCode() : 500, ['error' => $e->getMessage()]);
+        }
     }
 
     public function show(Request $req, $hash)
     {
-        $transaction = Transaction::where(['hash'=>strtoupper($hash)]);
-        if(!$transaction->exists()){
-            return parent::apiAnswer(404, [], "No transaction with that hash");
-        }
+        try {
+            $transaction = Transaction::where(['hash'=>strtoupper($hash)]);
+            if(!$transaction->exists()){
+                return parent::apiAnswer(404, [], "No transaction with that hash");
+            }
 
-        return parent::apiAnswer(200, $transaction->first(), "");
+            return parent::apiAnswer(200, $transaction->first(), "");
+        } catch (\Exception $e){
+            return parent::apiAnswer(($e->getCode() != NULL) ? $e->getCode() : 500, ['error' => $e->getMessage()]);
+        }
     }
 }

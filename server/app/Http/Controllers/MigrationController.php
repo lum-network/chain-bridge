@@ -25,24 +25,24 @@ class MigrationController extends Controller
             ]);
 
             if(SatMigration::where(['from_address'=>$req->input('address'), 'state'=>'WAITING'])->exists()){
-                return parent::apiAnswer(400, [], "Already a pending migration request");
+                throw new \Exception('That account already have a pending migration request', 400);
             }
 
             $eth = new Ethereum(false);
             $verify = $eth->personal_ecRecover($req->input('msg'), $req->input('sig'));
             if($verify != $req->input('address')){
-                return parent::apiAnswer(403, [], "We weren't able to verify your message. Please try again the whole process");
+                throw new \Exception("We weren't able to verify your message. Please try again", 403);
             }
 
             $msg = json_decode(hex2bin($req->input('msg')), true);
             $toAddress = $msg['destination'];
             $balance = $eth->getSATBalanceForAddress($verify);
             if($balance['status'] != 1 || $balance['message'] != 'OK'){
-                return parent::apiAnswer(500, [], "Can't fetch account balance");
+                throw new \Exception('Error while trying to fetch the account balance', 500);
             }
 
             if($balance['result'] <= 0){
-                return parent::apiAnswer(400, [], "You don't have any Sandblock SAT");
+                throw new \Exception("You don't have any Sandblock SAT", 400);
             }
 
             $converter = new Converter();
@@ -60,7 +60,7 @@ class MigrationController extends Controller
 
             return parent::apiAnswer(200, $migration, "");
         } catch(\Exception $e){
-            return parent::apiAnswer(500, ["error"=>$e->getMessage()], "");
+            return parent::apiAnswer(($e->getCode() != NULL) ? $e->getCode() : 500, ['error' => $e->getMessage()]);
         }
     }
 
@@ -70,13 +70,13 @@ class MigrationController extends Controller
         {
             $migration = SatMigration::where(['reference'=>$reference]);
             if(!$migration->exists()){
-                return parent::apiAnswer(404, [], "Given migration does not exists");
+                throw new \Exception('Given migration does not exists', 404);
             }
 
             $migration = $migration->first();
             return parent::apiAnswer(200, $migration, "");
         } catch (\Exception $e){
-            return parent::apiAnswer(500, ["error"=>$e->getMessage()], "");
+            return parent::apiAnswer(($e->getCode() != NULL) ? $e->getCode() : 500, ['error' => $e->getMessage()]);
         }
     }
 }
