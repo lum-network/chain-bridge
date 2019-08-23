@@ -28,11 +28,11 @@ const reducer = (state = initialState, action) => {
 
         case actionTypes.VALIDATORS_GET_LATEST_SUCCESS:
         case actionTypes.VALIDATORS_GET_SUCCESS:
-            const block = action.payload.data || {};
+            const result = action.payload.data.result || {};
             return {
                 ...state,
                 loading: false,
-                data: block,
+                data: result,
                 error: null
             }
 

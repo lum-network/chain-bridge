@@ -49,7 +49,7 @@ class WalletShow extends Component<Props, State> {
     constructor(props: Props){
         super(props);
         this.state = {
-            walletUnlocked: true,
+            walletUnlocked: false,
             walletPrivateKey: '12af61a94691d459c2bc1779f66a2e45911f282e1395c7ca07a08a73ff889265',
             accountInfos: null,
             accountTransactions: [],
