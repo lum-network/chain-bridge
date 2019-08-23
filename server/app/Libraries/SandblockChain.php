@@ -38,6 +38,6 @@ class SandblockChain
 
     public function getAccount($address){
         $res = $this->client->get('cosmos/auth/accounts/'.$address);
-        return json_decode($res->getBody(), true);
+        return json_decode($res->getBody(), true)['result'];
     }
 }
