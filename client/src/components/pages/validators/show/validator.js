@@ -3,6 +3,7 @@ import {connect} from "react-redux";
 import {getValidator} from "../../../../store/actions/validators";
 import {dispatchAction} from "../../../../utils/redux";
 import QRCode from "qrcode.react";
+import {NavLink} from "react-router-dom";
 
 type Props = {
     validator: {},
@@ -50,6 +51,10 @@ class ValidatorPage extends React.Component<Props, State> {
                     <table className="table table-striped table-latests table-detail">
                         <tbody>
                             <tr>
+                                <td><strong>Identity</strong></td>
+                                <td>{this.state.validator.description.identity || this.state.validator.description.moniker}</td>
+                            </tr>
+                            <tr>
                                 <td><strong>Address</strong></td>
                                 <td>{this.state.validator.operator_address || this.props.match.params.address}</td>
                             </tr>
@@ -89,6 +94,34 @@ class ValidatorPage extends React.Component<Props, State> {
         );
     }
 
+    renderDelegations(){
+        if(this.props.loading || this.state.validator === null){
+            return null;
+        }
+
+        return (
+            <table className="table table-striped table-latests">
+                <thead>
+                <tr>
+                    <td className="text-center">Address</td>
+                    <td className="text-center">Amount</td>
+                </tr>
+                </thead>
+                <tbody>
+                {this.state.validator !== null && this.state.validator.delegations.map((elem, index)=> {
+                    const url = `/account/${elem.delegator_address}`;
+                    return (
+                        <tr key={index}>
+                            <td className="text-center"><NavLink to={url} >{elem.delegator_address}</NavLink></td>
+                            <td className="text-center">{elem.balance} SBC</td>
+                        </tr>
+                    )
+                })}
+                </tbody>
+            </table>
+        );
+    }
+
     render() {
         return (
             <React.Fragment>
@@ -109,6 +142,14 @@ class ValidatorPage extends React.Component<Props, State> {
                             </div>
                             {this.renderValidator()}
                         </div>
+                        <div className="row">
+                            <div className="col-lg-12">
+                                <div className="center-heading">
+                                    <h2 className="section-title">Delegations</h2>
+                                </div>
+                            </div>
+                        </div>
+                        {this.renderDelegations()}
                     </div>
                 </section>
             </React.Fragment>

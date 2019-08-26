@@ -61,7 +61,7 @@ class ValidatorsPage extends React.Component<Props, State> {
                         const url = `/validator/${elem.operator_address}`;
                         return (
                             <tr key={index}>
-                                <td className="text-center">{elem.description.moniker}</td>
+                                <td className="text-center">{elem.description.identity || elem.description.moniker}</td>
                                 <td className="text-center">{Number(elem.delegator_shares).toFixed(0)}</td>
                                 <td className="text-center">{Number(elem.commission.commission_rates.rate).toPrecision(2)} %</td>
                                 <td className="text-center">{elem.tokens} SBC</td>

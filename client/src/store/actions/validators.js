@@ -7,17 +7,17 @@ import {
     VALIDATORS_GET_FAILURE,
     VALIDATOR_GET_START,
     VALIDATOR_GET_FAILURE,
-    VALIDATOR_GET_SUCCESS
+    VALIDATOR_GET_SUCCESS,
 } from "./actionTypes";
 
 export const getValidators = () => {
     return {
         types: [VALIDATORS_GET_LATEST_START, VALIDATORS_GET_LATEST_SUCCESS, VALIDATORS_GET_LATEST_FAILURE],
         payload: {
-            client: 'cosmos',
+            client: 'api',
             request: {
                 method: `GET`,
-                url: `/staking/validators`
+                url: `/validators`
             }
         }
     }
@@ -27,10 +27,10 @@ export const getValidator = (address: string) => {
     return {
         types: [VALIDATOR_GET_START, VALIDATOR_GET_SUCCESS, VALIDATOR_GET_FAILURE],
         payload: {
-            client: 'cosmos',
+            client: 'api',
             request: {
                 method: `GET`,
-                url: `/staking/validators/${address}`
+                url: `/validators/${address}`
             }
         }
     }
