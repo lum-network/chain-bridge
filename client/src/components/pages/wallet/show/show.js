@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import {connect} from "react-redux";
-import { crypto } from 'sandblock-chain-sdk';
+import sdk from 'sandblock-chain-sdk-js';
 import {
     Button,
     Modal,
@@ -75,7 +75,7 @@ class WalletShow extends Component<Props, State> {
 
     componentDidMount(): void {
         //DEBUG STUFF TO REMOVE
-        this.retrieveWallet();
+        //this.retrieveWallet();
     }
 
     async componentWillReceiveProps(nextProps: Readonly<Props>, nextContext: any): void {
@@ -90,7 +90,7 @@ class WalletShow extends Component<Props, State> {
     }
 
     retrieveWallet(){
-        const address = crypto.getAddressFromPrivateKey(this.state.walletPrivateKey, 'sand');
+        const address = sdk.utils.getAddressFromPrivateKey(new Buffer(this.state.walletPrivateKey), 'sand').toString();
         dispatchAction(getAccount(address));
     }
 
@@ -118,13 +118,16 @@ class WalletShow extends Component<Props, State> {
 
     unlockWallet(value = null){
         if(this.state.selectedMethod === 'mnemonic' && String(this.state.input).length > 0){
-            if(!crypto.validateMnemonic(this.state.input)){
+            if(!sdk.utils.validateMnemonic(this.state.input)){
                 return false;
             }
             try {
-                const pk = crypto.getPrivateKeyFromMnemonic(this.state.input);
-                const address = crypto.getAddressFromPrivateKey(pk, 'sand');
-                this.setState({walletUnlocked: true, walletPrivateKey: pk, openedModal: ''});
+                const mnemonic = sdk.utils.generateMnemonic();
+                const masterKey = sdk.utils.deriveMasterKeySync(this.state.input);
+                const keypair = sdk.utils.deriveKeypair(masterKey);
+
+                const address = sdk.utils.getAddressFromPrivateKey(keypair.privateKey, 'sand').toString();
+                this.setState({walletUnlocked: true, walletPrivateKey: keypair.privateKey.toString('hex'), openedModal: ''});
                 dispatchAction(getAccount(address));
             } catch(error) {
                 console.warn(error);
@@ -132,10 +135,10 @@ class WalletShow extends Component<Props, State> {
             }
         } else if(this.state.selectedMethod === "privatekey" && String(this.state.input).length > 0){
             try {
-                 const pk = crypto.getPublicKeyFromPrivateKey(this.state.input);
-                const address = crypto.getAddressFromPublicKey(pk, 'sand');
+                 const pk = sdk.utils.getPublicKeyFromPrivateKey(this.state.input);
+                const address = sdk.utils.getAddressFromPublicKey(pk, 'sand');
                 this.setState({walletUnlocked: true, walletPrivateKey: this.state.input, openedModal: ''});
-                dispatchAction(getAccount(address));
+                dispatchAction(getAccount(address.toString()));
             } catch(error){
                 console.warn(error);
                 toast.warn('Unable to access your wallet using the private key');
@@ -166,10 +169,10 @@ class WalletShow extends Component<Props, State> {
         }
         this.setState({deciphering: true});
         try {
-            const pk = crypto.getPrivateKeyFromKeyStore(this.state.input, this.state.passphrase);
-            const address = crypto.getAddressFromPrivateKey(pk, 'sand');
-            dispatchAction(getAccount(address));
-            this.setState({walletUnlocked: true, walletPrivateKey: pk, openedModal: '', deciphering: false});
+            const pk = sdk.utils.getPrivateKeyFromKeyStore(this.state.input, this.state.passphrase);
+            const address = sdk.utils.getAddressFromPrivateKey(pk, 'sand');
+            dispatchAction(getAccount(address.toString()));
+            this.setState({walletUnlocked: true, walletPrivateKey: pk.toString('hex'), openedModal: '', deciphering: false});
         } catch(error){
             this.setState({deciphering: false});
             toast.warn('Unable to decipher your keystore file, please check passphrase');
@@ -276,6 +279,10 @@ class WalletShow extends Component<Props, State> {
     }
 
     renderNewTransactionModal(){
+        if(!this.state.walletUnlocked){
+            return null;
+        }
+
         return (
             <Modal isOpen={this.state.openedModal === 'new_transaction'} toggle={() => {this.setState({openedModal: ''})}}>
                 <ModalHeader toggle={() => {this.setState({openedModal: ''})}}>Init a new transaction</ModalHeader>
@@ -295,7 +302,7 @@ class WalletShow extends Component<Props, State> {
                             <label>Currency</label>
                             <select className="form-control" onChange={(ev)=>{this.setState({input: {currency: ev.target.value}})}}>
                                 {
-                                    this.state.accountInfos && this.state.accountInfos.coins && JSON.parse(this.state.accountInfos.coins).map((elem, index) => {
+                                    this.state.accountInfos && this.state.accountInfos.coins && this.state.accountInfos.coins.length > 0 && JSON.parse(this.state.accountInfos.coins).map((elem, index) => {
                                         return (<option value={elem.denom} key={index}>{elem.denom}</option>);
                                     })
                                 }
@@ -324,7 +331,7 @@ class WalletShow extends Component<Props, State> {
                     </div>
                 </ModalBody>
                 <ModalFooter>
-                    <Button color="success" onClick={this.unlockWallet} disabled={this.state.input === null || String(this.state.input).length <= 0 || !crypto.validateMnemonic(this.state.input)}>Unlock Wallet</Button>{' '}
+                    <Button color="success" onClick={this.unlockWallet} disabled={this.state.input === null || String(this.state.input).length <= 0 || !sdk.utils.validateMnemonic(this.state.input)}>Unlock Wallet</Button>{' '}
                     <Button color="secondary" onClick={() => {this.setState({openedModal: ''})}}>Cancel</Button>
                 </ModalFooter>
             </Modal>

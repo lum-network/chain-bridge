@@ -956,7 +956,7 @@ header
   -moz-transition: all 0.3s ease 0s;
   -o-transition: all 0.3s ease 0s;
   transition: all 0.3s ease 0s;
-  height: 5vh !important;
+  width: 148px !important;
 }
 
 .header-area .main-nav .dark-logo {
@@ -2537,7 +2537,7 @@ block explorer
 --------------------------------------------- 
 */
 .block-explorer-wrapper {
-  min-height: 360px;
+  min-height: 250px;
   position: relative;
 }
 
@@ -2590,7 +2590,7 @@ block explorer
   z-index: 5;
   -webkit-transform: translateY(-50%);
   transform: translateY(-50%);
-  top: 50%;
+  top: 65%;
 }
 
 .block-explorer-wrapper .block-explorer h1 {

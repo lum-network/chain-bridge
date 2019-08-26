@@ -19,7 +19,8 @@ class Layout extends Component {
                                         <li><NavLink to="/blocks">BLOCKS</NavLink></li>
                                         <li><NavLink to="/transactions">TRANSACTIONS</NavLink></li>
                                         <li><NavLink to="/validators">VALIDATORS</NavLink></li>
-                                        <li><NavLink to="/about">ABOUT</NavLink></li>
+                                        <li><NavLink to="/wallet">WALLET</NavLink></li>
+                                        <li><a href="https://sandblock.io" target="_blank">ABOUT</a></li>
                                     </ul>
                                     <a className='menu-trigger'>
                                         <span>Menu</span>

@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
 import {connect} from "react-redux";
-import { crypto, utils } from 'sandblock-chain-sdk';
 import { save } from 'save-file';
 import { toast } from 'react-toastify';
 import {dispatchAction} from "../../../utils/redux";
 import {fetchMigration, submitMigration} from "../../../store/actions/migration";
 import {NavLink} from "react-router-dom";
+import sdk from 'sandblock-chain-sdk-js';
 
 type Props = {
     migration: {},
@@ -80,10 +80,10 @@ class MigrationPortalPage extends Component<Props, State>{
 
         this.setState({loading: true});
 
-        const privateKey = crypto.generatePrivateKey();
-        const keyStore = crypto.generateKeyStore(privateKey, this.state.passphrase);
-        const publicKey = crypto.getPublicKeyFromPrivateKey(privateKey);
-        const address = crypto.getAddressFromPublicKey(publicKey);
+        const privateKey = sdk.utils.generatePrivateKey();
+        const keyStore = sdk.utils.generateKeyStore(privateKey, this.state.passphrase);
+        const publicKey = sdk.utils.getPublicKeyFromPrivateKey(privateKey);
+        const address = sdk.utils.getAddressFromPublicKey(publicKey).toString();
 
         this.setState({
             keyStore,
@@ -91,7 +91,7 @@ class MigrationPortalPage extends Component<Props, State>{
             walletGenerated: true,
             passphrase: '',
             passphraseConfirm: '',
-            sendPayload: utils.str2hexstring(JSON.stringify({destination: address}))
+            sendPayload: new Buffer(JSON.stringify({destination: address})).toString('hex')
         });
     }
 

@@ -12,6 +12,8 @@ import TransactionShowPage from './components/pages/transactions/show/transactio
 import TransactionsListPage from './components/pages/transactions/list/transactions';
 import SearchPage from './components/pages/core/search';
 import MigrationPortalPage from './components/pages/core/migration';
+import WalletHomePage from './components/pages/wallet/home/home';
+import WalletCreatePage from './components/pages/wallet/create/create';
 import WalletShowPage from './components/pages/wallet/show/show';
 import ValidatorsPage from "./components/pages/validators/list/validators";
 import ValidatorPage from "./components/pages/validators/show/validator";
@@ -57,7 +59,9 @@ class App extends Component {
                     <Route path="/validators" exact component={ValidatorsPage}/>
                     <Route path="/validator/:address" exact component={ValidatorPage}/>
                     <Route path="/migration" exact component={MigrationPortalPage}/>
-                    <Route path="/wallet" exact component={WalletShowPage}/>
+                    <Route path="/wallet" exact component={WalletHomePage}/>
+                    <Route path="/wallet/show" exact component={WalletShowPage}/>
+                    <Route path="/wallet/create" exact component={WalletCreatePage}/>
                     <Redirect to={'/home'}/>
                     {/*<Route component={NotFound}/>*/}
                 </Switch>
