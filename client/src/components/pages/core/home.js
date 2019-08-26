@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import {dispatchAction} from "../../../utils/redux";
 import {getLatestBlock} from "../../../store/actions/blocks";
-import {getValidatorsLatest} from "../../../store/actions/validators";
+import {getValidators} from "../../../store/actions/validators";
 import { connect } from 'react-redux';
 
 import moment from 'moment';
@@ -30,7 +30,7 @@ class HomePage extends Component<Props, State> {
 
     componentDidMount(): void {
         dispatchAction(getLatestBlock());
-        dispatchAction(getValidatorsLatest());
+        dispatchAction(getValidators());
     }
 
     componentWillReceiveProps(nextProps: Readonly<P>, nextContext: any): void {
@@ -38,7 +38,7 @@ class HomePage extends Component<Props, State> {
             this.setState({latestBlock: nextProps.latestBlock});
         }
         if(nextProps.latestValidators !== null){
-            this.setState({latestValidators: nextProps.latestValidators});
+            this.setState({latestValidators: nextProps.latestValidators.result});
         }
     }
 
@@ -131,7 +131,7 @@ class HomePage extends Component<Props, State> {
                                         <h5>Active Validators</h5>
                                     </div>
                                     <div className="text">
-                                        <span>{this.state.latestValidators !== null && this.state.latestValidators.validators.length}</span>
+                                        <span>{this.state.latestValidators !== null && this.state.latestValidators.length}</span>
                                     </div>
                                 </div>
                             </div>
@@ -142,7 +142,7 @@ class HomePage extends Component<Props, State> {
                                         <h5>Total Validators</h5>
                                     </div>
                                     <div className="text">
-                                        <span>{this.state.latestValidators !== null && this.state.latestValidators.validators.length}</span>
+                                        <span>{this.state.latestValidators !== null && this.state.latestValidators.length}</span>
                                     </div>
                                 </div>
                             </div>
@@ -165,5 +165,5 @@ const matchStateToProps = state => {
 
 export default connect(
     matchStateToProps,
-    { getLatestBlock, getValidatorsLatest }
+    { getLatestBlock, getValidators }
 )(HomePage);

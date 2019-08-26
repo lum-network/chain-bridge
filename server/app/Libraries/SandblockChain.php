@@ -40,4 +40,14 @@ class SandblockChain
         $res = $this->client->get('cosmos/auth/accounts/'.$address);
         return json_decode($res->getBody(), true)['result'];
     }
+
+    public function getValidators(){
+        $res = $this->client->get('cosmos/staking/validators');
+        return json_decode($res->getBody(), true)['result'];
+    }
+
+    public function getValidator($address){
+        $res = $this->client->get('cosmos/staking/validators/'.$address);
+        return json_decode($res->getBody(), true)['result'];
+    }
 }

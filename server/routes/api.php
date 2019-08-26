@@ -37,4 +37,9 @@ Route::prefix('v1')->group(function(){
        Route::post('/', 'MigrationController@store');
        Route::get('/{reference}', 'MigrationController@show');
    });
+
+   Route::prefix('validators')->group(function(){
+       Route::get('/', 'ValidatorController@index');
+       Route::get('/{address}', 'ValidatorController@show');
+   });
 });

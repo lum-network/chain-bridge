@@ -13,6 +13,8 @@ import TransactionsListPage from './components/pages/transactions/list/transacti
 import SearchPage from './components/pages/core/search';
 import MigrationPortalPage from './components/pages/core/migration';
 import WalletShowPage from './components/pages/wallet/show/show';
+import ValidatorsPage from "./components/pages/validators/list/validators";
+import ValidatorPage from "./components/pages/validators/show/validator";
 
 import {withRouter} from "react-router";
 
@@ -52,6 +54,8 @@ class App extends Component {
                     <Route path="/transactions" exact component={TransactionsListPage}/>
                     <Route path="/transaction/:hash" exact component={TransactionShowPage}/>
                     <Route path="/search/:data" exact component={SearchPage}/>
+                    <Route path="/validators" exact component={ValidatorsPage}/>
+                    <Route path="/validator/:address" exact component={ValidatorPage}/>
                     <Route path="/migration" exact component={MigrationPortalPage}/>
                     <Route path="/wallet" exact component={WalletShowPage}/>
                     <Redirect to={'/home'}/>

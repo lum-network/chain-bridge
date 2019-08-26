@@ -8,6 +8,7 @@ const initialState = {
 
 const reducer = (state = initialState, action) => {
     switch(action.type){
+        case actionTypes.VALIDATOR_GET_START:
         case actionTypes.VALIDATORS_GET_LATEST_START:
         case actionTypes.VALIDATORS_GET_START:
             return {
@@ -17,6 +18,7 @@ const reducer = (state = initialState, action) => {
                 data: null
             };
 
+        case actionTypes.VALIDATOR_GET_FAILURE:
         case actionTypes.VALIDATORS_GET_LATEST_FAILURE:
         case actionTypes.VALIDATORS_GET_FAILURE:
             return {
@@ -26,9 +28,10 @@ const reducer = (state = initialState, action) => {
                 data: null
             };
 
+        case actionTypes.VALIDATOR_GET_SUCCESS:
         case actionTypes.VALIDATORS_GET_LATEST_SUCCESS:
         case actionTypes.VALIDATORS_GET_SUCCESS:
-            const result = action.payload.data.result || {};
+            const result = action.payload.data || {};
             return {
                 ...state,
                 loading: false,
