@@ -24,6 +24,7 @@ class ValidatorController extends Controller
         try {
             $sbc = new SandblockChain();
             $validator = $sbc->getValidator(strtolower($address));
+            $validator['delegations'] = $sbc->getValidatorDelegations($address);
 
             return parent::apiAnswer(200, $validator);
         } catch(\Exception $e) {
