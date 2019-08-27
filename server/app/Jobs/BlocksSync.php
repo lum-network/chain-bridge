@@ -11,6 +11,8 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 
+use Carbon\Carbon;
+
 class BlocksSync implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
@@ -37,11 +39,12 @@ class BlocksSync implements ShouldQueue
         $blocks = array_reverse($sbc->getBlocks($this->minHeight, $this->maxHeight)['block_metas']);
 
         foreach($blocks as $block){
+            $dispatchedAt = Carbon::createFromFormat('Y-m-d H:i:s', $block['header']['time'], 'UTC')->setTimezone('Europe/Paris');
             $datas = [
                 "chain_id"          =>  $block['header']['chain_id'],
                 "hash"              =>  $block['block_id']['hash'],
                 "height"            =>  $block['header']['height'],
-                "dispatched_at"     =>  $block['header']['time'],
+                "dispatched_at"     =>  $dispatchedAt,
                 "num_txs"           =>  $block['header']['num_txs'],
                 "total_txs"         =>  $block['header']['total_txs'],
                 "proposer_address"  =>  $block['header']['proposer_address'],
