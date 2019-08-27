@@ -28,7 +28,7 @@ class BlocksPage extends Component<Props, State> {
         dispatchAction(getBlocks());
     }
 
-    async componentWillReceiveProps(nextProps: Readonly<P>, nextContext: any): void {
+    async UNSAFE_componentWillReceiveProps(nextProps: Readonly<P>, nextContext: any): void {
         if(nextProps.blocks !== null){
             await this.setState({
                 blocks: nextProps.blocks
@@ -44,38 +44,40 @@ class BlocksPage extends Component<Props, State> {
     }
 
     renderBlocks(){
+        if(this.state.blocks === undefined){
+            return null;
+        }
+
         return (
-            <table className="table table-striped table-latests">
+            <table className="table table-no-border table-latests">
                 <thead>
-                <tr>
-                    <td className="text-center">Height</td>
-                    <td className="text-center">Time</td>
-                    <td className="text-center">Age</td>
-                    <td className="text-center">Transactions</td>
-                    <td className="text-center">Proposer</td>
-                    <td className="text-center">Fees</td>
-                    <td className="text-center"></td>
-                </tr>
+                    <tr>
+                        <th className="text-center">Height</th>
+                        <th className="text-center">Time</th>
+                        <th className="text-center">Age</th>
+                        <th className="text-center">Transactions</th>
+                        <th className="text-center">Proposer</th>
+                        <th className="text-center">Fees</th>
+                    </tr>
                 </thead>
                 <tbody>
-                {this.state.blocks !== null && this.state.blocks.map((elem, index)=>{
-                    const url = `/block/${elem.height}`;
-                    return (
-                        <tr key={index}>
-                            <td className="text-center">{elem.height}</td>
-                            <td className="text-center">{moment(elem.dispatched_at).format('MM-DD-YYYY HH:mm:ss')}</td>
-                            <td className="text-center">{moment(elem.dispatched_at).fromNow()}</td>
-                            <td className="text-center">{elem.num_txs}</td>
-                            <td className="text-center">{elem.proposer_address || ''}</td>
-                            <td className="text-center">0</td>
-                            <td className="text-center">
-                                <NavLink className="btn btn-xsm btn-primary" to={url} >
-                                    <i className="fa fa-eye text-white"/>
-                                </NavLink>
-                            </td>
-                        </tr>
-                    )
-                })}
+                    {this.state.blocks !== null && this.state.blocks.map((elem, index)=>{
+                        const url = `/block/${elem.height}`;
+                        return (
+                            <tr key={index}>
+                                <td className="text-center">
+                                    <NavLink to={url} >
+                                        {elem.height}
+                                    </NavLink>
+                                </td>
+                                <td className="text-center">{moment(elem.dispatched_at).format('MM-DD-YYYY HH:mm:ss')}</td>
+                                <td className="text-center">{moment(elem.dispatched_at).fromNow()}</td>
+                                <td className="text-center">{elem.num_txs}</td>
+                                <td className="text-center">{elem.proposer_address || ''}</td>
+                                <td className="text-center">0</td>
+                            </tr>
+                        )
+                    })}
                 </tbody>
             </table>
         );
@@ -108,8 +110,12 @@ class BlocksPage extends Component<Props, State> {
                     <div className="container">
                         <div className="row">
                             <div className="col-lg-12">
-                                <div className="table-responsive">
-                                    {this.renderBlocks()}
+                                <div className="card">
+                                    <div className="card-body">
+                                        <div className="table-responsive">
+                                            {this.renderBlocks()}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>

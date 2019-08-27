@@ -78,7 +78,7 @@ class WalletShow extends Component<Props, State> {
         //this.retrieveWallet();
     }
 
-    async componentWillReceiveProps(nextProps: Readonly<Props>, nextContext: any): void {
+    async UNSAFE_componentWillReceiveProps(nextProps: Readonly<Props>, nextContext: any): void {
         let newTxs = [];
         if(nextProps.account !== null && nextProps.account.transactions_sent !== undefined && nextProps.account.transactions_received !== undefined){
             newTxs = [...nextProps.account.transactions_sent, ...nextProps.account.transactions_received];
@@ -113,6 +113,8 @@ class WalletShow extends Component<Props, State> {
             this.setState({openedModal: 'privatekey'});
         } else if(this.state.selectedMethod === "keystore"){
             this.fileUploadHandler.click();
+        } else if(this.state.selectedMethod === 'ledger'){
+
         }
     }
 
@@ -122,7 +124,6 @@ class WalletShow extends Component<Props, State> {
                 return false;
             }
             try {
-                const mnemonic = sdk.utils.generateMnemonic();
                 const masterKey = sdk.utils.deriveMasterKeySync(this.state.input);
                 const keypair = sdk.utils.deriveKeypair(masterKey);
 

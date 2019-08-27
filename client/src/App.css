@@ -10,6 +10,41 @@
     border-radius: 0.12rem;
 }
 
+/* Global classes */
+@media (min-width: 1200px) {
+    .container {
+        max-width: 1240px !important;
+    }
+}
+
+.card {
+    box-shadow: 0 3px 6px 0 rgba(0,0,0,.16) !important;
+}
+
+.copy-to-clipboard {
+    cursor: pointer;
+}
+
+.open-qrcode {
+    cursor: pointer;
+}
+
+.table-no-top-border {
+    border-top-style: hidden !important;
+}
+
+.table-no-border {
+    border: none !important;
+}
+
+.block-explorer-section .table-latests td {
+    border: none !important;
+}
+
+.block-explorer-section .table-latests th {
+    border: none !important;
+}
+
 /* Wallet Show classes */
 .button-wallet-action {
     user-select: none;
@@ -171,4 +206,17 @@
     margin-left: 5px;
     vertical-align: middle;
     width: 20px;
+}
+
+/* Validator */
+.validator-identity-title {
+    padding-right: 30px;
+    font-weight: bold;
+}
+
+/* Account */
+.account-details-header {
+    background-color: #747FEB !important;
+    color: white;
+    min-height: 90px;
 }

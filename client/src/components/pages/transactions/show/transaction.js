@@ -24,7 +24,7 @@ class TransactionShowPage extends Component<Props, State> {
         dispatchAction(getTransaction(this.props.match.params.hash));
     }
 
-    componentWillReceiveProps(nextProps: Readonly<P>, nextContext: any): void {
+    UNSAFE_componentWillReceiveProps(nextProps: Readonly<P>, nextContext: any): void {
         if(nextProps.transaction !== null){
             this.setState({transaction: nextProps.transaction});
         }
@@ -36,18 +36,18 @@ class TransactionShowPage extends Component<Props, State> {
         }
 
         return (
-            <table className="table table-striped table-latests table-detail">
+            <table className="table table-latests table-detail table-no-border">
                 <tbody>
                     <tr>
-                        <td><strong>Block Height</strong></td>
-                        <td>{this.state.transaction.height}</td>
+                        <td className="validator-identity-title"><strong>Block Height</strong></td>
+                        <td><NavLink to={`/block/${this.state.transaction.height}`}>{this.state.transaction.height}</NavLink></td>
                     </tr>
                     <tr>
-                        <td><strong>Transaction Hash</strong></td>
+                        <td className="validator-identity-title"><strong>Transaction Hash</strong></td>
                         <td>{this.state.transaction.hash}</td>
                     </tr>
                     <tr>
-                        <td><strong>Status</strong></td>
+                        <td className="validator-identity-title"><strong>Status</strong></td>
                         <td>
                             {
                                 (this.state.transaction.success)
@@ -57,39 +57,61 @@ class TransactionShowPage extends Component<Props, State> {
                         </td>
                     </tr>
                     <tr>
-                        <td><strong>Log Output</strong></td>
+                        <td className="validator-identity-title"><strong>Log Output</strong></td>
                         <td>{this.state.transaction.log}</td>
                     </tr>
                     <tr>
-                        <td><strong>Timestamp</strong></td>
+                        <td className="validator-identity-title"><strong>Timestamp</strong></td>
                         <td>{this.state.transaction.dispatched_at}</td>
                     </tr>
                     <tr>
-                        <td><strong>From</strong></td>
-                        <td><NavLink to={`/account/${this.state.transaction.from_address}`}>{this.state.transaction.from_address}</NavLink></td>
-                    </tr>
-                    <tr>
-                        <td><strong>To</strong></td>
-                        <td><NavLink to={`/account/${this.state.transaction.to_address}`}>{this.state.transaction.to_address}</NavLink></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Action</strong></td>
+                        <td className="validator-identity-title"><strong>Action</strong></td>
                         <td>{this.state.transaction.action}</td>
                     </tr>
                     <tr>
-                        <td><strong>Value</strong></td>
-                        <td>{this.state.transaction.amount} {this.state.transaction.name}</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Gas Wanted</strong></td>
+                        <td className="validator-identity-title"><strong>Gas Wanted</strong></td>
                         <td>{this.state.transaction.gas_wanted}</td>
                     </tr>
                     <tr>
-                        <td><strong>Gas Used</strong></td>
+                        <td className="validator-identity-title"><strong>Gas Used</strong></td>
                         <td>{this.state.transaction.gas_used}</td>
                     </tr>
                 </tbody>
             </table>
+        );
+    }
+
+    renderMsgs(){
+        if(this.state.transaction === null || this.props.loading){
+            return null;
+        }
+
+        return (
+            <div className="row">
+                <div className="col-12">
+                    <div className="card">
+                        <div className="card-body">
+                            <h5 className="card-title">Send</h5>
+                            <table>
+                                <tbody>
+                                    <tr>
+                                        <td className="validator-identity-title"><strong>From</strong></td>
+                                        <td><NavLink to={`/account/${this.state.transaction.from_address}`}>{this.state.transaction.from_address}</NavLink></td>
+                                    </tr>
+                                    <tr>
+                                        <td className="validator-identity-title"><strong>To</strong></td>
+                                        <td><NavLink to={`/account/${this.state.transaction.to_address}`}>{this.state.transaction.to_address}</NavLink></td>
+                                    </tr>
+                                    <tr>
+                                        <td className="validator-identity-title"><strong>Value</strong></td>
+                                        <td>{this.state.transaction.amount} {this.state.transaction.name}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
         );
     }
 
@@ -109,10 +131,29 @@ class TransactionShowPage extends Component<Props, State> {
                 </section>
                 <section className="block-explorer-section section bg-bottom">
                     <div className="container">
+                        <div className="row m-bottom-30">
+                            <div className="col-lg-12">
+                                <div className="card">
+                                    <div className="card-body">
+                                        <h5 className="card-title">Informations</h5>
+                                        <hr/>
+                                        <div className="table-responsive">
+                                            {this.renderTransaction()}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         <div className="row">
                             <div className="col-lg-12">
-                                <div className="table-responsive">
-                                    {this.renderTransaction()}
+                                <div className="card">
+                                    <div className="card-body">
+                                        <h5 className="card-title">Messages</h5>
+                                        <hr/>
+                                        <div className="table-responsive">
+                                            {this.renderMsgs()}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>

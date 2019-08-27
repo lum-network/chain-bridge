@@ -33,7 +33,7 @@ class HomePage extends Component<Props, State> {
         dispatchAction(getValidators());
     }
 
-    componentWillReceiveProps(nextProps: Readonly<P>, nextContext: any): void {
+    UNSAFE_componentWillReceiveProps(nextProps: Readonly<P>, nextContext: any): void {
         if(nextProps.latestBlock !== null) {
             this.setState({latestBlock: nextProps.latestBlock});
         }

@@ -4,6 +4,8 @@ import QRCode from 'qrcode.react';
 import {getAccount} from "../../../../store/actions/accounts";
 import {dispatchAction} from "../../../../utils/redux";
 import TransactionsListComponent from "../../../parts/TransactionsList";
+import { toast } from 'react-toastify';
+import {Button, Modal, ModalBody, ModalFooter, ModalHeader} from "reactstrap";
 
 type Props = {
     account: {},
@@ -11,22 +13,25 @@ type Props = {
     loading: boolean
 };
 
-type State = { account: {transactions_sent: [], transactions_received:[]}, transactions: [] };
+type State = { account: {transactions_sent: [], transactions_received:[]}, transactions: [], isQRCodeModalOpened: boolean };
 
 class AddressShowPage extends Component<Props, State> {
     constructor(props: Props){
         super(props);
         this.state = {
             account: null,
-            transactions: null
+            transactions: null,
+            isQRCodeModalOpened: false
         }
+
+        this.onClickCopyAddress = this.onClickCopyAddress.bind(this);
     }
 
     componentDidMount(): void {
         dispatchAction(getAccount(this.props.match.params.accountId));
     }
 
-    async componentWillReceiveProps(nextProps: Readonly<Props>, nextContext: any): void {
+    async UNSAFE_componentWillReceiveProps(nextProps: Readonly<Props>, nextContext: any): void {
         if(nextProps.account !== null && nextProps.error === null){
             let newTxs = [];
             if(nextProps.account.transactions_sent !== undefined && nextProps.account.transactions_received !== undefined){
@@ -42,14 +47,20 @@ class AddressShowPage extends Component<Props, State> {
         }
     }
 
+    onClickCopyAddress(){
+        navigator.clipboard.writeText(this.state.account.address);
+        toast.success('Account address copied to clipboard!');
+    }
+
     renderTransactions() {
         if(this.state.transactions === null){
             return null;
         }
 
         return (
-            <div className="row">
-                <div className="col-lg-12">
+            <div className="card">
+                <div className="card-body">
+                    <h5 className="card-title">Transactions</h5>
                     <div className="table-responsive">
                         <TransactionsListComponent transactions={this.state.transactions}/>
                     </div>
@@ -65,50 +76,106 @@ class AddressShowPage extends Component<Props, State> {
 
         let coins = [];
         if(this.state.account.coins.length > 0) {
-            JSON.parse(this.state.account.coins).map((elem, index) => {
+            JSON.parse(this.state.account.coins).map((elem) => {
                 return coins.push(`${elem.amount} ${elem.denom}`);
             });
         }
 
         return (
             <React.Fragment>
-                <div className="col-lg-9 col-md-9 col-sm-12">
-                    <div className="table-responsive">
-                        <table className="table table-striped table-latests table-detail">
-                            <tbody>
-                            <tr>
-                                <td><strong>Address</strong></td>
-                                <td>{this.state.account.address || this.props.match.params.accountId}</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Public Key</strong></td>
-                                <td>{(this.state.account.public_key && this.state.account.public_key) || 'None'}</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Account Number</strong></td>
-                                <td>{this.state.account.account_number | 0}</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Account Sequence</strong></td>
-                                <td>{this.state.account.sequence | 0}</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Owned Coins</strong></td>
-                                <td>
-                                    {coins.join(', ')}
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
+                <div className="col-12">
+                    <div className="card">
+                        <div className="card-header account-details-header">
+                            <div className="row align-items-center">
+                                <div className="col-lg-1 col-sm-12 col-xs-12"><i className="fa fa-qrcode fa-4x open-qrcode" onClick={() => {this.setState({isQRCodeModalOpened: true})}}/> </div>
+                                <div className="col-lg-6 col-sm-12 col-xs-12">
+                                    <h6 className="font-weight-bold">Address</h6>
+                                    {this.state.account.address || this.props.match.params.accountId}
+                                    <i className="fa fa-copy ml-3 copy-to-clipboard" onClick={this.onClickCopyAddress}/>
+                                </div>
+                                <div className="col-lg-5 col-sm-12 col-xs-12">
+                                    <h6 className="font-weight-bold">Reward Address</h6>
+                                    {this.state.account.address || this.props.match.params.accountId}
+                                </div>
+                            </div>
+                        </div>
+                        <div className="card-body table-responsive">
+                            <table className="table table-latests table-detail table-no-border">
+                                <tbody>
+                                    <tr>
+                                        <td className="validator-identity-title"><strong>Address</strong></td>
+                                        <td>{this.state.account.address || this.props.match.params.accountId}</td>
+                                    </tr>
+                                    <tr>
+                                        <td className="validator-identity-title"><strong>Public Key</strong></td>
+                                        <td>{(this.state.account.public_key && this.state.account.public_key) || 'None'}</td>
+                                    </tr>
+                                    <tr>
+                                        <td className="validator-identity-title"><strong>Account Number</strong></td>
+                                        <td>{this.state.account.account_number | 0}</td>
+                                    </tr>
+                                    <tr>
+                                        <td className="validator-identity-title"><strong>Account Sequence</strong></td>
+                                        <td>{this.state.account.sequence | 0}</td>
+                                    </tr>
+                                    <tr>
+                                        <td className="validator-identity-title"><strong>Owned Coins</strong></td>
+                                        <td>
+                                            {coins.join(', ')}
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
-                <div className="col-lg-3 col-md-3 col-sm-12">
-                    <div className="qr">
-                        <QRCode value={this.state.account.address} className="img-fluid d-block mx-auto"/>
-                    </div>
-                </div>
+
             </React.Fragment>
         )
+    }
+
+    renderDelegations(){
+        return (
+            <div className="card">
+                <div className="card-body">
+                    <h5 className="card-title">Delegations</h5>
+                </div>
+            </div>
+        );
+    }
+
+    renderUnboundings(){
+        return (
+            <div className="card">
+                <div className="card-body">
+                    <h5 className="card-title">Unboundings</h5>
+                </div>
+            </div>
+        );
+    }
+
+    renderQRCodeModal(){
+        if(!this.state.account || this.props.loading){
+            return null;
+        }
+
+        return (
+            <Modal isOpen={this.state.isQRCodeModalOpened} toggle={() => {this.setState({isQRCodeModalOpened: false})}}>
+                <ModalHeader toggle={() => {this.setState({isQRCodeModalOpened: false})}}>Address QRCode</ModalHeader>
+                <ModalBody>
+                    <div className="row">
+                        <div className="col-12">
+                            <div className="qr">
+                                <QRCode value={this.state.account.address} className="img-fluid d-block mx-auto"/>
+                            </div>
+                        </div>
+                    </div>
+                </ModalBody>
+                <ModalFooter>
+                    <Button color="secondary" onClick={() => {this.setState({isQRCodeModalOpened: false})}}>Close</Button>
+                </ModalFooter>
+            </Modal>
+        );
     }
 
     render() {
@@ -119,10 +186,7 @@ class AddressShowPage extends Component<Props, State> {
                         <div className="container text-center">
                             <div className="row">
                                 <div className="col-lg-12 align-self-center">
-                                    <h1>Address Details</h1>
-                                </div>
-                                <div className="offset-lg-3 col-lg-6">
-                                    <p>{this.state.account !== null && this.state.account.address}</p>
+                                    <h1>Account Details</h1>
                                 </div>
                             </div>
                         </div>
@@ -130,24 +194,21 @@ class AddressShowPage extends Component<Props, State> {
                 </section>
                 <section className="block-explorer-section section bg-bottom">
                     <div className="container">
-                        <div className="row m-bottom-70">
-                            <div className="col-lg-12">
-                                <div className="center-heading">
-                                    <h2 className="section-title">General</h2>
-                                </div>
-                            </div>
+                        <div className="row m-bottom-30">
                             {this.renderAccount()}
                         </div>
-                        <div className="row">
-                            <div className="col-lg-12">
-                                <div className="center-heading">
-                                    <h2 className="section-title">Transactions</h2>
-                                </div>
+                        <div className="row m-bottom-30">
+                            <div className="col-6">{this.renderDelegations()}</div>
+                            <div className="col-6">{this.renderUnboundings()}</div>
+                        </div>
+                        <div className="row m-bottom-30">
+                            <div className="col-12">
+                                {this.renderTransactions()}
                             </div>
                         </div>
-                        {this.renderTransactions()}
                     </div>
                 </section>
+                {this.renderQRCodeModal()}
             </React.Fragment>
         )
     }

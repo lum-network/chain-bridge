@@ -25,7 +25,7 @@ class SearchPage extends Component<Props, State> {
         dispatchAction(search(data));
     }
 
-    async componentWillReceiveProps(nextProps: Readonly<P>, nextContext: any): void {
+    async UNSAFE_componentWillReceiveProps(nextProps: Readonly<P>, nextContext: any): void {
         await this.setState({
             loading: nextProps.loading,
             result: nextProps.result

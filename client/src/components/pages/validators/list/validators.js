@@ -24,7 +24,7 @@ class ValidatorsPage extends React.Component<Props, State> {
         dispatchAction(getValidators());
     }
 
-    componentWillReceiveProps(nextProps: Readonly<Props>, nextContext: any): void {
+    UNSAFE_componentWillReceiveProps(nextProps: Readonly<Props>, nextContext: any): void {
         if(nextProps.validators !== null) {
             this.setState({validators: nextProps.validators.result, height: nextProps.validators.height});
         }
@@ -44,16 +44,20 @@ class ValidatorsPage extends React.Component<Props, State> {
     }
 
     renderValidators(){
+        if(this.state.validators === undefined){
+            return null;
+        }
+
         return (
-            <table className="table table-striped table-latests">
+            <table className="table table-no-border table-latests">
                 <thead>
                     <tr>
-                        <td className="text-center">Moniker</td>
-                        <td className="text-center">Voting Power</td>
-                        <td className="text-center">Commissions</td>
-                        <td className="text-center">Tokens</td>
-                        <td className="text-center">Jailed</td>
-                        <td className="text-center">See</td>
+                        <th className="text-center">Moniker</th>
+                        <th className="text-center">Voting Power</th>
+                        <th className="text-center">Commissions</th>
+                        <th className="text-center">Tokens</th>
+                        <th className="text-center">Jailed</th>
+                        <th className="text-center">See</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -93,8 +97,12 @@ class ValidatorsPage extends React.Component<Props, State> {
                     <div className="container">
                         <div className="row">
                             <div className="col-lg-12">
-                                <div className="table-responsive">
-                                    {this.renderValidators()}
+                                <div className="card">
+                                    <div className="card-body">
+                                        <div className="table-responsive">
+                                            {this.renderValidators()}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>

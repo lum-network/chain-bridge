@@ -56,7 +56,7 @@ class MigrationPortalPage extends Component<Props, State>{
     componentDidMount(): void {
     }
 
-    componentWillReceiveProps(nextProps: Readonly<Props>, nextContext: any): void {
+    UNSAFE_componentWillReceiveProps(nextProps: Readonly<Props>, nextContext: any): void {
         this.setState({migration: nextProps.migration, loading: nextProps.loading});
 
         if(nextProps.error !== null){

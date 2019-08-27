@@ -24,7 +24,7 @@ class TransactionsListPage extends Component<Props, State> {
         dispatchAction(listTransactions());
     }
 
-    componentWillReceiveProps(nextProps: Readonly<P>, nextContext: any): void {
+    UNSAFE_componentWillReceiveProps(nextProps: Readonly<P>, nextContext: any): void {
         if(nextProps.transactions !== null){
             this.setState({
                 transactions: nextProps.transactions
@@ -32,20 +32,23 @@ class TransactionsListPage extends Component<Props, State> {
         }
     }
 
-    render(){
+    renderHeader(){
+        return (
+            <div className="row">
+                <div className="col-lg-12 align-self-center">
+                    <h1>Transactions</h1>
+                </div>
+            </div>
+        );
+    }
+
+    render() {
         return (
             <React.Fragment>
                 <section className="block-explorer-wrapper bg-bottom-center" id="welcome-1">
                     <div className="block-explorer text">
                         <div className="container text-center">
-                            <div className="row">
-                                <div className="col-lg-12 align-self-center">
-                                    <h1>Transactions</h1>
-                                </div>
-                                <div className="offset-lg-3 col-lg-6">
-                                    <p>Latest 50 transactions of the network</p>
-                                </div>
-                            </div>
+                            {this.renderHeader()}
                         </div>
                     </div>
                 </section>
@@ -53,8 +56,10 @@ class TransactionsListPage extends Component<Props, State> {
                     <div className="container">
                         <div className="row">
                             <div className="col-lg-12">
-                                <div className="table-responsive">
-                                    <TransactionsListComponent transactions={this.state.transactions}/>
+                                <div className="card">
+                                    <div className="card-body">
+                                        <TransactionsListComponent transactions={this.state.transactions}/>
+                                    </div>
                                 </div>
                             </div>
                         </div>

@@ -19,6 +19,7 @@ import ValidatorsPage from "./components/pages/validators/list/validators";
 import ValidatorPage from "./components/pages/validators/show/validator";
 
 import {withRouter} from "react-router";
+import {ToastContainer} from "react-toastify";
 
 class App extends Component {
     constructor(props) {
@@ -31,7 +32,7 @@ class App extends Component {
     componentDidMount() {
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         if (nextProps.token) {
             this.setState({loading: false});
         }
@@ -67,7 +68,12 @@ class App extends Component {
                 </Switch>
             </Layout>
         );
-        return <div className="bg-gray-100 font-sans leading-normal tracking-normal fit">{routes}</div>;
+        return(
+            <React.Fragment>
+                <div className="bg-gray-100 font-sans leading-normal tracking-normal fit">{routes}</div>
+                <ToastContainer />
+            </React.Fragment>
+        );
     }
 }
 
