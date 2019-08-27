@@ -2,7 +2,7 @@ import React from 'react';
 
 export default class ValidatorStatus extends React.Component {
     render() {
-        if(!this.props.jailed || !this.props.status){
+        if(!this.props.jailed && !this.props.status){
             return null;
         }
 
