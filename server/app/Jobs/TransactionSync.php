@@ -121,6 +121,10 @@ class TransactionSync implements ShouldQueue
                     $name = (isset($msg['value']['value'])) ? $msg['value']['value']['denom'] : NULL;
                     break;
 
+                case "cosmos-sdk/MsgEditValidator":
+                    $action = "edit_validator";
+                    break;
+
                 case "surprise/CreateBrandedToken":
                     $action = "create_branded_token";
                     $amount = (isset($msg['value']['amount'])) ? $msg['value']['amount'] : NULL;
