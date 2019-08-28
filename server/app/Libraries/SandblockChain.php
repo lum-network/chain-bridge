@@ -41,6 +41,11 @@ class SandblockChain
         return json_decode($res->getBody(), true)['result'];
     }
 
+    public function getValidatorsSet(){
+        $res = $this->client->get('cosmos/validatorsets/latest');
+        return json_decode($res->getBody(), true)['result'];
+    }
+
     public function getValidators(){
         $res = $this->client->get('cosmos/staking/validators');
         return json_decode($res->getBody(), true)['result'];
