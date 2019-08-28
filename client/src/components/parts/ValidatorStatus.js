@@ -10,8 +10,11 @@ export default class ValidatorStatus extends React.Component {
             return (<span className="badge badge-danger"><i className="text-white fa fa-lock"/> Jailed</span>)
         }
         switch(this.props.status){
+            case 0:
+                return (<span className="badge badge-danger"><i className="text-white fa-cross"/> Unbounded</span>);
+
             case 1:
-                return "1 lol";
+                return (<span className="badge badge-warning"><i className="text-white fa-warning"/> Unbounding</span>);
 
             case 2:
                 return (<span className="badge badge-success"><i className="text-white fa fa-check"/> Active</span>);
