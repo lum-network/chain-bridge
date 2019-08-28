@@ -58,6 +58,36 @@ class TransactionSync implements ShouldQueue
         return $acc;
     }
 
+    public function extractSender($msg)
+    {
+        /* Most of messages */
+        if(isset($msg['value']['from_address'])) {
+            return $msg['value']['from_address'];
+        }
+
+        /* Create validator message */
+        if(isset($msg['value']['delegator_address'])){
+            return $msg['value']['delegator_address'];
+        }
+
+        return NULL;
+    }
+
+    public function extractRecipient($msg)
+    {
+        /* Most of messages */
+        if(isset($msg['value']['to_address'])) {
+            return $msg['value']['to_address'];
+        }
+
+        /* Create validator message */
+        if(isset($msg['value']['validator_address'])){
+            return $msg['value']['validator_address'];
+        }
+
+        return NULL;
+    }
+
     public function handle()
     {
         $sb = new SandblockChain();
@@ -68,19 +98,15 @@ class TransactionSync implements ShouldQueue
         }
 
         $action = NULL;
-        $sender = NULL;
-        $recipient = NULL;
         $amount = NULL;
         $name = NULL;
+        $senderAccount = NULL;
+        $recipientAccount = NULL;
         /* Fetch the different datas */
         if(isset($tx['tx']['value']['msg'][0])){
             $msg = $tx['tx']['value']['msg'][0];
-            if(isset($msg['value']['from_address'])) {
-                $sender = $msg['value']['from_address'];
-            }
-            if(isset($msg['value']['to_address'])) {
-                $recipient = $msg['value']['to_address'];
-            }
+            $sender = $this->extractSender($msg);
+            $recipient = $this->extractRecipient($msg);
             switch($msg['type'])
             {
                 case "cosmos-sdk/MsgSend":
@@ -89,14 +115,14 @@ class TransactionSync implements ShouldQueue
                     $name = (isset($msg['value']['amount'][0])) ? $msg['value']['amount'][0]['denom'] : NULL;
                     break;
 
-                case "surprise/CreateBrandedToken":
-                    $action = "create_branded_token";
-                    $amount = (isset($msg['value']['amount'])) ? $msg['value']['amount'] : NULL;
-                    $name = (isset($msg['value']['name'])) ? $msg['value']['name'] : NULL;
+                case "cosmos-sdk/MsgCreateValidator":
+                    $action = "create_validator";
+                    $amount = (isset($msg['value']['value'])) ? $msg['value']['value']['amount'] : NULL;
+                    $name = (isset($msg['value']['value'])) ? $msg['value']['value']['denom'] : NULL;
                     break;
 
-                case "surprise/TransferBrandedToken":
-                    $action = "transfer_branded_token";
+                case "surprise/CreateBrandedToken":
+                    $action = "create_branded_token";
                     $amount = (isset($msg['value']['amount'])) ? $msg['value']['amount'] : NULL;
                     $name = (isset($msg['value']['name'])) ? $msg['value']['name'] : NULL;
                     break;
@@ -127,8 +153,12 @@ class TransactionSync implements ShouldQueue
         //Prevent JSON parsing error for subfield
         $tx['raw_log'] = json_decode($tx['raw_log'], true);
 
-        $senderAccount = $this->getAccountByAddress($sender);
-        $recipientAccount = $this->getAccountByAddress($recipient);
+        if(strpos($sender, 'sandvaloper') !== 0) {
+            $senderAccount = $this->getAccountByAddress($sender);
+        }
+        if(strpos($recipient, 'sandvaloper') !== 0) {
+            $recipientAccount = $this->getAccountByAddress($recipient);
+        }
 
 
         if(Transaction::where(['hash'=>$this->hash])->exists() == false) {

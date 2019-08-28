@@ -49,7 +49,7 @@ class BlocksSync implements ShouldQueue
                 "num_txs"           =>  $block['header']['num_txs'],
                 "total_txs"         =>  $block['header']['total_txs'],
                 "proposer_address"  =>  $block['header']['proposer_address'],
-                "raw"           =>  json_encode($block)
+                "raw"               =>  json_encode($block)
             ];
 
             // Here is a little trick to prevent double adding
