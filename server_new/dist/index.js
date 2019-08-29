@@ -8,6 +8,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const dotenv = require("dotenv");
 const hapi = require("hapi");
 const schedule = require("node-schedule");
 const routes_1 = require("./routes");
@@ -32,13 +33,16 @@ function initJobs() {
 function start() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
+            // Read env config
+            dotenv.config();
             // Start database ORM
+            // @ts-ignore
             const sequelize = new sequelize_typescript_1.Sequelize({
-                database: 'explorer',
-                dialect: 'postgres',
-                username: 'explorer',
-                password: 'qevjgut9jw84',
-                port: 3306,
+                database: process.env.DB_NAME,
+                dialect: process.env.DB_DIALECT,
+                username: process.env.DB_USERNAME,
+                password: process.env.DB_PASSWORD,
+                port: process.env.DB_PORT,
                 models: [account_1.default, block_1.default, transaction_1.default, validator_1.default],
                 logging: false
             });

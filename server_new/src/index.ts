@@ -1,3 +1,4 @@
+import * as dotenv from 'dotenv';
 import * as hapi from "hapi";
 import * as schedule from "node-schedule";
 import routes from './routes';
@@ -25,13 +26,17 @@ async function initJobs(){
 
 async function start() {
     try {
+        // Read env config
+        dotenv.config();
+
         // Start database ORM
+        // @ts-ignore
         const sequelize = new Sequelize({
-            database: 'explorer',
-            dialect: 'postgres',
-            username: 'explorer',
-            password: 'qevjgut9jw84',
-            port: 3306,
+            database: process.env.DB_NAME,
+            dialect: process.env.DB_DIALECT,
+            username: process.env.DB_USERNAME,
+            password: process.env.DB_PASSWORD,
+            port: process.env.DB_PORT,
             models: [Account, Block, Transaction, Validator],
             logging: false
         });

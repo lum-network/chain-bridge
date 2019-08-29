@@ -13,6 +13,7 @@
     "@types/node": "^12.7.2",
     "@types/node-schedule": "^1.2.4",
     "boom": "^7.3.0",
+    "dotenv": "^8.1.0",
     "hapi": "^18.1.0",
     "hapi-dev-errors": "^3.2.5",
     "joi": "^14.3.1",

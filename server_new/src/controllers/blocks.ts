@@ -44,6 +44,6 @@ export const BlockHeightRoute: Lifecycle.Method = async (req: Request, handler: 
     if(!block){
         return response(handler, {}, `No block found with the height ${req.params.height}`, 404);
     }
-    
+
     return response(handler, block, "", 200);
 }
