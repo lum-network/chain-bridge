@@ -1,0 +1,10 @@
+{
+  "database": {
+    "username": "explorer",
+    "password": "qevjgut9jw84",
+    "database": "explorer",
+    "host": "127.0.0.1",
+    "dialect": "postgres",
+    "operatorsAliases": false
+  }
+}
