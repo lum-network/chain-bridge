@@ -50,7 +50,6 @@ __decorate([
     __metadata("design:type", Array)
 ], Block.prototype, "transactions", void 0);
 Block = __decorate([
-    sequelize_typescript_1.DefaultScope(() => ({ attributes: { exclude: ['id'] } })),
     sequelize_typescript_1.Table({
         tableName: 'blocks',
         underscored: true,

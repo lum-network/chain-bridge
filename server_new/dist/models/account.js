@@ -37,7 +37,6 @@ __decorate([
     __metadata("design:type", Number)
 ], Account.prototype, "sequence", void 0);
 Account = __decorate([
-    sequelize_typescript_1.DefaultScope(() => ({ attributes: { exclude: ['id'] } })),
     sequelize_typescript_1.Table({
         tableName: 'accounts',
         underscored: true,

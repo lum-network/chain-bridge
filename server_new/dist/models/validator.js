@@ -29,7 +29,6 @@ __decorate([
     __metadata("design:type", String)
 ], Validator.prototype, "address_operator_pub", void 0);
 Validator = __decorate([
-    sequelize_typescript_1.DefaultScope(() => ({ attributes: { exclude: ['id'] } })),
     sequelize_typescript_1.Table({
         tableName: 'validators',
         underscored: true,

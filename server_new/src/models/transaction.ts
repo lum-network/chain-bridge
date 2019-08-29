@@ -1,7 +1,6 @@
 import {Table, Column, Model, ForeignKey, BelongsTo, DefaultScope} from 'sequelize-typescript';
 import Block from "./block";
 
-@DefaultScope(() => ({attributes: {exclude: ['id']}}))
 @Table({
     tableName: 'transactions',
     underscored: true,
@@ -56,6 +55,9 @@ export default class Transaction extends Model<Transaction> {
 
     @Column
     amount: number;
+
+    @Column
+    msgs: string;
 
     @Column
     raw: string;

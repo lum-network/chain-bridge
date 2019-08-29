@@ -1,7 +1,6 @@
 import {Table, Column, Model, HasMany, DefaultScope} from 'sequelize-typescript';
 import Transaction from "./transaction";
 
-@DefaultScope(() => ({attributes: {exclude: ['id']}}))
 @Table({
     tableName: 'blocks',
     underscored: true,

@@ -1,6 +1,5 @@
 import {Table, Column, Model, DefaultScope} from 'sequelize-typescript';
 
-@DefaultScope(() => ({attributes: {exclude: ['id']}}))
 @Table({
     tableName: 'validators',
     underscored: true,

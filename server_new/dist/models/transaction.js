@@ -81,13 +81,16 @@ __decorate([
 __decorate([
     sequelize_typescript_1.Column,
     __metadata("design:type", String)
+], Transaction.prototype, "msgs", void 0);
+__decorate([
+    sequelize_typescript_1.Column,
+    __metadata("design:type", String)
 ], Transaction.prototype, "raw", void 0);
 __decorate([
     sequelize_typescript_1.Column,
     __metadata("design:type", Date)
 ], Transaction.prototype, "dispatched_at", void 0);
 Transaction = __decorate([
-    sequelize_typescript_1.DefaultScope(() => ({ attributes: { exclude: ['id'] } })),
     sequelize_typescript_1.Table({
         tableName: 'transactions',
         underscored: true,

@@ -85,6 +85,7 @@ export const SyncTransactionInternal = async (tx: any) => {
         recipient_id: (recipient) ? recipient.id : null,
         name: tx.tx.value.memo,
         dispatched_at: tx.timestamp,
+        msgs: JSON.stringify(tx.tx.value.msg),
         raw: JSON.stringify(tx)
     });
 
