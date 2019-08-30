@@ -52,7 +52,7 @@ async function start() {
         await server.register({
             plugin: require('hapi-cors'),
             options: {
-                origins: ['http://localhost:3000', 'http://localhost:8000', 'https://explorer.sandblock.io']
+                origins: ['*']
             }
         })
 
