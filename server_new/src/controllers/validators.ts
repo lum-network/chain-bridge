@@ -16,5 +16,11 @@ export const ValidatorAddressRoute: Lifecycle.Method = async (req: Request, hand
         return response(handler, {}, `No validator found with address ${req.params.address}`, 404);
     }
 
+    // Inject delegations
+    const delegations = await sbc.getValidatorDelegations(req.params.address);
+    if(delegations !== null) {
+        validator.result.delegations = delegations.result;
+    }
+
     return response(handler, validator.result, "", 200);
 }
