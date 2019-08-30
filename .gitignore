@@ -9,3 +9,7 @@ server/.DS_STORE
 
 .DS_STORE
 .idea/*
+
+server_new/node_modules/*
+server_new/.env
+server_new/dist/*
