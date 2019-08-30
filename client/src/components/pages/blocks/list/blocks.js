@@ -64,6 +64,7 @@ class BlocksPage extends Component<Props, State> {
                 <tbody>
                     {this.state.blocks !== null && this.state.blocks.map((elem, index)=>{
                         const url = `/block/${elem.height}`;
+                        const proposer = `/validator/${elem.proposer_address}`;
                         return (
                             <tr key={index}>
                                 <td className="text-center">
@@ -74,7 +75,7 @@ class BlocksPage extends Component<Props, State> {
                                 <td className="text-center">{moment(elem.dispatched_at).format('MM-DD-YYYY HH:mm:ss')}</td>
                                 <td className="text-center">{moment(elem.dispatched_at).fromNow()}</td>
                                 <td className="text-center">{elem.num_txs}</td>
-                                <td className="text-center">{elem.proposer_address || ''}</td>
+                                <td className="text-center"><NavLink to={proposer}>{elem.proposer_address || ''}</NavLink></td>
                                 <td className="text-center">0</td>
                             </tr>
                         )

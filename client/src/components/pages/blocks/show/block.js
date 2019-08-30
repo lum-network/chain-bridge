@@ -3,6 +3,7 @@ import {dispatchAction} from "../../../../utils/redux";
 import {getBlock} from "../../../../store/actions/blocks";
 import {connect} from "react-redux";
 import TransactionsListComponent from "../../../parts/TransactionsList";
+import {NavLink} from "react-router-dom";
 
 type Props = {
     block: {},
@@ -63,7 +64,7 @@ class BlockShowPage extends Component<Props, State> {
                                         </tr>
                                         <tr>
                                             <td><strong>Proposed By</strong></td>
-                                            <td>{this.state.block.proposer_address}</td>
+                                            <td><NavLink to={`/validator/${this.state.block.proposer_address}`}>{this.state.block.proposer_address}</NavLink></td>
                                         </tr>
                                         <tr>
                                             <td><strong>Transactions in the block</strong></td>

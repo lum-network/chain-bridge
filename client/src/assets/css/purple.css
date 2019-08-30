@@ -106,7 +106,7 @@ pre-loader
   height: 100%;
   color: white;
   font-size: 16px;
-  background-image: linear-gradient(134deg, #516093 0%, #7A88F1 100%);
+  background-image: linear-gradient(315deg,#c667d8,#3c1f96);
   z-index: 99999;
   -webkit-transition: all 0.3s ease 0s;
   -moz-transition: all 0.3s ease 0s;
@@ -340,7 +340,7 @@ global styles
 }
 
 .gradient {
-  background-image: linear-gradient(134deg, #516093 0%, #7A88F1 100%);
+  background-image: linear-gradient(315deg,#c667d8,#3c1f96);
   position: relative;
 }
 
@@ -1460,7 +1460,7 @@ welcome area
   height: 100%;
   left: 0px;
   top: 0px;
-  background-image: linear-gradient(134deg, #516093 0%, #7A88F1 100%);
+  background-image: linear-gradient(315deg,#c667d8,#3c1f96);
   z-index: 2;
 }
 
@@ -2272,7 +2272,7 @@ team
   border-radius: 100px;
   top: 0px;
   left: -160px;
-  background-image: linear-gradient(134deg, #516093 0%, #7A88F1 100%);
+  background-image: linear-gradient(315deg,#c667d8,#3c1f96);
   opacity: 0.83;
   text-align: center;
   -webkit-transition: all 0.3s ease 0s;
@@ -2345,7 +2345,7 @@ team
   width: 100%;
   height: 100%;
   bottom: -999px;
-  background-image: linear-gradient(134deg, #516093 0%, #7A88F1 100%);
+  background-image: linear-gradient(315deg,#c667d8,#3c1f96);
   opacity: 0.83;
   text-align: center;
   -webkit-transition: all 0.3s ease 0s;
@@ -2407,7 +2407,7 @@ parallax
   left: 0px;
   z-index: 2;
   opacity: 0.77;
-  background-image: linear-gradient(134deg, #516093 0%, #7A88F1 100%);
+  background-image: linear-gradient(315deg,#c667d8,#3c1f96);
 }
 
 .parallax .parallax-content {
@@ -2570,7 +2570,7 @@ block explorer
   height: 100%;
   left: 0px;
   top: 0px;
-  background-image: linear-gradient(134deg, #516093 0%, #7A88F1 100%);
+  background-image: linear-gradient(315deg,#c667d8,#3c1f96);
   z-index: 2;
 }
 
@@ -3032,7 +3032,7 @@ footer .footer-top .contact-form .form-element button:hover {
 
 footer .footer-bottom {
   padding-top: 80px;
-  background-image: linear-gradient(134deg, #516093 0%, #7A88F1 100%);
+  background-image: linear-gradient(315deg,#c667d8,#3c1f96);
   position: relative;
 }
 
