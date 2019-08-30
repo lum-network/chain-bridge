@@ -9,6 +9,7 @@ import Transaction from "./models/transaction";
 import Account from "./models/account";
 import Validator from "./models/validator";
 import {SyncBlocks} from "./jobs/blocks";
+import Migration from "./models/migration";
 
 const jobs = [];
 
@@ -17,6 +18,7 @@ const server: hapi.Server = new hapi.Server({
   port: 8000
 });
 
+server.realm.modifiers.route.prefix = '/api/v1';
 server.route(routes);
 
 async function initJobs(){
@@ -37,12 +39,20 @@ async function start() {
             username: process.env.DB_USERNAME,
             password: process.env.DB_PASSWORD,
             port: process.env.DB_PORT,
-            models: [Account, Block, Transaction, Validator],
+            models: [Account, Block, Migration, Transaction, Validator],
             logging: false
         });
 
         // Launch jobs
         await initJobs();
+
+        // Register plugins
+        await server.register({
+            plugin: require('hapi-cors'),
+            options: {
+                origins: ['http://localhost:3000', 'http://localhost:8000']
+            }
+        })
 
         // Start HAPI
         await server.start();

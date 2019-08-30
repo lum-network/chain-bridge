@@ -18,11 +18,13 @@ const transaction_1 = require("./models/transaction");
 const account_1 = require("./models/account");
 const validator_1 = require("./models/validator");
 const blocks_1 = require("./jobs/blocks");
+const migration_1 = require("./models/migration");
 const jobs = [];
 const server = new hapi.Server({
     host: 'localhost',
     port: 8000
 });
+server.realm.modifiers.route.prefix = '/api/v1';
 server.route(routes_1.default);
 function initJobs() {
     return __awaiter(this, void 0, void 0, function* () {
@@ -43,11 +45,18 @@ function start() {
                 username: process.env.DB_USERNAME,
                 password: process.env.DB_PASSWORD,
                 port: process.env.DB_PORT,
-                models: [account_1.default, block_1.default, transaction_1.default, validator_1.default],
+                models: [account_1.default, block_1.default, migration_1.default, transaction_1.default, validator_1.default],
                 logging: false
             });
             // Launch jobs
             yield initJobs();
+            // Register plugins
+            yield server.register({
+                plugin: require('hapi-cors'),
+                options: {
+                    origins: ['http://localhost:3000', 'http://localhost:8000']
+                }
+            });
             // Start HAPI
             yield server.start();
             // Echo it out
