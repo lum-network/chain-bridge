@@ -27,8 +27,8 @@ server.realm.modifiers.route.prefix = '/api/v1';
 server.route(routes);
 
 async function initJobs(){
-    // Blocks sync every 5 seconds
-    jobs.push(schedule.scheduleJob('*/5 * * * * *', SyncBlocks));
+    // Blocks sync every 15 seconds
+    jobs.push(schedule.scheduleJob('*/15 * * * * *', SyncBlocks));
 }
 
 async function start() {
