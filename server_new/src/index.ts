@@ -51,7 +51,7 @@ async function start() {
         });
 
         // Launch jobs
-        //await initJobs();
+        await initJobs();
 
         // Start HAPI
         await server.start();
