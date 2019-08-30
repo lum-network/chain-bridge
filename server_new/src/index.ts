@@ -14,8 +14,13 @@ import Migration from "./models/migration";
 const jobs = [];
 
 const server: hapi.Server = new hapi.Server({
-  host: 'localhost',
-  port: 8000
+    host: 'localhost',
+    port: 8000,
+    routes: {
+        cors: {
+            origin: ['*']
+        }
+    }
 });
 
 server.realm.modifiers.route.prefix = '/api/v1';
@@ -47,14 +52,6 @@ async function start() {
 
         // Launch jobs
         await initJobs();
-
-        // Register plugins
-        await server.register({
-            plugin: require('hapi-cors'),
-            options: {
-                origins: ['*']
-            }
-        })
 
         // Start HAPI
         await server.start();
