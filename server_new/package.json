@@ -4,7 +4,9 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "start": "./node_modules/nodemon/bin/nodemon.js -e ts  --exec \"yarn run compile\"",
+    "build": "tsc",
+    "start": "yarn build && node ./dist/index.js",
+    "start-dev": "./node_modules/nodemon/bin/nodemon.js -e ts  --exec \"yarn run compile\"",
     "compile": "tsc && node ./dist/index.js"
   },
   "dependencies": {
