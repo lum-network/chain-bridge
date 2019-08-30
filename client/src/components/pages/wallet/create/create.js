@@ -1,7 +1,110 @@
 import React from 'react';
 import {connect} from "react-redux";
+import {toast} from "react-toastify";
+import sdk from 'sandblock-chain-sdk-js';
+import {save} from "save-file";
+import {NavLink} from "react-router-dom";
 
 class WalletCreatePage extends React.Component {
+    constructor(props){
+        super(props);
+        this.state = {
+            step: 1,
+            password: '',
+            passwordConfirmation: '',
+            generating: false,
+            publicKey: null,
+            address: null
+        };
+
+        this.onValidateForm = this.onValidateForm.bind(this);
+    }
+
+    onValidateForm = async (e) => {
+        e.preventDefault();
+
+        if(this.state.generating){
+            return;
+        }
+
+        if(!this.state.password.length || !this.state.passwordConfirmation.length){
+            return toast.warn('Both password fields are required');
+        }
+
+        if(this.state.password !== this.state.passwordConfirmation) {
+            return toast.warn("Both passwords doesn't match");
+        }
+
+        await this.setState({generating: true});
+
+        const privateKey = sdk.utils.generatePrivateKey();
+        const keyStore = sdk.utils.generateKeyStore(privateKey, this.state.password);
+        const publicKey = sdk.utils.getPublicKeyFromPrivateKey(privateKey);
+        const address = sdk.utils.getAddressFromPublicKey(publicKey).toString();
+
+        this.setState({
+            step: 2,
+            generating: false,
+            publicKey,
+            address
+        });
+
+        const blob = new Blob([JSON.stringify(keyStore)], {type: "application/json"});
+        await save(blob, `sandblock_chain_wallet_${new Date().getTime()}.json`);
+    }
+
+    renderStepOne(){
+        return (
+            <React.Fragment>
+                <div className="alert alert-warning text-center m-bottom-30">
+                    This is not a recommended way to access your wallet.<br/>
+                    Due to the sensitivity of the information involved, these options should only be used in offline settings by experienced users.<br/>
+                    You should use a physical wallet like Ledger
+                </div>
+                <h5 className="font-weight-bold text-center m-bottom-30">Choose a password</h5>
+                <form onSubmit={this.onValidateForm}>
+                    <div className="form-group">
+                        <label>Your password:</label>
+                        <input type="text" className="form-control" onChange={(ev)=>{this.setState({password: ev.target.value})}}/>
+                    </div>
+                    <div className="form-group">
+                        <label>Your password confirmation</label>
+                        <input type="text" className="form-control" onChange={(ev)=>{this.setState({passwordConfirmation: ev.target.value})}}/>
+                    </div>
+                    <div className="form-group">
+                        <button type="submit" className="btn btn-sm btn-success" disabled={this.state.generating}>Create my wallet</button>
+                    </div>
+                </form>
+            </React.Fragment>
+        );
+    }
+
+    renderStepTwo(){
+        return (
+            <React.Fragment>
+                <h5 className="font-weight-bold text-center m-bottom-30">All done!</h5>
+                <div className="alert alert-success text-center m-bottom-30">
+                    Your wallet is now generated, you must have downloaded it.<br/>
+                    Be careful and don't loose the file as well as the password you provided.<br/>
+                    If either the wallet or the password is lost, <b>no one</b> will be able to recover your wallet.
+                </div>
+                <table className="table table-bordered m-bottom-30">
+                    <tbody>
+                        <tr>
+                            <td className="font-weight-bold">Address</td>
+                            <td>{this.state.address}</td>
+                        </tr>
+                        <tr>
+                            <td className="font-weight-bold">Public Key</td>
+                            <td>{this.state.publicKey.toString('hex')}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <NavLink to={`/wallet/show`} className="btn btn-sm btn-block btn-primary">Continue to my wallet</NavLink>
+            </React.Fragment>
+        );
+    }
+
     render() {
         return (
             <React.Fragment>
@@ -19,6 +122,13 @@ class WalletCreatePage extends React.Component {
                 <section className="block-explorer-features section bg-bottom">
                     <div className="container">
                         <div className="row">
+                            <div className="col-lg-8 offset-2">
+                                <div className="card">
+                                    <div className="card-body">
+                                        {(this.state.step === 1) ? this.renderStepOne() : this.renderStepTwo()}
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </section>
