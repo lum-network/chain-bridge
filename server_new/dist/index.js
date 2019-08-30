@@ -46,7 +46,8 @@ function start() {
                 password: process.env.DB_PASSWORD,
                 port: process.env.DB_PORT,
                 models: [account_1.default, block_1.default, migration_1.default, transaction_1.default, validator_1.default],
-                logging: false
+                logging: false,
+                timezone: '+02:00'
             });
             // Launch jobs
             yield initJobs();

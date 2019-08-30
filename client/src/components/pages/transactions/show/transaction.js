@@ -76,6 +76,10 @@ class TransactionShowPage extends Component<Props, State> {
                         <td className="validator-identity-title"><strong>Gas Used</strong></td>
                         <td>{this.state.transaction.gas_used}</td>
                     </tr>
+                    <tr>
+                        <td className="validator-identity-title"><strong>Memo</strong></td>
+                        <td>{this.state.transaction.name}</td>
+                    </tr>
                 </tbody>
             </table>
         );
@@ -86,33 +90,42 @@ class TransactionShowPage extends Component<Props, State> {
             return null;
         }
 
-        return (
-            <div className="row">
-                <div className="col-12">
-                    <div className="card">
-                        <div className="card-body">
-                            <h5 className="card-title">Send</h5>
-                            <table>
-                                <tbody>
+        if(!this.state.transaction.msgs){
+            return null;
+        }
+
+        let msgs = [];
+        JSON.parse(this.state.transaction.msgs).forEach((msg, index)=>{
+            msgs.push(
+                <div className="row" key={index}>
+                    <div className="col-12">
+                        <div className="card">
+                            <div className="card-body">
+                                <h5 className="card-title">{msg.type}</h5>
+                                <table>
+                                    <tbody>
                                     <tr>
                                         <td className="validator-identity-title"><strong>From</strong></td>
-                                        <td><NavLink to={`/account/${this.state.transaction.from_address}`}>{this.state.transaction.from_address}</NavLink></td>
+                                        <td><NavLink to={`/account/${msg.value.from_address}`}>{msg.value.from_address}</NavLink></td>
                                     </tr>
                                     <tr>
                                         <td className="validator-identity-title"><strong>To</strong></td>
-                                        <td><NavLink to={`/account/${this.state.transaction.to_address}`}>{this.state.transaction.to_address}</NavLink></td>
+                                        <td><NavLink to={`/account/${msg.value.to_address}`}>{msg.value.to_address}</NavLink></td>
                                     </tr>
                                     <tr>
                                         <td className="validator-identity-title"><strong>Value</strong></td>
-                                        <td>{this.state.transaction.amount} {this.state.transaction.name}</td>
+                                        <td>{msg.value.amount[0].amount} {msg.value.amount[0].denom}</td>
                                     </tr>
-                                </tbody>
-                            </table>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        );
+            )
+        });
+
+        return msgs;
     }
 
     render() {

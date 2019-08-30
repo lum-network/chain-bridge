@@ -10,7 +10,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const block_1 = require("../models/block");
 const client_1 = require("sandblock-chain-sdk-js/dist/client");
-const moment = require("moment-timezone");
 const utils = require("sandblock-chain-sdk-js/dist/utils");
 const validator_1 = require("../models/validator");
 const transactions_1 = require("./transactions");
@@ -28,8 +27,6 @@ exports.SyncBlockInternal = (height) => __awaiter(this, void 0, void 0, function
     if (!block) {
         return;
     }
-    // Convert to european timezone
-    const dispatched_at = moment(block.block.header.time).tz('Europe/Paris').format();
     // Protection for double addition
     if ((yield block_1.default.findOne({ where: { hash: block.block_meta.block_id.hash } })) === null) {
         // Create and save entity
@@ -37,7 +34,7 @@ exports.SyncBlockInternal = (height) => __awaiter(this, void 0, void 0, function
             chain_id: block.block.header.chain_id,
             hash: block.block_meta.block_id.hash,
             height: block.block.header.height,
-            dispatched_at: dispatched_at,
+            dispatched_at: block.block.header.time,
             num_txs: block.block.header.num_txs,
             total_txs: block.block.header.total_txs,
             proposer_address: yield transformBlockProposerAddress(block.block.header.proposer_address),
@@ -78,6 +75,9 @@ exports.SyncBlocks = () => __awaiter(this, void 0, void 0, function* () {
     const start = lastBlockHeight + 1;
     const end = start + blocksToProceed;
     const blocks = (yield sbc.getBlocksBetween(start, end));
+    if (!blocks.result) {
+        return;
+    }
     yield blocks.result.block_metas.reverse().forEach((block) => __awaiter(this, void 0, void 0, function* () {
         yield exports.SyncBlockInternal(block.header.height);
         //TODO: Dispatch pusher notification

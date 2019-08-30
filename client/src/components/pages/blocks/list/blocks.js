@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import {dispatchAction} from "../../../../utils/redux";
 import {getBlocks} from "../../../../store/actions/blocks";
 import {connect} from "react-redux";
-import moment from 'moment';
+import moment from 'moment-timezone';
 import {NavLink} from "react-router-dom";
 
 type Props = {
@@ -25,6 +25,7 @@ class BlocksPage extends Component<Props, State> {
     }
 
     componentDidMount(): void {
+        moment.tz.setDefault('Europe/Paris');
         dispatchAction(getBlocks());
     }
 

@@ -40,7 +40,8 @@ async function start() {
             password: process.env.DB_PASSWORD,
             port: process.env.DB_PORT,
             models: [Account, Block, Migration, Transaction, Validator],
-            logging: false
+            logging: false,
+            timezone: '+02:00'
         });
 
         // Launch jobs

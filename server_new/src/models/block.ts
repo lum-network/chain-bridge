@@ -1,4 +1,4 @@
-import {Table, Column, Model, HasMany, DefaultScope} from 'sequelize-typescript';
+import {Table, Column, Model, HasMany, DefaultScope, CreatedAt, DataType, UpdatedAt} from 'sequelize-typescript';
 import Transaction from "./transaction";
 
 @Table({
@@ -33,4 +33,12 @@ export default class Block extends Model<Block> {
 
     @HasMany(() => Transaction)
     transactions: Transaction[];
+
+    @CreatedAt
+    @Column({ field: "created_at", type: DataType.DATE })
+    created_at: Date
+
+    @UpdatedAt
+    @Column({ field: "updated_at", type: DataType.DATE })
+    updated_at: Date
 }

@@ -1,4 +1,14 @@
-import {Table, Column, Model, ForeignKey, BelongsTo, DefaultScope} from 'sequelize-typescript';
+import {
+    Table,
+    Column,
+    Model,
+    ForeignKey,
+    BelongsTo,
+    DefaultScope,
+    CreatedAt,
+    UpdatedAt,
+    DataType
+} from 'sequelize-typescript';
 import Block from "./block";
 
 @Table({
@@ -64,4 +74,12 @@ export default class Transaction extends Model<Transaction> {
 
     @Column
     dispatched_at: Date
+
+    @CreatedAt
+    @Column({ field: "created_at", type: DataType.DATE })
+    created_at: Date
+
+    @UpdatedAt
+    @Column({ field: "updated_at", type: DataType.DATE })
+    updated_at: Date
 }

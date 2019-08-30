@@ -14,7 +14,7 @@ const transaction_1 = require("../models/transaction");
 exports.BlocksIndexRoute = (req, handler) => __awaiter(this, void 0, void 0, function* () {
     const blocks = yield block_1.default.findAll({
         limit: 50,
-        order: [['created_at', 'DESC']],
+        order: [['height', 'DESC']],
         attributes: {
             exclude: ['raw']
         }

@@ -90,6 +90,16 @@ __decorate([
     sequelize_typescript_1.Column,
     __metadata("design:type", Date)
 ], Transaction.prototype, "dispatched_at", void 0);
+__decorate([
+    sequelize_typescript_1.CreatedAt,
+    sequelize_typescript_1.Column({ field: "created_at", type: sequelize_typescript_1.DataType.DATE }),
+    __metadata("design:type", Date)
+], Transaction.prototype, "created_at", void 0);
+__decorate([
+    sequelize_typescript_1.UpdatedAt,
+    sequelize_typescript_1.Column({ field: "updated_at", type: sequelize_typescript_1.DataType.DATE }),
+    __metadata("design:type", Date)
+], Transaction.prototype, "updated_at", void 0);
 Transaction = __decorate([
     sequelize_typescript_1.Table({
         tableName: 'transactions',

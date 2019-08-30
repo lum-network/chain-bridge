@@ -28,6 +28,16 @@ __decorate([
     sequelize_typescript_1.Column,
     __metadata("design:type", String)
 ], Validator.prototype, "address_operator_pub", void 0);
+__decorate([
+    sequelize_typescript_1.CreatedAt,
+    sequelize_typescript_1.Column({ field: "created_at", type: sequelize_typescript_1.DataType.DATE }),
+    __metadata("design:type", Date)
+], Validator.prototype, "created_at", void 0);
+__decorate([
+    sequelize_typescript_1.UpdatedAt,
+    sequelize_typescript_1.Column({ field: "updated_at", type: sequelize_typescript_1.DataType.DATE }),
+    __metadata("design:type", Date)
+], Validator.prototype, "updated_at", void 0);
 Validator = __decorate([
     sequelize_typescript_1.Table({
         tableName: 'validators',

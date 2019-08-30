@@ -36,6 +36,16 @@ __decorate([
     sequelize_typescript_1.Column,
     __metadata("design:type", Number)
 ], Account.prototype, "sequence", void 0);
+__decorate([
+    sequelize_typescript_1.CreatedAt,
+    sequelize_typescript_1.Column({ field: "created_at", type: sequelize_typescript_1.DataType.DATE }),
+    __metadata("design:type", Date)
+], Account.prototype, "created_at", void 0);
+__decorate([
+    sequelize_typescript_1.UpdatedAt,
+    sequelize_typescript_1.Column({ field: "updated_at", type: sequelize_typescript_1.DataType.DATE }),
+    __metadata("design:type", Date)
+], Account.prototype, "updated_at", void 0);
 Account = __decorate([
     sequelize_typescript_1.Table({
         tableName: 'accounts',

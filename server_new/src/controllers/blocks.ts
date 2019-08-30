@@ -6,7 +6,7 @@ import Transaction from "../models/transaction";
 export const BlocksIndexRoute: Lifecycle.Method = async (req: Request, handler: ResponseToolkit) => {
     const blocks = await Block.findAll({
         limit: 50,
-        order: [['created_at', 'DESC']],
+        order: [['height', 'DESC']],
         attributes: {
             exclude: ['raw']
         }

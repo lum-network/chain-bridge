@@ -22,9 +22,6 @@ export const SyncBlockInternal = async (height: number) => {
         return;
     }
 
-    // Convert to european timezone
-    const dispatched_at = moment(block.block.header.time).tz('Europe/Paris').format();
-
     // Protection for double addition
     if((await Block.findOne({where: {hash: block.block_meta.block_id.hash}})) === null) {
         // Create and save entity
@@ -32,7 +29,7 @@ export const SyncBlockInternal = async (height: number) => {
             chain_id: block.block.header.chain_id,
             hash: block.block_meta.block_id.hash,
             height: block.block.header.height,
-            dispatched_at: dispatched_at,
+            dispatched_at: block.block.header.time,
             num_txs: block.block.header.num_txs,
             total_txs: block.block.header.total_txs,
             proposer_address: await transformBlockProposerAddress(block.block.header.proposer_address),
@@ -82,6 +79,9 @@ export const SyncBlocks = async () => {
     const start = lastBlockHeight + 1;
     const end = start + blocksToProceed;
     const blocks: {result: {block_metas:[{header}]}} = (await sbc.getBlocksBetween(start, end));
+    if(!blocks.result){
+        return;
+    }
     await blocks.result.block_metas.reverse().forEach(async (block)=>{
         await SyncBlockInternal(block.header.height);
         //TODO: Dispatch pusher notification

@@ -1,4 +1,4 @@
-import {Table, Column, Model, DefaultScope} from 'sequelize-typescript';
+import {Table, Column, Model, CreatedAt, DataType, UpdatedAt} from 'sequelize-typescript';
 
 @Table({
     tableName: 'validators',
@@ -17,4 +17,12 @@ export default class Validator extends Model<Validator> {
 
     @Column
     address_operator_pub: string;
+
+    @CreatedAt
+    @Column({ field: "created_at", type: DataType.DATE })
+    created_at: Date
+
+    @UpdatedAt
+    @Column({ field: "updated_at", type: DataType.DATE })
+    updated_at: Date
 }

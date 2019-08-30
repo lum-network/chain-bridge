@@ -1,4 +1,4 @@
-import {Table, Column, Model} from 'sequelize-typescript';
+import {Table, Column, Model, CreatedAt, DataType, UpdatedAt} from 'sequelize-typescript';
 
 @Table({
     tableName: 'sat_migrations',
@@ -26,4 +26,12 @@ export default class Migration extends Model<Migration> {
 
     @Column
     amount: string;
+
+    @CreatedAt
+    @Column({ field: "created_at", type: DataType.DATE })
+    created_at: Date
+
+    @UpdatedAt
+    @Column({ field: "updated_at", type: DataType.DATE })
+    updated_at: Date
 }
