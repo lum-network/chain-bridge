@@ -22,9 +22,13 @@ const getOrInsertAccount = async (address: string) => {
     }
     address = address.toLowerCase();
     const sbc = new SandblockChainClient();
-    const remoteAcc = (await sbc.getAccountLive(address));
+    let remoteAcc = (await sbc.getAccountLive(address));
 
     let account = await Account.findOne({where: {address}});
+    if(!remoteAcc){
+        return;
+    }
+    remoteAcc = remoteAcc.result;
     if(account === null){
         account = await Account.create({
             address: address,
