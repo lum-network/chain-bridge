@@ -33,8 +33,8 @@ const getOrInsertAccount = async (address: string) => {
         account = await Account.create({
             address: address,
             coins: JSON.stringify(remoteAcc.value.coins),
-            public_key_type: remoteAcc.value.public_key.type,
-            public_key_value: remoteAcc.value.publc_key.value,
+            public_key_type: (remoteAcc.value.public_key) ? remoteAcc.value.public_key.type : null,
+            public_key_value: (remoteAcc.value.public_key) ? remoteAcc.value.public_key.value : null,
             account_number: remoteAcc.value.account_number,
             sequence: remoteAcc.value.sequence
         });
