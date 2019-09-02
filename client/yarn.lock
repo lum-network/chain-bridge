@@ -756,7 +756,7 @@
     "@babel/helper-plugin-utils" "^7.0.0"
     "@babel/plugin-transform-typescript" "^7.3.2"
 
-"@babel/runtime@7.5.5", "@babel/runtime@^7.0.0", "@babel/runtime@^7.1.2", "@babel/runtime@^7.2.0", "@babel/runtime@^7.3.4", "@babel/runtime@^7.4.0", "@babel/runtime@^7.4.2", "@babel/runtime@^7.4.4", "@babel/runtime@^7.4.5", "@babel/runtime@^7.5.5":
+"@babel/runtime@7.5.5", "@babel/runtime@^7.0.0", "@babel/runtime@^7.1.2", "@babel/runtime@^7.2.0", "@babel/runtime@^7.3.4", "@babel/runtime@^7.4.0", "@babel/runtime@^7.4.2", "@babel/runtime@^7.4.5", "@babel/runtime@^7.5.5":
   version "7.5.5"
   resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.5.5.tgz#74fba56d35efbeca444091c7850ccd494fd2f132"
   integrity sha512-28QvEGyQyNkB0/m2B4FU7IEZGK2NUrcMtT6BZEFALTguLk+AUT6ofsHtPk5QyjAdUkpMJ+/Em+quwz4HOt30AQ==
@@ -1024,7 +1024,7 @@
     "@ledgerhq/logs" "^4.68.2"
     node-hid "^0.7.9"
 
-"@ledgerhq/hw-transport-node-hid@^4.63.2":
+"@ledgerhq/hw-transport-node-hid@^4.68.4":
   version "4.68.4"
   resolved "https://registry.yarnpkg.com/@ledgerhq/hw-transport-node-hid/-/hw-transport-node-hid-4.68.4.tgz#1ee897f2b1904df5b501faaaeab09c597108e4bd"
   integrity sha512-IK/FoXIgbNikhS8utbYPl9BNeoy3Mqi06pCUXYQYnx6fLogC6mFQbJGdPu9wG794MGParB02k/9P0wB0CrGx6w==
@@ -1038,7 +1038,7 @@
     node-hid "^0.7.9"
     usb "^1.6.0"
 
-"@ledgerhq/hw-transport-u2f@^4.63.2":
+"@ledgerhq/hw-transport-u2f@^4.68.4":
   version "4.68.4"
   resolved "https://registry.yarnpkg.com/@ledgerhq/hw-transport-u2f/-/hw-transport-u2f-4.68.4.tgz#10db617b81fd2351303a2e2ed30c0643c398ae2d"
   integrity sha512-fpm7Ppr7hNPh8gBI9SgrHIEvxw9aL/Dj4XNAa2dxIpjdYMSfZPb0DStjTNGHNjFey9GJ142QQg4Kbg/GoDK9Sg==
@@ -1058,6 +1058,16 @@
     "@ledgerhq/hw-transport" "^4.68.4"
     "@ledgerhq/logs" "^4.68.2"
     rxjs "^6.5.2"
+
+"@ledgerhq/hw-transport-webusb@^4.69.0":
+  version "4.69.0"
+  resolved "https://registry.yarnpkg.com/@ledgerhq/hw-transport-webusb/-/hw-transport-webusb-4.69.0.tgz#b626befb4e2b8725b87505f065ea5c12ea3dff2d"
+  integrity sha512-5gEiE7VhNj/tKSdLclXkln6nuEJG1ysnqB9tOEWh5SVVUMg+BgBcIZXEUbSON4k9bihwftDp/M3BvCYOsdcS7w==
+  dependencies:
+    "@ledgerhq/devices" "^4.68.4"
+    "@ledgerhq/errors" "^4.68.4"
+    "@ledgerhq/hw-transport" "^4.68.4"
+    "@ledgerhq/logs" "^4.68.2"
 
 "@ledgerhq/hw-transport@^4.68.4":
   version "4.68.4"
@@ -8859,7 +8869,7 @@ regenerate@^1.4.0:
   resolved "https://registry.yarnpkg.com/regenerate/-/regenerate-1.4.0.tgz#4a856ec4b56e4077c557589cae85e7a4c8869a11"
   integrity sha512-1G6jJVDWrt0rK99kBjvEtziZNCICAuvIPkSiUFIQxVP06RCVpq3dmDo2oi6ABpYaDYaTRr67BEhL8r1wgEZZKg==
 
-regenerator-runtime@0.13.3, regenerator-runtime@^0.13.2:
+regenerator-runtime@0.13.3, regenerator-runtime@^0.13.2, regenerator-runtime@^0.13.3:
   version "0.13.3"
   resolved "https://registry.yarnpkg.com/regenerator-runtime/-/regenerator-runtime-0.13.3.tgz#7cf6a77d8f5c6f60eb73c5fc1955b2ceb01e6bf5"
   integrity sha512-naKIZz2GQ8JWh///G7L3X6LaQUAMp2lvb1rvwwsURe/VXwD6VMfr+/1NuNw3ag8v2kY1aQ/go5SNn79O9JU7yw==
@@ -9177,14 +9187,15 @@ safe-regex@^1.1.0:
   resolved "https://registry.yarnpkg.com/safer-buffer/-/safer-buffer-2.1.2.tgz#44fa161b0187b9549dd84bb91802f9bd8385cd6a"
   integrity sha512-YZo3K82SD7Riyi0E1EQPojLz7kpepnSQI9IyPbHHg1XXXevb5dJI7tpyN2ADxGcQbHG7vcyRHk0cbwqcQriUtg==
 
-sandblock-chain-sdk-js@^1.0.4:
-  version "1.0.4"
-  resolved "https://registry.yarnpkg.com/sandblock-chain-sdk-js/-/sandblock-chain-sdk-js-1.0.4.tgz#174b663285edae8c8b6b205c414ff779de70b473"
-  integrity sha512-Zy6kl7fdbWugkbehbnApD1Gc5mGWhP/W+IRcka67U4bEMjgyxlIWCpQalcD7a+gMoGLkwKg3yGjMKMsJA8qcuQ==
+sandblock-chain-sdk-js@^1.0.19:
+  version "1.0.19"
+  resolved "https://registry.yarnpkg.com/sandblock-chain-sdk-js/-/sandblock-chain-sdk-js-1.0.19.tgz#22a773eeb6add593e1ca0d7531714d5b7f7d311d"
+  integrity sha512-I7xO1/9ONNAgtm3tfVa7kIAbXtWxSx/eTbR5pn9e5VCZ/QsSJMysd3kCTsXTp+SMJQLUQgDq6QER8dNYiHI7HQ==
   dependencies:
-    "@babel/runtime" "^7.4.4"
-    "@ledgerhq/hw-transport-u2f" "^4.63.2"
+    "@babel/runtime" "^7.5.5"
+    "@ledgerhq/hw-transport-u2f" "^4.68.4"
     "@ledgerhq/hw-transport-web-ble" "^4.63.2"
+    "@ledgerhq/hw-transport-webusb" "^4.69.0"
     "@types/chai" "^4.2.0"
     "@types/mocha" "^5.2.7"
     "@types/node" "^12.7.1"
@@ -9201,10 +9212,12 @@ sandblock-chain-sdk-js@^1.0.4:
     events "^3.0.0"
     is_js "^0.9.0"
     js-amino "^1.0.0"
+    js-sha256 "^0.9.0"
     mocha "^6.2.0"
     ndjson "^1.5.0"
     protocol-buffers-encodings "^1.1.0"
     pumpify "^1.5.1"
+    regenerator-runtime "^0.13.3"
     safe-buffer "^5.1.2"
     secp256k1 "^3.7.1"
     secure-random "^1.1.2"
@@ -9216,7 +9229,7 @@ sandblock-chain-sdk-js@^1.0.4:
     varstruct "^6.1.2"
     websocket-stream "^5.5.0"
   optionalDependencies:
-    "@ledgerhq/hw-transport-node-hid" "^4.63.2"
+    "@ledgerhq/hw-transport-node-hid" "^4.68.4"
 
 sane@^4.0.3:
   version "4.1.0"

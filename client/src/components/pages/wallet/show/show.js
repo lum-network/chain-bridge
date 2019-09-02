@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
 import {connect} from "react-redux";
+import TransportU2F from '@ledgerhq/hw-transport-u2f';
+import TransportWebUSB from '@ledgerhq/hw-transport-webusb';
 import sdk from 'sandblock-chain-sdk-js';
 import {
     Button,
@@ -41,7 +43,12 @@ type State = {
     input: any,
     passphrase: string,
 
-    activeTab: number
+    activeTab: number,
+
+    ledgerTransport: any,
+    ledgerSandblockApp: any,
+    ledgerAcquired: boolean,
+    HDPath: []
 };
 
 class WalletShow extends Component<Props, State> {
@@ -62,7 +69,12 @@ class WalletShow extends Component<Props, State> {
             input: null,
             passphrase: null,
 
-            activeTab: 1
+            activeTab: 1,
+
+            ledgerTransport: null,
+            ledgerSandblockApp: null,
+            ledgerAcquired: false,
+            HDPath: [44, 118, 0, 0, 0]
         }
 
         this.openModal = this.openModal.bind(this);
@@ -106,7 +118,65 @@ class WalletShow extends Component<Props, State> {
         this.openModal('software');
     }
 
-    processSelectedMethod(){
+    async processLedgerTransport(){
+        this.state.ledgerSandblockApp.getVersion().then(
+            res => {
+                // Everything went fine ?
+                if(res.return_code !== 36864) {
+                    if (res.return_code === 28160) {
+                        return toast.error(res.error_message)
+                    } else {
+                        return toast.error('Unknown error while trying to access Ledger. Is it unlocked?');
+                    }
+                }
+                // We get the address
+                this.state.ledgerSandblockApp.getAddressAndPubKey(this.state.HDPath, 'sand').then(
+                    (res)=>{
+                        if(res.return_code !== 36864) {
+                            if (res.return_code === 28160) {
+                                return toast.error(res.error_message)
+                            } else {
+                                return toast.error('Unknown error while trying to access Ledger. Is it unlocked?');
+                            }
+                        }
+                        dispatchAction(getAccount(res.bech32_address));
+                        this.setState({
+                            ledgerAcquired: true,
+                            walletUnlocked: true,
+                            openedModal: ''
+                        });
+                    }
+                )
+            }
+        )
+    }
+
+    async getLedgerTransport(){
+        if(this.state.ledgerTransport !== null){
+            return this.state.ledgerTransport;
+        }
+
+        try {
+            const ledgerTransport = await TransportU2F.create(1000);
+            const ledgerSandblockApp = new sdk.SandblockApp(ledgerTransport);
+            this.setState({ledgerTransport, ledgerSandblockApp});
+            await this.processLedgerTransport();
+            return ledgerTransport;
+        } catch(error){}
+        try {
+            if(!this.state.ledgerTransport){
+                const ledgerTransport = await TransportWebUSB.create();
+                const ledgerSandblockApp = new sdk.SandblockApp(ledgerTransport);
+                this.setState({ledgerTransport, ledgerSandblockApp});
+                await this.processLedgerTransport();
+                return ledgerTransport;
+            }
+        } catch(error){}
+
+        return this.state.ledgerTransport;
+    }
+
+    async processSelectedMethod(){
         if(this.state.selectedMethod === 'mnemonic'){
             this.setState({openedModal: 'mnemonic'});
         } else if(this.state.selectedMethod === 'privatekey'){
@@ -114,7 +184,8 @@ class WalletShow extends Component<Props, State> {
         } else if(this.state.selectedMethod === "keystore"){
             this.fileUploadHandler.click();
         } else if(this.state.selectedMethod === 'ledger'){
-
+            await this.getLedgerTransport();
+            this.setState({openedModal: 'ledger'});
         }
     }
 
@@ -459,6 +530,23 @@ class WalletShow extends Component<Props, State> {
         );
     }
 
+    renderLedgerModal(){
+        return (
+            <Modal isOpen={this.state.openedModal === 'ledger'} toggle={() => {this.setState({openedModal: ''})}}>
+                <ModalHeader toggle={() => {this.setState({openedModal: ''})}}>Access by Ledger</ModalHeader>
+                <ModalBody>
+                    <div className="alert alert-info text-center">
+                        Please launch the Sandblock App on your Ledger and then accept our request to your wallet.<br/>
+                        We only fetch the address of it, no public key no private key.
+                    </div>
+                </ModalBody>
+                <ModalFooter>
+                    <Button color="secondary" onClick={() => {this.setState({openedModal: ''})}}>Cancel</Button>
+                </ModalFooter>
+            </Modal>
+        );
+    }
+
     renderModals(){
         return (
             <React.Fragment>
@@ -467,6 +555,7 @@ class WalletShow extends Component<Props, State> {
                 {this.renderKeystoreModal()}
                 {this.renderHardwareModal()}
                 {this.renderSoftwareModal()}
+                {this.renderLedgerModal()}
                 {this.renderNewTransactionModal()}
             </React.Fragment>
         );

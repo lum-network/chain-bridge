@@ -20,6 +20,9 @@
     "url": "https://github.com/SandBlockio/surprise-chain-explorer/issues"
   },
   "dependencies": {
+    "@ledgerhq/hw-transport-node-hid": "^4.68.4",
+    "@ledgerhq/hw-transport-u2f": "^4.68.4",
+    "@ledgerhq/hw-transport-webusb": "^4.69.0",
     "axios": "^0.19.0",
     "bootstrap": "^4.3.1",
     "font-awesome": "^4.7.0",
@@ -40,7 +43,7 @@
     "redux-axios-middleware": "^4.0.1",
     "redux-persist": "^5.10.0",
     "redux-thunk": "^2.3.0",
-    "sandblock-chain-sdk-js": "^1.0.4",
+    "sandblock-chain-sdk-js": "^1.0.19",
     "save-file": "^2.3.1"
   },
   "eslintConfig": {
