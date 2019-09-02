@@ -2,12 +2,14 @@ import {Lifecycle, Request, ResponseToolkit} from "hapi";
 import {response} from "../utils/http";
 import Account from "../models/account";
 import SandblockChainClient from "sandblock-chain-sdk-js/dist/client";
+import Transaction from "../models/transaction";
 
 export const AccountAddressRoute: Lifecycle.Method = async(req: Request, handler: ResponseToolkit) => {
     let account = await Account.findOne({
         where: {
             address: req.params.address
-        }
+        },
+        include: [{model: Transaction, as: 'transactions_sent'}, {model:Transaction, as: 'transactions_received'}]
     });
 
     // In case no account stored locally, we fetch from blockchain and/or response with an empty object

@@ -1,4 +1,5 @@
-import {Table, Column, Model, CreatedAt, DataType, UpdatedAt} from 'sequelize-typescript';
+import {Table, Column, Model, CreatedAt, DataType, UpdatedAt, HasMany} from 'sequelize-typescript';
+import Transaction from "./transaction";
 
 @Table({
     tableName: 'accounts',
@@ -31,4 +32,10 @@ export default class Account extends Model<Account> {
     @UpdatedAt
     @Column({ field: "updated_at", type: DataType.DATE })
     updated_at: Date
+
+    @HasMany(() => Transaction, 'sender_id')
+    transactions_sent: Transaction[];
+
+    @HasMany(() => Transaction, 'recipient_id')
+    transactions_received: Transaction[];
 }

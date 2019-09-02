@@ -10,6 +10,7 @@ import {
     DataType
 } from 'sequelize-typescript';
 import Block from "./block";
+import Account from "./account";
 
 @Table({
     tableName: 'transactions',
@@ -54,11 +55,19 @@ export default class Transaction extends Model<Transaction> {
     @Column
     to_address: string;
 
+    @ForeignKey(() => Account)
     @Column
     sender_id: number;
 
+    @BelongsTo(() => Account)
+    sender: Account;
+
+    @ForeignKey(() => Account)
     @Column
     recipient_id: number;
+
+    @BelongsTo(() => Account)
+    recipient: Account;
 
     @Column
     name: string;

@@ -34,11 +34,11 @@ async function initJobs(){
 async function start() {
     try {
         // Read env config
-        dotenv.config();
+        await dotenv.config();
 
         // Start database ORM
         // @ts-ignore
-        const sequelize = new Sequelize({
+        new Sequelize({
             database: process.env.DB_NAME,
             dialect: process.env.DB_DIALECT,
             username: process.env.DB_USERNAME,
@@ -46,7 +46,7 @@ async function start() {
             host: process.env.DB_HOST,
             port: process.env.DB_PORT,
             models: [Account, Block, Migration, Transaction, Validator],
-            logging: false,
+            logging: console.log,
             timezone: '+02:00'
         });
 
