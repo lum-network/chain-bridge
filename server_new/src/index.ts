@@ -53,6 +53,14 @@ async function start() {
         // Launch jobs
         await initJobs();
 
+        /*server.ext('onPreResponse', function(request, h) {
+            var response = request.response;
+            //@ts-ignore
+            const error = response.error || response.message;
+            server.log([ 'error' ], error);
+            return h.continue;
+        });*/
+
         // Start HAPI
         await server.start();
 
