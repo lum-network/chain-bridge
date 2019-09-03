@@ -31,6 +31,7 @@ type Props = {
 
 type State = {
     walletUnlocked: boolean,
+    walletPublicKey: any,
     walletPrivateKey: string,
     accountInfos: {},
     accountTransactions: [],
@@ -58,11 +59,12 @@ class WalletShow extends Component<Props, State> {
     constructor(props: Props){
         super(props);
         this.state = {
-            walletUnlocked: true,
-            walletPrivateKey: '12af61a94691d459c2bc1779f66a2e45911f282e1395c7ca07a08a73ff889265',
+            walletUnlocked: false,
+            walletPublicKey: null,
+            walletPrivateKey: '',
             accountInfos: null,
             accountTransactions: [],
-            selectedMethod: 'keystore',
+            selectedMethod: '',
 
             openedModal: '',
 
@@ -102,13 +104,11 @@ class WalletShow extends Component<Props, State> {
     }
 
     componentDidMount(): void {
-        this.retrieveWallet();
-        //TODO: remove ça
     }
 
     retrieveWallet(){
-        const address = sdk.utils.getAddressFromPrivateKey(Buffer.from(this.state.walletPrivateKey, 'hex'), 'sand').toString();
-        dispatchAction(getAccount(address));
+        /*const address = sdk.utils.getAddressFromPrivateKey(Buffer.from(this.state.walletPrivateKey, 'hex'), 'sand').toString();
+        dispatchAction(getAccount(address));*/
     }
 
     toggleHardwareModal(){
@@ -128,18 +128,19 @@ class WalletShow extends Component<Props, State> {
             this.setState({newTransactionStep: 2});
         } else {
             // Ledger is case-specific
+            const sbc = new sdk.client();
+            let tx = null;
             if(this.state.selectedMethod === 'ledger'){
-
+                tx = await sbc.transferUsingLedger(this.state.ledgerTransport, this.state.HDPath, this.state.input.destination, this.state.input.currency, this.state.input.amount, "Sent using explorer wallet");
             } else {
-                const sbc = new sdk.client();
                 sbc.setPrivateKey(Buffer.from(this.state.walletPrivateKey, 'hex'));
-                const tx = await sbc.transfer(sbc._address.toString(), this.state.input.destination, this.state.input.currency, this.state.input.amount, "Sent using explorer wallet");
-                if(tx === null){
-                    return toast.error('Unable to dispatch your transaction, please make sure all params are correct');
-                }
-                this.setState({openedModal: '', newTransactionStep: 1});
-                toast.success(`Transaction dispatched with hash ${tx.txhash}`);
+                tx = await sbc.transfer(sbc._address.toString(), this.state.input.destination, this.state.input.currency, this.state.input.amount, "Sent using explorer wallet");
             }
+            if(tx === null){
+                return toast.error('Unable to dispatch your transaction, please make sure all params are correct');
+            }
+            this.setState({openedModal: '', newTransactionStep: 1});
+            toast.success(`Transaction dispatched with hash ${tx.txhash}`);
         }
     }
 
@@ -168,7 +169,8 @@ class WalletShow extends Component<Props, State> {
                         this.setState({
                             ledgerAcquired: true,
                             walletUnlocked: true,
-                            openedModal: ''
+                            openedModal: '',
+                            walletPublicKey: res.compressed_pk
                         });
                     }
                 )
@@ -420,6 +422,11 @@ class WalletShow extends Component<Props, State> {
                                 Please confirm the different parameters. They will be used to dispatch your transaction.<br/>
                                 Once confirmed, it's definitive and nothing can be roll-backed
                             </div>
+                            {this.state.ledgerAcquired && (
+                                <div className="alert alert-warning text-center">
+                                    Once you click 'confirm', please validate and sign on the Ledger to process the transaction.
+                                </div>
+                            )}
                             <React.Fragment>
                                 <ul>
                                     <li><b>Destination address:</b> {this.state.input.destination}</li>
