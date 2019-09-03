@@ -1,6 +1,5 @@
 import Block from "../models/block";
 import SandblockChainClient from "sandblock-chain-sdk-js/dist/client";
-import * as moment from 'moment-timezone';
 
 import * as utils from "sandblock-chain-sdk-js/dist/utils";
 import Validator from "../models/validator";

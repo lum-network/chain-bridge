@@ -10,6 +10,10 @@ import Account from "./models/account";
 import Validator from "./models/validator";
 import {SyncBlocks} from "./jobs/blocks";
 import Migration from "./models/migration";
+import {ProcessWaitingMigration} from "./jobs/migration";
+import {Request} from "hapi";
+import {ResponseToolkit} from "hapi";
+import {response} from "./utils/http";
 
 const jobs = [];
 
@@ -19,6 +23,12 @@ const server: hapi.Server = new hapi.Server({
     routes: {
         cors: {
             origin: ['*']
+        },
+        validate: {
+            failAction: async (request: Request, h: ResponseToolkit, err?: Error) => {
+                // @ts-ignore
+                return response(h, err.validation, err.message, 400).takeover();
+            }
         }
     }
 });
@@ -29,6 +39,9 @@ server.route(routes);
 async function initJobs(){
     // Blocks sync every 15 seconds
     jobs.push(schedule.scheduleJob('*/15 * * * * *', SyncBlocks));
+
+    // Migrations every minute
+    jobs.push(schedule.scheduleJob('* * * * *', ProcessWaitingMigration));
 }
 
 async function start() {

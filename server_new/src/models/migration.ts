@@ -10,7 +10,7 @@ export default class Migration extends Model<Migration> {
     reference: string;
 
     @Column
-    state: string;
+    state: 'WAITING'|'ACCEPTED'|'REFUSED';
 
     @Column
     message: string;

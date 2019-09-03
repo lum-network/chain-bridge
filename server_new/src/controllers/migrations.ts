@@ -21,13 +21,7 @@ export const MigrationShowRoute: Lifecycle.Method = async(req: Request, handler:
 
 export const MigrationStoreRoute: Lifecycle.Method = async(req: Request, handler: ResponseToolkit) => {
     //@ts-ignore
-    const address = req.payload.address;
-    //@ts-ignore
-    const msg = req.payload.msg;
-    //@ts-ignore
-    const sig = req.payload.sig;
-    //@ts-ignore
-    const version = req.payload.version;
+    const {address, msg, sig, version} = req.payload;
 
     // Check if signer is the original sender
     const web3 = new Web3(Web3.givenProvider);
