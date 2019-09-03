@@ -38,6 +38,8 @@ type State = {
 
     openedModal: string,
 
+    newTransactionStep: number,
+
     deciphering: boolean,
 
     input: any,
@@ -56,13 +58,15 @@ class WalletShow extends Component<Props, State> {
     constructor(props: Props){
         super(props);
         this.state = {
-            walletUnlocked: false,
+            walletUnlocked: true,
             walletPrivateKey: '12af61a94691d459c2bc1779f66a2e45911f282e1395c7ca07a08a73ff889265',
             accountInfos: null,
             accountTransactions: [],
-            selectedMethod: '',
+            selectedMethod: 'keystore',
 
             openedModal: '',
+
+            newTransactionStep: 1,
 
             deciphering: false,
 
@@ -77,17 +81,13 @@ class WalletShow extends Component<Props, State> {
             HDPath: [44, 118, 0, 0, 0]
         }
 
-        this.openModal = this.openModal.bind(this);
         this.toggleHardwareModal = this.toggleHardwareModal.bind(this);
         this.toggleSoftwareModal = this.toggleSoftwareModal.bind(this);
         this.processSelectedMethod = this.processSelectedMethod.bind(this);
         this.unlockWallet = this.unlockWallet.bind(this);
         this.decipherKeystore = this.decipherKeystore.bind(this);
-    }
-
-    componentDidMount(): void {
-        //DEBUG STUFF TO REMOVE
-        //this.retrieveWallet();
+        this.processLedgerTransport = this.processLedgerTransport.bind(this);
+        this.initTransaction = this.initTransaction.bind(this);
     }
 
     async UNSAFE_componentWillReceiveProps(nextProps: Readonly<Props>, nextContext: any): void {
@@ -101,21 +101,46 @@ class WalletShow extends Component<Props, State> {
         this.setState({accountInfos: nextProps.account, accountTransactions: newTxs});
     }
 
+    componentDidMount(): void {
+        this.retrieveWallet();
+        //TODO: remove ça
+    }
+
     retrieveWallet(){
-        const address = sdk.utils.getAddressFromPrivateKey(new Buffer(this.state.walletPrivateKey), 'sand').toString();
+        const address = sdk.utils.getAddressFromPrivateKey(Buffer.from(this.state.walletPrivateKey, 'hex'), 'sand').toString();
         dispatchAction(getAccount(address));
     }
 
-    openModal(type: string) {
-        this.setState({openedModal: type});
-    }
-
     toggleHardwareModal(){
-        this.openModal('hardware');
+        this.setState({openedModal: 'hardware'});
     }
 
     toggleSoftwareModal(){
-        this.openModal('software');
+        this.setState({openedModal: 'software'});
+    }
+
+    async initTransaction(){
+        if(this.state.newTransactionStep === 1) {
+            if (!this.state.input || !this.state.input.destination || !this.state.input.amount || !this.state.input.currency) {
+                return toast.warn('All fields are required');
+            }
+
+            this.setState({newTransactionStep: 2});
+        } else {
+            // Ledger is case-specific
+            if(this.state.selectedMethod === 'ledger'){
+
+            } else {
+                const sbc = new sdk.client();
+                sbc.setPrivateKey(Buffer.from(this.state.walletPrivateKey, 'hex'));
+                const tx = await sbc.transfer(sbc._address.toString(), this.state.input.destination, this.state.input.currency, this.state.input.amount, "Sent using explorer wallet");
+                if(tx === null){
+                    return toast.error('Unable to dispatch your transaction, please make sure all params are correct');
+                }
+                this.setState({openedModal: '', newTransactionStep: 1});
+                toast.success(`Transaction dispatched with hash ${tx.txhash}`);
+            }
+        }
     }
 
     async processLedgerTransport(){
@@ -245,6 +270,7 @@ class WalletShow extends Component<Props, State> {
             const address = sdk.utils.getAddressFromPrivateKey(pk, 'sand');
             dispatchAction(getAccount(address.toString()));
             this.setState({walletUnlocked: true, walletPrivateKey: pk.toString('hex'), openedModal: '', deciphering: false});
+            console.log(this.state.walletPrivateKey);
         } catch(error){
             this.setState({deciphering: false});
             toast.warn('Unable to decipher your keystore file, please check passphrase');
@@ -265,14 +291,14 @@ class WalletShow extends Component<Props, State> {
                 </div>
                 <div className="row">
                     <div className="col-lg-4 offset-2">
-                        <div className="button-wallet-action" onClick={() => {this.openModal('hardware')}}>
+                        <div className="button-wallet-action" onClick={() => {this.setState({openedModal: 'hardware'})}}>
                             <img src={hardwareButton} className="button-image" alt="icon"/>
                             <h3>Hardware</h3>
                             <p>Ledger Wallet, Finney,<br/>Trezor, BitBot, Secalot,<br/>KeepKey</p>
                         </div>
                     </div>
                     <div className="col-lg-4">
-                        <div className="button-wallet-action" onClick={() => {this.openModal('software')}}>
+                        <div className="button-wallet-action" onClick={() => {this.setState({openedModal: 'software'})}}>
                             <img src={softwareButton} className="button-image" alt="icon"/>
                             <h3>Software</h3>
                             <p>Keystore file, Private Key, Mnemonic Phrase</p>
@@ -355,36 +381,57 @@ class WalletShow extends Component<Props, State> {
             return null;
         }
 
+        let currencies = [{denom: 'Please choose a currency'}];
+        if(this.state.accountInfos && this.state.accountInfos.coins && this.state.accountInfos.coins.length > 0){
+            currencies = currencies.concat(JSON.parse(this.state.accountInfos.coins));
+        }
         return (
-            <Modal isOpen={this.state.openedModal === 'new_transaction'} toggle={() => {this.setState({openedModal: ''})}}>
+            <Modal isOpen={this.state.openedModal === 'new_transaction'} toggle={() => {this.setState({openedModal: '', newTransactionStep: 1})}} size={'lg'}>
                 <ModalHeader toggle={() => {this.setState({openedModal: ''})}}>Init a new transaction</ModalHeader>
                 <ModalBody>
-                    <div className="row">
-                        <div className="col-lg-12 form-group">
-                            <label>Destination Address</label>
-                            <input type="text" className="form-control" onChange={(ev)=>{this.setState({input: {destination: ev.target.value}})}}/>
-                        </div>
-                    </div>
-                    <div className="row">
-                        <div className="col-lg-6 form-group">
-                            <label>Amount</label>
-                            <input type="number" className="form-control" onChange={(ev)=>{this.setState({input: {amount: ev.target.value}})}}/>
-                        </div>
-                        <div className="col-lg-6 form-group">
-                            <label>Currency</label>
-                            <select className="form-control" onChange={(ev)=>{this.setState({input: {currency: ev.target.value}})}}>
-                                {
-                                    this.state.accountInfos && this.state.accountInfos.coins && this.state.accountInfos.coins.length > 0 && JSON.parse(this.state.accountInfos.coins).map((elem, index) => {
-                                        return (<option value={elem.denom} key={index}>{elem.denom}</option>);
-                                    })
-                                }
-                            </select>
-                        </div>
-                    </div>
+                    {this.state.newTransactionStep === 1 ? (
+                        <React.Fragment>
+                            <div className="row">
+                                <div className="col-lg-12 form-group">
+                                    <label>Destination Address</label>
+                                    <input type="text" className="form-control" onChange={(ev)=>{this.setState({input: {...this.state.input, destination: ev.target.value}})}}/>
+                                </div>
+                            </div>
+                            <div className="row">
+                                <div className="col-lg-6 form-group">
+                                    <label>Amount</label>
+                                    <input type="number" className="form-control" onChange={(ev)=>{this.setState({input: {...this.state.input, amount: ev.target.value}})}}/>
+                                </div>
+                                <div className="col-lg-6 form-group">
+                                    <label>Currency</label>
+                                    <select className="form-control" onChange={(ev)=>{this.setState({input: {...this.state.input, currency: ev.target.value}})}}>
+                                        {
+                                             currencies.map((elem, index) => {
+                                                return (<option value={elem.denom} key={index}>{`${elem.denom} ${(elem.amount) ? `(${elem.amount})` :''}`}</option>);
+                                            })
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                        </React.Fragment>
+                    ) : (
+                        <React.Fragment>
+                            <div className="alert alert-info text-center">
+                                Please confirm the different parameters. They will be used to dispatch your transaction.<br/>
+                                Once confirmed, it's definitive and nothing can be roll-backed
+                            </div>
+                            <React.Fragment>
+                                <ul>
+                                    <li><b>Destination address:</b> {this.state.input.destination}</li>
+                                    <li><b>Asset:</b> {this.state.input.amount} {this.state.input.currency}</li>
+                                </ul>
+                            </React.Fragment>
+                        </React.Fragment>
+                    )}
                 </ModalBody>
                 <ModalFooter>
-                    <Button color="primary" onClick={this.unlockWallet}>Confirm</Button>{' '}
-                    <Button color="secondary" onClick={() => {this.setState({openedModal: ''})}}>Cancel</Button>
+                    <Button color="primary" onClick={this.initTransaction}>Confirm</Button>{' '}
+                    <Button color="secondary" onClick={() => {this.setState({openedModal: '', newTransactionStep: 1})}}>Cancel</Button>
                 </ModalFooter>
             </Modal>
         );
@@ -541,7 +588,7 @@ class WalletShow extends Component<Props, State> {
                     </div>
                 </ModalBody>
                 <ModalFooter>
-                    <Button color="secondary" onClick={() => {this.setState({openedModal: ''})}}>Cancel</Button>
+                    <Button color="secondary" onClick={() => {this.setState({openedModal: '', ledgerAcquired: false, ledgerSandblockApp: null, ledgerTransport: null, selectedMethod: ''})}}>Cancel</Button>
                 </ModalFooter>
             </Modal>
         );

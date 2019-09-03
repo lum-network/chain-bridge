@@ -29,6 +29,7 @@
     "git": "^0.1.5",
     "moment": "^2.24.0",
     "moment-timezone": "^0.5.26",
+    "pusher-js": "^5.0.1",
     "qrcode.react": "^0.9.3",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
@@ -43,7 +44,7 @@
     "redux-axios-middleware": "^4.0.1",
     "redux-persist": "^5.10.0",
     "redux-thunk": "^2.3.0",
-    "sandblock-chain-sdk-js": "^1.0.19",
+    "sandblock-chain-sdk-js": "^1.0.21",
     "save-file": "^2.3.1"
   },
   "eslintConfig": {

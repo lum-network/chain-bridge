@@ -5,6 +5,8 @@ import {connect} from "react-redux";
 import moment from 'moment-timezone';
 import {NavLink} from "react-router-dom";
 
+import Pusher from 'pusher-js';
+
 type Props = {
     blocks: [],
     error: string,
@@ -14,6 +16,7 @@ type Props = {
 type State = { blocks: [] };
 
 class BlocksPage extends Component<Props, State> {
+    socket: Pusher;
     constructor(props){
         super(props);
         this.state = {
@@ -24,9 +27,28 @@ class BlocksPage extends Component<Props, State> {
         }
     }
 
-    componentDidMount(): void {
+    componentWillMount(): void {
         moment.tz.setDefault('Europe/Paris');
         dispatchAction(getBlocks());
+    }
+
+    componentDidMount(): void {
+        // We subscribe to automatic updates
+        this.socket = new Pusher(process.env.REACT_APP_PUSHER_APP_KEY, {
+            cluster: process.env.REACT_APP_PUSHER_APP_CLUSTER,
+        });
+        const channel = this.socket.subscribe('blocks');
+        channel.bind('new-block', async (data)=>{
+            await this.state.blocks.unshift(data);
+            await this.state.blocks.sort((a, b)=>{
+                return b.height - a.height;
+            })
+            this.forceUpdate();
+        });
+    }
+
+    componentWillUnmount(): void {
+        this.socket.unsubscribe('blocks');
     }
 
     async UNSAFE_componentWillReceiveProps(nextProps: Readonly<P>, nextContext: any): void {

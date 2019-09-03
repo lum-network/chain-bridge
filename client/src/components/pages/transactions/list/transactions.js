@@ -3,6 +3,8 @@ import {dispatchAction} from "../../../../utils/redux";
 import {listTransactions} from "../../../../store/actions/transactions";
 import {connect} from "react-redux";
 import TransactionsListComponent from "../../../parts/TransactionsList";
+import Pusher from "pusher-js";
+import moment from "moment-timezone";
 
 type Props = {
     transactions: [],
@@ -13,6 +15,7 @@ type Props = {
 type State = { transactions: [] };
 
 class TransactionsListPage extends Component<Props, State> {
+    socket: Pusher;
     constructor(props){
         super(props);
         this.state = {
@@ -20,8 +23,28 @@ class TransactionsListPage extends Component<Props, State> {
         }
     }
 
-    componentDidMount(): void {
+    componentWillMount(): void {
+        moment.tz.setDefault('Europe/Paris');
         dispatchAction(listTransactions());
+    }
+
+    componentDidMount(): void {
+        // We subscribe to automatic updates
+        this.socket = new Pusher(process.env.REACT_APP_PUSHER_APP_KEY, {
+            cluster: process.env.REACT_APP_PUSHER_APP_CLUSTER,
+        });
+        const channel = this.socket.subscribe('transactions');
+        channel.bind('new-transaction', async (data)=>{
+            await this.state.transactions.unshift(data);
+            await this.state.transactions.sort((a, b)=>{
+                return b.height - a.height;
+            })
+            this.forceUpdate();
+        });
+    }
+
+    componentWillUnmount(): void {
+        this.socket.unsubscribe('transactions');
     }
 
     UNSAFE_componentWillReceiveProps(nextProps: Readonly<P>, nextContext: any): void {
