@@ -12,6 +12,7 @@
   "dependencies": {
     "@types/boom": "^7.3.0",
     "@types/hapi": "^18.0.2",
+    "@types/joi": "^14.3.3",
     "@types/node": "^12.7.2",
     "@types/node-schedule": "^1.2.4",
     "boom": "^7.3.0",
