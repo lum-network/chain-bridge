@@ -2,6 +2,7 @@ import SandblockChainClient from "sandblock-chain-sdk-js/dist/client";
 import Account from "../models/account";
 import Transaction from "../models/transaction";
 import Block from "../models/block";
+import PusherClient from "../utils/pusher";
 
 const extractValueFromEvents = async (events: [{type, attributes:[{key, value}]}], key: string) => {
     let retn = null;
@@ -92,6 +93,9 @@ export const SyncTransactionInternal = async (tx: any) => {
         msgs: JSON.stringify(tx.tx.value.msg),
         raw: JSON.stringify(tx)
     });
+
+    // Dispatch a pusher notif
+    PusherClient.GetInstance(PusherClient).notify('transactions', 'new-transaction', transaction.toJSON());
 
     return transaction;
 }

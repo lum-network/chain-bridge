@@ -5,6 +5,7 @@ import * as moment from 'moment-timezone';
 import * as utils from "sandblock-chain-sdk-js/dist/utils";
 import Validator from "../models/validator";
 import {SyncTransaction} from "./transactions";
+import PusherClient from "../utils/pusher";
 
 const transformBlockProposerAddress = async (proposer_address: string): Promise<string> => {
     const encodedAddress = utils.encodeAddress(proposer_address, 'sandvalcons').toString();//TODO: prefix in config
@@ -36,6 +37,9 @@ export const SyncBlockInternal = async (height: number) => {
             raw: JSON.stringify(block)
         });
         entity.save();
+
+        // Dispatch a pusher notif
+        await PusherClient.GetInstance(PusherClient).notify('blocks', 'new-block', entity.toJSON());
 
         // We got transactions to sync also
         if (entity.num_txs > 0) {
