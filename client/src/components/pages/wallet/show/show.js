@@ -131,10 +131,13 @@ class WalletShow extends Component<Props, State> {
             const sbc = new sdk.client();
             let tx = null;
             if(this.state.selectedMethod === 'ledger'){
-                tx = await sbc.transferUsingLedger(this.state.ledgerTransport, this.state.HDPath, this.state.input.destination, this.state.input.currency, this.state.input.amount, "Sent using explorer wallet");
+                await sbc.initLedgerMetas(this.state.ledgerTransport, this.state.HDPath);
+                const payload = await sbc.transfer(this.state.input.destination, this.state.input.currency, this.state.input.amount, "Sent using explorer wallet");
+                tx = await sbc.dispatchWithLedger(payload, this.state.ledgerTransport, this.state.HDPath);
             } else {
                 sbc.setPrivateKey(Buffer.from(this.state.walletPrivateKey, 'hex'));
-                tx = await sbc.transfer(sbc._address.toString(), this.state.input.destination, this.state.input.currency, this.state.input.amount, "Sent using explorer wallet");
+                const payload = await sbc.transfer(this.state.input.destination, this.state.input.currency, this.state.input.amount, "Sent using explorer wallet");
+                tx = await sbc.dispatch(payload);
             }
             if(tx === null){
                 return toast.error('Unable to dispatch your transaction, please make sure all params are correct');
