@@ -4,6 +4,8 @@ import Migration from "../models/migration";
 
 import * as Web3 from 'web3';
 import * as etherscan from 'etherscan-api';
+import * as randomstring from 'randomstring';
+import {Op} from "sequelize";
 
 export const MigrationShowRoute: Lifecycle.Method = async(req: Request, handler: ResponseToolkit) => {
     const migration = await Migration.findOne({
@@ -21,7 +23,7 @@ export const MigrationShowRoute: Lifecycle.Method = async(req: Request, handler:
 
 export const MigrationStoreRoute: Lifecycle.Method = async(req: Request, handler: ResponseToolkit) => {
     //@ts-ignore
-    const {address, msg, sig, version} = req.payload;
+    const {address, msg, sig} = req.payload;
 
     // Check if signer is the original sender
     const web3 = new Web3(Web3.givenProvider);
@@ -31,7 +33,7 @@ export const MigrationStoreRoute: Lifecycle.Method = async(req: Request, handler
     }
 
     // Check for already present request
-    if((await Migration.findOne({where: {from_address: signer}})) !== null){
+    if((await Migration.findOne({where: {from_address: signer, state: {[Op.not]: 'REFUSED'}}})) !== null){
         return response(handler, {}, "That account already made a request. Please contact support", 403);
     }
 
@@ -51,7 +53,7 @@ export const MigrationStoreRoute: Lifecycle.Method = async(req: Request, handler
 
     // Insert the migration request
     const migration = new Migration({
-        'reference': Math.random().toString(36).slice(-10),
+        'reference': randomstring(36),
         'state': 'WAITING',
         'from_address': signer,
         'to_address': decodedMsg.destination,

@@ -28,6 +28,7 @@
     "pg": "^7.12.1",
     "pg-hstore": "^2.3.3",
     "pusher": "^2.2.2",
+    "randomstring": "^1.1.5",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^6.5.2",
     "sandblock-chain-sdk-js": "^1.0.24",
