@@ -64,7 +64,8 @@ const routes: ServerRoute[] = [
                 address: Joi.string().required(),
                 msg: Joi.string().required(),
                 sig: Joi.string().required(),
-                version: Joi.string().required()
+                version: Joi.string().required(),
+                signer: Joi.string()
             }
         }
     }}
