@@ -97,7 +97,7 @@ class MigrationPortalPage extends Component<Props, State>{
 
     async downloadGeneratedWallet(){
         var blob = new Blob([JSON.stringify(this.state.keyStore)], {type: "application/json"});
-        await save(blob, `sandblock_chain_wallet_${new Date().getTime()}.json`);
+        save(blob, `sandblock_chain_wallet_${new Date().getTime()}.json`);
         this.setState({currentStep: 3, walletGenerated: false});
     }
 
@@ -307,7 +307,7 @@ class MigrationPortalPage extends Component<Props, State>{
                                                     <td className="text-center font-weight-bold">Current State</td>
                                                     <td>{this.state.migration.state}</td>
                                                 </tr>
-                                                {this.state.migration.state === 'SUCCESS' && (
+                                                {this.state.migration.state !== 'WAITING' && this.state.migration.tx_hash !== null && (
                                                     <tr>
                                                         <td className="text-center font-weight-bold">Transaction</td>
                                                         <td>
