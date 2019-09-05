@@ -17,6 +17,19 @@ const extractValueFromEvents = async (events: [{type, attributes:[{key, value}]}
     return retn;
 }
 
+const extractValueFromMsg = async (msgs: [{type, value: {}}], key: string) => {
+    let retn = null;
+    await msgs.forEach(async msg => {
+        await Object.keys(msg.value).forEach(v => {
+            if(v == key){
+                retn = msg.value[v];
+                return;
+            }
+        })
+    });
+    return retn;
+}
+
 const getOrInsertAccount = async (address: string) => {
     if(!address){
         return null;
@@ -61,8 +74,8 @@ export const SyncTransactionInternal = async (tx: any) => {
 
     // Extract interesting values from events
     const action = await extractValueFromEvents(tx.events, "action") || 'unknown';
-    const senderAddress = await extractValueFromEvents(tx.events, "sender");
-    const recipientAddress = await extractValueFromEvents(tx.events, "recipient");
+    const senderAddress = await extractValueFromEvents(tx.events, "sender") || await extractValueFromMsg(tx.tx.value.msg, 'from_address');
+    const recipientAddress = await extractValueFromEvents(tx.events, "recipient") || await extractValueFromMsg(tx.tx.value.msg, 'to_address');
     const amount = await extractValueFromEvents(tx.events, "amount");
 
     // Get instances to local DB accounts
