@@ -4,9 +4,13 @@ import Migration from "../models/migration";
 
 import * as Web3 from 'web3';
 import * as etherscan from 'etherscan-api';
-// @ts-ignore
-import randomstring from 'randomstring';
 import {Op} from "sequelize";
+
+const randomString = (length, chars) => {
+    let result = '';
+    for (let i = length; i > 0; --i) result += chars[Math.floor(Math.random() * chars.length)];
+    return result;
+}
 
 export const MigrationShowRoute: Lifecycle.Method = async(req: Request, handler: ResponseToolkit) => {
     const migration = await Migration.findOne({
@@ -54,7 +58,7 @@ export const MigrationStoreRoute: Lifecycle.Method = async(req: Request, handler
 
     // Insert the migration request
     const migration = new Migration({
-        'reference': randomstring(36),
+        'reference': randomString(36, '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'),
         'state': 'WAITING',
         'from_address': signer,
         'to_address': decodedMsg.destination,
