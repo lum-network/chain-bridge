@@ -495,7 +495,7 @@ class WalletShow extends Component<Props, State> {
                     <div className="row">
                         <div className="col-lg-12">
                             <label>Please enter your passphrase if you have one</label>
-                            <input type="text" className="form-control" onChange={(ev) => {this.setState({passphrase: ev.target.value})}}/>
+                            <input type="password" className="form-control" onChange={(ev) => {this.setState({passphrase: ev.target.value})}}/>
                         </div>
                     </div>
                 </ModalBody>
