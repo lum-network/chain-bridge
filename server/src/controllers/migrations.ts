@@ -4,7 +4,8 @@ import Migration from "../models/migration";
 
 import * as Web3 from 'web3';
 import * as etherscan from 'etherscan-api';
-import * as randomstring from 'randomstring';
+// @ts-ignore
+import randomstring from 'randomstring';
 import {Op} from "sequelize";
 
 export const MigrationShowRoute: Lifecycle.Method = async(req: Request, handler: ResponseToolkit) => {
