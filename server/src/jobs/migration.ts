@@ -9,8 +9,7 @@ const emitNewTransfer = async (destination: string, amount: number): Promise<any
     await sbc.setPrivateKey(Buffer.from(process.env.WALLET_MIGRATION_PRIVATE_KEY, 'hex'));
 
     const payload = await sbc.transfer(destination, "sbc", amount, "Satisfaction Token Migration");
-    const tx = await sbc.dispatch(payload);
-    return tx;
+    return await sbc.dispatch(payload);
 
 }
 

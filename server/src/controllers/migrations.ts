@@ -31,8 +31,8 @@ export const MigrationStoreRoute: Lifecycle.Method = async(req: Request, handler
     }
 
     // Check for already present request
-    if((await Migration.findOne({where: {from_address: signer, state: 'WAITING'}})) !== null){
-        return response(handler, {}, "That account already have a pending migration request", 403);
+    if((await Migration.findOne({where: {from_address: signer}})) !== null){
+        return response(handler, {}, "That account already made a request. Please contact support", 403);
     }
 
     // Check the SAT balance
