@@ -14,6 +14,7 @@ import {ProcessWaitingMigration} from "./jobs/migration";
 import {Request} from "hapi";
 import {ResponseToolkit} from "hapi";
 import {response} from "./utils/http";
+import {SyncValidators} from "./jobs/validators";
 
 const jobs = [];
 
@@ -39,6 +40,9 @@ server.route(routes);
 async function initJobs(){
     // Blocks sync every 15 seconds
     jobs.push(schedule.scheduleJob('*/15 * * * * *', SyncBlocks));
+
+    // Sync validators
+    jobs.push(schedule.scheduleJob('*/15 * * * * *', SyncValidators));
 
     // Migrations every minute
     jobs.push(schedule.scheduleJob('* * * * *', ProcessWaitingMigration));

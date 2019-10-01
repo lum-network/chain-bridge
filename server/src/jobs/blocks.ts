@@ -59,7 +59,12 @@ export const SyncBlocks = async () => {
 
     // We first get the last stored block
     const lastBlock = await Block.findOne({order: [['height', 'DESC']], attributes: {exclude: ['raw']}});
-    const lastBlockHeight: number = parseInt(lastBlock.height);
+    let lastBlockHeight: number = 0;
+
+    // If we don't have any "last block" (in case of genesis init)
+    if (lastBlock !== null){
+        lastBlockHeight = parseInt(lastBlock.height);
+    }
 
     // We get the current height of the blockchain
     const currentStatus = await sbc.getStatus();
