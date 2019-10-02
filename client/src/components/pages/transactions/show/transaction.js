@@ -85,6 +85,48 @@ class TransactionShowPage extends Component<Props, State> {
         );
     }
 
+    renderMsg(msg: Object){
+        switch (msg.type){
+            case "cosmos-sdk/MsgSend":
+            {
+                return (
+                    <tbody>
+                        <tr>
+                            <td className="validator-identity-title"><strong>From</strong></td>
+                            <td><NavLink to={`/account/${msg.value.from_address}`}>{msg.value.from_address}</NavLink></td>
+                        </tr>
+                        <tr>
+                            <td className="validator-identity-title"><strong>To</strong></td>
+                            <td><NavLink to={`/account/${msg.value.to_address}`}>{msg.value.to_address}</NavLink></td>
+                        </tr>
+                        <tr>
+                            <td className="validator-identity-title"><strong>Value</strong></td>
+                            <td>{msg.value.amount[0].amount} {msg.value.amount[0].denom}</td>
+                        </tr>
+                    </tbody>
+                );
+            }
+
+            case "cosmos-sdk/MsgEditValidator":
+            {
+                return (
+                    <tbody>
+                        <tr><td className="validator-identity-title"><strong>From</strong></td><td><NavLink to={`/validator/${msg.value.address}`}>{msg.value.address}</NavLink></td></tr>
+                        <tr><td className="validator-identity-title"><strong>New Commission Rate</strong></td><td>{msg.value.commission_rate}</td></tr>
+                        <tr><td className="validator-identity-title"><strong>New Minimum Self Delegation</strong></td><td>{msg.value.min_self_delegation}</td></tr>
+                        <tr><td className="validator-identity-title"><strong>New Description Details</strong></td><td>{msg.value.Description.details}</td></tr>
+                        <tr><td className="validator-identity-title"><strong>New Description Identity</strong></td><td>{msg.value.Description.identity}</td></tr>
+                        <tr><td className="validator-identity-title"><strong>New Description Moniker</strong></td><td>{msg.value.Description.moniker}</td></tr>
+                        <tr><td className="validator-identity-title"><strong>New Description Website</strong></td><td>{msg.value.Description.website}</td></tr>
+                    </tbody>
+                );
+            }
+
+            default:
+                return null;
+        }
+    }
+
     renderMsgs(){
         if(this.state.transaction === null || this.props.loading){
             return null;
@@ -103,20 +145,7 @@ class TransactionShowPage extends Component<Props, State> {
                             <div className="card-body">
                                 <h5 className="card-title">{msg.type}</h5>
                                 <table>
-                                    <tbody>
-                                    <tr>
-                                        <td className="validator-identity-title"><strong>From</strong></td>
-                                        <td><NavLink to={`/account/${msg.value.from_address}`}>{msg.value.from_address}</NavLink></td>
-                                    </tr>
-                                    <tr>
-                                        <td className="validator-identity-title"><strong>To</strong></td>
-                                        <td><NavLink to={`/account/${msg.value.to_address}`}>{msg.value.to_address}</NavLink></td>
-                                    </tr>
-                                    <tr>
-                                        <td className="validator-identity-title"><strong>Value</strong></td>
-                                        <td>{msg.value.amount[0].amount} {msg.value.amount[0].denom}</td>
-                                    </tr>
-                                    </tbody>
+                                    {this.renderMsg(msg)}
                                 </table>
                             </div>
                         </div>

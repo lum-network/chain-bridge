@@ -19,7 +19,6 @@ class Layout extends Component {
                                         <li><NavLink to="/blocks">BLOCKS</NavLink></li>
                                         <li><NavLink to="/transactions">TRANSACTIONS</NavLink></li>
                                         <li><NavLink to="/validators">VALIDATORS</NavLink></li>
-                                        <li><NavLink to="/migration">MIGRATION</NavLink></li>
                                         <li><NavLink to="/wallet">WALLET</NavLink></li>
                                         <li><a href="https://sandblock.io" target="_blank" rel="noopener noreferrer">ABOUT</a></li>
                                     </ul>

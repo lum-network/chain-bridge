@@ -30,7 +30,7 @@ const extractValueFromMsg = async (msgs: [{type, value: {}}], key: string) => {
     return retn;
 }
 
-const getOrInsertAccount = async (address: string) => {
+export const getOrInsertAccount = async (address: string) => {
     if(!address){
         return null;
     }
@@ -38,10 +38,10 @@ const getOrInsertAccount = async (address: string) => {
     const sbc = new SandblockChainClient();
     let remoteAcc = (await sbc.getAccountLive(address));
 
-    let account = await Account.findOne({where: {address}});
-    if(!remoteAcc){
-        return;
-    }
+    let account = await Account.findOne({
+        where: {address},
+        include: [{model: Transaction, as: 'transactions_sent'}, {model:Transaction, as: 'transactions_received'}]
+    });
     remoteAcc = remoteAcc.result;
     if(account === null){
         account = await Account.create({
@@ -58,6 +58,8 @@ const getOrInsertAccount = async (address: string) => {
             account.sequence = remoteAcc.value.sequence;
             account.coins = JSON.stringify(remoteAcc.value.coins);
             account.save();
+        } else {
+            return null;
         }
     }
 
@@ -68,14 +70,21 @@ export const SyncTransactionInternal = async (tx: any) => {
     // Prevent double addition
     let transaction = await Transaction.findOne({where: {hash: tx.txhash}});
     if(transaction !== null){
-        //console.log(`TX with hash ${tx.txhash} already in database, updated`);
+        console.log(`TX with hash ${tx.txhash} already in database`);
         return;
     }
 
     // Extract interesting values from events
     const action = await extractValueFromEvents(tx.events, "action") || 'unknown';
-    const senderAddress = await extractValueFromEvents(tx.events, "sender") || await extractValueFromMsg(tx.tx.value.msg, 'from_address');
-    const recipientAddress = await extractValueFromEvents(tx.events, "recipient") || await extractValueFromMsg(tx.tx.value.msg, 'to_address');
+    let senderAddress = await extractValueFromEvents(tx.events, "sender") || await extractValueFromMsg(tx.tx.value.msg, 'from_address');
+
+    // We try again to get sender with particular types
+    if(senderAddress === null){
+        if(action === "edit_validator") {
+            senderAddress = await extractValueFromMsg(tx.tx.value.msg, "address");
+        }
+    }
+    let recipientAddress = await extractValueFromEvents(tx.events, "recipient") || await extractValueFromMsg(tx.tx.value.msg, 'to_address');
     const amount = await extractValueFromEvents(tx.events, "amount");
 
     // Get instances to local DB accounts
@@ -121,5 +130,4 @@ export const SyncTransaction = async (hash: string) => {
         return;
     }
     await SyncTransactionInternal(tx);
-    //TODO: dispatch on pusher
 }
