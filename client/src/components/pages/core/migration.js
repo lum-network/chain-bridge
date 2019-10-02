@@ -327,6 +327,8 @@ class MigrationPortalPage extends Component<Props, State>{
                     <div className="row">
                         <div className="col-lg-12">
                             <div className="alert alert-warning text-center">
+                                <b>IMPORTANT:</b> Keep the reference of your request until you have received your SBC.<br/>
+                                <br/>
                                 You can query our system to see the current state of your migration request.<br/>
                                 Please note it may take a few days to be completed.
                             </div>
