@@ -45,7 +45,7 @@ async function initJobs(){
     jobs.push(schedule.scheduleJob('*/15 * * * * *', SyncValidators));
 
     // Migrations every minute
-    //jobs.push(schedule.scheduleJob('* * * * *', ProcessWaitingMigration));
+    jobs.push(schedule.scheduleJob('* * * * *', ProcessWaitingMigration));
 }
 
 async function start() {
