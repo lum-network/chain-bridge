@@ -6,6 +6,8 @@ import QRCode from "qrcode.react";
 import {NavLink} from "react-router-dom";
 import ValidatorStatus from "../../../parts/ValidatorStatus";
 
+import sdk from 'sandblock-chain-sdk-js';
+
 type Props = {
     validator: {},
     error: string,
@@ -33,6 +35,7 @@ class ValidatorPage extends React.Component<Props, State> {
         if(this.props.loading || this.state.validator === null || this.state.validator === undefined){
             return null;
         }
+        const accAddress = sdk.utils.convertValAddressToAccAddress(this.state.validator.operator_address || this.props.match.params.address).toString();
         return (
             <React.Fragment>
                 <div className="col-12">
@@ -52,6 +55,7 @@ class ValidatorPage extends React.Component<Props, State> {
                                         </div>
                                         <div className="col-6">
                                             <h6 className="font-weight-bold">Address</h6>
+                                            <NavLink to={`/account/${accAddress}`}>{accAddress || ''}</NavLink>
                                         </div>
                                     </div>
                                 </div>
