@@ -1,4 +1,5 @@
 import SandblockChainClient from "sandblock-chain-sdk-js/dist/client";
+import * as utils from "sandblock-chain-sdk-js/dist/utils";
 import Account from "../models/account";
 import Transaction from "../models/transaction";
 import Block from "../models/block";
@@ -35,8 +36,18 @@ export const getOrInsertAccount = async (address: string) => {
         return null;
     }
     address = address.toLowerCase();
+
+    // In case of validator address, we convert to normal address
+    if (address.startsWith('sandvaloper')){
+        address = utils.convertValAddressToAccAddress(address).toString();
+    }
+
+    // We fetch the remote account from blockchain
     const sbc = new SandblockChainClient();
     let remoteAcc = (await sbc.getAccountLive(address));
+    if(remoteAcc === null){
+        return;
+    }
 
     let account = await Account.findOne({
         where: {address},
