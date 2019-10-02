@@ -65,7 +65,7 @@ export const MigrationStoreRoute: Lifecycle.Method = async(req: Request, handler
         'state': 'WAITING',
         'from_address': signer,
         'to_address': decodedMsg.destination,
-        'amount': balance
+        'amount': Math.ceil(balance)
     });
     await migration.save();
 
