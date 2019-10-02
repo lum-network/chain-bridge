@@ -19,15 +19,17 @@ export const ProcessWaitingMigration = async () => {
     await migrations.forEach(async (migration: Migration, index: number)=>{
         const tx = await emitNewTransfer(migration.to_address, parseInt(migration.amount));
         if(!tx || !tx.logs || tx.logs.length  <= 0 || !tx.logs[0].success){
-            migration.message = "Error while processing transaction: " + JSON.stringify(tx.logs);
+            migration.message = "Error while processing transaction";
             migration.tx_hash = tx.txhash || null;
             migration.state = "REFUSED";
+            migration.raw_tx = JSON.stringify(tx);
             migration.save();
             return;
         }
 
         migration.message = 'Migration successfully applied';
         migration.tx_hash = tx.txhash;
+        migration.raw_tx = JSON.stringify(tx);
         migration.state = "ACCEPTED";
         migration.save();
     });

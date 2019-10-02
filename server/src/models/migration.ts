@@ -27,6 +27,9 @@ export default class Migration extends Model<Migration> {
     @Column
     amount: string;
 
+    @Column
+    raw_tx: string;
+
     @CreatedAt
     @Column({ field: "created_at", type: DataType.DATE })
     created_at: Date

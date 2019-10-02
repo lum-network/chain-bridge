@@ -16,6 +16,9 @@ export const MigrationShowRoute: Lifecycle.Method = async(req: Request, handler:
     const migration = await Migration.findOne({
         where: {
             reference: req.params.reference
+        },
+        attributes: {
+            exclude: ['raw_tx']
         }
     });
 
