@@ -89,6 +89,8 @@ class WalletShow extends Component<Props, State> {
         this.decipherKeystore = this.decipherKeystore.bind(this);
         this.processLedgerTransport = this.processLedgerTransport.bind(this);
         this.initTransaction = this.initTransaction.bind(this);
+        this.delegate = this.delegate.bind(this);
+        this.undelegate = this.undelegate.bind(this);
     }
 
     async UNSAFE_componentWillReceiveProps(nextProps: Readonly<Props>, nextContext: any): void {
@@ -103,11 +105,12 @@ class WalletShow extends Component<Props, State> {
     }
 
     componentDidMount(): void {
+        //this.retrieveWallet();
     }
 
     retrieveWallet(){
-        /*const address = sdk.utils.getAddressFromPrivateKey(Buffer.from(this.state.walletPrivateKey, 'hex'), 'sand').toString();
-        dispatchAction(getAccount(address));*/
+        const address = sdk.utils.getAddressFromPrivateKey(Buffer.from(this.state.walletPrivateKey, 'hex'), 'sand').toString();
+        dispatchAction(getAccount(address));
     }
 
     toggleHardwareModal(){
@@ -116,6 +119,100 @@ class WalletShow extends Component<Props, State> {
 
     toggleSoftwareModal(){
         this.setState({openedModal: 'software'});
+    }
+
+    async undelegate(){
+        if(this.state.newTransactionStep === 1){
+            if(!this.state.input || !this.state.input.destination || !this.state.input.amount){
+                return toast.warn('All fields are required');
+            }
+
+            if(String(this.state.input.destination).startsWith('sandvaloper') === false){
+                return toast.warn('Please enter a valid validator address(starts with sandvaloper)');
+            }
+
+            if(parseInt(this.state.input.amount) <= 0){
+                return toast.warn('Please enter a correct amount');
+            }
+
+            this.setState({newTransactionStep: 2});
+        } else {
+            // Ledger is case-specific
+            const sbc = new sdk.client();
+            let tx = null;
+            if(this.state.selectedMethod === 'ledger'){
+                await sbc.initLedgerMetas(this.state.ledgerTransport, this.state.HDPath);
+                const payload = await sbc.undelegate(this.state.input.destination, "sbc", this.state.input.amount, "Undelegated using explorer wallet");
+                tx = await sbc.dispatchWithLedger(payload, this.state.ledgerTransport, this.state.HDPath);
+            } else {
+                sbc.setPrivateKey(Buffer.from(this.state.walletPrivateKey, 'hex'));
+                const payload = await sbc.undelegate(this.state.input.destination, "sbc", this.state.input.amount, "Undelegated using explorer wallet");
+                tx = await sbc.dispatch(payload);
+            }
+            if(tx === null){
+                return toast.error('Unable to dispatch your transaction, please make sure all params are correct');
+            }
+            this.setState({openedModal: '', newTransactionStep: 1});
+            toast.success(`Transaction dispatched with hash ${tx.txhash}`);
+        }
+    }
+
+    async delegate(){
+        if(this.state.newTransactionStep === 1){
+            if(!this.state.input || !this.state.input.destination || !this.state.input.amount){
+                return toast.warn('All fields are required');
+            }
+
+            if(String(this.state.input.destination).startsWith('sandvaloper') === false){
+                return toast.warn('Please enter a valid validator address(starts with sandvaloper)');
+            }
+
+            if(!this.state.accountInfos || !this.state.accountInfos.coins || this.state.accountInfos.coins.length <= 0){
+                return toast.warn('Unable to fetch your coins balance');
+            }
+
+            let found = false;
+            let balance: number = 0;
+            const currencies: [] = JSON.parse(this.state.accountInfos.coins);
+            await currencies.forEach((cur)=>{
+                if(cur !== null && cur.denom !== undefined){
+                    if(cur.denom === 'sbc'){
+                        found = true;
+                        if(cur.amount !== undefined) {
+                            balance = cur.amount;
+                        }
+                    }
+                }
+            });
+
+            if(!found){
+                return toast.warn("You don't have any SBC");
+            }
+
+            if(!balance || parseInt(this.state.input.amount) > balance){
+                return toast.warn("You don't have enough SBC");
+            }
+
+            this.setState({newTransactionStep: 2});
+        } else {
+            // Ledger is case-specific
+            const sbc = new sdk.client();
+            let tx = null;
+            if(this.state.selectedMethod === 'ledger'){
+                await sbc.initLedgerMetas(this.state.ledgerTransport, this.state.HDPath);
+                const payload = await sbc.delegate(this.state.input.destination, "sbc", this.state.input.amount, "Delegated using explorer wallet");
+                tx = await sbc.dispatchWithLedger(payload, this.state.ledgerTransport, this.state.HDPath);
+            } else {
+                sbc.setPrivateKey(Buffer.from(this.state.walletPrivateKey, 'hex'));
+                const payload = await sbc.delegate(this.state.input.destination, "sbc", this.state.input.amount, "Delegated using explorer wallet");
+                tx = await sbc.dispatch(payload);
+            }
+            if(tx === null){
+                return toast.error('Unable to dispatch your transaction, please make sure all params are correct');
+            }
+            this.setState({openedModal: '', newTransactionStep: 1});
+            toast.success(`Transaction dispatched with hash ${tx.txhash}`);
+        }
     }
 
     async initTransaction(){
@@ -348,7 +445,7 @@ class WalletShow extends Component<Props, State> {
                                         </tr>
                                         <tr>
                                             <td><strong>Public Key</strong></td>
-                                            <td>{this.state.accountInfos.public_key || 'None'}</td>
+                                            <td>{this.state.accountInfos.public_key_value || 'None'} ({this.state.accountInfos.public_key_type || 'Type Unknown'})</td>
                                         </tr>
                                         <tr>
                                             <td><strong>Account Number</strong></td>
@@ -378,13 +475,115 @@ class WalletShow extends Component<Props, State> {
                             <div className="col-lg-12">
                                 <div className="table-responsive">
                                     <TransactionsListComponent transactions={this.state.accountTransactions}/>
-                                    <button className="btn btn-sm btn-primary" onClick={() => {this.setState({openedModal: 'new_transaction'})}}>Emit a new transaction</button>
+                                    <button className="btn btn-sm btn-primary mr-2" onClick={() => {this.setState({openedModal: 'new_transaction'})}}>Emit a new transaction</button>
+                                    <button className="btn btn-sm btn-primary mr-2" onClick={() => {this.setState({openedModal: 'delegate'})}}>Delegate my SBC</button>
+                                    <button className="btn btn-sm btn-primary mr-2" onClick={() => {this.setState({openedModal: 'undelegate'})}}>Undelegate my SBC</button>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </section>
             </React.Fragment>
+        );
+    }
+
+    renderUndelegateModal(){
+        if(!this.state.walletUnlocked){
+            return null;
+        }
+
+        return (
+            <Modal isOpen={this.state.openedModal === 'undelegate'} toggle={() => {this.setState({openedModal: '', newTransactionStep: 1})}} size={'lg'}>
+                <ModalHeader toggle={() => {this.setState({openedModal: ''})}}>Undelegate my SBC</ModalHeader>
+                <ModalBody>
+                    {this.state.newTransactionStep === 1 ? (
+                        <React.Fragment>
+                            <div className="row">
+                                <div className="col-lg-6 form-group">
+                                    <label>Validator Address</label>
+                                    <input type="text" className="form-control" onChange={(ev)=>{this.setState({input: {...this.state.input, destination: ev.target.value}})}}/>
+                                </div>
+                                <div className="col-lg-6 form-group">
+                                    <label>Amount</label>
+                                    <input type="number" className="form-control" onChange={(ev)=>{this.setState({input: {...this.state.input, amount: ev.target.value}})}}/>
+                                </div>
+                            </div>
+                        </React.Fragment>
+                    ) : (
+                        <React.Fragment>
+                            <div className="alert alert-info text-center">
+                                Please confirm the different parameters. They will be used to dispatch your transaction.<br/>
+                                Once confirmed, it's definitive and nothing can be roll-backed
+                            </div>
+                            {this.state.ledgerAcquired && (
+                                <div className="alert alert-warning text-center">
+                                    Once you click 'confirm', please validate and sign on the Ledger to process the transaction.
+                                </div>
+                            )}
+                            <React.Fragment>
+                                <ul>
+                                    <li><b>Validator address:</b> {this.state.input.destination}</li>
+                                    <li><b>Amount:</b> {this.state.input.amount}</li>
+                                </ul>
+                            </React.Fragment>
+                        </React.Fragment>
+                    )}
+                </ModalBody>
+                <ModalFooter>
+                    <Button color="primary" onClick={this.undelegate}>Confirm</Button>{' '}
+                    <Button color="secondary" onClick={() => {this.setState({openedModal: '', newTransactionStep: 1})}}>Cancel</Button>
+                </ModalFooter>
+            </Modal>
+        );
+    }
+
+    renderDelegateModal(){
+        if(!this.state.walletUnlocked){
+            return null;
+        }
+
+        return (
+            <Modal isOpen={this.state.openedModal === 'delegate'} toggle={() => {this.setState({openedModal: '', newTransactionStep: 1})}} size={'lg'}>
+                <ModalHeader toggle={() => {this.setState({openedModal: ''})}}>Delegate my SBC</ModalHeader>
+                <ModalBody>
+                    {this.state.newTransactionStep === 1 ? (
+                        <React.Fragment>
+                            <div className="row">
+                                <div className="col-lg-6 form-group">
+                                    <label>Validator Address</label>
+                                    <input type="text" className="form-control" onChange={(ev)=>{this.setState({input: {...this.state.input, destination: ev.target.value}})}}/>
+                                </div>
+                                <div className="col-lg-6 form-group">
+                                    <label>Amount</label>
+                                    <input type="number" className="form-control" onChange={(ev)=>{this.setState({input: {...this.state.input, amount: ev.target.value}})}}/>
+                                </div>
+                            </div>
+                        </React.Fragment>
+                    ) : (
+                        <React.Fragment>
+                            <div className="alert alert-info text-center">
+                                Please confirm the different parameters. They will be used to dispatch your transaction.<br/>
+                                Once confirmed, it's definitive and nothing can be roll-backed
+                            </div>
+                            {this.state.ledgerAcquired && (
+                                <div className="alert alert-warning text-center">
+                                    Once you click 'confirm', please validate and sign on the Ledger to process the transaction.
+                                </div>
+                            )}
+                            <React.Fragment>
+                                <ul>
+                                    <li><b>Validator address:</b> {this.state.input.destination}</li>
+                                    <li><b>Amount:</b> {this.state.input.amount}</li>
+                                </ul>
+                            </React.Fragment>
+                        </React.Fragment>
+                    )}
+                </ModalBody>
+                <ModalFooter>
+                    <Button color="primary" onClick={this.delegate}>Confirm</Button>{' '}
+                    <Button color="secondary" onClick={() => {this.setState({openedModal: '', newTransactionStep: 1})}}>Cancel</Button>
+                </ModalFooter>
+            </Modal>
         );
     }
 
@@ -621,6 +820,8 @@ class WalletShow extends Component<Props, State> {
                 {this.renderSoftwareModal()}
                 {this.renderLedgerModal()}
                 {this.renderNewTransactionModal()}
+                {this.renderDelegateModal()}
+                {this.renderUndelegateModal()}
             </React.Fragment>
         );
     }
