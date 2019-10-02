@@ -154,35 +154,38 @@ class MigrationPortalPage extends Component<Props, State>{
                 <div className="title text-center"><h5>Migration Processus Introduction</h5></div>
                 <div className="text">
                     <div className="row">
+                        <div className="col-lg-12">
+                            <div className="alert alert-warning text-center">
+                                <strong>WARNING: PLEASE READ AND PROCEED CAREFULLY AS THIS PROCESS MIGHT RESULT IN THE LOSS OF CRYPTO-ASSETS</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="row">
                         <div className="col-lg-12 text-left">
-                            <h5 className="card-title">1. Lorem Ipsum</h5>
+                            <h5 className="card-title">1. Migration Process</h5>
                             <p className="card-text">
-                                Lorem ipsum dolor sit amet, consectetur adipiscing elit.<br/>
-                                Nullam et rhoncus ligula, quis scelerisque nisi. Mauris at hendrerit justo. Pellentesque et porta nisl, sed condimentum velit.<br/>
-                                Vestibulum sem eros, condimentum a magna at, viverra porta risus. Etiam porttitor hendrerit sapien, aliquet semper dui elementum nec.<br/>
-                                Proin urna metus, sagittis in tempor mollis, lobortis a dui. Donec consequat tempus nulla, vitae pulvinar turpis convallis eu.<br/>
-                                Aenean quis mi faucibus ex consequat mattis id a sapien. Mauris quis nunc nec nisi porta tempus nec feugiat neque.<br/>
-                                Ut a pulvinar purus. Suspendisse ac velit vitae sem pellentesque finibus.
+                                This migration is dedicated to all the people who have access to an Ethereum wallet that hold Satisfaction Tokens (SAT).<br/>
+                                The SAT Ethereum Smart Contract can be found at this address: <a href="https://etherscan.io/token/0x92736b3bff1bbd72a72478d78f18a6ab9b68b791">https://etherscan.io/token/0x92736b3bff1bbd72a72478d78f18a6ab9b68b791</a><br/>
+                                <br/>
+                                During this process you will be asked to create or provide a Sandblock Chain Wallet and to sign a message using the Ethereum wallet holding your SAT.<br/>
+                                Each part of this process is entirely <b>FREE</b> and there is no charge associated with any of the functionalities involved, would it be in fiat, ETH, SAT or SBC.<br/>
+                                Once the process is completed, the Sandblock Chain will allocate you the equivalent amount of Sandblock Coins (1 SAT = 1 SBC), rounded to the upper value.<br/>
+                                <br/>
+                                The allocation process usually happens within minutes but it can take up to a few days depending on the number of requests being processed.<br/>
+                                <br/>
+                                A detailed article is available to guide you through the process:<br/>
+                                <a href="https://medium.com/sandblock/blockchain-migration-step-3-71aebf475104">https://medium.com/sandblock/blockchain-migration-step-3-71aebf475104</a>
                             </p>
                             <br/>
-                            <h5 className="card-title">2. Lorem Ipsum</h5>
+                            <h5 className="card-title">2. Principles & Responsibility</h5>
                             <p className="card-text">
-                                Lorem ipsum dolor sit amet, consectetur adipiscing elit.<br/>
-                                Nullam et rhoncus ligula, quis scelerisque nisi. Mauris at hendrerit justo. Pellentesque et porta nisl, sed condimentum velit.<br/>
-                                Vestibulum sem eros, condimentum a magna at, viverra porta risus. Etiam porttitor hendrerit sapien, aliquet semper dui elementum nec.<br/>
-                                Proin urna metus, sagittis in tempor mollis, lobortis a dui. Donec consequat tempus nulla, vitae pulvinar turpis convallis eu.<br/>
-                                Aenean quis mi faucibus ex consequat mattis id a sapien. Mauris quis nunc nec nisi porta tempus nec feugiat neque.<br/>
-                                Ut a pulvinar purus. Suspendisse ac velit vitae sem pellentesque finibus.
-                            </p>
-                            <br/>
-                            <h5 className="card-title">3. Lorem Ipsum</h5>
-                            <p className="card-text">
-                                Lorem ipsum dolor sit amet, consectetur adipiscing elit.<br/>
-                                Nullam et rhoncus ligula, quis scelerisque nisi. Mauris at hendrerit justo. Pellentesque et porta nisl, sed condimentum velit.<br/>
-                                Vestibulum sem eros, condimentum a magna at, viverra porta risus. Etiam porttitor hendrerit sapien, aliquet semper dui elementum nec.<br/>
-                                Proin urna metus, sagittis in tempor mollis, lobortis a dui. Donec consequat tempus nulla, vitae pulvinar turpis convallis eu.<br/>
-                                Aenean quis mi faucibus ex consequat mattis id a sapien. Mauris quis nunc nec nisi porta tempus nec feugiat neque.<br/>
-                                Ut a pulvinar purus. Suspendisse ac velit vitae sem pellentesque finibus.
+                                During this process you will be asked to create or provide a Sandblock Chain Wallet and use an Ethereum Wallet. You are solely responsible for storing the private keys of these wallets and making sure you do not lose access to it.<br/>
+                                <br/>
+                                You understand and agree that:<br/>
+                                - While the individuals and entities referred to as the Sandblock team make reasonable efforts to develop the Sandblock project, they are not responsible for any loss of crypto-assets<br/>
+                                - SBC do not represent or constitute any ownership right or stake, share or security or equivalent rights nor any right to receive future revenues, shares or any other form of participation or governance right in or relating to the Sandblock Project in general<br/>
+                                - You have a deep understanding of the functionality, usage, storage, transmission mechanisms and intricacies associated with cryptographic assets and blockchain-based software systems<br/>
+                                - You must keep your private key safe and that you may not share it with anybody. You further understand that if your private key is lost or stolen, the SBC associated with its address will be unrecoverable and will be permanently lost. Furthermore, you understand that there is no recovery mechanism for lost keys, so no one will be able to help you retrieve or reconstruct a lost private key and provide you with access to any lost crypto-assets.<br/>
                             </p>
                         </div>
                     </div>

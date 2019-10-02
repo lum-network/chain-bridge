@@ -403,7 +403,7 @@ class WalletShow extends Component<Props, State> {
                         <div className="button-wallet-action" onClick={() => {this.setState({openedModal: 'hardware'})}}>
                             <img src={hardwareButton} className="button-image" alt="icon"/>
                             <h3>Hardware</h3>
-                            <p>Ledger Wallet, Finney,<br/>Trezor, BitBot, Secalot,<br/>KeepKey</p>
+                            <p>Ledger Wallet (Nano S, Nano X)</p>
                         </div>
                     </div>
                     <div className="col-lg-4">
