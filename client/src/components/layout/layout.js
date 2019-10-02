@@ -2,10 +2,6 @@ import React, { Component } from 'react';
 import { NavLink } from 'react-router-dom';
 import sandblockLogo from '../../assets/images/logos/sat_logo_title_white.svg';
 
-//                                    <a className='menu-trigger'>
-//                                         <span>Menu</span>
-//                                     </a>
-
 class Layout extends Component {
     render() {
         return (
@@ -23,6 +19,7 @@ class Layout extends Component {
                                         <li><NavLink to="/blocks">BLOCKS</NavLink></li>
                                         <li><NavLink to="/transactions">TRANSACTIONS</NavLink></li>
                                         <li><NavLink to="/validators">VALIDATORS</NavLink></li>
+                                        <li><NavLink to="/migration">MIGRATION</NavLink></li>
                                         <li><NavLink to="/wallet">WALLET</NavLink></li>
                                         <li><a href="https://sandblock.io" target="_blank" rel="noopener noreferrer">ABOUT</a></li>
                                     </ul>
