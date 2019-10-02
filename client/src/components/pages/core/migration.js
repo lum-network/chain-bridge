@@ -15,6 +15,7 @@ type Props = {
 
 type State = {
     currentStep: number,
+    alreadyHaveAWallet: boolean,
     walletGenerated: boolean,
     walletDatas: {},
     passphrase: string,
@@ -25,7 +26,8 @@ type State = {
     signedMessage: string,
     signedMessageSent: boolean,
     migrationRequestReference: string,
-    migration: {}
+    migration: {},
+    input: any
 };
 
 class MigrationPortalPage extends Component<Props, State>{
@@ -33,6 +35,7 @@ class MigrationPortalPage extends Component<Props, State>{
         super(props);
         this.state = {
             currentStep: 1,
+            alreadyHaveAWallet: false,
             walletGenerated: false,
             walletDatas: null,
             passphrase: null,
@@ -43,7 +46,8 @@ class MigrationPortalPage extends Component<Props, State>{
             signedMessage: null,
             signedMessageSent: false,
             migrationRequestReference: null,
-            migration: null
+            migration: null,
+            input: null
         }
 
         this.generateNewWallet = this.generateNewWallet.bind(this);
@@ -51,6 +55,7 @@ class MigrationPortalPage extends Component<Props, State>{
         this.signWithMEW = this.signWithMEW.bind(this);
         this.searchRequest = this.searchRequest.bind(this);
         this.sendSignedMessage = this.sendSignedMessage.bind(this);
+        this.validateOwnWallet = this.validateOwnWallet.bind(this);
     }
 
     componentDidMount(): void {
@@ -66,6 +71,26 @@ class MigrationPortalPage extends Component<Props, State>{
             toast.success('We have successfully received your migration request!');
             this.setState({currentStep: 1});
         }
+    }
+
+    validateOwnWallet(){
+        if(this.state.input === null){
+            return;
+        }
+
+        if(String(this.state.input).length <= 0){
+            return toast.warn('Please enter a SBC wallet address');
+        }
+
+        if(String(this.state.input).startsWith('sand') === false){
+            return toast.warn('Please enter a valid address');
+        }
+
+        this.setState({
+            sendPayload: new Buffer(JSON.stringify({destination: this.state.input})).toString('hex'),
+            currentStep: 3,
+            walletGenerated: false
+        });
     }
 
     generateNewWallet(){
@@ -197,21 +222,36 @@ class MigrationPortalPage extends Component<Props, State>{
                                 </div>
                             </div>
                         ) : (
-                            <div className="row">
-                                <div className="col-lg-4 offset-4">
-                                    <div className="form-group">
-                                        <label>Please enter a passphrase</label>
-                                        <input type="password" className="form-control" onChange={(ev)=>{this.setState({passphrase: ev.target.value})}}/>
-                                    </div>
-                                    <div className="form-group">
-                                        <label>Please repeat the passphrase</label>
-                                        <input type="password" className="form-control" onChange={(ev)=>{this.setState({passphraseConfirm: ev.target.value})}}/>
-                                    </div>
-                                    <div className="form-group">
-                                        <button className="btn btn-sm btn-block btn-success" onClick={this.generateNewWallet}>Generate my wallet</button>
+                            (this.state.alreadyHaveAWallet) ? (
+                                <div className="row">
+                                    <div className="col-lg-4 offset-4">
+                                        <div className="form-group">
+                                            <label>Please enter your SBC wallet address</label>
+                                            <input type="text" className="form-control" onChange={(ev)=>{this.setState({input: ev.target.value})}}/>
+                                        </div>
+                                        <div className="form-group">
+                                            <button className="btn btn-sm btn-block btn-success" onClick={this.validateOwnWallet}>Validate</button>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            ) : (
+                                <div className="row">
+                                    <div className="col-lg-4 offset-4">
+                                        <div className="form-group">
+                                            <label>Please enter a passphrase</label>
+                                            <input type="password" className="form-control" onChange={(ev)=>{this.setState({passphrase: ev.target.value})}}/>
+                                        </div>
+                                        <div className="form-group">
+                                            <label>Please repeat the passphrase</label>
+                                            <input type="password" className="form-control" onChange={(ev)=>{this.setState({passphraseConfirm: ev.target.value})}}/>
+                                        </div>
+                                        <div className="form-group">
+                                            <button className="btn btn-sm btn-block btn-success" onClick={this.generateNewWallet}>Generate my wallet</button>
+                                            <button className="btn btn-sm btn-block btn-warning" onClick={()=>{this.setState({alreadyHaveAWallet: true})}}>I already have my own wallet</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            )
                         )
                     }
                 </div>

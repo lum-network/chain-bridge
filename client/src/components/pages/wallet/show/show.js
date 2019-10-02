@@ -22,7 +22,6 @@ import { toast } from 'react-toastify';
 import QRCode from "qrcode.react";
 import TransactionsListComponent from "../../../parts/TransactionsList";
 
-
 type Props = {
     account: {},
     error: string,
@@ -158,7 +157,7 @@ class WalletShow extends Component<Props, State> {
                         return toast.error('Unknown error while trying to access Ledger. Is it unlocked?');
                     }
                 }
-                // We get the address
+                // We get the public key
                 this.state.ledgerSandblockApp.getAddressAndPubKey(this.state.HDPath, 'sand').then(
                     (res)=>{
                         if(res.return_code !== 36864) {
@@ -175,8 +174,12 @@ class WalletShow extends Component<Props, State> {
                             openedModal: '',
                             walletPublicKey: res.compressed_pk
                         });
+                    }, (err)=>{
+                        console.error(err);
                     }
                 )
+            }, (err)=>{
+                console.error(err);
             }
         )
     }
@@ -187,21 +190,25 @@ class WalletShow extends Component<Props, State> {
         }
 
         try {
-            const ledgerTransport = await TransportU2F.create(1000);
+            const ledgerTransport = await TransportU2F.create(15000);
             const ledgerSandblockApp = new sdk.SandblockApp(ledgerTransport);
             this.setState({ledgerTransport, ledgerSandblockApp});
             await this.processLedgerTransport();
             return ledgerTransport;
-        } catch(error){}
+        } catch(error){
+            console.error(error);
+        }
         try {
             if(!this.state.ledgerTransport){
-                const ledgerTransport = await TransportWebUSB.create();
+                const ledgerTransport = await TransportWebUSB.create(15000);
                 const ledgerSandblockApp = new sdk.SandblockApp(ledgerTransport);
                 this.setState({ledgerTransport, ledgerSandblockApp});
                 await this.processLedgerTransport();
                 return ledgerTransport;
             }
-        } catch(error){}
+        } catch(error){
+            console.error(error);
+        }
 
         return this.state.ledgerTransport;
     }
