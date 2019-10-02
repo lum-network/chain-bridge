@@ -108,7 +108,7 @@ class AddressShowPage extends Component<Props, State> {
                                     </tr>
                                     <tr>
                                         <td className="validator-identity-title"><strong>Public Key</strong></td>
-                                        <td>{(this.state.account.public_key && this.state.account.public_key) || 'None'}</td>
+                                        <td>{this.state.account.public_key_value || 'None'} ({this.state.account.public_key_type || 'Type Unknown'})</td>
                                     </tr>
                                     <tr>
                                         <td className="validator-identity-title"><strong>Account Number</strong></td>
