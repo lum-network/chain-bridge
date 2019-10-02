@@ -22,7 +22,7 @@ export const AccountAddressRoute: Lifecycle.Method = async(req: Request, handler
         account = {
             id: -1,
             address: req.params.address,
-            coins: "",
+            coins: (remoteAcc.result.value.coins !== undefined) ? JSON.stringify(remoteAcc.result.value.coins) : '',
             public_key_type: null,
             public_key_value: null,
             account_number: remoteAcc.result.value.account_number,
