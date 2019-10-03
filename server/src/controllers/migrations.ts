@@ -47,7 +47,7 @@ export const MigrationStoreRoute: Lifecycle.Method = async(req: Request, handler
 
     // Check the SAT balance
     const api = etherscan.init(process.env.ETHERSCAN_API_KEY);
-    let balance = await api.account.tokenbalance(address, '', '0x92736b3bff1bbd72a72478d78f18a6ab9b68b791');
+    let balance = await api.account.tokenbalance(address, '', '0x683ce91b8b37484c876c376ffa8a2ce76105d467');
     if(balance.message !== 'OK'){
         return response(handler, {}, "Unable to fetch your SAT balance", 500);
     }
