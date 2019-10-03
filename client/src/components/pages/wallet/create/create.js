@@ -13,6 +13,7 @@ class WalletCreatePage extends React.Component {
             password: '',
             passwordConfirmation: '',
             generating: false,
+            mnemonic: null,
             publicKey: null,
             address: null
         };
@@ -37,16 +38,19 @@ class WalletCreatePage extends React.Component {
 
         await this.setState({generating: true});
 
-        const privateKey = sdk.utils.generatePrivateKey();
+
+        const mnemonic = sdk.utils.generateMnemonic();
+        const privateKey = sdk.utils.getPrivateKeyFromMnemonic(mnemonic, true, 0, Buffer.from(''));
         const keyStore = sdk.utils.generateKeyStore(privateKey, this.state.password);
         const publicKey = sdk.utils.getPublicKeyFromPrivateKey(privateKey);
-        const address = sdk.utils.getAddressFromPublicKey(publicKey).toString();
+        const address = sdk.utils.getAddressFromPrivateKey(privateKey).toString();
 
         this.setState({
             step: 2,
             generating: false,
             publicKey,
-            address
+            address,
+            mnemonic
         });
 
         const blob = new Blob([JSON.stringify(keyStore)], {type: "application/json"});
@@ -97,6 +101,10 @@ class WalletCreatePage extends React.Component {
                         <tr>
                             <td className="font-weight-bold">Public Key</td>
                             <td>{this.state.publicKey.toString('hex')}</td>
+                        </tr>
+                        <tr>
+                            <td className="font-weight-bold">Mnemonic</td>
+                            <td>{this.state.mnemonic.toString()}</td>
                         </tr>
                     </tbody>
                 </table>
