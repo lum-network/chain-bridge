@@ -241,11 +241,11 @@ class MigrationPortalPage extends Component<Props, State>{
                                 <div className="row">
                                     <div className="col-lg-4 offset-4">
                                         <div className="form-group">
-                                            <label>Please enter a passphrase</label>
+                                            <label>Please choose a passphrase for your SBC Wallet</label>
                                             <input type="password" className="form-control" onChange={(ev)=>{this.setState({passphrase: ev.target.value})}}/>
                                         </div>
                                         <div className="form-group">
-                                            <label>Please repeat the passphrase</label>
+                                            <label>Please confirm the passphrase</label>
                                             <input type="password" className="form-control" onChange={(ev)=>{this.setState({passphraseConfirm: ev.target.value})}}/>
                                         </div>
                                         <div className="form-group">

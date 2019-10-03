@@ -85,6 +85,7 @@ class WalletShow extends Component<Props, State> {
         this.toggleHardwareModal = this.toggleHardwareModal.bind(this);
         this.toggleSoftwareModal = this.toggleSoftwareModal.bind(this);
         this.processSelectedMethod = this.processSelectedMethod.bind(this);
+        this.preProcessLedger = this.preProcessLedger.bind(this);
         this.unlockWallet = this.unlockWallet.bind(this);
         this.decipherKeystore = this.decipherKeystore.bind(this);
         this.processLedgerTransport = this.processLedgerTransport.bind(this);
@@ -310,6 +311,16 @@ class WalletShow extends Component<Props, State> {
         return this.state.ledgerTransport;
     }
 
+    async preProcessLedger(){
+        if(parseInt(this.state.HDPath[3]) < 0){
+            return toast.warn('Invalid HDPath');
+        }
+        if(parseInt(this.state.HDPath[4]) < 0){
+            return toast.warn('Invalid HDPath');
+        }
+        await this.getLedgerTransport();
+    }
+
     async processSelectedMethod(){
         if(this.state.selectedMethod === 'mnemonic'){
             this.setState({openedModal: 'mnemonic'});
@@ -318,7 +329,6 @@ class WalletShow extends Component<Props, State> {
         } else if(this.state.selectedMethod === "keystore"){
             this.fileUploadHandler.click();
         } else if(this.state.selectedMethod === 'ledger'){
-            await this.getLedgerTransport();
             this.setState({openedModal: 'ledger'});
         }
     }
@@ -802,8 +812,22 @@ class WalletShow extends Component<Props, State> {
                         Please launch the Sandblock App on your Ledger and then accept our request to your wallet.<br/>
                         We only fetch the address of it, no public key no private key.
                     </div>
+                    <div className="alert alert-warning text-center">
+                        You can customize the Hardware Derivation Path if you're confident enough with it. Otherwise leave it like this.<br/>
+                    </div>
+                    <div className="row">
+                        <div className="col-6">
+                            Account
+                            <input className="form-control" min="0" type="number" defaultValue={this.state.HDPath[2]} onChange={(ev)=>{this.state.HDPath[2] = ev.target.value; this.forceUpdate()}}/>
+                        </div>
+                        <div className="col-6">
+                            Address Index
+                            <input className="form-control" min="0" type="number" defaultValue={this.state.HDPath[4]} onChange={(ev)=>{this.state.HDPath[4] = ev.target.value; this.forceUpdate()}}/>
+                        </div>
+                    </div>
                 </ModalBody>
                 <ModalFooter>
+                    <Button color="success" onClick={this.preProcessLedger}>Continue</Button>
                     <Button color="secondary" onClick={() => {this.setState({openedModal: '', ledgerAcquired: false, ledgerSandblockApp: null, ledgerTransport: null, selectedMethod: ''})}}>Cancel</Button>
                 </ModalFooter>
             </Modal>
