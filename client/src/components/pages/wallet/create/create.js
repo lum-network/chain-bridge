@@ -65,11 +65,11 @@ class WalletCreatePage extends React.Component {
                 <form onSubmit={this.onValidateForm}>
                     <div className="form-group">
                         <label>Your password:</label>
-                        <input type="text" className="form-control" onChange={(ev)=>{this.setState({password: ev.target.value})}}/>
+                        <input type="password" className="form-control" onChange={(ev)=>{this.setState({password: ev.target.value})}}/>
                     </div>
                     <div className="form-group">
                         <label>Your password confirmation</label>
-                        <input type="text" className="form-control" onChange={(ev)=>{this.setState({passwordConfirmation: ev.target.value})}}/>
+                        <input type="password" className="form-control" onChange={(ev)=>{this.setState({passwordConfirmation: ev.target.value})}}/>
                     </div>
                     <div className="form-group">
                         <button type="submit" className="btn btn-sm btn-success" disabled={this.state.generating}>Create my wallet</button>
