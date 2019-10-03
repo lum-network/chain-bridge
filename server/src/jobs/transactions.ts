@@ -93,9 +93,18 @@ export const SyncTransactionInternal = async (tx: any) => {
     if(senderAddress === null){
         if(action === "edit_validator") {
             senderAddress = await extractValueFromMsg(tx.tx.value.msg, "address");
+        } else if (action == "delegate" || action === "begin_unbonding"){
+            senderAddress = await extractValueFromMsg(tx.tx.value.msg, "delegator_address");
         }
     }
     let recipientAddress = await extractValueFromEvents(tx.events, "recipient") || await extractValueFromMsg(tx.tx.value.msg, 'to_address');
+
+    // We try to get recipient with particular types
+    if(recipientAddress === null){
+        if(action === "delegate" || action === "begin_unbonding"){
+            recipientAddress = await extractValueFromMsg(tx.tx.value.msg, "validator_address");
+        }
+    }
     const amount = await extractValueFromEvents(tx.events, "amount");
 
     // Get instances to local DB accounts
