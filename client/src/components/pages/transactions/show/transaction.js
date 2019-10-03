@@ -107,6 +107,78 @@ class TransactionShowPage extends Component<Props, State> {
                 );
             }
 
+            case "cosmos-sdk/MsgDelegate":
+            {
+                return (
+                    <tbody>
+                        <tr>
+                            <td className="validator-identity-title"><strong>From</strong></td>
+                            <td><NavLink to={`/account/${msg.value.delegator_address}`}>{msg.value.delegator_address}</NavLink></td>
+                        </tr>
+                        <tr>
+                            <td className="validator-identity-title"><strong>To</strong></td>
+                            <td><NavLink to={`/validator/${msg.value.validator_address}`}>{msg.value.validator_address}</NavLink></td>
+                        </tr>
+                        <tr>
+                            <td className="validator-identity-title"><strong>Value</strong></td>
+                            <td>{msg.value.amount.amount} {msg.value.amount.denom}</td>
+                        </tr>
+                    </tbody>
+                );
+            }
+
+            case "cosmos-sdk/MsgUndelegate":
+            {
+                return (
+                    <tbody>
+                        <tr>
+                            <td className="validator-identity-title"><strong>From</strong></td>
+                            <td><NavLink to={`/account/${msg.value.delegator_address}`}>{msg.value.delegator_address}</NavLink></td>
+                        </tr>
+                        <tr>
+                            <td className="validator-identity-title"><strong>To</strong></td>
+                            <td><NavLink to={`/validator/${msg.value.validator_address}`}>{msg.value.validator_address}</NavLink></td>
+                        </tr>
+                        <tr>
+                            <td className="validator-identity-title"><strong>Value</strong></td>
+                            <td>{msg.value.amount.amount} {msg.value.amount.denom}</td>
+                        </tr>
+                    </tbody>
+                );
+            }
+
+            case "cosmos-sdk/MsgCreateValidator":
+            {
+                return (
+                    <tbody>
+                        <tr>
+                            <td className="validator-identity-title"><strong>From</strong></td>
+                            <td><NavLink to={`/account/${msg.value.delegator_address}`}>{msg.value.delegator_address}</NavLink></td>
+                        </tr>
+                        <tr>
+                            <td className="validator-identity-title"><strong>To</strong></td>
+                            <td><NavLink to={`/validator/${msg.value.validator_address}`}>{msg.value.validator_address}</NavLink></td>
+                        </tr>
+                        <tr>
+                            <td className="validator-identity-title"><strong>Value</strong></td>
+                            <td>{msg.value.value.amount} {msg.value.value.denom}</td>
+                        </tr>
+                        <tr>
+                            <td className="validator-identity-title"><strong>Commission</strong></td>
+                            <td>{Number(msg.value.commission.rate).toFixed(2)}% Rate | {Number(msg.value.commission.max_rate).toFixed(2)}% Max Rate | {Number(msg.value.commission.max_change_rate).toFixed(2)}% Max Change Rate</td>
+                        </tr>
+                        <tr>
+                            <td className="validator-identity-title"><strong>Minimum Self Delegation</strong></td>
+                            <td>{msg.value.min_self_delegation} sbc</td>
+                        </tr>
+                        <tr>
+                            <td className="validator-identity-title"><strong>Moniker</strong></td>
+                            <td>{msg.value.description.moniker}</td>
+                        </tr>
+                    </tbody>
+                );
+            }
+
             case "cosmos-sdk/MsgEditValidator":
             {
                 return (
