@@ -2617,7 +2617,7 @@ block explorer
 .block-explorer-wrapper .search {
   position: absolute;
   width: 100%;
-  bottom: -60px;
+  bottom: -100px;
   z-index: 6;
 }
 

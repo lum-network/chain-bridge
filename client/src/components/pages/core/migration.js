@@ -191,7 +191,7 @@ class MigrationPortalPage extends Component<Props, State>{
                     </div>
                     <br/>
                     <div className="row">
-                        <div className="col-lg-6 offset-3">
+                        <div className="col-12 text-center">
                             <button className="btn btn-sm btn-success btn-block" onClick={()=>{this.setState({currentStep: 2})}}>I have read and I agree the given conditions without any reserve</button>
                         </div>
                     </div>
@@ -206,7 +206,7 @@ class MigrationPortalPage extends Component<Props, State>{
                 <div className="title text-center"><h5>SandBlock Chain Wallet Generation</h5></div>
                 <div className="text">
                     <div className="row">
-                        <div className="col-lg-12">
+                        <div className="col-12">
                             <div className="alert alert-warning text-center">
                                 <p>
                                     You will now generate your Sandblock Chain Wallet.<br/>
@@ -220,14 +220,14 @@ class MigrationPortalPage extends Component<Props, State>{
                     {
                         (this.state.walletGenerated) ? (
                             <div className="row">
-                                <div className="col-lg-4 offset-4">
+                                <div className="col-lg-4 offset-lg-4 col-sm-12">
                                     <button className="btn btn-sm btn-block btn-success" onClick={this.downloadGeneratedWallet}>Download my wallet</button>
                                 </div>
                             </div>
                         ) : (
                             (this.state.alreadyHaveAWallet) ? (
                                 <div className="row">
-                                    <div className="col-lg-4 offset-4">
+                                    <div className="col-lg-4 offset-lg-4 col-sm-12">
                                         <div className="form-group">
                                             <label>Please enter your SBC wallet address</label>
                                             <input type="text" className="form-control" onChange={(ev)=>{this.setState({input: ev.target.value})}}/>
@@ -239,7 +239,7 @@ class MigrationPortalPage extends Component<Props, State>{
                                 </div>
                             ) : (
                                 <div className="row">
-                                    <div className="col-lg-4 offset-4">
+                                    <div className="col-lg-4 offset-lg-4 col-sm-12">
                                         <div className="form-group">
                                             <label>Please choose a passphrase for your SBC Wallet</label>
                                             <input type="password" className="form-control" onChange={(ev)=>{this.setState({passphrase: ev.target.value})}}/>

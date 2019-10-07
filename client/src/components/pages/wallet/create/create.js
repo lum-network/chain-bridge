@@ -92,22 +92,24 @@ class WalletCreatePage extends React.Component {
                     Be careful and don't loose the file as well as the password you provided.<br/>
                     If either the wallet or the password is lost, <b>no one</b> will be able to recover your wallet.
                 </div>
-                <table className="table table-bordered m-bottom-30">
-                    <tbody>
-                        <tr>
-                            <td className="font-weight-bold">Address</td>
-                            <td>{this.state.address}</td>
-                        </tr>
-                        <tr>
-                            <td className="font-weight-bold">Public Key</td>
-                            <td>{this.state.publicKey.toString('hex')}</td>
-                        </tr>
-                        <tr>
-                            <td className="font-weight-bold">Mnemonic</td>
-                            <td>{this.state.mnemonic.toString()}</td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div className="table-responsive">
+                    <table className="table table-bordered m-bottom-30">
+                        <tbody>
+                            <tr>
+                                <td className="font-weight-bold">Address</td>
+                                <td>{this.state.address}</td>
+                            </tr>
+                            <tr>
+                                <td className="font-weight-bold">Public Key</td>
+                                <td>{this.state.publicKey.toString('hex')}</td>
+                            </tr>
+                            <tr>
+                                <td className="font-weight-bold">Mnemonic</td>
+                                <td>{this.state.mnemonic.toString()}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
                 <NavLink to={`/wallet/show`} className="btn btn-sm btn-block btn-primary">Continue to my wallet</NavLink>
             </React.Fragment>
         );
@@ -130,7 +132,7 @@ class WalletCreatePage extends React.Component {
                 <section className="block-explorer-features section bg-bottom">
                     <div className="container">
                         <div className="row">
-                            <div className="col-lg-8 offset-2">
+                            <div className="col-lg-8 offset-lg-2 col-sm-12">
                                 <div className="card">
                                     <div className="card-body">
                                         {(this.state.step === 1) ? this.renderStepOne() : this.renderStepTwo()}

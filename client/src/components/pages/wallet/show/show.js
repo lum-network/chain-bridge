@@ -401,7 +401,7 @@ class WalletShow extends Component<Props, State> {
             <React.Fragment>
                 <input type="file" ref={(ref)=> this.fileUploadHandler = ref} style={{display: 'none'}} onChange={this.unlockWallet}/>
                 <div className="row">
-                    <div className="col-lg-12">
+                    <div className="col-12">
                         <Alert color="info" className="text-center">
                             You can unlock your wallet using hardware or software method.<br/>
                             The wallet deciphering and unlocking is client only and nothing is sent to our servers.
@@ -409,14 +409,15 @@ class WalletShow extends Component<Props, State> {
                     </div>
                 </div>
                 <div className="row">
-                    <div className="col-lg-4 offset-2">
+                    <div className="col-lg-4 offset-lg-2 col-sm-12">
                         <div className="button-wallet-action" onClick={() => {this.setState({openedModal: 'hardware'})}}>
                             <img src={hardwareButton} className="button-image" alt="icon"/>
                             <h3>Hardware</h3>
                             <p>Ledger Wallet (Nano S, Nano X)</p>
                         </div>
                     </div>
-                    <div className="col-lg-4">
+                    <br/>
+                    <div className="col-lg-4 col-sm-12">
                         <div className="button-wallet-action" onClick={() => {this.setState({openedModal: 'software'})}}>
                             <img src={softwareButton} className="button-image" alt="icon"/>
                             <h3>Software</h3>

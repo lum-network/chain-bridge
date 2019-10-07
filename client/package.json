@@ -7,7 +7,8 @@
     "start": "./node_modules/.bin/react-scripts start",
     "build": "./node_modules/.bin/react-scripts build",
     "test": "./node_modules/.bin/react-scripts test",
-    "eject": "./node_modules/.bin/react-scripts eject"
+    "eject": "./node_modules/.bin/react-scripts eject",
+    "deploy": "yarn build && firebase deploy"
   },
   "repository": {
     "type": "git",
@@ -27,6 +28,7 @@
     "bootstrap": "^4.3.1",
     "font-awesome": "^4.7.0",
     "git": "^0.1.5",
+    "jquery": "^3.4.1",
     "moment": "^2.24.0",
     "moment-timezone": "^0.5.26",
     "pusher-js": "^5.0.1",
@@ -34,6 +36,7 @@
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "react-ellipsis-text": "^1.2.1",
+    "react-particles-js": "^2.7.0",
     "react-redux": "^7.1.0",
     "react-router": "^5.0.1",
     "react-router-dom": "^5.0.1",

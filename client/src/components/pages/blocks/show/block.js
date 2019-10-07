@@ -44,38 +44,40 @@ class BlockShowPage extends Component<Props, State> {
                             <div className="card-body">
                                 <h5 className="card-title">Header</h5>
                                 <hr/>
-                                <table className="table table-latests table-detail table-no-border">
-                                    <tbody>
-                                        <tr>
-                                            <td><strong>Block Height</strong></td>
-                                            <td>{this.state.block.height}</td>
-                                        </tr>
-                                        <tr>
-                                            <td><strong>Block Hash</strong></td>
-                                            <td>{this.state.block.hash}</td>
-                                        </tr>
-                                        <tr>
-                                            <td><strong>Chain ID</strong></td>
-                                            <td>{this.state.block.chain_id}</td>
-                                        </tr>
-                                        <tr>
-                                            <td><strong>Timestamp</strong></td>
-                                            <td>{this.state.block.dispatched_at}</td>
-                                        </tr>
-                                        <tr>
-                                            <td><strong>Proposed By</strong></td>
-                                            <td><NavLink to={`/validator/${this.state.block.proposer_address}`}>{this.state.block.proposer_address}</NavLink></td>
-                                        </tr>
-                                        <tr>
-                                            <td><strong>Transactions in the block</strong></td>
-                                            <td>{this.state.block.num_txs}</td>
-                                        </tr>
-                                        <tr>
-                                            <td><strong>Transactions since Genesis</strong></td>
-                                            <td>{this.state.block.total_txs}</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                                <div className="table-responsive">
+                                    <table className="table table-latests table-detail table-no-border">
+                                        <tbody>
+                                            <tr>
+                                                <td><strong>Block Height</strong></td>
+                                                <td>{this.state.block.height}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Block Hash</strong></td>
+                                                <td>{this.state.block.hash}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Chain ID</strong></td>
+                                                <td>{this.state.block.chain_id}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Timestamp</strong></td>
+                                                <td>{this.state.block.dispatched_at}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Proposed By</strong></td>
+                                                <td><NavLink to={`/validator/${this.state.block.proposer_address}`}>{this.state.block.proposer_address}</NavLink></td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Transactions in the block</strong></td>
+                                                <td>{this.state.block.num_txs}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Transactions since Genesis</strong></td>
+                                                <td>{this.state.block.total_txs}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>
