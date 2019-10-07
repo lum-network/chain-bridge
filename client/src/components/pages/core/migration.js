@@ -73,7 +73,8 @@ class MigrationPortalPage extends Component<Props, State>{
         }
     }
 
-    validateOwnWallet(){
+    validateOwnWallet(e){
+        e.preventDefault();
         if(this.state.input === null){
             return;
         }
@@ -93,7 +94,8 @@ class MigrationPortalPage extends Component<Props, State>{
         });
     }
 
-    generateNewWallet(){
+    generateNewWallet(e){
+        e.preventDefault();
         if(this.state.passphrase === null || this.state.passphraseConfirm === null){
             return;
         }
@@ -131,7 +133,8 @@ class MigrationPortalPage extends Component<Props, State>{
         window.open(url, '_blank');
     }
 
-    async sendSignedMessage(){
+    async sendSignedMessage(e){
+        e.preventDefault();
         if(this.state.signedMessage === null || this.state.signedMessage.length <= 0){
             return;
         }
@@ -140,7 +143,8 @@ class MigrationPortalPage extends Component<Props, State>{
         this.setState({signedMessageSent: true});
     }
 
-    searchRequest(){
+    searchRequest(e){
+        e.preventDefault();
         if(this.state.migrationRequestReference === null || this.state.migrationRequestReference.length <= 0){
             return null;
         }
@@ -226,34 +230,38 @@ class MigrationPortalPage extends Component<Props, State>{
                             </div>
                         ) : (
                             (this.state.alreadyHaveAWallet) ? (
-                                <div className="row">
-                                    <div className="col-lg-4 offset-lg-4 col-sm-12">
-                                        <div className="form-group">
-                                            <label>Please enter your SBC wallet address</label>
-                                            <input type="text" className="form-control" onChange={(ev)=>{this.setState({input: ev.target.value})}}/>
-                                        </div>
-                                        <div className="form-group">
-                                            <button className="btn btn-sm btn-block btn-success" onClick={this.validateOwnWallet}>Validate</button>
+                                <form onSubmit={this.validateOwnWallet}>
+                                    <div className="row">
+                                        <div className="col-lg-4 offset-lg-4 col-sm-12">
+                                            <div className="form-group">
+                                                <label>Please enter your SBC wallet address</label>
+                                                <input type="text" className="form-control" onChange={(ev)=>{this.setState({input: ev.target.value})}}/>
+                                            </div>
+                                            <div className="form-group">
+                                                <button type="submit" className="btn btn-sm btn-block btn-success" onClick={this.validateOwnWallet}>Validate</button>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
+                                </form>
                             ) : (
-                                <div className="row">
-                                    <div className="col-lg-4 offset-lg-4 col-sm-12">
-                                        <div className="form-group">
-                                            <label>Please choose a passphrase for your SBC Wallet</label>
-                                            <input type="password" className="form-control" onChange={(ev)=>{this.setState({passphrase: ev.target.value})}}/>
-                                        </div>
-                                        <div className="form-group">
-                                            <label>Please confirm the passphrase</label>
-                                            <input type="password" className="form-control" onChange={(ev)=>{this.setState({passphraseConfirm: ev.target.value})}}/>
-                                        </div>
-                                        <div className="form-group">
-                                            <button className="btn btn-sm btn-block btn-success" onClick={this.generateNewWallet}>Generate my wallet</button>
-                                            <button className="btn btn-sm btn-block btn-warning" onClick={()=>{this.setState({alreadyHaveAWallet: true})}}>I already have my own wallet</button>
+                                <form onSubmit={this.generateNewWallet}>
+                                    <div className="row">
+                                        <div className="col-lg-4 offset-lg-4 col-sm-12">
+                                            <div className="form-group">
+                                                <label>Please choose a passphrase for your SBC Wallet</label>
+                                                <input type="password" className="form-control" onChange={(ev)=>{this.setState({passphrase: ev.target.value})}}/>
+                                            </div>
+                                            <div className="form-group">
+                                                <label>Please confirm the passphrase</label>
+                                                <input type="password" className="form-control" onChange={(ev)=>{this.setState({passphraseConfirm: ev.target.value})}}/>
+                                            </div>
+                                            <div className="form-group">
+                                                <button type="submit" className="btn btn-sm btn-block btn-success" onClick={this.generateNewWallet}>Generate my wallet</button>
+                                                <button className="btn btn-sm btn-block btn-warning" onClick={()=>{this.setState({alreadyHaveAWallet: true})}}>I already have my own wallet</button>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
+                                </form>
                             )
                         )
                     }
@@ -276,26 +284,28 @@ class MigrationPortalPage extends Component<Props, State>{
                             </div>
                         </div>
                     </div>
-                    <div className="row">
-                        <div className="col-lg-12 form-group">
-                            <label>Message to sign: </label>
-                            <input type="text" disabled value={this.state.sendPayload} className="form-control"/>
+                    <form onSubmit={this.sendSignedMessage}>
+                        <div className="row">
+                            <div className="col-lg-12 form-group">
+                                <label>Message to sign: </label>
+                                <input type="text" disabled value={this.state.sendPayload} className="form-control"/>
+                            </div>
                         </div>
-                    </div>
-                    <div className="row">
-                        <div className="col-lg-12 form-group">
-                            <label>Signed Message: </label>
-                            <textarea className="form-control" onChange={(ev) => {this.setState({signedMessage: ev.target.value})}}/>
+                        <div className="row">
+                            <div className="col-lg-12 form-group">
+                                <label>Signed Message: </label>
+                                <textarea className="form-control" onChange={(ev) => {this.setState({signedMessage: ev.target.value})}}/>
+                            </div>
                         </div>
-                    </div>
-                    <div className="row">
-                        <div className="col-lg-6">
-                            <button className="btn btn-sm btn-info" onClick={this.signWithMEW}>Help me to sign via MyEtherWallet</button>
+                        <div className="row">
+                            <div className="col-lg-6">
+                                <button className="btn btn-sm btn-info" onClick={this.signWithMEW}>Help me to sign via MyEtherWallet</button>
+                            </div>
+                            <div className="col-lg-6">
+                                <button type="submit" className="btn btn-sm btn-success" onClick={this.sendSignedMessage}>Send the signed message</button>
+                            </div>
                         </div>
-                        <div className="col-lg-6">
-                            <button className="btn btn-sm btn-success" onClick={this.sendSignedMessage}>Send the signed message</button>
-                        </div>
-                    </div>
+                    </form>
                 </div>
             </div>
         );
@@ -387,13 +397,15 @@ class MigrationPortalPage extends Component<Props, State>{
                             ) : null
                         }
                         <div className="col-lg-12">
-                            <div className="form-group">
-                                <label>Migration request reference:</label>
-                                <input type="text" className="form-control" value={this.state.migrationRequestReference || ''} onChange={(ev)=>{this.setState({migrationRequestReference: ev.target.value})}}/>
-                            </div>
-                            <div className="form-group">
-                                <button className="btn btn-sm btn-success" onClick={this.searchRequest}>Check my request</button>
-                            </div>
+                            <form onSubmit={this.searchRequest}>
+                                <div className="form-group">
+                                    <label>Migration request reference:</label>
+                                    <input type="text" className="form-control" value={this.state.migrationRequestReference || ''} onChange={(ev)=>{this.setState({migrationRequestReference: ev.target.value})}}/>
+                                </div>
+                                <div className="form-group">
+                                    <button type="submit" className="btn btn-sm btn-success" onClick={this.searchRequest}>Check my request</button>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 </div>

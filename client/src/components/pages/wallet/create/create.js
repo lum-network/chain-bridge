@@ -63,7 +63,7 @@ class WalletCreatePage extends React.Component {
                 <div className="alert alert-warning text-center m-bottom-30">
                     This is not a recommended way to access your wallet.<br/>
                     Due to the sensitivity of the information involved, these options should only be used in offline settings by experienced users.<br/>
-                    You should use a physical wallet like Ledger
+                    You should use a hardware wallet like Ledger
                 </div>
                 <h5 className="font-weight-bold text-center m-bottom-30">Choose a password</h5>
                 <form onSubmit={this.onValidateForm}>

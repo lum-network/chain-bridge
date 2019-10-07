@@ -87,6 +87,7 @@ class WalletShow extends Component<Props, State> {
         this.processSelectedMethod = this.processSelectedMethod.bind(this);
         this.preProcessLedger = this.preProcessLedger.bind(this);
         this.unlockWallet = this.unlockWallet.bind(this);
+        this.unlockWalletByKey = this.unlockWalletByKey.bind(this);
         this.decipherKeystore = this.decipherKeystore.bind(this);
         this.processLedgerTransport = this.processLedgerTransport.bind(this);
         this.initTransaction = this.initTransaction.bind(this);
@@ -333,6 +334,11 @@ class WalletShow extends Component<Props, State> {
         }
     }
 
+    unlockWalletByKey(e) {
+        e.preventDefault();
+        this.unlockWallet();
+    }
+
     unlockWallet(value = null){
         if(this.state.selectedMethod === 'mnemonic' && String(this.state.input).length > 0){
             if(!sdk.utils.validateMnemonic(this.state.input)){
@@ -379,7 +385,8 @@ class WalletShow extends Component<Props, State> {
         }
     }
 
-    decipherKeystore(){
+    decipherKeystore(e){
+        e.preventDefault();
         if(!this.state.input || this.state.input.length <= 0){
             return false;
         }
@@ -460,11 +467,11 @@ class WalletShow extends Component<Props, State> {
                                         </tr>
                                         <tr>
                                             <td><strong>Account Number</strong></td>
-                                            <td>{this.state.accountInfos.account_number | 0}</td>
+                                            <td>{this.state.accountInfos.account_number || 0}</td>
                                         </tr>
                                         <tr>
-                                            <td><strong>Account Sequence</strong></td>
-                                            <td>{this.state.accountInfos.sequence | 0}</td>
+                                            <td><strong>Account Sequence (aka Number of transactions)</strong></td>
+                                            <td>{this.state.accountInfos.sequence || 0}</td>
                                         </tr>
                                         <tr>
                                             <td><strong>Owned Coins</strong></td>
@@ -669,12 +676,14 @@ class WalletShow extends Component<Props, State> {
             <Modal isOpen={this.state.openedModal === 'mnemonic'} toggle={() => {this.setState({openedModal: ''})}}>
                 <ModalHeader toggle={() => {this.setState({openedModal: ''})}}>Access by Mnemonic Phrase</ModalHeader>
                 <ModalBody>
-                    <div className="row">
-                        <div className="col-lg-12">
-                            <label>Please enter your mnemonic phrase</label>
-                            <input type="text" className="form-control" onChange={(ev) => {this.setState({input: ev.target.value})}}/>
+                    <form onSubmit={this.unlockWalletByKey}>
+                        <div className="row">
+                            <div className="col-lg-12">
+                                <label>Please enter your mnemonic phrase</label>
+                                <input type="text" className="form-control" onChange={(ev) => {this.setState({input: ev.target.value})}}/>
+                            </div>
                         </div>
-                    </div>
+                    </form>
                 </ModalBody>
                 <ModalFooter>
                     <Button color="success" onClick={this.unlockWallet} disabled={this.state.input === null || String(this.state.input).length <= 0 || !sdk.utils.validateMnemonic(this.state.input)}>Unlock Wallet</Button>{' '}
@@ -689,12 +698,14 @@ class WalletShow extends Component<Props, State> {
             <Modal isOpen={this.state.openedModal === 'privatekey'} toggle={() => {this.setState({openedModal: ''})}}>
                 <ModalHeader toggle={() => {this.setState({openedModal: ''})}}>Access by Private Key</ModalHeader>
                 <ModalBody>
-                    <div className="row">
-                        <div className="col-lg-12">
-                            <label>Please enter your private key</label>
-                            <input type="text" className="form-control" onChange={(ev) => {this.setState({input: ev.target.value})}}/>
+                    <form onSubmit={this.unlockWalletByKey}>
+                        <div className="row">
+                            <div className="col-lg-12">
+                                <label>Please enter your private key</label>
+                                <input type="text" className="form-control" onChange={(ev) => {this.setState({input: ev.target.value})}}/>
+                            </div>
                         </div>
-                    </div>
+                    </form>
                 </ModalBody>
                 <ModalFooter>
                     <Button color="success" onClick={this.unlockWallet} disabled={this.state.input === null || String(this.state.input).length <= 0}>Unlock Wallet</Button>{' '}
@@ -709,12 +720,14 @@ class WalletShow extends Component<Props, State> {
             <Modal isOpen={this.state.openedModal === 'keystore'} toggle={() => {this.setState({openedModal: ''})}}>
                 <ModalHeader toggle={() => {this.setState({openedModal: ''})}}>Access by Keystore File</ModalHeader>
                 <ModalBody>
-                    <div className="row">
-                        <div className="col-lg-12">
-                            <label>Please enter your passphrase if you have one</label>
-                            <input type="password" className="form-control" onChange={(ev) => {this.setState({passphrase: ev.target.value})}}/>
+                    <form onSubmit={this.decipherKeystore}>
+                        <div className="row">
+                            <div className="col-lg-12">
+                                <label>Please enter your passphrase if you have one</label>
+                                <input type="password" className="form-control" onChange={(ev) => {this.setState({passphrase: ev.target.value})}}/>
+                            </div>
                         </div>
-                    </div>
+                    </form>
                 </ModalBody>
                 <ModalFooter>
                     <Button color="success" onClick={this.decipherKeystore}>Unlock Wallet</Button>{' '}
