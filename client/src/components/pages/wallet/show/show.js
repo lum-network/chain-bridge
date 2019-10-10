@@ -59,7 +59,7 @@ class WalletShow extends Component<Props, State> {
         super(props);
         this.state = {
             walletUnlocked: false,
-            walletPublicKey: null,
+            walletPublicKey: '',
             walletPrivateKey: '',
             accountInfos: null,
             accountTransactions: [],
@@ -102,17 +102,22 @@ class WalletShow extends Component<Props, State> {
             await newTxs.sort((a, b)=>{
                 return new Date(b.dispatched_at) - new Date(a.dispatched_at);
             });
+            this.setState({accountInfos: nextProps.account, accountTransactions: newTxs});
         }
-        this.setState({accountInfos: nextProps.account, accountTransactions: newTxs});
     }
 
     componentDidMount(): void {
-        //this.retrieveWallet();
+        //const address = sdk.utils.getAddressFromPrivateKey(Buffer.from(this.state.walletPrivateKey, 'hex'), 'sand').toString();
+        //this.retrieveWallet(address);
     }
 
-    retrieveWallet(){
-        const address = sdk.utils.getAddressFromPrivateKey(Buffer.from(this.state.walletPrivateKey, 'hex'), 'sand').toString();
-        dispatchAction(getAccount(address));
+    async retrieveWallet(address, refresh: boolean = true){
+        await dispatchAction(getAccount(address));
+        if(refresh) {
+            setTimeout(async () => {
+                await this.retrieveWallet(address);
+            }, 10000);
+        }
     }
 
     toggleHardwareModal(){
@@ -156,6 +161,7 @@ class WalletShow extends Component<Props, State> {
             }
             this.setState({openedModal: '', newTransactionStep: 1});
             toast.success(`Transaction dispatched with hash ${tx.txhash}`);
+            await this.retrieveWallet(this.state.accountInfos.address, false);
         }
     }
 
@@ -214,6 +220,7 @@ class WalletShow extends Component<Props, State> {
             }
             this.setState({openedModal: '', newTransactionStep: 1});
             toast.success(`Transaction dispatched with hash ${tx.txhash}`);
+            await this.retrieveWallet(this.state.accountInfos.address, false);
         }
     }
 
@@ -242,6 +249,7 @@ class WalletShow extends Component<Props, State> {
             }
             this.setState({openedModal: '', newTransactionStep: 1});
             toast.success(`Transaction dispatched with hash ${tx.txhash}`);
+            await this.retrieveWallet(this.state.accountInfos.address, false);
         }
     }
 
@@ -258,7 +266,7 @@ class WalletShow extends Component<Props, State> {
                 }
                 // We get the public key
                 this.state.ledgerSandblockApp.getAddressAndPubKey(this.state.HDPath, 'sand').then(
-                    (res)=>{
+                    async (res)=>{
                         if(res.return_code !== 36864) {
                             if (res.return_code === 28160) {
                                 return toast.error(res.error_message)
@@ -266,7 +274,7 @@ class WalletShow extends Component<Props, State> {
                                 return toast.error('Unknown error while trying to access Ledger. Is it unlocked?');
                             }
                         }
-                        dispatchAction(getAccount(res.bech32_address));
+                        await this.retrieveWallet(res.bech32_address);
                         this.setState({
                             ledgerAcquired: true,
                             walletUnlocked: true,
@@ -339,7 +347,7 @@ class WalletShow extends Component<Props, State> {
         this.unlockWallet();
     }
 
-    unlockWallet(value = null){
+    async unlockWallet(value = null){
         if(this.state.selectedMethod === 'mnemonic' && String(this.state.input).length > 0){
             if(!sdk.utils.validateMnemonic(this.state.input)){
                 return false;
@@ -350,7 +358,7 @@ class WalletShow extends Component<Props, State> {
 
                 const address = sdk.utils.getAddressFromPrivateKey(keypair.privateKey, 'sand').toString();
                 this.setState({walletUnlocked: true, walletPrivateKey: keypair.privateKey.toString('hex'), openedModal: ''});
-                dispatchAction(getAccount(address));
+                await this.retrieveWallet(address);
             } catch(error) {
                 console.warn(error);
                 toast.warn('Unable to access your wallet using mnemonic phrase');
@@ -360,7 +368,7 @@ class WalletShow extends Component<Props, State> {
                  const pk = sdk.utils.getPublicKeyFromPrivateKey(this.state.input);
                 const address = sdk.utils.getAddressFromPublicKey(pk, 'sand');
                 this.setState({walletUnlocked: true, walletPrivateKey: this.state.input, openedModal: ''});
-                dispatchAction(getAccount(address.toString()));
+                await this.retrieveWallet(address.toString());
             } catch(error){
                 console.warn(error);
                 toast.warn('Unable to access your wallet using the private key');
@@ -385,7 +393,7 @@ class WalletShow extends Component<Props, State> {
         }
     }
 
-    decipherKeystore(e){
+    async decipherKeystore(e){
         e.preventDefault();
         if(!this.state.input || this.state.input.length <= 0){
             return false;
@@ -394,9 +402,8 @@ class WalletShow extends Component<Props, State> {
         try {
             const pk = sdk.utils.getPrivateKeyFromKeyStore(this.state.input, this.state.passphrase);
             const address = sdk.utils.getAddressFromPrivateKey(pk, 'sand');
-            dispatchAction(getAccount(address.toString()));
+            await this.retrieveWallet(address.toString());
             this.setState({walletUnlocked: true, walletPrivateKey: pk.toString('hex'), openedModal: '', deciphering: false});
-            console.log(this.state.walletPrivateKey);
         } catch(error){
             this.setState({deciphering: false});
             toast.warn('Unable to decipher your keystore file, please check passphrase');
