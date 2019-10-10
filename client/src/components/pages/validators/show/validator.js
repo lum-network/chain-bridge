@@ -80,7 +80,7 @@ class ValidatorPage extends React.Component<Props, State> {
                                                 </tr>
                                                 <tr>
                                                     <td className="validator-identity-title">Commission</td>
-                                                    <td>{`${Number(this.state.validator.commission.commission_rates.rate).toPrecision(2)}%` || 0}</td>
+                                                    <td>{`${Number(this.state.validator.commission.commission_rates.rate).toPrecision(2) * 100} %` || 0}</td>
                                                 </tr>
                                                 <tr>
                                                     <td className="validator-identity-title">Voting Power</td>
