@@ -93,6 +93,7 @@ class WalletShow extends Component<Props, State> {
         this.initTransaction = this.initTransaction.bind(this);
         this.delegate = this.delegate.bind(this);
         this.undelegate = this.undelegate.bind(this);
+        this.withdrawRewards = this.withdrawRewards.bind(this);
     }
 
     async UNSAFE_componentWillReceiveProps(nextProps: Readonly<Props>, nextContext: any): void {
@@ -126,6 +127,39 @@ class WalletShow extends Component<Props, State> {
 
     toggleSoftwareModal(){
         this.setState({openedModal: 'software'});
+    }
+
+    async withdrawRewards(){
+        if(this.state.newTransactionStep === 1){
+            if(!this.state.input || !this.state.input.destination){
+                return toast.warn('All fields are required');
+            }
+
+            if(String(this.state.input.destination).startsWith('sandvaloper') === false){
+                return toast.warn('Please enter a valid validator address(starts with sandvaloper)');
+            }
+
+            this.setState({newTransactionStep: 2});
+        } else {
+            // Ledger is case-specific
+            const sbc = new sdk.client();
+            let tx = null;
+            if(this.state.selectedMethod === 'ledger'){
+                await sbc.initLedgerMetas(this.state.ledgerTransport, this.state.HDPath);
+                const payload = await sbc.withdrawReward(this.state.input.destination, "Withdrawn using explorer wallet");
+                tx = await sbc.dispatchWithLedger(payload, this.state.ledgerTransport, this.state.HDPath);
+            } else {
+                sbc.setPrivateKey(Buffer.from(this.state.walletPrivateKey, 'hex'));
+                const payload = await sbc.withdrawReward(this.state.input.destination, "Withdrawn using explorer wallet");
+                tx = await sbc.dispatch(payload);
+            }
+            if(tx === null){
+                return toast.error('Unable to dispatch your transaction, please make sure all params are correct');
+            }
+            this.setState({openedModal: '', newTransactionStep: 1});
+            toast.success(`Transaction dispatched with hash ${tx.txhash}`);
+            await this.retrieveWallet(this.state.accountInfos.address, false);
+        }
     }
 
     async undelegate(){
@@ -503,6 +537,7 @@ class WalletShow extends Component<Props, State> {
                                     <button className="btn btn-sm btn-primary mr-2" onClick={() => {this.setState({openedModal: 'new_transaction'})}}>Emit a new transaction</button>
                                     <button className="btn btn-sm btn-primary mr-2" onClick={() => {this.setState({openedModal: 'delegate'})}}>Delegate my SBC</button>
                                     <button className="btn btn-sm btn-primary mr-2" onClick={() => {this.setState({openedModal: 'undelegate'})}}>Undelegate my SBC</button>
+                                    <button className="btn btn-sm btn-primary mr-2" onClick={() => {this.setState({openedModal: 'withdraw_rewards'})}}>Withdraw my rewards</button>
                                 </div>
                             </div>
                         </div>
@@ -556,6 +591,51 @@ class WalletShow extends Component<Props, State> {
                 </ModalBody>
                 <ModalFooter>
                     <Button color="primary" onClick={this.undelegate}>Confirm</Button>{' '}
+                    <Button color="secondary" onClick={() => {this.setState({openedModal: '', newTransactionStep: 1})}}>Cancel</Button>
+                </ModalFooter>
+            </Modal>
+        );
+    }
+
+    renderWithdrawRewardsModal(){
+        if(!this.state.walletUnlocked){
+            return null;
+        }
+
+        return (
+            <Modal isOpen={this.state.openedModal === 'withdraw_rewards'} toggle={() => {this.setState({openedModal: '', newTransactionStep: 1})}} size={'lg'}>
+                <ModalHeader toggle={() => {this.setState({openedModal: ''})}}>Withdraw my rewards</ModalHeader>
+                <ModalBody>
+                    {this.state.newTransactionStep === 1 ? (
+                        <React.Fragment>
+                            <div className="row">
+                                <div className="col-lg-12 form-group">
+                                    <label>Validator Address</label>
+                                    <input type="text" className="form-control" onChange={(ev)=>{this.setState({input: {...this.state.input, destination: ev.target.value}})}}/>
+                                </div>
+                            </div>
+                        </React.Fragment>
+                    ) : (
+                        <React.Fragment>
+                            <div className="alert alert-info text-center">
+                                Please confirm the different parameters. They will be used to dispatch your transaction.<br/>
+                                Once confirmed, it's definitive and nothing can be roll-backed
+                            </div>
+                            {this.state.ledgerAcquired && (
+                                <div className="alert alert-warning text-center">
+                                    Once you click 'confirm', please validate and sign on the Ledger to process the transaction.
+                                </div>
+                            )}
+                            <React.Fragment>
+                                <ul>
+                                    <li><b>Validator address:</b> {this.state.input.destination}</li>
+                                </ul>
+                            </React.Fragment>
+                        </React.Fragment>
+                    )}
+                </ModalBody>
+                <ModalFooter>
+                    <Button color="primary" onClick={this.withdrawRewards}>Confirm</Button>{' '}
                     <Button color="secondary" onClick={() => {this.setState({openedModal: '', newTransactionStep: 1})}}>Cancel</Button>
                 </ModalFooter>
             </Modal>
@@ -867,6 +947,7 @@ class WalletShow extends Component<Props, State> {
                 {this.renderNewTransactionModal()}
                 {this.renderDelegateModal()}
                 {this.renderUndelegateModal()}
+                {this.renderWithdrawRewardsModal()}
             </React.Fragment>
         );
     }
