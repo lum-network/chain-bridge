@@ -32,7 +32,7 @@
     "randomstring": "^1.1.5",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^6.5.2",
-    "sandblock-chain-sdk-js": "^1.0.24",
+    "sandblock-chain-sdk-js": "^1.0.28",
     "sequelize": "^5.17.1",
     "sequelize-typescript": "^1.0.0",
     "web3": "^1.2.1"

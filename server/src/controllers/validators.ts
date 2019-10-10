@@ -4,9 +4,12 @@ import SandblockChainClient from "sandblock-chain-sdk-js/dist/client";
 
 export const ValidatorsIndexRoute: Lifecycle.Method = async (req: Request, handler: ResponseToolkit) => {
     const sbc = new SandblockChainClient();
-    const validators = await sbc.getValidators();
+    const validators = await sbc.getValidators('bonded');
+    const candidates = await sbc.getValidators('unbonded');
 
-    return response(handler, validators.result, "", 200);
+    const total = [...validators.result, ...candidates.result];
+
+    return response(handler, total, "", 200);
 };
 
 export const ValidatorAddressRoute: Lifecycle.Method = async (req: Request, handler: ResponseToolkit) => {

@@ -20,7 +20,7 @@ export const ProcessWaitingMigration = async () => {
         const tx = await emitNewTransfer(migration.to_address, parseInt(migration.amount));
         if(!tx || !tx.logs || tx.logs.length  <= 0 || !tx.logs[0].success){
             migration.message = "Error while processing transaction";
-            migration.tx_hash = tx.txhash || null;
+            migration.tx_hash = (tx !== null) ? tx.txhash : null;
             migration.state = "REFUSED";
             migration.raw_tx = JSON.stringify(tx);
             migration.save();
