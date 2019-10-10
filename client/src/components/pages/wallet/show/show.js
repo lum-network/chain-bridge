@@ -55,6 +55,7 @@ type State = {
 
 class WalletShow extends Component<Props, State> {
     fileUploadHandler: null;
+    timeoutHandler: null;
     constructor(props: Props){
         super(props);
         this.state = {
@@ -112,10 +113,16 @@ class WalletShow extends Component<Props, State> {
         //this.retrieveWallet(address);
     }
 
+    componentWillUnmount(): void {
+        if(this.timeoutHandler !== null) {
+            clearTimeout(this.timeoutHandler);
+        }
+    }
+
     async retrieveWallet(address, refresh: boolean = true){
         await dispatchAction(getAccount(address));
         if(refresh) {
-            setTimeout(async () => {
+            this.timeoutHandler = setTimeout(async () => {
                 await this.retrieveWallet(address);
             }, 10000);
         }
