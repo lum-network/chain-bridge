@@ -5,7 +5,7 @@ import SandblockChainClient from "sandblock-chain-sdk-js/dist/client";
 
 export const AccountAddressRoute: Lifecycle.Method = async(req: Request, handler: ResponseToolkit) => {
     const account = await getOrInsertAccount(req.params.address);
-    if(account === null){
+    if(account === null || account === undefined){
         return response(handler, {
             id: -1,
             address: req.params.address,
