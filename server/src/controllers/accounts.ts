@@ -1,6 +1,7 @@
 import {Lifecycle, Request, ResponseToolkit} from "hapi";
 import {response} from "../utils/http";
 import {getOrInsertAccount} from "../jobs/transactions";
+import SandblockChainClient from "sandblock-chain-sdk-js/dist/client";
 
 export const AccountAddressRoute: Lifecycle.Method = async(req: Request, handler: ResponseToolkit) => {
     const account = await getOrInsertAccount(req.params.address);
@@ -15,5 +16,17 @@ export const AccountAddressRoute: Lifecycle.Method = async(req: Request, handler
             sequence: 0
         }, "", 200);
     }
-    return response(handler, account, "", 200);
+
+    const sbc = new SandblockChainClient();
+    let retn = account.toJSON();
+
+    // Inject delegations
+    const delegations = await sbc.getDelegatorDelegations(req.params.address);
+    retn['delegations'] = (delegations !== null) ? delegations.result : [];
+
+    // Inject rewards
+    const rewards = await sbc.getAllDelegatorRewards(req.params.address);
+    retn['all_rewards'] = (rewards !== null) ? rewards.result : [];
+
+    return response(handler, retn, "", 200);
 }

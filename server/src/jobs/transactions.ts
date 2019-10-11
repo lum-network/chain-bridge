@@ -31,7 +31,7 @@ const extractValueFromMsg = async (msgs: [{type, value: {}}], key: string) => {
     return retn;
 }
 
-export const getOrInsertAccount = async (address: string) => {
+export const getOrInsertAccount = async (address: string): Promise<Account | null> => {
     if(!address){
         return null;
     }
