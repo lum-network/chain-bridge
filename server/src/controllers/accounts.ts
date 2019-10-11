@@ -28,5 +28,9 @@ export const AccountAddressRoute: Lifecycle.Method = async(req: Request, handler
     const rewards = await sbc.getAllDelegatorRewards(req.params.address);
     retn['all_rewards'] = (rewards !== null) ? rewards.result : [];
 
+    // Inject withdraw address
+    const address = await sbc.getDelegatorWithdrawAddress(req.params.address);
+    retn['withdraw_address'] = (address !== null) ? address.result : req.params.address;
+
     return response(handler, retn, "", 200);
 }
