@@ -3,6 +3,7 @@ import {dispatchAction} from "../../../../utils/redux";
 import {connect} from "react-redux";
 import {getValidators} from "../../../../store/actions/validators";
 import {NavLink} from "react-router-dom";
+import ValidatorStatus from "../../../parts/ValidatorStatus";
 
 type Props = {
     validators: [],
@@ -52,6 +53,7 @@ class ValidatorsPage extends React.Component<Props, State> {
             <table className="table table-no-border table-latests">
                 <thead>
                     <tr>
+                        <th className="text-center">Status</th>
                         <th className="text-center">Moniker</th>
                         <th className="text-center">Voting Power</th>
                         <th className="text-center">Commissions</th>
@@ -65,6 +67,7 @@ class ValidatorsPage extends React.Component<Props, State> {
                         const url = `/validator/${elem.operator_address}`;
                         return (
                             <tr key={index}>
+                                <td className="text-center"><ValidatorStatus status={elem.status} jailed={elem.jailed}/></td>
                                 <td className="text-center">{elem.description.identity || elem.description.moniker}</td>
                                 <td className="text-center">{Number(elem.delegator_shares).toFixed(0)}</td>
                                 <td className="text-center">{Number(elem.commission.commission_rates.rate).toPrecision(2) * 100} %</td>
