@@ -81,6 +81,11 @@ class AddressShowPage extends Component<Props, State> {
             });
         }
 
+        let delegated_coins = 0;
+        this.state.account.delegations.forEach(elem => {
+            delegated_coins += parseInt(elem.balance);
+        });
+
         return (
             <React.Fragment>
                 <div className="col-12">
@@ -123,6 +128,10 @@ class AddressShowPage extends Component<Props, State> {
                                         <td>
                                             {coins.join(', ')}
                                         </td>
+                                    </tr>
+                                    <tr>
+                                        <td className="validator-identity-title"><strong>Delegated Coins</strong></td>
+                                        <td>{delegated_coins} SBC</td>
                                     </tr>
                                 </tbody>
                             </table>
