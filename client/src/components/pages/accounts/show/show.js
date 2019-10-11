@@ -100,7 +100,7 @@ class AddressShowPage extends Component<Props, State> {
                                 </div>
                                 <div className="col-lg-5 col-sm-12 col-xs-12">
                                     <h6 className="font-weight-bold">Reward Address</h6>
-                                    {this.state.account.address || this.props.match.params.accountId}
+                                    {this.state.account.withdraw_address || this.props.match.params.accountId}
                                 </div>
                             </div>
                         </div>
