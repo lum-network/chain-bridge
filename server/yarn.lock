@@ -4336,10 +4336,10 @@ safe-regex@^1.1.0:
   resolved "https://registry.yarnpkg.com/safer-buffer/-/safer-buffer-2.1.2.tgz#44fa161b0187b9549dd84bb91802f9bd8385cd6a"
   integrity sha512-YZo3K82SD7Riyi0E1EQPojLz7kpepnSQI9IyPbHHg1XXXevb5dJI7tpyN2ADxGcQbHG7vcyRHk0cbwqcQriUtg==
 
-sandblock-chain-sdk-js@^1.0.28:
-  version "1.0.28"
-  resolved "https://registry.yarnpkg.com/sandblock-chain-sdk-js/-/sandblock-chain-sdk-js-1.0.28.tgz#539e8632858565c0d0bd5afcb903fd64d4894831"
-  integrity sha512-wgEmVwoziKdbMJhko1mIKQ2onIvJsRuJRlGuObvIxG0HHeWjYRaKTtykmlMHjn7/p4t1vBzqzokZvh2nus2EGA==
+sandblock-chain-sdk-js@^1.0.32:
+  version "1.0.32"
+  resolved "https://registry.yarnpkg.com/sandblock-chain-sdk-js/-/sandblock-chain-sdk-js-1.0.32.tgz#2cedba3cc9648ba643c73c80365cc403f746031f"
+  integrity sha512-0fejrw4i/ViGEr7fUtf4OT7K3M1xNQsbznDT/0CenMX0g7J10n8zdi8vIJvAHwI5BmbzXMjYhVYvQMaXDkwMlg==
   dependencies:
     "@babel/runtime" "^7.5.5"
     "@ledgerhq/hw-transport-node-hid" "^4.70.0"

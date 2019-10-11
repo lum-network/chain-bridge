@@ -25,5 +25,11 @@ export const ValidatorAddressRoute: Lifecycle.Method = async (req: Request, hand
         validator.result.delegations = delegations.result;
     }
 
+    // Inject rewards
+    const rewards = await sbc.getValidatorOutstandingRewards(req.params.address);
+    if(rewards !== null){
+        validator.result.rewards = rewards.result;
+    }
+
     return response(handler, validator.result, "", 200);
 }
