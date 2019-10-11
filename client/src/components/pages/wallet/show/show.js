@@ -21,6 +21,7 @@ import {getAccount} from "../../../../store/actions/accounts";
 import { toast } from 'react-toastify';
 import QRCode from "qrcode.react";
 import TransactionsListComponent from "../../../parts/TransactionsList";
+import {Fee} from "sandblock-chain-sdk-js/dist/utils";
 
 type Props = {
     account: {},
@@ -136,6 +137,16 @@ class WalletShow extends Component<Props, State> {
         this.setState({openedModal: 'software'});
     }
 
+    buildFeePayload(): Fee{
+        return {
+            gas: "200000",
+            amount: [{
+                amount: "1",
+                denom: "sbc"
+            }]
+        };
+    }
+
     async withdrawRewards(){
         if(this.state.newTransactionStep === 1){
             if(!this.state.input || !this.state.input.destination){
@@ -153,11 +164,11 @@ class WalletShow extends Component<Props, State> {
             let tx = null;
             if(this.state.selectedMethod === 'ledger'){
                 await sbc.initLedgerMetas(this.state.ledgerTransport, this.state.HDPath);
-                const payload = await sbc.withdrawReward(this.state.input.destination, "Withdrawn using explorer wallet");
+                const payload = await sbc.withdrawReward(this.state.input.destination, this.buildFeePayload(), "Withdrawn using explorer wallet");
                 tx = await sbc.dispatchWithLedger(payload, this.state.ledgerTransport, this.state.HDPath);
             } else {
                 sbc.setPrivateKey(Buffer.from(this.state.walletPrivateKey, 'hex'));
-                const payload = await sbc.withdrawReward(this.state.input.destination, "Withdrawn using explorer wallet");
+                const payload = await sbc.withdrawReward(this.state.input.destination, this.buildFeePayload(), "Withdrawn using explorer wallet");
                 tx = await sbc.dispatch(payload);
             }
             if(tx === null){
@@ -190,11 +201,11 @@ class WalletShow extends Component<Props, State> {
             let tx = null;
             if(this.state.selectedMethod === 'ledger'){
                 await sbc.initLedgerMetas(this.state.ledgerTransport, this.state.HDPath);
-                const payload = await sbc.undelegate(this.state.input.destination, "sbc", this.state.input.amount, "Undelegated using explorer wallet");
+                const payload = await sbc.undelegate(this.state.input.destination, "sbc", this.state.input.amount, this.buildFeePayload(), "Undelegated using explorer wallet");
                 tx = await sbc.dispatchWithLedger(payload, this.state.ledgerTransport, this.state.HDPath);
             } else {
                 sbc.setPrivateKey(Buffer.from(this.state.walletPrivateKey, 'hex'));
-                const payload = await sbc.undelegate(this.state.input.destination, "sbc", this.state.input.amount, "Undelegated using explorer wallet");
+                const payload = await sbc.undelegate(this.state.input.destination, "sbc", this.state.input.amount, this.buildFeePayload(), "Undelegated using explorer wallet");
                 tx = await sbc.dispatch(payload);
             }
             if(tx === null){
@@ -249,11 +260,11 @@ class WalletShow extends Component<Props, State> {
             let tx = null;
             if(this.state.selectedMethod === 'ledger'){
                 await sbc.initLedgerMetas(this.state.ledgerTransport, this.state.HDPath);
-                const payload = await sbc.delegate(this.state.input.destination, "sbc", this.state.input.amount, "Delegated using explorer wallet");
+                const payload = await sbc.delegate(this.state.input.destination, "sbc", this.state.input.amount, this.buildFeePayload(), "Delegated using explorer wallet");
                 tx = await sbc.dispatchWithLedger(payload, this.state.ledgerTransport, this.state.HDPath);
             } else {
                 sbc.setPrivateKey(Buffer.from(this.state.walletPrivateKey, 'hex'));
-                const payload = await sbc.delegate(this.state.input.destination, "sbc", this.state.input.amount, "Delegated using explorer wallet");
+                const payload = await sbc.delegate(this.state.input.destination, "sbc", this.state.input.amount, this.buildFeePayload(), "Delegated using explorer wallet");
                 tx = await sbc.dispatch(payload);
             }
             if(tx === null){
@@ -278,11 +289,11 @@ class WalletShow extends Component<Props, State> {
             let tx = null;
             if(this.state.selectedMethod === 'ledger'){
                 await sbc.initLedgerMetas(this.state.ledgerTransport, this.state.HDPath);
-                const payload = await sbc.transfer(this.state.input.destination, this.state.input.currency, this.state.input.amount, "Sent using explorer wallet");
+                const payload = await sbc.transfer(this.state.input.destination, this.state.input.currency, this.state.input.amount, this.buildFeePayload(), "Sent using explorer wallet");
                 tx = await sbc.dispatchWithLedger(payload, this.state.ledgerTransport, this.state.HDPath);
             } else {
                 sbc.setPrivateKey(Buffer.from(this.state.walletPrivateKey, 'hex'));
-                const payload = await sbc.transfer(this.state.input.destination, this.state.input.currency, this.state.input.amount, "Sent using explorer wallet");
+                const payload = await sbc.transfer(this.state.input.destination, this.state.input.currency, this.state.input.amount, this.buildFeePayload(), "Sent using explorer wallet");
                 tx = await sbc.dispatch(payload);
             }
             if(tx === null){

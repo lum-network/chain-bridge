@@ -90,7 +90,10 @@ class ValidatorPage extends React.Component<Props, State> {
                                                     <td className="validator-identity-title">Delegated</td>
                                                     <td>{`${this.state.validator.tokens} SBC` || 0}</td>
                                                 </tr>
-
+                                                <tr>
+                                                    <td className="validator-identity-title">Outstanding rewards</td>
+                                                    <td>{`${Number(this.state.validator.rewards[0].amount).toFixed(2)} ${String(this.state.validator.rewards[0].denom).toUpperCase()}` || 0}</td>
+                                                </tr>
                                             </tbody>
                                         </table>
                                     </div>

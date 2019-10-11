@@ -47,7 +47,7 @@
     "redux-axios-middleware": "^4.0.1",
     "redux-persist": "^5.10.0",
     "redux-thunk": "^2.3.0",
-    "sandblock-chain-sdk-js": "^1.0.27",
+    "sandblock-chain-sdk-js": "^1.0.32",
     "save-file": "^2.3.1"
   },
   "eslintConfig": {
