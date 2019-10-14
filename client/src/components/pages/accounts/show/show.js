@@ -82,9 +82,11 @@ class AddressShowPage extends Component<Props, State> {
         }
 
         let delegated_coins = 0;
-        this.state.account.delegations.forEach(elem => {
-            delegated_coins += parseInt(elem.balance);
-        });
+        if(this.state.account.delegations !== undefined) {
+            this.state.account.delegations.forEach(elem => {
+                delegated_coins += parseInt(elem.balance);
+            });
+        }
 
         return (
             <React.Fragment>
