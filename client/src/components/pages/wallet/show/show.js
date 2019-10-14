@@ -407,7 +407,6 @@ class WalletShow extends Component<Props, State> {
             try {
                 const masterKey = sdk.utils.deriveMasterKeySync(this.state.input);
                 const keypair = sdk.utils.deriveKeypair(masterKey);
-
                 const address = sdk.utils.getAddressFromPrivateKey(keypair.privateKey, 'sand').toString();
                 this.setState({walletUnlocked: true, walletPrivateKey: keypair.privateKey.toString('hex'), openedModal: ''});
                 await this.retrieveWallet(address);
@@ -507,6 +506,19 @@ class WalletShow extends Component<Props, State> {
                 return coins.push(`${elem.amount} ${elem.denom}`);
             });
         }
+
+        let delegated_coins = 0;
+        if(this.state.accountInfos.delegations !== undefined) {
+            this.state.accountInfos.delegations.forEach(elem => {
+                delegated_coins += parseInt(elem.balance);
+            });
+        }
+
+        let reward = 0;
+        if(this.state.accountInfos.all_rewards !== undefined){
+            reward = Number(this.state.accountInfos.all_rewards.total[0].amount).toFixed(2);
+        }
+
         return (
             <React.Fragment>
                 <section className="block-explorer-section section bg-bottom">
@@ -516,28 +528,36 @@ class WalletShow extends Component<Props, State> {
                                 <div className="table-responsive">
                                     <table className="table table-striped table-latests table-detail">
                                         <tbody>
-                                        <tr>
-                                            <td><strong>Address</strong></td>
-                                            <td>{this.state.accountInfos.address || ''}</td>
-                                        </tr>
-                                        <tr>
-                                            <td><strong>Public Key</strong></td>
-                                            <td>{this.state.accountInfos.public_key_value || 'None'} ({this.state.accountInfos.public_key_type || 'Type Unknown'})</td>
-                                        </tr>
-                                        <tr>
-                                            <td><strong>Account Number</strong></td>
-                                            <td>{this.state.accountInfos.account_number || 0}</td>
-                                        </tr>
-                                        <tr>
-                                            <td><strong>Account Sequence (aka Number of transactions)</strong></td>
-                                            <td>{this.state.accountInfos.sequence || 0}</td>
-                                        </tr>
-                                        <tr>
-                                            <td><strong>Owned Coins</strong></td>
-                                            <td>
-                                                {coins.join(', ')}
-                                            </td>
-                                        </tr>
+                                            <tr>
+                                                <td><strong>Address</strong></td>
+                                                <td>{this.state.accountInfos.address || ''}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Public Key</strong></td>
+                                                <td>{this.state.accountInfos.public_key_value || 'None'} ({this.state.accountInfos.public_key_type || 'Type Unknown'})</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Account Number</strong></td>
+                                                <td>{this.state.accountInfos.account_number || 0}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Account Sequence (aka Number of transactions)</strong></td>
+                                                <td>{this.state.accountInfos.sequence || 0}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Owned Coins</strong></td>
+                                                <td>
+                                                    {coins.join(', ')}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Delegated Coins</strong></td>
+                                                <td>{delegated_coins}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Rewards to withdraw</strong></td>
+                                                <td>{reward} SBC</td>
+                                            </tr>
                                         </tbody>
                                     </table>
                                 </div>
@@ -616,7 +636,7 @@ class WalletShow extends Component<Props, State> {
     }
 
     renderWithdrawRewardsModal(){
-        if(!this.state.walletUnlocked){
+        if(!this.state.walletUnlocked || !this.state.accountInfos){
             return null;
         }
 
@@ -629,7 +649,11 @@ class WalletShow extends Component<Props, State> {
                             <div className="row">
                                 <div className="col-lg-12 form-group">
                                     <label>Validator Address</label>
-                                    <input type="text" className="form-control" onChange={(ev)=>{this.setState({input: {...this.state.input, destination: ev.target.value}})}}/>
+                                    <select className="form-control" onChange={(ev)=>{this.setState({input: {...this.state.input, destination: ev.target.value}})}}>
+                                        {this.state.accountInfos.all_rewards !== undefined && this.state.accountInfos.all_rewards.rewards !== undefined && this.state.accountInfos.all_rewards.rewards.map((elem, index)=>{
+                                            return (<option value={elem.validator_address}>{elem.validator_address} ({Number(elem.reward[0].amount).toFixed(2)} {elem.reward[0].denom})</option>);
+                                        })}
+                                    </select>
                                 </div>
                             </div>
                         </React.Fragment>
