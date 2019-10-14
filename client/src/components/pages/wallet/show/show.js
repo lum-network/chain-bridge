@@ -18,6 +18,7 @@ import privateKeyButton from '../../../../assets/images/buttons/key.svg';
 import ledgerButton from '../../../../assets/images/buttons/ledger.svg';
 import {dispatchAction} from "../../../../utils/redux";
 import {getAccount} from "../../../../store/actions/accounts";
+import {getValidators} from "../../../../store/actions/validators";
 import { toast } from 'react-toastify';
 import QRCode from "qrcode.react";
 import TransactionsListComponent from "../../../parts/TransactionsList";
@@ -25,6 +26,7 @@ import {Fee} from "sandblock-chain-sdk-js/dist/utils";
 
 type Props = {
     account: {},
+    validators: [],
     error: string,
     loading: boolean
 };
@@ -36,6 +38,8 @@ type State = {
     accountInfos: {},
     accountTransactions: [],
     selectedMethod: string,
+
+    validators: [],
 
     openedModal: string,
 
@@ -66,6 +70,8 @@ class WalletShow extends Component<Props, State> {
             accountInfos: null,
             accountTransactions: [],
             selectedMethod: '',
+
+            validators: [],
 
             openedModal: '',
 
@@ -107,6 +113,13 @@ class WalletShow extends Component<Props, State> {
             });
             this.setState({accountInfos: nextProps.account, accountTransactions: newTxs});
         }
+        if(nextProps.validators !== null){
+            this.setState({validators: nextProps.validators.result});
+        }
+    }
+
+    async componentWillMount(): void {
+        await dispatchAction(getValidators());
     }
 
     componentDidMount(): void {
@@ -590,6 +603,10 @@ class WalletShow extends Component<Props, State> {
             return null;
         }
 
+        if(!this.state.validators){
+            return null;
+        }
+
         return (
             <Modal isOpen={this.state.openedModal === 'undelegate'} toggle={() => {this.setState({openedModal: '', newTransactionStep: 1})}} size={'lg'}>
                 <ModalHeader toggle={() => {this.setState({openedModal: ''})}}>Undelegate my SBC</ModalHeader>
@@ -599,7 +616,12 @@ class WalletShow extends Component<Props, State> {
                             <div className="row">
                                 <div className="col-lg-6 form-group">
                                     <label>Validator Address</label>
-                                    <input type="text" className="form-control" onChange={(ev)=>{this.setState({input: {...this.state.input, destination: ev.target.value}})}}/>
+                                    <select className="form-control" onChange={(ev)=>{this.setState({input: {...this.state.input, destination: ev.target.value}})}} defaultValue={'DEFAULT'}>
+                                        <option value="DEFAULT" disabled>Choose a validator...</option>
+                                        {this.state.validators.map((val, index)=>{
+                                            return (<option value={val.operator_address} key={index}>{val.description.moniker}</option>)
+                                        })}
+                                    </select>
                                 </div>
                                 <div className="col-lg-6 form-group">
                                     <label>Amount</label>
@@ -651,7 +673,7 @@ class WalletShow extends Component<Props, State> {
                                     <label>Validator Address</label>
                                     <select className="form-control" onChange={(ev)=>{this.setState({input: {...this.state.input, destination: ev.target.value}})}}>
                                         {this.state.accountInfos.all_rewards !== undefined && this.state.accountInfos.all_rewards.rewards !== undefined && this.state.accountInfos.all_rewards.rewards.map((elem, index)=>{
-                                            return (<option value={elem.validator_address}>{elem.validator_address} ({Number(elem.reward[0].amount).toFixed(2)} {elem.reward[0].denom})</option>);
+                                            return (<option value={elem.validator_address} key={index}>{elem.validator_address} ({Number(elem.reward[0].amount).toFixed(2)} {elem.reward[0].denom})</option>);
                                         })}
                                     </select>
                                 </div>
@@ -689,6 +711,10 @@ class WalletShow extends Component<Props, State> {
             return null;
         }
 
+        if(!this.state.validators || this.state.validators[0] == undefined){
+            return null;
+        }
+
         return (
             <Modal isOpen={this.state.openedModal === 'delegate'} toggle={() => {this.setState({openedModal: '', newTransactionStep: 1})}} size={'lg'}>
                 <ModalHeader toggle={() => {this.setState({openedModal: ''})}}>Delegate my SBC</ModalHeader>
@@ -698,7 +724,12 @@ class WalletShow extends Component<Props, State> {
                             <div className="row">
                                 <div className="col-lg-6 form-group">
                                     <label>Validator Address</label>
-                                    <input type="text" className="form-control" onChange={(ev)=>{this.setState({input: {...this.state.input, destination: ev.target.value}})}}/>
+                                    <select className="form-control" onChange={(ev)=>{this.setState({input: {...this.state.input, destination: ev.target.value}})}} defaultValue={'DEFAULT'}>
+                                        <option value="DEFAULT" disabled>Choose a validator...</option>
+                                        {this.state.validators.map((val, index)=>{
+                                            return (<option value={val.operator_address} key={index}>{val.description.moniker}</option>)
+                                        })}
+                                    </select>
                                 </div>
                                 <div className="col-lg-6 form-group">
                                     <label>Amount</label>
@@ -1022,12 +1053,13 @@ class WalletShow extends Component<Props, State> {
 const matchStateToProps = state => {
     return {
         account: state.accounts.data,
-        error: state.accounts.error,
-        loading: state.accounts.loading
+        validators: state.validators.data,
+        error: state.accounts.error || state.validators.error,
+        loading: state.accounts.loading || state.validators.loading
     };
 };
 
 export default connect(
     matchStateToProps,
-    {  }
+    { getAccount, getValidators }
 )(WalletShow);
