@@ -529,7 +529,9 @@ class WalletShow extends Component<Props, State> {
 
         let reward = 0;
         if(this.state.accountInfos.all_rewards !== undefined){
-            reward = Number(this.state.accountInfos.all_rewards.total[0].amount).toFixed(2);
+            if(this.state.accountInfos.all_rewards.total !== undefined && this.state.accountInfos.all_rewards.total[0] !== undefined) {
+                reward = Number(this.state.accountInfos.all_rewards.total[0].amount).toFixed(2);
+            }
         }
 
         return (
