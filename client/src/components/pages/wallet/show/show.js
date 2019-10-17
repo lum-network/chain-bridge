@@ -674,7 +674,7 @@ class WalletShow extends Component<Props, State> {
                                 <div className="col-lg-12 form-group">
                                     <label>Validator Address</label>
                                     <select className="form-control" onChange={(ev)=>{this.setState({input: {...this.state.input, destination: ev.target.value}})}}>
-                                        {this.state.accountInfos.all_rewards !== undefined && this.state.accountInfos.all_rewards.rewards !== undefined && this.state.accountInfos.all_rewards.rewards.map((elem, index)=>{
+                                        {this.state.accountInfos.all_rewards !== undefined && this.state.accountInfos.all_rewards.rewards !== undefined && this.state.accountInfos.all_rewards.rewards !== null && this.state.accountInfos.all_rewards.rewards.map((elem, index)=>{
                                             return (<option value={elem.validator_address} key={index}>{elem.validator_address} ({Number(elem.reward[0].amount).toFixed(2)} {elem.reward[0].denom})</option>);
                                         })}
                                     </select>
