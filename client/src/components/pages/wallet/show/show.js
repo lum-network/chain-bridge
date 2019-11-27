@@ -162,7 +162,7 @@ class WalletShow extends Component<Props, State> {
 
     async withdrawRewards(){
         if(this.state.newTransactionStep === 1){
-            if(!this.state.input || !this.state.input.destination){
+            if(!this.state.input || !this.state.input.destination || this.state.input.destination == 'DEFAULT'){
                 return toast.warn('All fields are required');
             }
 
@@ -199,6 +199,10 @@ class WalletShow extends Component<Props, State> {
                 return toast.warn('All fields are required');
             }
 
+            if(this.state.input.amount < 2){
+                return toast.warn('Amount sent must be at least 2 SBC');
+            }
+
             if(String(this.state.input.destination).startsWith('sandvaloper') === false){
                 return toast.warn('Please enter a valid validator address(starts with sandvaloper)');
             }
@@ -212,13 +216,14 @@ class WalletShow extends Component<Props, State> {
             // Ledger is case-specific
             const sbc = new sdk.client();
             let tx = null;
+            const final_amount = this.state.input.amount - 1;
             if(this.state.selectedMethod === 'ledger'){
                 await sbc.initLedgerMetas(this.state.ledgerTransport, this.state.HDPath);
-                const payload = await sbc.undelegate(this.state.input.destination, "sbc", this.state.input.amount, this.buildFeePayload(), "Undelegated using explorer wallet");
+                const payload = await sbc.undelegate(this.state.input.destination, "sbc", final_amount, this.buildFeePayload(), "Undelegated using explorer wallet");
                 tx = await sbc.dispatchWithLedger(payload, this.state.ledgerTransport, this.state.HDPath);
             } else {
                 sbc.setPrivateKey(Buffer.from(this.state.walletPrivateKey, 'hex'));
-                const payload = await sbc.undelegate(this.state.input.destination, "sbc", this.state.input.amount, this.buildFeePayload(), "Undelegated using explorer wallet");
+                const payload = await sbc.undelegate(this.state.input.destination, "sbc", final_amount, this.buildFeePayload(), "Undelegated using explorer wallet");
                 tx = await sbc.dispatch(payload);
             }
             if(tx === null){
@@ -234,6 +239,10 @@ class WalletShow extends Component<Props, State> {
         if(this.state.newTransactionStep === 1){
             if(!this.state.input || !this.state.input.destination || !this.state.input.amount){
                 return toast.warn('All fields are required');
+            }
+
+            if(this.state.input.amount < 2){
+                return toast.warn('Amount sent must be at least 2 SBC');
             }
 
             if(String(this.state.input.destination).startsWith('sandvaloper') === false){
@@ -271,13 +280,14 @@ class WalletShow extends Component<Props, State> {
             // Ledger is case-specific
             const sbc = new sdk.client();
             let tx = null;
+            const final_amount = this.state.input.amount - 1;
             if(this.state.selectedMethod === 'ledger'){
                 await sbc.initLedgerMetas(this.state.ledgerTransport, this.state.HDPath);
-                const payload = await sbc.delegate(this.state.input.destination, "sbc", this.state.input.amount, this.buildFeePayload(), "Delegated using explorer wallet");
+                const payload = await sbc.delegate(this.state.input.destination, "sbc", final_amount, this.buildFeePayload(), "Delegated using explorer wallet");
                 tx = await sbc.dispatchWithLedger(payload, this.state.ledgerTransport, this.state.HDPath);
             } else {
                 sbc.setPrivateKey(Buffer.from(this.state.walletPrivateKey, 'hex'));
-                const payload = await sbc.delegate(this.state.input.destination, "sbc", this.state.input.amount, this.buildFeePayload(), "Delegated using explorer wallet");
+                const payload = await sbc.delegate(this.state.input.destination, "sbc", final_amount, this.buildFeePayload(), "Delegated using explorer wallet");
                 tx = await sbc.dispatch(payload);
             }
             if(tx === null){
@@ -295,18 +305,23 @@ class WalletShow extends Component<Props, State> {
                 return toast.warn('All fields are required');
             }
 
+            if(this.state.input.amount < 2){
+                return toast.warn('Amount sent must be at least 2 SBC');
+            }
+
             this.setState({newTransactionStep: 2});
         } else {
             // Ledger is case-specific
             const sbc = new sdk.client();
             let tx = null;
+            const final_amount = this.state.input.amount - 1;
             if(this.state.selectedMethod === 'ledger'){
                 await sbc.initLedgerMetas(this.state.ledgerTransport, this.state.HDPath);
-                const payload = await sbc.transfer(this.state.input.destination, this.state.input.currency, this.state.input.amount, this.buildFeePayload(), "Sent using explorer wallet");
+                const payload = await sbc.transfer(this.state.input.destination, this.state.input.currency, final_amount, this.buildFeePayload(), "Sent using explorer wallet");
                 tx = await sbc.dispatchWithLedger(payload, this.state.ledgerTransport, this.state.HDPath);
             } else {
                 sbc.setPrivateKey(Buffer.from(this.state.walletPrivateKey, 'hex'));
-                const payload = await sbc.transfer(this.state.input.destination, this.state.input.currency, this.state.input.amount, this.buildFeePayload(), "Sent using explorer wallet");
+                const payload = await sbc.transfer(this.state.input.destination, this.state.input.currency, final_amount, this.buildFeePayload(), "Sent using explorer wallet");
                 tx = await sbc.dispatch(payload);
             }
             if(tx === null){
@@ -645,7 +660,9 @@ class WalletShow extends Component<Props, State> {
                             <React.Fragment>
                                 <ul>
                                     <li><b>Validator address:</b> {this.state.input.destination}</li>
-                                    <li><b>Amount:</b> {this.state.input.amount}</li>
+                                    <li><b>Amount:</b> {this.state.input.amount} SBC</li>
+                                    <li><b>Fee:</b> 1 SBC</li>
+                                    <li><b>Final Amount:</b> {this.state.input.amount - 1} SBC</li>
                                 </ul>
                             </React.Fragment>
                         </React.Fragment>
@@ -674,8 +691,9 @@ class WalletShow extends Component<Props, State> {
                                 <div className="col-lg-12 form-group">
                                     <label>Validator Address</label>
                                     <select className="form-control" onChange={(ev)=>{this.setState({input: {...this.state.input, destination: ev.target.value}})}}>
+                                        <option value="DEFAULT">Choose a validator...</option>
                                         {this.state.accountInfos.all_rewards !== undefined && this.state.accountInfos.all_rewards.rewards !== undefined && this.state.accountInfos.all_rewards.rewards !== null && this.state.accountInfos.all_rewards.rewards.map((elem, index)=>{
-                                            return (<option value={elem.validator_address} key={index}>{elem.validator_address} ({Number(elem.reward[0].amount).toFixed(2)} {elem.reward[0].denom})</option>);
+                                            return (<option value={elem.validator_address} key={index}>{elem.validator_address} ({elem.reward !== null && Number(elem.reward[0].amount).toFixed(2)} {elem.reward !== null && elem.reward[0].denom})</option>);
                                         })}
                                     </select>
                                 </div>
@@ -754,6 +772,8 @@ class WalletShow extends Component<Props, State> {
                                 <ul>
                                     <li><b>Validator address:</b> {this.state.input.destination}</li>
                                     <li><b>Amount:</b> {this.state.input.amount}</li>
+                                    <li><b>Fee:</b> 1 SBC</li>
+                                    <li><b>Final Amount:</b> {this.state.input.amount - 1} SBC</li>
                                 </ul>
                             </React.Fragment>
                         </React.Fragment>
@@ -820,6 +840,8 @@ class WalletShow extends Component<Props, State> {
                                 <ul>
                                     <li><b>Destination address:</b> {this.state.input.destination}</li>
                                     <li><b>Asset:</b> {this.state.input.amount} {this.state.input.currency}</li>
+                                    <li><b>Fee:</b> 1 sbc</li>
+                                    <li><b>Asset sent:</b> {this.state.input.amount - 1} {this.state.input.currency}</li>
                                 </ul>
                             </React.Fragment>
                         </React.Fragment>
