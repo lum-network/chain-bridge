@@ -69,12 +69,14 @@ export const SyncBlocks = async () => {
     // We get the current height of the blockchain
     const currentStatus = await sbc.getStatus();
     if(!currentStatus || !currentStatus.result || !currentStatus.result.sync_info || !currentStatus.result.sync_info.latest_block_height){
+        console.error(`Can't fetch currentStatus from blockchain`);
         return;
     }
     const currentBlockHeight: number = parseInt(currentStatus.result.sync_info.latest_block_height);
 
     // If the actual height is the last one, don't do anything
     if(lastBlockHeight == currentBlockHeight){
+        console.error(`No more block to sync`);
         return;
     }
 
@@ -88,6 +90,7 @@ export const SyncBlocks = async () => {
     const end = start + blocksToProceed;
     const blocks: {result: {block_metas:[{header}]}} = (await sbc.getBlocksBetween(start, end));
     if(!blocks.result){
+        console.error(`Unable to get blocks between ${start} and ${end}`);
         return;
     }
     await blocks.result.block_metas.reverse().forEach(async (block)=>{

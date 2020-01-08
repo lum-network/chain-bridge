@@ -28,7 +28,6 @@ class BlocksPage extends Component<Props, State> {
     }
 
     componentWillMount(): void {
-        moment.tz.setDefault('Europe/Paris');
         dispatchAction(getBlocks());
     }
 
