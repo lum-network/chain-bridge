@@ -37,9 +37,6 @@ export const SyncBlockInternal = async (height: number) => {
         });
         entity.save();
 
-        // Dispatch a pusher notif
-        await PusherClient.GetInstance(PusherClient).notify('blocks', 'new-block', entity.toJSON());
-
         // We got transactions to sync also
         if (entity.num_txs > 0) {
             await block.block.data.txs.forEach(async tx => {
@@ -47,6 +44,9 @@ export const SyncBlockInternal = async (height: number) => {
                 await SyncTransaction(hash);
             });
         }
+
+        // Dispatch a pusher notif
+        await PusherClient.GetInstance(PusherClient).notify('blocks', 'new-block', entity.toJSON());
 
         return entity;
     }
