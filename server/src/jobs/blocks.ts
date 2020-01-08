@@ -58,13 +58,7 @@ export const SyncBlocks = async () => {
     const sbc = new SandblockChainClient();
 
     // We first get the last stored block
-    const lastBlock = await Block.findOne({order: [['height', 'DESC']], attributes: {exclude: ['raw']}});
-    let lastBlockHeight: number = 0;
-
-    // If we don't have any "last block" (in case of genesis init)
-    if (lastBlock !== null){
-        lastBlockHeight = parseInt(lastBlock.height);
-    }
+    const lastBlockHeight: number = await Block.max("height");
 
     // We get the current height of the blockchain
     const currentStatus = await sbc.getStatus();
