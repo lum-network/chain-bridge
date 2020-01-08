@@ -68,7 +68,7 @@ export const SyncBlocks = async () => {
 
     // We get the current height of the blockchain
     const currentStatus = await sbc.getStatus();
-    if(!currentStatus.result || !currentStatus.result.sync_info || !currentStatus.result.sync_info.latest_block_height){
+    if(!currentStatus || !currentStatus.result || !currentStatus.result.sync_info || !currentStatus.result.sync_info.latest_block_height){
         return;
     }
     const currentBlockHeight: number = parseInt(currentStatus.result.sync_info.latest_block_height);
