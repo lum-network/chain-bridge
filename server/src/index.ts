@@ -63,8 +63,7 @@ async function start() {
             host: process.env.DB_HOST,
             port: process.env.DB_PORT,
             models: [Account, Block, Migration, Transaction, Validator],
-            logging: false,
-            timezone: '+02:00'
+            logging: false
         });
 
         // Launch jobs
