@@ -132,7 +132,7 @@ class ValidatorPage extends React.Component<Props, State> {
                                     return (
                                         <tr key={index}>
                                             <td className="text-center"><NavLink to={url} >{elem.delegator_address}</NavLink></td>
-                                            <td className="text-center">{elem.balance} SBC</td>
+                                            <td className="text-center">{elem.balance.amount} {elem.balance.denom}</td>
                                         </tr>
                                     )
                                 })}

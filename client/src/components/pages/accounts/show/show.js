@@ -84,7 +84,7 @@ class AddressShowPage extends Component<Props, State> {
         let delegated_coins = 0;
         if(this.state.account.delegations !== undefined) {
             this.state.account.delegations.forEach(elem => {
-                delegated_coins += parseInt(elem.balance);
+                delegated_coins += parseInt(elem.balance.amount);
             });
         }
 
@@ -207,10 +207,6 @@ class AddressShowPage extends Component<Props, State> {
                     <div className="container">
                         <div className="row m-bottom-30">
                             {this.renderAccount()}
-                        </div>
-                        <div className="row m-bottom-30">
-                            <div className="col-6">{this.renderDelegations()}</div>
-                            <div className="col-6">{this.renderUnboundings()}</div>
                         </div>
                         <div className="row m-bottom-30">
                             <div className="col-12">
