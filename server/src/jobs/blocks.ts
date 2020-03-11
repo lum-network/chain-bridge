@@ -23,15 +23,15 @@ export const SyncBlockInternal = async (height: number) => {
     }
 
     // Protection for double addition
-    if((await Block.findOne({where: {hash: block.block_meta.block_id.hash}})) === null) {
+    if((await Block.findOne({where: {hash: block.block_id.hash}})) === null) {
         // Create and save entity
         const entity = new Block({
             chain_id: block.block.header.chain_id,
-            hash: block.block_meta.block_id.hash,
+            hash: block.block_id.hash,
             height: block.block.header.height,
             dispatched_at: block.block.header.time,
-            num_txs: block.block.header.num_txs,
-            total_txs: block.block.header.total_txs,
+            num_txs: (block && block.block && block.block.data && block.block.data.txs) ? block.block.data.txs.length: 0,
+            total_txs: (block && block.block && block.block.data && block.block.data.txs) ? block.block.data.txs.length: 0,
             proposer_address: await transformBlockProposerAddress(block.block.header.proposer_address),
             raw: JSON.stringify(block)
         });
@@ -58,7 +58,12 @@ export const SyncBlocks = async () => {
     const sbc = new SandblockChainClient();
 
     // We first get the last stored block
-    const lastBlockHeight: number = await Block.max("height");
+    let lastBlockHeight: number = await Block.max("height");
+
+    // Fixed for init
+    if(isNaN(lastBlockHeight)){
+        lastBlockHeight = 0;
+    }
 
     // We get the current height of the blockchain
     const currentStatus = await sbc.getStatus();
