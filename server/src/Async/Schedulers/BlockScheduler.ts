@@ -14,10 +14,6 @@ const transformBlockProposerAddress = async (proposer_address: string): Promise<
     return proposer_address;
 }
 
-function str_pad(n) {
-    return String("00" + n).slice(-2);
-}
-
 @Injectable()
 export default class BlockScheduler {
     private _logger: Logger = new Logger(BlockScheduler.name);
@@ -25,8 +21,18 @@ export default class BlockScheduler {
     @Cron(CronExpression.EVERY_10_SECONDS)
     async ingest() {
         // We get the last block stored in ES
-        let lastBlockHeight: number = 0;
-        //TODO: implement
+        const lastBlock = await ElasticService.getInstance().documentSearch(ElasticIndexes.INDEX_BLOCKS, {
+            size: 1,
+            sort: { "dispatched_at": "desc"},
+            query: {
+                match_all: {}
+            }
+        });
+        if(!lastBlock || !lastBlock.body || !lastBlock.body.hits || !lastBlock.body.hits.hits || lastBlock.body.hits.hits.length !== 1){
+            this._logger.error(`Failed to acquire the last blocked stored in ES`);
+            return;
+        }
+        let lastBlockHeight: number = lastBlock.body.hits.hits[0]['_source']['height'];
 
         // Get the current status of blockchain
         const currentStatus = await BlockchainService.getInstance().getClient().getStatus();
@@ -70,7 +76,7 @@ export default class BlockScheduler {
                 chain_id: block.header.chain_id,
                 hash: block.block_id.hash,
                 height: parseInt(block.header.height),
-                dispatched_at: `${date.getFullYear()}-${("0" + (date.getMonth() + 1)).slice(-2)}-${("0" + (date.getDay() + 1)).slice(-2)}`,
+                dispatched_at: `${date.getFullYear()}-${("0" + (date.getMonth() + 1)).slice(-2)}-${("0" + (date.getDay() + 1)).slice(-2)} ${date.getHours()}:${date.getMinutes()}:${("0" + (date.getSeconds() + 1)).slice(-2)}`,
                 num_txs: block.num_txs,
                 total_txs: (block && block.block && block.block.data && block.block.data.txs) ? block.block.data.txs.length : 0,
                 proposer_address: await transformBlockProposerAddress(block.header.proposer_address),

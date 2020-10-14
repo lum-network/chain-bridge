@@ -16,10 +16,10 @@ export default class ElasticService {
         return ElasticService._instance;
     }
 
-    public documentSearch = (index: ElasticIndexes, query: any) => {
+    public documentSearch = (index: ElasticIndexes, body: any) => {
         return this._client.search({
             index,
-            body: {query}
+            body
         });
     }
 
