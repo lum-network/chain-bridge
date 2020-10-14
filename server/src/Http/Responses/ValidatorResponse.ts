@@ -1,4 +1,6 @@
 import {Exclude, Expose, Type} from "class-transformer";
+import BalanceResponse from "@app/Http/Responses/BalanceResponse";
+import RewardResponse from "@app/Http/Responses/RewardResponse";
 
 @Exclude()
 export class ValidatorDescriptionResponse {
@@ -23,7 +25,26 @@ export class ValidatorDescriptionResponse {
 }
 
 @Exclude()
+export class ValidatorDelegationResponse {
+    @Expose()
+    delegator_address: string;
+
+    @Expose()
+    validator_address: string;
+
+    @Expose()
+    shares: string;
+
+    @Expose()
+    @Type(() => BalanceResponse)
+    balance: BalanceResponse;
+}
+
+@Exclude()
 export default class ValidatorResponse {
+    @Expose()
+    operator_address: string;
+
     @Expose()
     jailed: boolean;
 
@@ -39,6 +60,14 @@ export default class ValidatorResponse {
     @Expose()
     @Type(() => ValidatorDescriptionResponse)
     description: ValidatorDescriptionResponse;
+
+    @Expose()
+    @Type(() => ValidatorDelegationResponse)
+    delegations: ValidatorDelegationResponse[];
+
+    @Expose()
+    @Type(() => RewardResponse)
+    rewards: RewardResponse[];
 
     constructor(data: Partial<ValidatorResponse>) {
         Object.assign(this, data);
