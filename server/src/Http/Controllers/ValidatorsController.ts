@@ -1,8 +1,9 @@
 import {Controller, Get, NotFoundException, Req} from "@nestjs/common";
-import {BlockchainService} from "@app/Services";
-import {classToPlain} from "class-transformer";
-import {ValidatorResponse} from "@app/Http/Responses";
 import {Request} from "express";
+import {classToPlain} from "class-transformer";
+
+import {BlockchainService} from "@app/Services";
+import {ValidatorResponse} from "@app/Http/Responses";
 
 @Controller('validators')
 export default class ValidatorsController {
