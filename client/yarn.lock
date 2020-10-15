@@ -9239,10 +9239,10 @@ safe-regex@^1.1.0:
   resolved "https://registry.yarnpkg.com/safer-buffer/-/safer-buffer-2.1.2.tgz#44fa161b0187b9549dd84bb91802f9bd8385cd6a"
   integrity sha512-YZo3K82SD7Riyi0E1EQPojLz7kpepnSQI9IyPbHHg1XXXevb5dJI7tpyN2ADxGcQbHG7vcyRHk0cbwqcQriUtg==
 
-sandblock-chain-sdk-js@^1.0.29:
-  version "1.0.29"
-  resolved "https://registry.yarnpkg.com/sandblock-chain-sdk-js/-/sandblock-chain-sdk-js-1.0.29.tgz#25600759908daea0ce206efc484fe3b2e939e3bf"
-  integrity sha512-Qb3phNl1ewdlFWXQ0vwseIe1h9KPRPExx4gJIZAPjlvaf2rr19/4iYA4V0mbg922X5tm8+OA1s8/BUW1gmUdAg==
+sandblock-chain-sdk-js@^1.0.37:
+  version "1.0.37"
+  resolved "https://registry.yarnpkg.com/sandblock-chain-sdk-js/-/sandblock-chain-sdk-js-1.0.37.tgz#f12a6b2e639672a495e82df7aa716bfb642b64fd"
+  integrity sha512-5AbZuj59KRPr0a+rhdfn6sFdL6Ary+Hl28R+fJ7ldwCPtAmG6xJUA4nkS4r8p9RxOoxn7caGc1VChZSnXY2LUw==
   dependencies:
     "@babel/runtime" "^7.5.5"
     "@ledgerhq/hw-transport-node-hid" "^4.70.0"
