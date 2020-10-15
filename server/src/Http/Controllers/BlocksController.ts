@@ -1,4 +1,4 @@
-import {Controller, Get, NotFoundException, Req} from "@nestjs/common";
+import {Controller, Get, InternalServerErrorException, NotFoundException, Req} from "@nestjs/common";
 import {Request} from "express";
 import {ElasticService} from "@app/Services";
 import {ElasticIndexes} from "@app/Utils/Constants";
@@ -46,10 +46,14 @@ export default class BlocksController {
 
     @Get(':height')
     async show(@Req() req: Request) {
+        if(!(await ElasticService.getInstance().documentExists(ElasticIndexes.INDEX_BLOCKS, req.params.height))){
+            throw new NotFoundException('block_not_found');
+        }
+
         // We get the block from ES
         const result = await ElasticService.getInstance().documentGet(ElasticIndexes.INDEX_BLOCKS, req.params.height);
         if (!result || !result.body || !result.body._source) {
-            throw new NotFoundException('block_not_found');
+            throw new InternalServerErrorException('failed_to_fetch_block');
         }
 
         return classToPlain(new BlockResponse(result.body._source));

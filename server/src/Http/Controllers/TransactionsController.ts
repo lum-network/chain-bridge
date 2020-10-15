@@ -27,10 +27,14 @@ export default class TransactionsController {
 
     @Get(':hash')
     async show(@Req() req: Request){
+        if(!(await ElasticService.getInstance().documentExists(ElasticIndexes.INDEX_TRANSACTIONS, req.params.hash))){
+            throw new NotFoundException('transaction_not_found');
+        }
+
         // We get the transaction from ES
         const result = await ElasticService.getInstance().documentGet(ElasticIndexes.INDEX_TRANSACTIONS, req.params.hash);
         if (!result || !result.body || !result.body._source) {
-            throw new NotFoundException('transaction_not_found');
+            throw new NotFoundException('failed_to_fetch_transaction');
         }
 
         return classToPlain(new TransactionResponse(result.body._source));
