@@ -31,16 +31,24 @@ export default class ElasticService {
         return body;
     }
 
-    public documentCreate = async (index: ElasticIndexes, id: any, body: any) => {
+    public documentCreate = (index: ElasticIndexes, id: any, body: any) => {
         return this._client.index({
             index, id, body
         });
     }
 
-    public documentGet = async (index: ElasticIndexes, id: string) => {
+    public documentGet = (index: ElasticIndexes, id: any) => {
         return this._client.get({
             index,
             id
+        });
+    }
+
+    public documentUpdate = (index: ElasticIndexes, id: any, body: any) => {
+        return this._client.update({
+            index,
+            id,
+            body: {doc:body}
         });
     }
 

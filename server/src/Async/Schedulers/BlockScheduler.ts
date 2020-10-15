@@ -4,6 +4,7 @@ import {BlockchainService, ElasticService} from "@app/Services";
 import {ElasticIndexes} from "@app/Utils/Constants";
 
 import * as utils from "sandblock-chain-sdk-js/dist/utils";
+import moment from 'moment';
 
 const transformBlockProposerAddress = async (proposer_address: string): Promise<string> => {
     const encodedAddress = utils.encodeAddress(proposer_address, 'sandvalcons').toString();//TODO: prefix in config
@@ -19,16 +20,17 @@ export default class BlockScheduler {
     private _logger: Logger = new Logger(BlockScheduler.name);
 
     @Cron(CronExpression.EVERY_10_SECONDS)
-    async ingest() {
+    async SyncBlocks() {
         // We get the last block stored in ES
         const lastBlock = await ElasticService.getInstance().documentSearch(ElasticIndexes.INDEX_BLOCKS, {
             size: 1,
-            sort: { "dispatched_at": "desc"},
+            sort: {"dispatched_at": "desc"},
             query: {
                 match_all: {}
             }
         });
-        if(!lastBlock || !lastBlock.body || !lastBlock.body.hits || !lastBlock.body.hits.hits || lastBlock.body.hits.hits.length !== 1){
+        // Ensure we have all the required data
+        if (!lastBlock || !lastBlock.body || !lastBlock.body.hits || !lastBlock.body.hits.hits || lastBlock.body.hits.hits.length !== 1) {
             this._logger.error(`Failed to acquire the last blocked stored in ES`);
             return;
         }
@@ -42,7 +44,7 @@ export default class BlockScheduler {
         }
         const currentBlockHeight: number = parseInt(currentStatus.result.sync_info.latest_block_height);
 
-        // If the actual height is the last one, don't do anything
+        // If the actual height is the last one, don't do anything (avoiding race condition)
         if (lastBlockHeight == currentBlockHeight) {
             return;
         }
@@ -53,8 +55,8 @@ export default class BlockScheduler {
 
         // Prepare required boundaries
         this._logger.log(`Syncing from ${lastBlockHeight + 1} to ${lastBlockHeight + blocksToProceed}`);
-        const start = lastBlockHeight + 1;
-        const end = start + blocksToProceed;
+        const start = 90;//lastBlockHeight + 1;
+        const end = 100;//start + blocksToProceed;
 
         // Acquire the list of blocks
         const blocks: any = (await BlockchainService.getInstance().getClient().getBlocksBetween(start, end));
@@ -64,29 +66,40 @@ export default class BlockScheduler {
         }
 
         // For each block, proceed with sync
-        for (let block of blocks.result.block_metas.reverse()) {
-            // If block was already ingested, skip
-            if ((await ElasticService.getInstance().documentExists(ElasticIndexes.INDEX_BLOCKS, block.block_id.hash))) {
-                this._logger.error(`Tried to ingest already present block ${block.block_id.hash}`);
+        for (let bl of blocks.result.block_metas.reverse()) {
+            const block = await BlockchainService.getInstance().getClient().getBlockAtHeightLive(bl.header.height);
+            if(!block){
+                this._logger.error(`Failed to acquire block at height ${bl.header.height}`);
                 continue;
             }
 
-            const date = new Date(block.header.time);
             const payload = {
-                chain_id: block.header.chain_id,
+                chain_id: block.block.header.chain_id,
                 hash: block.block_id.hash,
-                height: parseInt(block.header.height),
-                dispatched_at: `${date.getFullYear()}-${("0" + (date.getMonth() + 1)).slice(-2)}-${("0" + (date.getDay() + 1)).slice(-2)} ${date.getHours()}:${date.getMinutes()}:${("0" + (date.getSeconds() + 1)).slice(-2)}`,
-                num_txs: block.num_txs,
+                height: parseInt(block.block.header.height),
+                dispatched_at: moment(block.block.header.time).format('yyyy-MM-DD HH:mm:ss'),
+                num_txs: bl.num_txs,
                 total_txs: (block && block.block && block.block.data && block.block.data.txs) ? block.block.data.txs.length : 0,
-                proposer_address: await transformBlockProposerAddress(block.header.proposer_address),
-                raw: JSON.stringify(block)
+                proposer_address: await transformBlockProposerAddress(block.block.header.proposer_address),
+                raw: JSON.stringify(block),
+                transactions: []
             }
 
-            // Only ingest if transaction isn't yet
+            // If we have transaction, we append to the payload the decoded txHash to allow further search of it
+            if (payload.total_txs > 0){
+                for (let tx of block.block.data.txs){
+                    const txHash = utils.decodeTransactionHash(tx);
+                    payload.transactions.push(txHash);
+                }
+            }
+
+            // Ingest or update (allow to relaunch the ingest from scratch to ensure we store the correct data)
             if ((await ElasticService.getInstance().documentExists(ElasticIndexes.INDEX_BLOCKS, payload.height)) === false) {
                 await ElasticService.getInstance().documentCreate(ElasticIndexes.INDEX_BLOCKS, payload.height, payload);
                 this._logger.log(`Block #${payload.height} ingested`);
+            } else {
+                await ElasticService.getInstance().documentUpdate(ElasticIndexes.INDEX_BLOCKS, payload.height, payload);
+                this._logger.log(`Block #${payload.height} updated`);
             }
         }
     }

@@ -8,7 +8,8 @@ export const IndexBlocksMapping = {
             "num_txs": {"type": "double"},
             "total_txs": {"type": "double"},
             "proposer_address": {"type": "keyword"},
-            "raw": {"type": "text"}
+            "raw": {"type": "text"},
+            "transactions": {"type": "text"}
         }
     }
 };
