@@ -1,4 +1,5 @@
 import {Logger, Module, OnModuleInit} from '@nestjs/common';
+import {APP_INTERCEPTOR} from "@nestjs/core";
 import {ScheduleModule} from "@nestjs/schedule";
 import {BullModule} from "@nestjs/bull";
 import {TerminusModule} from '@nestjs/terminus';
@@ -16,6 +17,7 @@ import {ElasticIndexes} from "@app/Utils/Constants";
 import {IndexBlocksMapping, IndexTransactionsMapping, IndexValidatorsMapping} from "@app/Utils/Indices";
 import {config} from "@app/Utils/Config";
 import {ElasticsearchIndicator} from "@app/Http/Indicators";
+import {ResponseInterceptor} from "@app/Http/Interceptors";
 
 @Module({
     imports: [
@@ -33,7 +35,8 @@ import {ElasticsearchIndicator} from "@app/Http/Indicators";
     providers: [
         BlockConsumer, TransactionConsumer,
         BlockScheduler, ValidatorScheduler,
-        ElasticsearchIndicator
+        ElasticsearchIndicator,
+        {provide: APP_INTERCEPTOR, useClass: ResponseInterceptor}
     ],
 })
 export class AppModule implements OnModuleInit {
