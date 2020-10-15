@@ -1,0 +1,29 @@
+name: Build and deploy the Explorer Backend
+on:
+  push:
+    branches:
+      - master
+
+env:
+  REGISTRY_TOKEN: ${{ secrets.REGISTRY_TOKEN }}
+
+jobs:
+  build:
+    name: Build the backend and push on docker registry
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Login on Scaleway docker registry
+        run: |
+          docker login rg.fr-par.scw.cloud/sandblock -u nologin -p $REGISTRY_TOKEN
+
+      - name: Build the Api Docker image
+        run: |
+          cd server && docker build -t chain-explorer-backend .
+
+      - name: Tag and push the built image
+        run: |
+          docker tag chain-explorer-backend:latest rg.fr-par.scw.cloud/sandblock/chain-explorer-backend:latest
+          docker push rg.fr-par.scw.cloud/sandblock/chain-explorer-backend:latest
