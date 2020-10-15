@@ -4,7 +4,7 @@ import {BullModule} from "@nestjs/bull";
 
 import {
     AccountsController,
-    BlocksController,
+    BlocksController, CoreController,
     TransactionsController,
     ValidatorsController
 } from "@app/Http/Controllers";
@@ -25,7 +25,7 @@ import {IndexBlocksMapping, IndexTransactionsMapping, IndexValidatorsMapping} fr
         }),
         ScheduleModule.forRoot()
     ],
-    controllers: [AccountsController, BlocksController, TransactionsController, ValidatorsController],
+    controllers: [AccountsController, BlocksController, CoreController, TransactionsController, ValidatorsController],
     providers: [
         BlockConsumer, TransactionConsumer,
         BlockScheduler, ValidatorScheduler,
