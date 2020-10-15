@@ -1,10 +1,11 @@
 import {Module, OnModuleInit} from '@nestjs/common';
 import {ScheduleModule} from "@nestjs/schedule";
 import {BullModule} from "@nestjs/bull";
+import { TerminusModule } from '@nestjs/terminus';
 
 import {
     AccountsController,
-    BlocksController, CoreController,
+    BlocksController, CoreController, HealthController,
     TransactionsController,
     ValidatorsController
 } from "@app/Http/Controllers";
@@ -13,22 +14,26 @@ import {BlockConsumer, TransactionConsumer} from "@app/Async/Consumers";
 import {ElasticService} from "@app/Services";
 import {ElasticIndexes} from "@app/Utils/Constants";
 import {IndexBlocksMapping, IndexTransactionsMapping, IndexValidatorsMapping} from "@app/Utils/Indices";
+import {config} from "@app/Utils/Config";
+import {ElasticsearchIndicator} from "@app/Http/Indicators";
 
 @Module({
     imports: [
         BullModule.registerQueue({
             name: 'default',
             redis: {
-                host: 'localhost',
-                port: 6379
+                host: config.getValue<string>('REDIS_HOST'),
+                port: config.getValue<number>('REDIS_PORT', true)
             }
         }),
-        ScheduleModule.forRoot()
+        ScheduleModule.forRoot(),
+        TerminusModule
     ],
-    controllers: [AccountsController, BlocksController, CoreController, TransactionsController, ValidatorsController],
+    controllers: [AccountsController, BlocksController, CoreController, HealthController, TransactionsController, ValidatorsController],
     providers: [
         BlockConsumer, TransactionConsumer,
         BlockScheduler, ValidatorScheduler,
+        ElasticsearchIndicator
     ],
 })
 export class AppModule implements OnModuleInit{

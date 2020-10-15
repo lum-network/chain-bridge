@@ -1,12 +1,13 @@
 import {Client} from '@elastic/elasticsearch';
 import {ElasticIndexes} from "@app/Utils/Constants";
+import {config} from "@app/Utils/Config";
 
 export default class ElasticService {
     private static _instance: ElasticService;
     private _client: Client;
 
     constructor() {
-        this._client = new Client({node: 'http://localhost:9200'});
+        this._client = new Client({node: `http://${config.getValue<string>('ELASTICSEARCH_HOST')}:${config.getValue<number>('ELASTICSEARCH_PORT')}`});
     }
 
     public static getInstance = (): ElasticService => {
@@ -48,7 +49,7 @@ export default class ElasticService {
         return this._client.update({
             index,
             id,
-            body: {doc:body}
+            body: {doc: body}
         });
     }
 
@@ -64,5 +65,9 @@ export default class ElasticService {
             index
         });
         return body;
+    }
+
+    get client(): Client {
+        return this._client;
     }
 }
