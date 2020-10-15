@@ -12,7 +12,7 @@ import autoMergeLevel2 from 'redux-persist/lib/stateReconciler/autoMergeLevel2';
 const clients = {
     api: {
         client: axios.create({
-            baseURL: `http://51.158.102.88:32538`,
+            baseURL: `http://api.explorer.sandblock.io`,
             headers: {
                 'Content-Type': 'application/json',
                 Accept: 'application/json'
