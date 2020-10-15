@@ -15,10 +15,10 @@ export default class BlockScheduler {
     constructor(@InjectQueue(Queues.QUEUE_DEFAULT) private readonly _queue: Queue) {
     }
 
-    @Cron(CronExpression.EVERY_30_SECONDS)
+    @Cron(CronExpression.EVERY_10_SECONDS)
     async ingest() {
         // Only ingest if allowed by the configuration
-        if(config.getValue<boolean>('INGEST_BLOCKS_ENABLED') === false){
+        if (config.getValue<boolean>('INGEST_BLOCKS_ENABLED') === false) {
             return;
         }
 
@@ -34,11 +34,15 @@ export default class BlockScheduler {
             }
         });
         // Ensure we have all the required data
-        if (!lastBlock || !lastBlock.body || !lastBlock.body.hits || !lastBlock.body.hits.hits || lastBlock.body.hits.hits.length !== 1) {
+        let lastBlockHeight: number = 0;
+        try {
+            if (lastBlock && lastBlock.body && lastBlock.body.hits && lastBlock.body.hits.hits && lastBlock.body.hits.hits.length === 1) {
+                lastBlockHeight = lastBlock.body.hits.hits[0]['_source']['height'];
+            }
+        } catch (error) {
             this._logger.error(`Failed to acquire the last blocked stored in ES`);
             return;
         }
-        let lastBlockHeight: number = lastBlock.body.hits.hits[0]['_source']['height'];
 
         // Get the current status of blockchain
         const currentStatus = await BlockchainService.getInstance().getClient().getStatus();
@@ -54,13 +58,13 @@ export default class BlockScheduler {
         }
 
         // We cap the amount of blocks to proceed on that batch (avoiding race condition)
-        let blocksToProceed = currentBlockHeight - lastBlockHeight;
+        let blocksToProceed: number = currentBlockHeight - lastBlockHeight;
         blocksToProceed = (blocksToProceed > ingestLength) ? ingestLength : blocksToProceed;
 
-        // Prepare required boundaries
-        this._logger.log(`Syncing from ${lastBlockHeight + 1} to ${lastBlockHeight + blocksToProceed}`);
-        const start = lastBlockHeight + 1;
-        const end = start + blocksToProceed;
+        // Prepare required boundaries (required to have leading + to avoid concatenation)
+        const start: number = lastBlockHeight + 1;
+        const end: number = +start + +blocksToProceed;
+        this._logger.log(`Syncing from ${start} to ${end}`);
 
         // Acquire the list of blocks
         const blocks: any = (await BlockchainService.getInstance().getClient().getBlocksBetween(start, end));
@@ -74,7 +78,8 @@ export default class BlockScheduler {
             this._queue.add(QueueJobs.INGEST_BLOCK, {
                 block_height: bl.header.height,
                 num_txs: bl.num_txs
-            }).finally(() => {});
+            }).finally(() => {
+            });
         }
     }
 }
