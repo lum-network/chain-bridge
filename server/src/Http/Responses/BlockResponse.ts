@@ -24,9 +24,6 @@ export default class BlockResponse {
     proposer_address: string;
 
     @Expose()
-    raw: string;
-
-    @Expose()
     transactions: string[];
 
     constructor(data: Partial<BlockResponse>) {
