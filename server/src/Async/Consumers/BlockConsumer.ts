@@ -8,6 +8,7 @@ import {BlockchainService, ElasticService} from "@app/Services";
 
 import * as utils from "sandblock-chain-sdk-js/dist/utils";
 import moment from 'moment';
+import {config} from "@app/Utils/Config";
 
 const transformBlockProposerAddress = async (proposer_address: string): Promise<string> => {
     const encodedAddress = utils.encodeAddress(proposer_address, 'sandvalcons').toString();//TODO: prefix in config
@@ -50,7 +51,12 @@ export default class BlockConsumer {
             for (let tx of block.block.data.txs) {
                 const txHash = utils.decodeTransactionHash(tx);
                 payload.transactions.push(txHash);
-                this._queue.add(QueueJobs.INGEST_TRANSACTION, {transaction_hash: txHash}).finally(() => {});
+
+                // Only ingest if allowed by the configuration
+                if (config.getValue<boolean>('INGEST_BLOCKS_ENABLED')) {
+                    this._queue.add(QueueJobs.INGEST_TRANSACTION, {transaction_hash: txHash}).finally(() => {
+                    });
+                }
             }
         }
 

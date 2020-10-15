@@ -6,6 +6,7 @@ import {InjectQueue} from "@nestjs/bull";
 
 import {BlockchainService, ElasticService} from "@app/Services";
 import {ElasticIndexes, QueueJobs, Queues} from "@app/Utils/Constants";
+import {config} from "@app/Utils/Config";
 
 @Injectable()
 export default class BlockScheduler {
@@ -14,8 +15,16 @@ export default class BlockScheduler {
     constructor(@InjectQueue(Queues.QUEUE_DEFAULT) private readonly _queue: Queue) {
     }
 
-    @Cron(CronExpression.EVERY_10_SECONDS)
+    @Cron(CronExpression.EVERY_30_SECONDS)
     async ingest() {
+        // Only ingest if allowed by the configuration
+        if(config.getValue<boolean>('INGEST_BLOCKS_ENABLED') === false){
+            return;
+        }
+
+        // Acquire the ingestion length from config
+        const ingestLength = config.getValue<number>('INGEST_BLOCKS_LENGTH');
+
         // We get the last block stored in ES
         const lastBlock = await ElasticService.getInstance().documentSearch(ElasticIndexes.INDEX_BLOCKS, {
             size: 1,
@@ -44,9 +53,9 @@ export default class BlockScheduler {
             return;
         }
 
-        // We cap to max 19 the amount of blocks to proceed on that batch (avoiding race condition)
+        // We cap the amount of blocks to proceed on that batch (avoiding race condition)
         let blocksToProceed = currentBlockHeight - lastBlockHeight;
-        blocksToProceed = (blocksToProceed > 19) ? 19 : blocksToProceed;
+        blocksToProceed = (blocksToProceed > ingestLength) ? ingestLength : blocksToProceed;
 
         // Prepare required boundaries
         this._logger.log(`Syncing from ${lastBlockHeight + 1} to ${lastBlockHeight + blocksToProceed}`);

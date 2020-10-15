@@ -35,7 +35,10 @@ const config = new Config(process.env)
         'REDIS_HOST',
         'REDIS_PORT',
         'MODE',
-        'PORT'
+        'PORT',
+        'INGEST_BLOCKS_ENABLED',
+        'INGEST_BLOCKS_LENGTH',
+        'INGEST_TRANSACTIONS_ENABLED'
     ]);
 
 export { config };

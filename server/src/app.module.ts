@@ -1,7 +1,7 @@
-import {Module, OnModuleInit} from '@nestjs/common';
+import {Logger, Module, OnModuleInit} from '@nestjs/common';
 import {ScheduleModule} from "@nestjs/schedule";
 import {BullModule} from "@nestjs/bull";
-import { TerminusModule } from '@nestjs/terminus';
+import {TerminusModule} from '@nestjs/terminus';
 
 import {
     AccountsController,
@@ -36,11 +36,18 @@ import {ElasticsearchIndicator} from "@app/Http/Indicators";
         ElasticsearchIndicator
     ],
 })
-export class AppModule implements OnModuleInit{
+export class AppModule implements OnModuleInit {
+    private readonly _logger: Logger = new Logger(AppModule.name);
+
     onModuleInit(): any {
+        // Log out
+        const blocksIngestEnabled = config.getValue<boolean>('INGEST_BLOCKS_ENABLED') ? 'enabled' : 'disabled';
+        const transactionsIngestEnabled = config.getValue<boolean>('INGEST_TRANSACTIONS_ENABLED') ? 'enabled' : 'disabled';
+        this._logger.log(`AppModule blocks ingestion ${blocksIngestEnabled} and transactions ingestion ${transactionsIngestEnabled} (${config.getValue<number>('INGEST_BLOCKS_LENGTH')})`);
+
         // Init the blocks index
         ElasticService.getInstance().indexExists(ElasticIndexes.INDEX_BLOCKS).then(async exists => {
-            if(!exists){
+            if (!exists) {
                 await ElasticService.getInstance().indexCreate(ElasticIndexes.INDEX_BLOCKS, IndexBlocksMapping);
                 console.log('Created index blocks');
             }
@@ -48,7 +55,7 @@ export class AppModule implements OnModuleInit{
 
         // Init the validators index
         ElasticService.getInstance().indexExists(ElasticIndexes.INDEX_VALIDATORS).then(async exists => {
-            if(!exists){
+            if (!exists) {
                 await ElasticService.getInstance().indexCreate(ElasticIndexes.INDEX_VALIDATORS, IndexValidatorsMapping);
                 console.log('Created index validators');
             }
@@ -56,7 +63,7 @@ export class AppModule implements OnModuleInit{
 
         // Init the transactions index
         ElasticService.getInstance().indexExists(ElasticIndexes.INDEX_TRANSACTIONS).then(async exists => {
-            if(!exists){
+            if (!exists) {
                 await ElasticService.getInstance().indexCreate(ElasticIndexes.INDEX_TRANSACTIONS, IndexTransactionsMapping);
                 console.log('Created index transactions');
             }
