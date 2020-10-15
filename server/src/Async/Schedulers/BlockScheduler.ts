@@ -50,8 +50,8 @@ export default class BlockScheduler {
 
         // Prepare required boundaries
         this._logger.log(`Syncing from ${lastBlockHeight + 1} to ${lastBlockHeight + blocksToProceed}`);
-        const start = 90;//lastBlockHeight + 1;
-        const end = 100;//start + blocksToProceed;
+        const start = lastBlockHeight + 1;
+        const end = start + blocksToProceed;
 
         // Acquire the list of blocks
         const blocks: any = (await BlockchainService.getInstance().getClient().getBlocksBetween(start, end));
