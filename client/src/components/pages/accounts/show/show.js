@@ -76,7 +76,7 @@ class AddressShowPage extends Component<Props, State> {
 
         let coins = [];
         if(this.state.account.coins.length > 0) {
-            JSON.parse(this.state.account.coins).map((elem) => {
+            this.state.account.coins.map((elem) => {
                 return coins.push(`${elem.amount} ${elem.denom}`);
             });
         }

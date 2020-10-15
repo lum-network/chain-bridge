@@ -182,7 +182,7 @@ class WalletShow extends Component<Props, State> {
             } else {
                 sbc.setPrivateKey(Buffer.from(this.state.walletPrivateKey, 'hex'));
                 const payload = await sbc.withdrawReward(this.state.input.destination, this.buildFeePayload(), "Withdrawn using explorer wallet");
-                tx = await sbc.dispatch(payload);
+                tx = await sbc.dispatch(payload, 'sync');
             }
             if(tx === null){
                 return toast.error('Unable to dispatch your transaction, please make sure all params are correct');
@@ -224,7 +224,7 @@ class WalletShow extends Component<Props, State> {
             } else {
                 sbc.setPrivateKey(Buffer.from(this.state.walletPrivateKey, 'hex'));
                 const payload = await sbc.undelegate(this.state.input.destination, "sbc", final_amount, this.buildFeePayload(), "Undelegated using explorer wallet");
-                tx = await sbc.dispatch(payload);
+                tx = await sbc.dispatch(payload, 'sync');
             }
             if(tx === null){
                 return toast.error('Unable to dispatch your transaction, please make sure all params are correct');
@@ -288,7 +288,7 @@ class WalletShow extends Component<Props, State> {
             } else {
                 sbc.setPrivateKey(Buffer.from(this.state.walletPrivateKey, 'hex'));
                 const payload = await sbc.delegate(this.state.input.destination, "sbc", final_amount, this.buildFeePayload(), "Delegated using explorer wallet");
-                tx = await sbc.dispatch(payload);
+                tx = await sbc.dispatch(payload, 'sync');
             }
             if(tx === null){
                 return toast.error('Unable to dispatch your transaction, please make sure all params are correct');
@@ -322,7 +322,7 @@ class WalletShow extends Component<Props, State> {
             } else {
                 sbc.setPrivateKey(Buffer.from(this.state.walletPrivateKey, 'hex'));
                 const payload = await sbc.transfer(this.state.input.destination, this.state.input.currency, final_amount, this.buildFeePayload(), "Sent using explorer wallet");
-                tx = await sbc.dispatch(payload);
+                tx = await sbc.dispatch(payload, 'sync');
             }
             if(tx === null){
                 return toast.error('Unable to dispatch your transaction, please make sure all params are correct');
