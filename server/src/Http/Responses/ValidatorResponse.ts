@@ -41,6 +41,28 @@ export class ValidatorDelegationResponse {
 }
 
 @Exclude()
+export class ValidatorCommissionRatesResponse {
+    @Expose()
+    rate: number;
+
+    @Expose()
+    max_rate: number;
+
+    @Expose()
+    max_change_rate: number;
+}
+
+@Exclude()
+export class ValidatorCommissionResponse {
+    @Expose()
+    @Type(() => ValidatorCommissionRatesResponse)
+    commission_rates: ValidatorCommissionRatesResponse;
+
+    @Expose()
+    update_time: Date;
+}
+
+@Exclude()
 export default class ValidatorResponse {
     @Expose()
     operator_address: string;
@@ -68,6 +90,10 @@ export default class ValidatorResponse {
     @Expose()
     @Type(() => RewardResponse)
     rewards: RewardResponse[];
+
+    @Expose()
+    @Type(() => ValidatorCommissionResponse)
+    commission: ValidatorCommissionResponse;
 
     constructor(data: Partial<ValidatorResponse>) {
         Object.assign(this, data);
