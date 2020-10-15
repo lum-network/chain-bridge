@@ -2,7 +2,7 @@ import {Module, OnModuleInit} from '@nestjs/common';
 import {ScheduleModule} from "@nestjs/schedule";
 import {BullModule} from "@nestjs/bull";
 
-import {ValidatorsController} from "@app/Http/Controllers";
+import {AccountsController, ValidatorsController} from "@app/Http/Controllers";
 import {BlockScheduler, ValidatorScheduler} from "@app/Async/Schedulers";
 import {BlockConsumer, TransactionConsumer} from "@app/Async/Consumers";
 import {ElasticService} from "@app/Services";
@@ -20,7 +20,7 @@ import {IndexBlocksMapping, IndexTransactionsMapping, IndexValidatorsMapping} fr
         }),
         ScheduleModule.forRoot()
     ],
-    controllers: [ValidatorsController],
+    controllers: [AccountsController, ValidatorsController],
     providers: [
         BlockConsumer, TransactionConsumer,
         BlockScheduler, ValidatorScheduler,
