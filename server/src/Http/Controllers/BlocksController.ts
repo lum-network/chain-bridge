@@ -39,7 +39,7 @@ export default class BlocksController {
         // We get the last block stored in ES
         const result = await ElasticService.getInstance().documentSearch(ElasticIndexes.INDEX_BLOCKS, {
             size: 1,
-            sort: {"dispatched_at": "desc"},
+            sort: {"height": "desc"},
             query: {
                 match_all: {}
             }
