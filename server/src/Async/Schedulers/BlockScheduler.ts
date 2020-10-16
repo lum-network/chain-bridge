@@ -33,7 +33,6 @@ export default class BlockScheduler {
         // Ensure we have all the required data
         let lastBlockHeight: number = 0;
         try {
-            console.log(lastBlock.body);
             if (lastBlock && lastBlock.body && lastBlock.body.hits && lastBlock.body.hits.hits && lastBlock.body.hits.hits.length === 1) {
                 lastBlockHeight = lastBlock.body.hits.hits[0]['_source']['height'];
             }
