@@ -67,6 +67,7 @@ jobs:
       - name: Tag and push the built image
         run: |
           version_tag_number=`cat new_version/new_version.txt`
-          docker tag chain-explorer-backend:latest rg.fr-par.scw.cloud/sandblock/chain-explorer-backend:latest
+          docker tag $REGISTRY_ADDRESS_PROJECT:latest $REGISTRY_ADDRESS/$REGISTRY_ADDRESS_PROJECT:latest
+          docker tag $REGISTRY_ADDRESS_PROJECT:"${{ steps.vars.outputs.version_tag_number }}" $REGISTRY_ADDRESS/$REGISTRY_ADDRESS_PROJECT:"${{ steps.vars.outputs.version_tag_number }}"
           docker push $REGISTRY_ADDRESS/$REGISTRY_ADDRESS_PROJECT:${{ steps.vars.outputs.version_tag_number }}
           docker push $REGISTRY_ADDRESS/$REGISTRY_ADDRESS_PROJECT:latest
