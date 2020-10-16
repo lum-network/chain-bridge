@@ -21,10 +21,7 @@ export default class BlocksController {
         // We get the 50 last block stored in ES
         const result = await ElasticService.getInstance().documentSearch(ElasticIndexes.INDEX_BLOCKS, {
             size: 50,
-            sort: {"height": "desc"},
-            query: {
-                match_all: {}
-            }
+            sort: {"height": "desc"}
         });
 
         if (!result || !result.body || !result.body.hits || !result.body.hits.hits || result.body.hits.hits.length == 0) {
@@ -39,10 +36,7 @@ export default class BlocksController {
         // We get the last block stored in ES
         const result = await ElasticService.getInstance().documentSearch(ElasticIndexes.INDEX_BLOCKS, {
             size: 1,
-            sort: {"height": "desc"},
-            query: {
-                match_all: {}
-            }
+            sort: {"height": "desc"}
         });
 
         if (!result || !result.body || !result.body.hits || !result.body.hits.hits || result.body.hits.hits.length !== 1) {
