@@ -42,6 +42,7 @@ jobs:
   build:
     name: Build the backend and push on docker registry
     runs-on: ubuntu-latest
+    needs: bump-version-push-tag
     steps:
       - name: Checkout
         uses: actions/checkout@v2
