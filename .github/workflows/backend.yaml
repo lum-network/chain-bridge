@@ -7,6 +7,8 @@ on:
 
 env:
   REGISTRY_TOKEN: ${{ secrets.REGISTRY_TOKEN }}
+  REGISTRY_ADDRESS: rg.fr-par.scw.cloud/sandblock
+  REGISTRY_ADDRESS_PROJECT: chain-explorer-backend
 
 jobs:
   bump-version-push-tag:
@@ -46,12 +48,12 @@ jobs:
 
       - name: Login on Scaleway docker registry
         run: |
-          docker login rg.fr-par.scw.cloud/sandblock -u nologin -p $REGISTRY_TOKEN
+          docker login $REGISTRY_ADDRESS -u nologin -p $REGISTRY_TOKEN
 
       - name: Download version number from bump-version-push-tag
-          uses: actions/download-artifact@v1
-          with:
-            name: new_version
+        uses: actions/download-artifact@v1
+        with:
+          name: new_version
 
       - name: Create version number variable
         id: vars
@@ -65,5 +67,5 @@ jobs:
         run: |
           version_tag_number=`cat new_version/new_version.txt`
           docker tag chain-explorer-backend:latest rg.fr-par.scw.cloud/sandblock/chain-explorer-backend:latest
-          docker push rg.fr-par.scw.cloud/sandblock/chain-explorer-backend:${{ steps.vars.outputs.version_tag_number }}
-          docker push rg.fr-par.scw.cloud/sandblock/chain-explorer-backend:latest
+          docker push $REGISTRY_ADDRESS/$REGISTRY_ADDRESS_PROJECT:${{ steps.vars.outputs.version_tag_number }}
+          docker push $REGISTRY_ADDRESS/$REGISTRY_ADDRESS_PROJECT:latest
