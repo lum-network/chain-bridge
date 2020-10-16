@@ -17,7 +17,7 @@ import {BlockScheduler, ValidatorScheduler} from "@app/Async/Schedulers";
 import {BlockConsumer, TransactionConsumer} from "@app/Async/Consumers";
 
 import {ElasticService} from "@app/Services";
-import {ElasticIndexes} from "@app/Utils/Constants";
+import {ElasticIndexes, Queues} from "@app/Utils/Constants";
 
 import {IndexBlocksMapping, IndexTransactionsMapping, IndexValidatorsMapping} from "@app/Utils/Indices";
 
@@ -29,11 +29,12 @@ import {ResponseInterceptor} from "@app/Http/Interceptors";
 @Module({
     imports: [
         BullModule.registerQueue({
-            name: 'default',
+            name: Queues.QUEUE_DEFAULT,
             redis: {
                 host: config.getValue<string>('REDIS_HOST', true),
                 port: config.getValue<number>('REDIS_PORT', true)
-            }
+            },
+            prefix: config.getMode()
         }),
         CacheModule.register({
             store: redisStore,

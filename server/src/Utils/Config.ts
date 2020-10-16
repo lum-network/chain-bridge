@@ -22,9 +22,8 @@ export default class Config {
         return this.getValue('PORT', true);
     }
 
-    public isProduction() {
-        const mode = this.getValue('MODE', false);
-        return mode != 'DEV';
+    public getMode(): string {
+        return this.getValue<string>('MODE', false).toLowerCase();
     }
 
     public isBlockIngestionEnabled(): boolean {
@@ -38,7 +37,7 @@ export default class Config {
     }
 
     public getBlockIngestionMaxLength(): number {
-        return this.getValue('INGEST_BLOCKS_LENGTH');
+        return 19;
     }
 }
 
@@ -51,7 +50,6 @@ const config = new Config(process.env)
         'MODE',
         'PORT',
         'INGEST_BLOCKS_ENABLED',
-        'INGEST_BLOCKS_LENGTH',
         'INGEST_TRANSACTIONS_ENABLED'
     ]);
 
