@@ -1,8 +1,10 @@
-import {Logger, Module, OnModuleInit} from '@nestjs/common';
+import {Logger, Module, OnModuleInit, CacheModule} from '@nestjs/common';
 import {APP_INTERCEPTOR} from "@nestjs/core";
 import {ScheduleModule} from "@nestjs/schedule";
 import {BullModule} from "@nestjs/bull";
 import {TerminusModule} from '@nestjs/terminus';
+
+import * as redisStore from 'cache-manager-redis-store';
 
 import {
     AccountsController,
@@ -10,12 +12,17 @@ import {
     TransactionsController,
     ValidatorsController
 } from "@app/Http/Controllers";
+
 import {BlockScheduler, ValidatorScheduler} from "@app/Async/Schedulers";
 import {BlockConsumer, TransactionConsumer} from "@app/Async/Consumers";
+
 import {ElasticService} from "@app/Services";
 import {ElasticIndexes} from "@app/Utils/Constants";
+
 import {IndexBlocksMapping, IndexTransactionsMapping, IndexValidatorsMapping} from "@app/Utils/Indices";
+
 import {config} from "@app/Utils/Config";
+
 import {ElasticsearchIndicator} from "@app/Http/Indicators";
 import {ResponseInterceptor} from "@app/Http/Interceptors";
 
@@ -24,9 +31,14 @@ import {ResponseInterceptor} from "@app/Http/Interceptors";
         BullModule.registerQueue({
             name: 'default',
             redis: {
-                host: config.getValue<string>('REDIS_HOST'),
+                host: config.getValue<string>('REDIS_HOST', true),
                 port: config.getValue<number>('REDIS_PORT', true)
             }
+        }),
+        CacheModule.register({
+            store: redisStore,
+            host: config.getValue<string>('REDIS_HOST', true),
+            port: config.getValue<number>('REDIS_PORT', true)
         }),
         ScheduleModule.forRoot(),
         TerminusModule

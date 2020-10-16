@@ -1,4 +1,4 @@
-import {Controller, Get, NotFoundException, Req} from "@nestjs/common";
+import {CacheInterceptor, Controller, Get, NotFoundException, Req, UseInterceptors} from "@nestjs/common";
 import {Request} from "express";
 import {classToPlain} from "class-transformer";
 import {ElasticService} from "@app/Services";
@@ -6,6 +6,7 @@ import {ElasticIndexes} from "@app/Utils/Constants";
 import {TransactionResponse} from "@app/Http/Responses";
 
 @Controller('transactions')
+@UseInterceptors(CacheInterceptor)
 export default class TransactionsController {
     @Get('')
     async fetch(){

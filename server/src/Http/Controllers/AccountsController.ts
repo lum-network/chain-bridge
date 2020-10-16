@@ -1,12 +1,10 @@
-import {Controller, Get, NotFoundException, Req} from "@nestjs/common";
+import {CacheInterceptor, Controller, Get, NotFoundException, Req, UseInterceptors} from "@nestjs/common";
 import {Request} from "express";
 
-import {classToPlain} from "class-transformer";
-
 import {BlockchainService} from "@app/Services";
-import {AccountResponse} from "@app/Http/Responses";
 
 @Controller('accounts')
+@UseInterceptors(CacheInterceptor)
 export default class AccountsController {
     @Get(':address')
     async show(@Req() req: Request) {

@@ -1,4 +1,12 @@
-import {Controller, Get, InternalServerErrorException, NotFoundException, Req} from "@nestjs/common";
+import {
+    CacheInterceptor,
+    Controller,
+    Get,
+    InternalServerErrorException,
+    NotFoundException,
+    Req,
+    UseInterceptors
+} from "@nestjs/common";
 import {Request} from "express";
 import {ElasticService} from "@app/Services";
 import {ElasticIndexes} from "@app/Utils/Constants";
@@ -6,6 +14,7 @@ import {classToPlain} from "class-transformer";
 import {BlockResponse} from "@app/Http/Responses";
 
 @Controller('blocks')
+@UseInterceptors(CacheInterceptor)
 export default class BlocksController {
     @Get('')
     async fetch() {

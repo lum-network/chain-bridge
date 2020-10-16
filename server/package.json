@@ -29,6 +29,8 @@
         "@nestjs/schedule": "^0.4.1",
         "@nestjs/terminus": "^7.0.1",
         "bull": "^3.18.0",
+        "cache-manager": "^3.4.0",
+        "cache-manager-redis-store": "^2.0.0",
         "class-transformer": "^0.3.1",
         "dotenv": "^8.2.0",
         "moment": "^2.29.1",

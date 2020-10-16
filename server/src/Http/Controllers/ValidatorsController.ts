@@ -1,4 +1,4 @@
-import {Controller, Get, NotFoundException, Req} from "@nestjs/common";
+import {CacheInterceptor, Controller, Get, NotFoundException, Req, UseInterceptors} from "@nestjs/common";
 import {Request} from "express";
 import {classToPlain} from "class-transformer";
 
@@ -6,6 +6,7 @@ import {BlockchainService} from "@app/Services";
 import {ValidatorResponse} from "@app/Http/Responses";
 
 @Controller('validators')
+@UseInterceptors(CacheInterceptor)
 export default class ValidatorsController {
 
     @Get('')
