@@ -1,8 +1,9 @@
 import {Process, Processor} from "@nestjs/bull";
-import {ElasticIndexes, QueueJobs, Queues} from "@app/Utils/Constants";
-import {Job} from "bull";
-import {BlockchainService, ElasticService} from "@app/Services";
 import {Logger} from "@nestjs/common";
+import {Job} from "bull";
+import {ElasticIndexes, QueueJobs, Queues} from "@app/Utils/Constants";
+import {BlockchainService, ElasticService} from "@app/Services";
+import {config} from "@app/Utils/Config";
 
 const extractValueFromEvents = async (events: [{ type, attributes: [{ key, value }] }], key: string) => {
     let retn = null;
@@ -36,6 +37,11 @@ export default class TransactionConsumer {
 
     @Process(QueueJobs.INGEST_TRANSACTION)
     async ingestTransaction(job: Job<{ transaction_hash: string }>) {
+        // Only ingest if allowed by the configuration
+        if (config.isTransactionsIngestionEnabled() === false) {
+            return;
+        }
+
         // Acquire the transaction information from the blockchain
         const tx = await BlockchainService.getInstance().getClient().getTransactionLive(job.data.transaction_hash);
         if (!tx) {

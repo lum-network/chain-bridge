@@ -26,6 +26,20 @@ export default class Config {
         const mode = this.getValue('MODE', false);
         return mode != 'DEV';
     }
+
+    public isBlockIngestionEnabled(): boolean {
+        const enabled = this.getValue('INGEST_BLOCKS_ENABLED');
+        return enabled === 'true' || enabled === true;
+    }
+
+    public isTransactionsIngestionEnabled(): boolean {
+        const enabled = this.getValue('INGEST_TRANSACTIONS_ENABLED');
+        return enabled === 'true' || enabled === true;
+    }
+
+    public getBlockIngestionMaxLength(): number {
+        return this.getValue('INGEST_BLOCKS_LENGTH');
+    }
 }
 
 const config = new Config(process.env)

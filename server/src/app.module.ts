@@ -44,9 +44,9 @@ export class AppModule implements OnModuleInit {
 
     onModuleInit(): any {
         // Log out
-        const blocksIngestEnabled = config.getValue<boolean>('INGEST_BLOCKS_ENABLED') ? 'enabled' : 'disabled';
-        const transactionsIngestEnabled = config.getValue<boolean>('INGEST_TRANSACTIONS_ENABLED') ? 'enabled' : 'disabled';
-        this._logger.log(`AppModule blocks ingestion ${blocksIngestEnabled} and transactions ingestion ${transactionsIngestEnabled} (${config.getValue<number>('INGEST_BLOCKS_LENGTH')})`);
+        const blocksIngestEnabled = config.isBlockIngestionEnabled() ? 'enabled' : 'disabled';
+        const transactionsIngestEnabled = config.isTransactionsIngestionEnabled() ? 'enabled' : 'disabled';
+        this._logger.log(`AppModule blocks ingestion ${blocksIngestEnabled} and transactions ingestion ${transactionsIngestEnabled} (${config.getBlockIngestionMaxLength()})`);
 
         // Init the blocks index
         ElasticService.getInstance().indexExists(ElasticIndexes.INDEX_BLOCKS).then(async exists => {

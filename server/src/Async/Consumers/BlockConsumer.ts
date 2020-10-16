@@ -28,6 +28,12 @@ export default class BlockConsumer {
 
     @Process(QueueJobs.INGEST_BLOCK)
     async ingestBlock(job: Job<{ block_height: number, num_txs: number }>) {
+        // Only ingest if allowed by the configuration
+        if (config.isBlockIngestionEnabled() === false) {
+            return;
+        }
+
+        // Get block from chain
         const block = await BlockchainService.getInstance().getClient().getBlockAtHeightLive(job.data.block_height);
         if (!block) {
             this._logger.error(`Failed to acquire block at height ${job.data.block_height}`);

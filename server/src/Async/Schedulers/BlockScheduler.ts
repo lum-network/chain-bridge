@@ -18,12 +18,12 @@ export default class BlockScheduler {
     @Cron(CronExpression.EVERY_10_SECONDS)
     async ingest() {
         // Only ingest if allowed by the configuration
-        if (config.getValue<boolean>('INGEST_BLOCKS_ENABLED') === false) {
+        if (config.isBlockIngestionEnabled() == false) {
             return;
         }
 
         // Acquire the ingestion length from config
-        const ingestLength = config.getValue<number>('INGEST_BLOCKS_LENGTH');
+        const ingestLength = config.getBlockIngestionMaxLength();
 
         // We get the last block stored in ES
         const lastBlock = await ElasticService.getInstance().documentSearch(ElasticIndexes.INDEX_BLOCKS, {
