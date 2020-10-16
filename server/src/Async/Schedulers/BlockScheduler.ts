@@ -43,7 +43,8 @@ export default class BlockScheduler {
             this._logger.error(`Failed to acquire the last blocked stored in ES`);
             return;
         }
-        
+        this._logger.log(`Last block height is ${lastBlockHeight}`);
+
         // Get the current status of blockchain
         const currentStatus = await BlockchainService.getInstance().getClient().getStatus();
         if (!currentStatus || !currentStatus.result || !currentStatus.result.sync_info || !currentStatus.result.sync_info.latest_block_height) {
