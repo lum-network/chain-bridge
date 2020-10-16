@@ -13,14 +13,13 @@ type Props = {
     loading: boolean
 };
 
-type State = { account: {transactions_sent: [], transactions_received:[]}, transactions: [], isQRCodeModalOpened: boolean };
+type State = { account: {}, isQRCodeModalOpened: boolean };
 
 class AddressShowPage extends Component<Props, State> {
     constructor(props: Props){
         super(props);
         this.state = {
             account: null,
-            transactions: null,
             isQRCodeModalOpened: false
         }
 
@@ -33,16 +32,8 @@ class AddressShowPage extends Component<Props, State> {
 
     async UNSAFE_componentWillReceiveProps(nextProps: Readonly<Props>, nextContext: any): void {
         if(nextProps.account !== null && nextProps.error === null){
-            let newTxs = [];
-            if(nextProps.account.transactions_sent !== undefined && nextProps.account.transactions_received !== undefined){
-                newTxs = [...nextProps.account.transactions_sent, ...nextProps.account.transactions_received];
-                await newTxs.sort((a, b)=>{
-                    return new Date(b.dispatched_at) - new Date(a.dispatched_at);
-                });
-            }
             this.setState({
-                account: nextProps.account,
-                transactions: newTxs
+                account: nextProps.account
             });
         }
     }
@@ -53,7 +44,7 @@ class AddressShowPage extends Component<Props, State> {
     }
 
     renderTransactions() {
-        if(this.state.transactions === null){
+        if(this.state.account === null || this.state.account.transactions === null){
             return null;
         }
 
@@ -62,7 +53,7 @@ class AddressShowPage extends Component<Props, State> {
                 <div className="card-body">
                     <h5 className="card-title">Transactions</h5>
                     <div className="table-responsive">
-                        <TransactionsListComponent transactions={this.state.transactions}/>
+                        <TransactionsListComponent transactions={this.state.account.transactions}/>
                     </div>
                 </div>
             </div>
@@ -119,7 +110,7 @@ class AddressShowPage extends Component<Props, State> {
                                     </tr>
                                     <tr>
                                         <td className="validator-identity-title"><strong>Account Number</strong></td>
-                                        <td>{this.state.account.account_number | 0}</td>
+                                        <td>{this.state.account.account_number | 0}</td>
                                     </tr>
                                     <tr>
                                         <td className="validator-identity-title"><strong>Account Sequence</strong></td>

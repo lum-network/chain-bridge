@@ -42,7 +42,7 @@ export default class TransactionsListComponent extends Component {
                                     </td>
                                     <td className="text-center">{elem.action}</td>
                                     <td className="text-center">{elem.height}</td>
-                                    <td className="text-center">{moment(elem.created_at).fromNow()}</td>
+                                    <td className="text-center">{moment(elem.dispatched_at).fromNow()}</td>
                                     <td className="text-center">
                                         <EllipsisText text={elem.from_address || 'Unknown'} length={20}/>
                                     </td>
