@@ -80,17 +80,17 @@ class ValidatorPage extends React.Component<Props, State> {
                                                 </tr>
                                                 <tr>
                                                     <td className="validator-identity-title">Commission</td>
-                                                    <td>{`${Number(this.state.validator.commission.commission_rates.rate).toPrecision(2) * 100} %` || 0}</td>
+                                                    <td>{`${Number(this.state.validator.commission.commission_rates.rate).toPrecision(2) * 100} %` || 0}</td>
                                                 </tr>
                                                 <tr>
                                                     <td className="validator-identity-title">Voting Power</td>
-                                                    <td>{Number(this.state.validator.delegator_shares).toFixed(0) || 0}</td>
+                                                    <td>{Number(this.state.validator.delegator_shares).toFixed(0) || 0}</td>
                                                 </tr>
                                                 <tr>
                                                     <td className="validator-identity-title">Delegated</td>
-                                                    <td>{`${this.state.validator.tokens} SBC` || 0}</td>
+                                                    <td>{`${this.state.validator.tokens} SBC` || 0}</td>
                                                 </tr>
-                                                {this.state.validator.rewards !== null && (
+                                                {this.state.validator.rewards !== null && this.state.validator.rewards.length > 0 && (
                                                     <tr>
                                                         <td className="validator-identity-title">Outstanding rewards</td>
                                                         <td>{`${Number(this.state.validator.rewards[0].amount).toFixed(2)} ${String(this.state.validator.rewards[0].denom).toUpperCase()}` || 0}</td>
