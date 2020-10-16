@@ -41,9 +41,7 @@ export default class BlockScheduler {
             return;
         }
         this._logger.log(`Last block height is ${lastBlockHeight}`);
-
-        return;
-
+        
         // Get the current status of blockchain
         const currentStatus = await BlockchainService.getInstance().getClient().getStatus();
         if (!currentStatus || !currentStatus.result || !currentStatus.result.sync_info || !currentStatus.result.sync_info.latest_block_height) {
