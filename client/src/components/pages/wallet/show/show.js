@@ -36,7 +36,6 @@ type State = {
     walletPublicKey: any,
     walletPrivateKey: string,
     accountInfos: {},
-    accountTransactions: [],
     selectedMethod: string,
 
     validators: [],
@@ -68,7 +67,6 @@ class WalletShow extends Component<Props, State> {
             walletPublicKey: '',
             walletPrivateKey: '',
             accountInfos: null,
-            accountTransactions: [],
             selectedMethod: '',
 
             validators: [],
@@ -105,13 +103,8 @@ class WalletShow extends Component<Props, State> {
     }
 
     async UNSAFE_componentWillReceiveProps(nextProps: Readonly<Props>, nextContext: any): void {
-        let newTxs = [];
-        if(nextProps.account !== null && nextProps.account.transactions_sent !== undefined && nextProps.account.transactions_received !== undefined){
-            newTxs = [...nextProps.account.transactions_sent, ...nextProps.account.transactions_received];
-            await newTxs.sort((a, b)=>{
-                return new Date(b.dispatched_at) - new Date(a.dispatched_at);
-            });
-            this.setState({accountInfos: nextProps.account, accountTransactions: newTxs});
+        if(nextProps.account !== null){
+            this.setState({accountInfos: nextProps.account});
         }
         if(nextProps.validators !== null){
             this.setState({validators: nextProps.validators.result});
@@ -162,7 +155,7 @@ class WalletShow extends Component<Props, State> {
 
     async withdrawRewards(){
         if(this.state.newTransactionStep === 1){
-            if(!this.state.input || !this.state.input.destination || this.state.input.destination == 'DEFAULT'){
+            if(!this.state.input || !this.state.input.destination || this.state.input.destination === 'DEFAULT'){
                 return toast.warn('All fields are required');
             }
 
@@ -255,7 +248,7 @@ class WalletShow extends Component<Props, State> {
 
             let found = false;
             let balance: number = 0;
-            const currencies: [] = JSON.parse(this.state.accountInfos.coins);
+            const currencies: [] = this.state.accountInfos.coins;
             await currencies.forEach((cur)=>{
                 if(cur !== null && cur.denom !== undefined){
                     if(cur.denom === 'sbc'){
@@ -530,7 +523,7 @@ class WalletShow extends Component<Props, State> {
 
         let coins = [];
         if(this.state.accountInfos.coins.length > 0) {
-            JSON.parse(this.state.accountInfos.coins).map((elem, index) => {
+            this.state.accountInfos.coins.map((elem, index) => {
                 return coins.push(`${elem.amount} ${elem.denom}`);
             });
         }
@@ -601,7 +594,7 @@ class WalletShow extends Component<Props, State> {
                         <div className="row">
                             <div className="col-lg-12">
                                 <div className="table-responsive">
-                                    <TransactionsListComponent transactions={this.state.accountTransactions}/>
+                                    <TransactionsListComponent transactions={this.state.accountInfos.transactions}/>
                                     <button className="btn btn-sm btn-primary mr-2" onClick={() => {this.setState({openedModal: 'new_transaction'})}}>Emit a new transaction</button>
                                     <button className="btn btn-sm btn-primary mr-2" onClick={() => {this.setState({openedModal: 'delegate'})}}>Delegate my SBC</button>
                                     <button className="btn btn-sm btn-primary mr-2" onClick={() => {this.setState({openedModal: 'undelegate'})}}>Undelegate my SBC</button>
@@ -731,7 +724,7 @@ class WalletShow extends Component<Props, State> {
             return null;
         }
 
-        if(!this.state.validators || this.state.validators[0] == undefined){
+        if(!this.state.validators || this.state.validators[0] === undefined){
             return null;
         }
 
@@ -794,7 +787,7 @@ class WalletShow extends Component<Props, State> {
 
         let currencies = [{denom: 'Please choose a currency'}];
         if(this.state.accountInfos && this.state.accountInfos.coins && this.state.accountInfos.coins.length > 0){
-            currencies = currencies.concat(JSON.parse(this.state.accountInfos.coins));
+            currencies = currencies.concat(this.state.accountInfos.coins);
         }
         return (
             <Modal isOpen={this.state.openedModal === 'new_transaction'} toggle={() => {this.setState({openedModal: '', newTransactionStep: 1})}} size={'lg'}>
