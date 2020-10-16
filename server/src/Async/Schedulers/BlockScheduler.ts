@@ -28,14 +28,12 @@ export default class BlockScheduler {
         // We get the last block stored in ES
         const lastBlock = await ElasticService.getInstance().documentSearch(ElasticIndexes.INDEX_BLOCKS, {
             size: 1,
-            sort: {"dispatched_at": "desc"},
-            query: {
-                match_all: {}
-            }
+            sort: {"height": "desc"}
         });
         // Ensure we have all the required data
         let lastBlockHeight: number = 0;
         try {
+            console.log(lastBlock.body);
             if (lastBlock && lastBlock.body && lastBlock.body.hits && lastBlock.body.hits.hits && lastBlock.body.hits.hits.length === 1) {
                 lastBlockHeight = lastBlock.body.hits.hits[0]['_source']['height'];
             }
@@ -44,6 +42,8 @@ export default class BlockScheduler {
             return;
         }
         this._logger.log(`Last block height is ${lastBlockHeight}`);
+
+        return;
 
         // Get the current status of blockchain
         const currentStatus = await BlockchainService.getInstance().getClient().getStatus();
