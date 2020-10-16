@@ -9,6 +9,34 @@ env:
   REGISTRY_TOKEN: ${{ secrets.REGISTRY_TOKEN }}
 
 jobs:
+  bump-version-push-tag:
+    name: Bump version and push new tag
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@master
+        with:
+          fetch-depth: '0'
+
+      - name: Bump version and push new tag
+        id: bump_version
+        uses: anothrNick/github-tag-action@1.17.2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WITH_V: true
+          RELEASE_BRANCHES: production
+
+      - name: Save new version number result into file
+        shell: bash
+        run: |
+          echo ${{ steps.bump_version.outputs.tag }} > new_version.txt
+
+      - name: Upload version number for further use
+        uses: actions/upload-artifact@v1
+        with:
+          name: new_version
+          path: new_version.txt
   build:
     name: Build the backend and push on docker registry
     runs-on: ubuntu-latest
@@ -20,11 +48,22 @@ jobs:
         run: |
           docker login rg.fr-par.scw.cloud/sandblock -u nologin -p $REGISTRY_TOKEN
 
+      - name: Download version number from bump-version-push-tag
+          uses: actions/download-artifact@v1
+          with:
+            name: new_version
+
+      - name: Create version number variable
+        id: vars
+        run: echo ::set-output name=version_tag_number::$(cat new_version/new_version.txt)
+
       - name: Build the Api Docker image
         run: |
           cd server && docker build -t chain-explorer-backend .
 
       - name: Tag and push the built image
         run: |
+          version_tag_number=`cat new_version/new_version.txt`
           docker tag chain-explorer-backend:latest rg.fr-par.scw.cloud/sandblock/chain-explorer-backend:latest
+          docker push rg.fr-par.scw.cloud/sandblock/chain-explorer-backend:${{ steps.vars.outputs.version_tag_number }}
           docker push rg.fr-par.scw.cloud/sandblock/chain-explorer-backend:latest
