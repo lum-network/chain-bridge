@@ -3,7 +3,6 @@ on:
   push:
     branches:
       - master
-      - v2
 
 env:
   REGISTRY_TOKEN: ${{ secrets.REGISTRY_TOKEN }}
