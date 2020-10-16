@@ -62,12 +62,11 @@ jobs:
 
       - name: Build the Api Docker image
         run: |
-          cd server && docker build -t chain-explorer-backend .
+          cd server && docker build -t chain-explorer-backend \
+          -t "$REGISTRY_ADDRESS"/"$REGISTRY_ADDRESS_PROJECT":latest \
+          -t "$REGISTRY_ADDRESS"/"$REGISTRY_ADDRESS_PROJECT":"${{ steps.vars.outputs.version_tag_number }}" .
 
       - name: Tag and push the built image
         run: |
-          version_tag_number=`cat new_version/new_version.txt`
-          docker tag $REGISTRY_ADDRESS_PROJECT:latest $REGISTRY_ADDRESS/$REGISTRY_ADDRESS_PROJECT:latest
-          docker tag $REGISTRY_ADDRESS_PROJECT:"${{ steps.vars.outputs.version_tag_number }}" $REGISTRY_ADDRESS/$REGISTRY_ADDRESS_PROJECT:"${{ steps.vars.outputs.version_tag_number }}"
           docker push $REGISTRY_ADDRESS/$REGISTRY_ADDRESS_PROJECT:${{ steps.vars.outputs.version_tag_number }}
           docker push $REGISTRY_ADDRESS/$REGISTRY_ADDRESS_PROJECT:latest
