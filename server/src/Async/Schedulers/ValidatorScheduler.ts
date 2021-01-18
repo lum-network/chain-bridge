@@ -12,6 +12,11 @@ export default class ValidatorScheduler {
         const vss:{'height', result: {'block_height', 'validators':[]}} = await BlockchainService.getInstance().getClient().getValidatorsSet();
         const vs:{'height', result: []} = await BlockchainService.getInstance().getClient().getValidators();
 
+        if(!vs || !vss){
+            this._logger.error(`Cannot acquire validators set`);
+            return;
+        }
+
         for (let set of vss.result.validators){
             for (let val of vs.result){
                 if(val['consensus_pubkey'] !== set['pub_key']){
