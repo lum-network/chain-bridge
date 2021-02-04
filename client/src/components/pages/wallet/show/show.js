@@ -537,7 +537,7 @@ class WalletShow extends Component<Props, State> {
 
         let reward = 0;
         if(this.state.accountInfos.all_rewards !== undefined){
-            if(this.state.accountInfos.all_rewards.total !== undefined && this.state.accountInfos.all_rewards.total[0] !== undefined) {
+            if(this.state.accountInfos.all_rewards.total !== undefined && this.state.accountInfos.all_rewards.total !== null && this.state.accountInfos.all_rewards.total[0] !== undefined) {
                 reward = Number(this.state.accountInfos.all_rewards.total[0].amount).toFixed(2);
             }
         }
@@ -575,11 +575,11 @@ class WalletShow extends Component<Props, State> {
                                             </tr>
                                             <tr>
                                                 <td><strong>Delegated Coins</strong></td>
-                                                <td>{delegated_coins}</td>
+                                                <td>{delegated_coins || 0}</td>
                                             </tr>
                                             <tr>
                                                 <td><strong>Rewards to withdraw</strong></td>
-                                                <td>{reward} SBC</td>
+                                                <td>{reward || 0} SBC</td>
                                             </tr>
                                         </tbody>
                                     </table>
