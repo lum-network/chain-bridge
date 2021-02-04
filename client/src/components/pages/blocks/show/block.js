@@ -88,7 +88,7 @@ class BlockShowPage extends Component<Props, State> {
                             <div className="card-body">
                                 <h5 className="card-title">Transactions</h5>
                                 <div className="table-responsive">
-                                    <TransactionsListComponent transactions={this.state.block.transactions}/>
+                                    <TransactionsListComponent transactions={this.state.block.transactions || []}/>
                                 </div>
                             </div>
                         </div>

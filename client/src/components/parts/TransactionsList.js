@@ -30,7 +30,7 @@ export default class TransactionsListComponent extends Component {
                                 <tr key={index}>
                                     <td className="text-center">
                                         <NavLink to={url} >
-                                            <EllipsisText text={elem.hash} length={20}/>
+                                            <EllipsisText text={elem.hash || ''} length={20}/>
                                         </NavLink>
                                     </td>
                                     <td className="text-center">

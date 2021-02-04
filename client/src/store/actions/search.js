@@ -6,7 +6,7 @@ export const search = (data: string) => {
         payload: {
             client: 'api',
             request: {
-                method: `POST`,
+                method: `GET`,
                 url: `/search/${data}`
             }
         }
