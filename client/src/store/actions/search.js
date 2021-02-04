@@ -7,10 +7,7 @@ export const search = (data: string) => {
             client: 'api',
             request: {
                 method: `POST`,
-                url: `/search`,
-                data: {
-                    data
-                }
+                url: `/search/${data}`
             }
         }
     };
