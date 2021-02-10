@@ -3,7 +3,7 @@ import {Logger} from "@nestjs/common";
 import {InjectQueue, Process, Processor} from "@nestjs/bull";
 import {Job, Queue} from "bull";
 
-import {ElasticIndexes, QueueJobs, Queues} from "@app/Utils/Constants";
+import {ElasticIndexes, NotificationChannels, NotificationEvents, QueueJobs, Queues} from "@app/Utils/Constants";
 import {BlockchainService, ElasticService} from "@app/Services";
 
 import * as utils from "sandblock-chain-sdk-js/dist/utils";
@@ -70,6 +70,13 @@ export default class BlockConsumer {
         if ((await ElasticService.getInstance().documentExists(ElasticIndexes.INDEX_BLOCKS, payload.height)) === false) {
             await ElasticService.getInstance().documentCreate(ElasticIndexes.INDEX_BLOCKS, payload.height, payload);
             this._logger.log(`Block #${payload.height} ingested`);
+
+            // Dispatch notification on websockets for frontend
+            this._queue.add(QueueJobs.NOTIFICATION_SOCKET, {
+                channel: NotificationChannels.CHANNEL_BLOCKS,
+                event: NotificationEvents.EVENT_NEW_BLOCK,
+                data: JSON.stringify(payload)
+            }).finally(() => null);
         } else {
             await ElasticService.getInstance().documentUpdate(ElasticIndexes.INDEX_BLOCKS, payload.height, payload);
             this._logger.log(`Block #${payload.height} updated`);

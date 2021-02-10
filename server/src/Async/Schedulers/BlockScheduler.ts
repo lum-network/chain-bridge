@@ -77,8 +77,7 @@ export default class BlockScheduler {
             this._queue.add(QueueJobs.INGEST_BLOCK, {
                 block_height: bl.header.height,
                 num_txs: bl.num_txs
-            }).finally(() => {
-            });
+            }).finally(() => null);
         }
     }
 }

@@ -1,7 +1,7 @@
-import {Process, Processor} from "@nestjs/bull";
+import {InjectQueue, Process, Processor} from "@nestjs/bull";
 import {Logger} from "@nestjs/common";
-import {Job} from "bull";
-import {ElasticIndexes, QueueJobs, Queues} from "@app/Utils/Constants";
+import {Job, Queue} from "bull";
+import {ElasticIndexes, NotificationChannels, NotificationEvents, QueueJobs, Queues} from "@app/Utils/Constants";
 import {BlockchainService, ElasticService} from "@app/Services";
 import {config} from "@app/Utils/Config";
 
@@ -34,6 +34,9 @@ const extractValueFromMsg = async (msgs: [{ type, value: {} }], key: string) => 
 @Processor(Queues.QUEUE_DEFAULT)
 export default class TransactionConsumer {
     private readonly _logger: Logger = new Logger(TransactionConsumer.name);
+
+    constructor(@InjectQueue(Queues.QUEUE_DEFAULT) private readonly _queue: Queue) {
+    }
 
     @Process(QueueJobs.INGEST_TRANSACTION)
     async ingestTransaction(job: Job<{ transaction_hash: string }>) {
@@ -101,6 +104,13 @@ export default class TransactionConsumer {
         if ((await ElasticService.getInstance().documentExists(ElasticIndexes.INDEX_TRANSACTIONS, payload.hash)) === false) {
             await ElasticService.getInstance().documentCreate(ElasticIndexes.INDEX_TRANSACTIONS, payload.hash, payload);
             this._logger.log(`Transaction ${payload.hash} ingested`);
+
+            // Dispatch notification on websockets for frontend
+            this._queue.add(QueueJobs.NOTIFICATION_SOCKET, {
+                channel: NotificationChannels.CHANNEL_TRANSACTIONS,
+                event: NotificationEvents.EVENT_NEW_TRANSACTION,
+                data: JSON.stringify(payload)
+            }).finally(() => null);
         } else {
             await ElasticService.getInstance().documentUpdate(ElasticIndexes.INDEX_TRANSACTIONS, payload.hash, payload);
             this._logger.log(`Transaction ${payload.hash} updated`);

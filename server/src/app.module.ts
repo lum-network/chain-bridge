@@ -14,9 +14,9 @@ import {
 } from "@app/Http/Controllers";
 
 import {BlockScheduler, ValidatorScheduler} from "@app/Async/Schedulers";
-import {BlockConsumer, TransactionConsumer} from "@app/Async/Consumers";
+import {BlockConsumer, NotificationConsumer, TransactionConsumer} from "@app/Async/Consumers";
 
-import {ElasticService} from "@app/Services";
+import {ElasticService, PusherService} from "@app/Services";
 import {ElasticIndexes, Queues} from "@app/Utils/Constants";
 
 import {IndexBlocksMapping, IndexTransactionsMapping, IndexValidatorsMapping} from "@app/Utils/Indices";
@@ -46,9 +46,10 @@ import {ResponseInterceptor} from "@app/Http/Interceptors";
     ],
     controllers: [AccountsController, BlocksController, CoreController, HealthController, TransactionsController, ValidatorsController],
     providers: [
-        BlockConsumer, TransactionConsumer,
+        BlockConsumer, NotificationConsumer, TransactionConsumer,
         BlockScheduler, ValidatorScheduler,
         ElasticsearchIndicator,
+        PusherService,
         {provide: APP_INTERCEPTOR, useClass: ResponseInterceptor}
     ],
 })
@@ -65,7 +66,7 @@ export class AppModule implements OnModuleInit {
         ElasticService.getInstance().indexExists(ElasticIndexes.INDEX_BLOCKS).then(async exists => {
             if (!exists) {
                 await ElasticService.getInstance().indexCreate(ElasticIndexes.INDEX_BLOCKS, IndexBlocksMapping);
-                console.log('Created index blocks');
+                this._logger.debug('Created index blocks');
             }
         });
 
@@ -73,7 +74,7 @@ export class AppModule implements OnModuleInit {
         ElasticService.getInstance().indexExists(ElasticIndexes.INDEX_VALIDATORS).then(async exists => {
             if (!exists) {
                 await ElasticService.getInstance().indexCreate(ElasticIndexes.INDEX_VALIDATORS, IndexValidatorsMapping);
-                console.log('Created index validators');
+                this._logger.debug('Created index validators');
             }
         });
 
@@ -81,7 +82,7 @@ export class AppModule implements OnModuleInit {
         ElasticService.getInstance().indexExists(ElasticIndexes.INDEX_TRANSACTIONS).then(async exists => {
             if (!exists) {
                 await ElasticService.getInstance().indexCreate(ElasticIndexes.INDEX_TRANSACTIONS, IndexTransactionsMapping);
-                console.log('Created index transactions');
+                this._logger.debug('Created index transactions');
             }
         })
     }
