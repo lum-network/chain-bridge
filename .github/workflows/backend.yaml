@@ -46,10 +46,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Login on Scaleway docker registry
-        run: |
-          docker login $REGISTRY_ADDRESS -u nologin -p $REGISTRY_TOKEN
-
       - name: Download version number from bump-version-push-tag
         uses: actions/download-artifact@v1
         with:
@@ -64,6 +60,10 @@ jobs:
           cd server && docker build -t chain-explorer-backend \
           -t "$REGISTRY_ADDRESS"/"$REGISTRY_ADDRESS_PROJECT":latest \
           -t "$REGISTRY_ADDRESS"/"$REGISTRY_ADDRESS_PROJECT":"${{ steps.vars.outputs.version_tag_number }}" .
+
+      - name: Login on Scaleway docker registry
+        run: |
+          docker login $REGISTRY_ADDRESS -u nologin -p $REGISTRY_TOKEN
 
       - name: Tag and push the built image
         run: |
