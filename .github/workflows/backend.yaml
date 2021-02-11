@@ -55,13 +55,9 @@ jobs:
         id: vars
         run: echo ::set-output name=version_tag_number::$(cat new_version/new_version.txt)
 
-      - name: Build the Api Docker image
-        run: |
-          cd server && docker build -t "$REGISTRY_ADDRESS_PROJECT" -t "$REGISTRY_ADDRESS_PROJECT":latest -t "$REGISTRY_ADDRESS_PROJECT":"${{ steps.vars.outputs.version_tag_number }}" .
-
-      - name: Tag and push the built image
+      - name: Build, tag and push the built image
         run: |
           docker login $REGISTRY_ADDRESS -u nologin -p $REGISTRY_TOKEN
-          docker tag $REGISTRY_ADDRESS_PROJECT:latest $REGISTRY_ADDRESS/$REGISTRY_ADDRESS_PROJECT:latest
-          docker push $REGISTRY_ADDRESS/$REGISTRY_ADDRESS_PROJECT:latest
+          cd server && docker build -t $REGISTRY_ADDRESS/$REGISTRY_ADDRESS_PROJECT:latest -t $REGISTRY_ADDRESS/$REGISTRY_ADDRESS_PROJECT:"${{ steps.vars.outputs.version_tag_number }}" .
           docker push $REGISTRY_ADDRESS/$REGISTRY_ADDRESS_PROJECT:${{ steps.vars.outputs.version_tag_number }}
+          docker push $REGISTRY_ADDRESS/$REGISTRY_ADDRESS_PROJECT:latest
