@@ -1,4 +1,5 @@
-import {Exclude, Expose} from "class-transformer";
+import {Exclude, Expose, Type} from "class-transformer";
+import TransactionResponse from "@app/Http/Responses/TransactionResponse";
 
 @Exclude()
 export default class BlockResponse {
@@ -24,7 +25,8 @@ export default class BlockResponse {
     proposer_address: string;
 
     @Expose()
-    transactions: string[];
+    @Type(() => TransactionResponse)
+    transactions: Partial<TransactionResponse>[];
 
     constructor(data: Partial<BlockResponse>) {
         Object.assign(this, data);

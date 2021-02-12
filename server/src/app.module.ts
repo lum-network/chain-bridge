@@ -39,7 +39,9 @@ import {ResponseInterceptor} from "@app/Http/Interceptors";
         CacheModule.register({
             store: redisStore,
             host: config.getValue<string>('REDIS_HOST', true),
-            port: config.getValue<number>('REDIS_PORT', true)
+            port: config.getValue<number>('REDIS_PORT', true),
+            ttl: 60,
+            max: 100
         }),
         ScheduleModule.forRoot(),
         TerminusModule

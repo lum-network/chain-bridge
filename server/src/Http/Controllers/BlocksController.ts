@@ -12,6 +12,7 @@ import {ElasticService} from "@app/Services";
 import {ElasticIndexes} from "@app/Utils/Constants";
 import {classToPlain} from "class-transformer";
 import {BlockResponse} from "@app/Http/Responses";
+import {last} from "rxjs/operators";
 
 @Controller('blocks')
 @UseInterceptors(CacheInterceptor)
@@ -44,12 +45,22 @@ export default class BlocksController {
         }
 
         const lastBlock = result.body.hits.hits[0];
-        return classToPlain(new BlockResponse(lastBlock._source));
+        const source = lastBlock._source;
+
+        // Acquire the transactions
+        if(source && source.transactions && source.transactions.length > 0) {
+            for (const [k, v] of lastBlock.transactions.entries()) {
+                const tx = await ElasticService.getInstance().documentGet(ElasticIndexes.INDEX_TRANSACTIONS, v);
+                source.transactions[k] = tx.body._source
+            }
+        }
+
+        return classToPlain(new BlockResponse(source));
     }
 
     @Get(':height')
     async show(@Req() req: Request) {
-        if(!(await ElasticService.getInstance().documentExists(ElasticIndexes.INDEX_BLOCKS, req.params.height))){
+        if (!(await ElasticService.getInstance().documentExists(ElasticIndexes.INDEX_BLOCKS, req.params.height))) {
             throw new NotFoundException('block_not_found');
         }
 
@@ -58,7 +69,16 @@ export default class BlocksController {
         if (!result || !result.body || !result.body._source) {
             throw new InternalServerErrorException('failed_to_fetch_block');
         }
+        const source = result.body._source;
 
-        return classToPlain(new BlockResponse(result.body._source));
+        // Acquire the transactions
+        if(source && source.transactions && source.transactions.length > 0) {
+            for (const [k, v] of source.transactions.entries()) {
+                const tx = await ElasticService.getInstance().documentGet(ElasticIndexes.INDEX_TRANSACTIONS, v);
+                source.transactions[k] = tx.body._source
+            }
+        }
+
+        return classToPlain(new BlockResponse(source));
     }
 }
