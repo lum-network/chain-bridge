@@ -51,9 +51,6 @@ const config = new Config(process.env)
         'PORT',
         'INGEST_BLOCKS_ENABLED',
         'INGEST_TRANSACTIONS_ENABLED',
-        'PUSHER_APP_ID',
-        'PUSHER_KEY',
-        'PUSHER_SECRET'
     ]);
 
-export {config};
+export { config };

@@ -1,8 +1,8 @@
-import {Logger, Module, OnModuleInit, CacheModule} from '@nestjs/common';
-import {APP_INTERCEPTOR} from "@nestjs/core";
-import {ScheduleModule} from "@nestjs/schedule";
-import {BullModule} from "@nestjs/bull";
-import {TerminusModule} from '@nestjs/terminus';
+import { Logger, Module, OnModuleInit, CacheModule } from '@nestjs/common';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { ScheduleModule } from '@nestjs/schedule';
+import { BullModule } from '@nestjs/bull';
+import { TerminusModule } from '@nestjs/terminus';
 
 import * as redisStore from 'cache-manager-redis-store';
 
@@ -10,21 +10,22 @@ import {
     AccountsController,
     BlocksController, CoreController, HealthController,
     TransactionsController,
-    ValidatorsController
-} from "@app/Http/Controllers";
+    ValidatorsController,
+} from '@app/Http/Controllers';
 
-import {BlockScheduler, ValidatorScheduler} from "@app/Async/Schedulers";
-import {BlockConsumer, NotificationConsumer, TransactionConsumer} from "@app/Async/Consumers";
+import { BlockScheduler, ValidatorScheduler } from '@app/Async/Schedulers';
+import { BlockConsumer, NotificationConsumer, TransactionConsumer } from '@app/Async/Consumers';
 
-import {ElasticService, PusherService} from "@app/Services";
-import {ElasticIndexes, Queues} from "@app/Utils/Constants";
+import { ElasticService } from '@app/Services';
+import { ElasticIndexes, Queues } from '@app/Utils/Constants';
 
-import {IndexBlocksMapping, IndexTransactionsMapping, IndexValidatorsMapping} from "@app/Utils/Indices";
+import { IndexBlocksMapping, IndexTransactionsMapping, IndexValidatorsMapping } from '@app/Utils/Indices';
 
-import {config} from "@app/Utils/Config";
+import { config } from '@app/Utils/Config';
 
-import {ElasticsearchIndicator} from "@app/Http/Indicators";
-import {ResponseInterceptor} from "@app/Http/Interceptors";
+import { ElasticsearchIndicator } from '@app/Http/Indicators';
+import { ResponseInterceptor } from '@app/Http/Interceptors';
+import { Gateway } from '@app/Websocket';
 
 @Module({
     imports: [
@@ -32,27 +33,27 @@ import {ResponseInterceptor} from "@app/Http/Interceptors";
             name: Queues.QUEUE_DEFAULT,
             redis: {
                 host: config.getValue<string>('REDIS_HOST', true),
-                port: config.getValue<number>('REDIS_PORT', true)
+                port: config.getValue<number>('REDIS_PORT', true),
             },
-            prefix: config.getMode()
+            prefix: config.getMode(),
         }),
         CacheModule.register({
             store: redisStore,
             host: config.getValue<string>('REDIS_HOST', true),
             port: config.getValue<number>('REDIS_PORT', true),
             ttl: 60,
-            max: 100
+            max: 100,
         }),
         ScheduleModule.forRoot(),
-        TerminusModule
+        TerminusModule,
     ],
     controllers: [AccountsController, BlocksController, CoreController, HealthController, TransactionsController, ValidatorsController],
     providers: [
         BlockConsumer, NotificationConsumer, TransactionConsumer,
         BlockScheduler, ValidatorScheduler,
         ElasticsearchIndicator,
-        PusherService,
-        {provide: APP_INTERCEPTOR, useClass: ResponseInterceptor}
+        Gateway,
+        { provide: APP_INTERCEPTOR, useClass: ResponseInterceptor },
     ],
 })
 export class AppModule implements OnModuleInit {
@@ -86,6 +87,6 @@ export class AppModule implements OnModuleInit {
                 await ElasticService.getInstance().indexCreate(ElasticIndexes.INDEX_TRANSACTIONS, IndexTransactionsMapping);
                 this._logger.debug('Created index transactions');
             }
-        })
+        });
     }
 }

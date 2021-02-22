@@ -60,8 +60,7 @@ export default class BlockConsumer {
 
                 // Only ingest if allowed by the configuration
                 if (config.getValue<boolean>('INGEST_BLOCKS_ENABLED')) {
-                    this._queue.add(QueueJobs.INGEST_TRANSACTION, {transaction_hash: txHash}).finally(() => {
-                    });
+                    this._queue.add(QueueJobs.INGEST_TRANSACTION, {transaction_hash: txHash}).finally(() => null);
                 }
             }
         }
@@ -75,7 +74,7 @@ export default class BlockConsumer {
             this._queue.add(QueueJobs.NOTIFICATION_SOCKET, {
                 channel: NotificationChannels.CHANNEL_BLOCKS,
                 event: NotificationEvents.EVENT_NEW_BLOCK,
-                data: JSON.stringify(payload)
+                data: payload
             }).finally(() => null);
         } else {
             await ElasticService.getInstance().documentUpdate(ElasticIndexes.INDEX_BLOCKS, payload.height, payload);
