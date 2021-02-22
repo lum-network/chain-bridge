@@ -1,0 +1,18 @@
+version: '2'
+services:
+  chain-redis:
+    image: redis:5
+    command: [ sh, -c, "rm -f /data/dump.rdb && redis-server" ]  # disable persistence
+    ports:
+      - "6379:6379"
+    logging:
+      driver: none
+  chain-elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.10.0
+    ports:
+      - "9200:9200"
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+    logging:
+      driver: none
