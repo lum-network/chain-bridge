@@ -58,6 +58,6 @@ jobs:
       - name: Build, tag and push the built image
         run: |
           docker login $REGISTRY_ADDRESS -u nologin -p $REGISTRY_TOKEN
-          cd server && docker build -t $REGISTRY_ADDRESS/$REGISTRY_ADDRESS_PROJECT:latest -t $REGISTRY_ADDRESS/$REGISTRY_ADDRESS_PROJECT:"${{ steps.vars.outputs.version_tag_number }}" .
+          docker build -t $REGISTRY_ADDRESS/$REGISTRY_ADDRESS_PROJECT:latest -t $REGISTRY_ADDRESS/$REGISTRY_ADDRESS_PROJECT:"${{ steps.vars.outputs.version_tag_number }}" .
           docker push $REGISTRY_ADDRESS/$REGISTRY_ADDRESS_PROJECT:${{ steps.vars.outputs.version_tag_number }}
           docker push $REGISTRY_ADDRESS/$REGISTRY_ADDRESS_PROJECT:latest
