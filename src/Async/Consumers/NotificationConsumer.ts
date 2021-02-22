@@ -16,6 +16,8 @@ export default class NotificationConsumer {
     @Process(QueueJobs.NOTIFICATION_SOCKET)
     async dispatchNotificationSocket(job: Job<{ channel: string, event: string, data: string }>) {
         this._logger.log(`Dispatching notification on channel ${job.data.channel}...`);
-        this._messageGateway._server.to(job.data.channel).emit(job.data.event, job.data.data);
+        if(this._messageGateway && this._messageGateway._server) {
+            this._messageGateway._server.to(job.data.channel).emit(job.data.event, job.data.data);
+        }
     }
 }
