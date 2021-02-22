@@ -1,66 +1,61 @@
-#### Sandblock Chain Explorer
+## Description
 
-------------
+Backend for Sandblock's blockchain explorer.
 
-👋 Welcome to the official Sandblock Chain Explorer repository!
+Built on the great Nest.JS with ElasticSearch as database engine, and Redis for caching purposes.
 
-⚠️ This is beta software. Some features may not work as intended at the very beginning.
+It provides
+* Rest API for serving content to explorer frontends
+* Automatic caching of http requests (60s TTL) through Redis
+* Automatic blockchain ingestion through async pipes, running every 10s (and thus syncing the blocks emitted in the last 10s)
+* Easy capabilities of scaling
 
-🤓 All contributions are more than welcome! Feel free to fork the repository and create a Pull Request!
-
-------------
-
-##### Project Architecture
-The repository contains both client and server codes. We might split them later.
-###### Client
-The client is a react web application, it fetches information from the explorer API and directly from the chain RPC endpoints, depending on the required type.
-###### Server
-The server is a Hapi.Js (Node.JS + Typescript) application, connected to a PostgreSQL database in production (can be anything else thanks to Sequelize).
-
-Main objective is to extends chain daemon features via the server: blocks & transactions history, link between validator and block, Sandblock's migration process etc...
-Some calls just query the chain RPC and add missing informations (f.e validator<=>block).
-We offer realtime features by sending events to Pusher.
-
-##### Development
-On both projects, we are using Yarn as package manager.
-Then, you can install the dependencies by typing
-> $ yarn
-
-###### Client
-
-Before starting the client you have to define the .env file, example config:
+## Installation
 
 ```bash
-NODE_PATH=src/
-REACT_APP_CHAIN_HOST=https://shore.sandblock.io
-REACT_APP_CHAIN_COSMOS_PORT=/cosmos
-REACT_APP_CHAIN_TENDERMINT_PORT=/tendermint
-REACT_APP_PUSHER_APP_KEY=<MYPUSHERKEY>
-REACT_APP_PUSHER_APP_CLUSTER=<MYPUSHERCLUSTER>
+$ yarn install
 ```
 
-Then you can start the project with
-> $ yarn start
+## Configure the development environment
+You should have a .env file at the root level with the following entries
+```bash
+ELASTICSEARCH_HOST=chain-elasticsearch
+ELASTICSEARCH_PORT=9200
+REDIS_HOST=chain-redis
+REDIS_PORT=6379
+PORT=3000
+MODE=DEV
+INGEST_BLOCKS_ENABLED=false
+INGEST_BLOCKS_LENGTH=19
+INGEST_TRANSACTIONS_ENABLED=false
+PUSHER_APP_ID=825937
+PUSHER_KEY=TO_REPLACE
+PUSHER_SECRET=TO_REPLACE
+```
 
-###### Server
+If you don't know what these params mean, leave them like this, they are preconfigured.
 
-Before starting the server you have to define the .env file, example config:
+## Running the required architecture
+The best option is to mirror remote services, type the following commands each in separate terminal.
+
+You should see a bunch of logs, meaning that you are ready for the next step.
+
+If you see any error, the pod name is probably outdated. Please do a `kubectl get pods` in order to get the correct naming.
 
 ```bash
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_USERNAME=explorer
-DB_PASSWORD=explorer
-DB_NAME=explorer
-DB_DIALECT=postgres
-ETHERSCAN_API_KEY=<MYETHAPIKEY>
-PUSHER_APP_ID=<MYPUSHERAPPID>
-PUSHER_KEY=<MYPUSHERAPPKEY>
-PUSHER_SECRET=<MYPUSHERAPPSECRET>
+$ kubectl port-forward chain-redis-59c864c46b-pdrxx 6379:6379
+$ kubectl port-forward chain-elasticsearch-74cd4b666-hbpx6 9200:9200
 ```
 
-Then you can start the project in dev mode (auto reload on change) with
-> $ yarn start-dev
+## Running the app
 
-Or in production with
-> $ yarn start
+```bash
+# development
+$ npm run start
+
+# watch mode
+$ npm run start:dev
+
+# production mode
+$ npm run start:prod
+```

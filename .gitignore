@@ -1,13 +1,34 @@
-client/.idea/*
-client/node_modules/
-client/.DS_STORE
-client/build/
-client/.firebase/
-client/.env
+# compiled output
+/dist
+/node_modules
 
-.DS_STORE
-.idea/*
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
 
-server_new/node_modules/*
-server_new/.env
-server_new/dist/*
+# OS
+.DS_Store
+
+# Tests
+/coverage
+/.nyc_output
+
+# IDEs and editors
+/.idea
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# IDE - VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
