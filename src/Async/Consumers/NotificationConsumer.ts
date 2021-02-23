@@ -5,6 +5,7 @@ import { Process, Processor } from '@nestjs/bull';
 
 import { QueueJobs, Queues } from '@app/Utils/Constants';
 import { Gateway } from '@app/Websocket';
+import { config } from '@app/Utils/Config';
 
 @Processor(Queues.QUEUE_DEFAULT)
 export default class NotificationConsumer {
@@ -15,8 +16,12 @@ export default class NotificationConsumer {
 
     @Process(QueueJobs.NOTIFICATION_SOCKET)
     async dispatchNotificationSocket(job: Job<{ channel: string, event: string, data: string }>) {
+        if (config.isNotificationDispatchEnabled() == false) {
+            return;
+        }
+
         this._logger.log(`Dispatching notification on channel ${job.data.channel}...`);
-        if(this._messageGateway && this._messageGateway._server) {
+        if (this._messageGateway && this._messageGateway._server) {
             this._messageGateway._server.to(job.data.channel).emit(job.data.event, job.data.data);
         }
     }

@@ -1,14 +1,14 @@
-import {Logger} from "@nestjs/common";
+import { Logger } from '@nestjs/common';
 
-import {InjectQueue, Process, Processor} from "@nestjs/bull";
-import {Job, Queue} from "bull";
+import { InjectQueue, Process, Processor } from '@nestjs/bull';
+import { Job, Queue } from 'bull';
 
-import {ElasticIndexes, NotificationChannels, NotificationEvents, QueueJobs, Queues} from "@app/Utils/Constants";
-import {BlockchainService, ElasticService} from "@app/Services";
+import { ElasticIndexes, NotificationChannels, NotificationEvents, QueueJobs, Queues } from '@app/Utils/Constants';
+import { BlockchainService, ElasticService } from '@app/Services';
 
-import * as utils from "sandblock-chain-sdk-js/dist/utils";
+import * as utils from 'sandblock-chain-sdk-js/dist/utils';
 import moment from 'moment';
-import {config} from "@app/Utils/Config";
+import { config } from '@app/Utils/Config';
 
 const transformBlockProposerAddress = async (proposer_address: string): Promise<string> => {
     const encodedAddress = utils.encodeAddress(proposer_address, 'sandvalcons').toString();//TODO: prefix in config
@@ -17,7 +17,7 @@ const transformBlockProposerAddress = async (proposer_address: string): Promise<
         return validator.body['_source']['address_operator'];
     }
     return proposer_address;
-}
+};
 
 @Processor(Queues.QUEUE_DEFAULT)
 export default class BlockConsumer {
@@ -49,8 +49,8 @@ export default class BlockConsumer {
             total_txs: (block && block.block && block.block.data && block.block.data.txs) ? block.block.data.txs.length : 0,
             proposer_address: await transformBlockProposerAddress(block.block.header.proposer_address),
             raw: JSON.stringify(block),
-            transactions: []
-        }
+            transactions: [],
+        };
 
         // If we have transaction, we append to the payload the decoded txHash to allow further search of it
         if (payload.total_txs > 0) {
@@ -60,7 +60,7 @@ export default class BlockConsumer {
 
                 // Only ingest if allowed by the configuration
                 if (config.getValue<boolean>('INGEST_BLOCKS_ENABLED')) {
-                    this._queue.add(QueueJobs.INGEST_TRANSACTION, {transaction_hash: txHash}).finally(() => null);
+                    this._queue.add(QueueJobs.INGEST_TRANSACTION, { transaction_hash: txHash }).finally(() => null);
                 }
             }
         }
@@ -74,7 +74,7 @@ export default class BlockConsumer {
             this._queue.add(QueueJobs.NOTIFICATION_SOCKET, {
                 channel: NotificationChannels.CHANNEL_BLOCKS,
                 event: NotificationEvents.EVENT_NEW_BLOCK,
-                data: payload
+                data: payload,
             }).finally(() => null);
         } else {
             await ElasticService.getInstance().documentUpdate(ElasticIndexes.INDEX_BLOCKS, payload.height, payload);

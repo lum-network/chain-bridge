@@ -36,8 +36,13 @@ export default class Config {
         return enabled === 'true' || enabled === true;
     }
 
+    public isNotificationDispatchEnabled(): boolean {
+        const enabled = this.getValue('DISPATCH_NOTIFICATIONS_ENABLED');
+        return enabled === 'true' || enabled === true;
+    }
+
     public getBlockIngestionMaxLength(): number {
-        return 19;
+        return this.getValue<number>('INGEST_BLOCKS_LENGTH');
     }
 }
 
@@ -51,6 +56,7 @@ const config = new Config(process.env)
         'PORT',
         'INGEST_BLOCKS_ENABLED',
         'INGEST_TRANSACTIONS_ENABLED',
+        'DISPATCH_NOTIFICATIONS_ENABLED'
     ]);
 
 export { config };

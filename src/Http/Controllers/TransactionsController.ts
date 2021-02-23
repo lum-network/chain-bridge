@@ -13,13 +13,13 @@ export default class TransactionsController {
         // We get the 50 last transactions stored in ES
         const result = await ElasticService.getInstance().documentSearch(ElasticIndexes.INDEX_TRANSACTIONS, {
             size: 50,
-            sort: {"dispatched_at": "desc"},
+            sort: { "dispatched_at": "desc" },
             query: {
                 match_all: {}
             }
         });
 
-        if (!result || !result.body || !result.body.hits || !result.body.hits.hits || result.body.hits.hits.length == 0) {
+        if (!result || !result.body || !result.body.hits || !result.body.hits.hits) {
             throw new NotFoundException('transactions_not_found');
         }
 

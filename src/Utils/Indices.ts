@@ -33,7 +33,7 @@ export const IndexTransactionsMapping = {
             "raw_log": {"type": "text"},
             "gas_wanted": {"type": "double"},
             "gas_used": {"type": "double"},
-            "timestamp": {"type": "date", "format": "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis"},
+            "dispatched_at": {"type": "date", "format": "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis"}
         }
     }
 }

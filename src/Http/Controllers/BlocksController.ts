@@ -12,7 +12,6 @@ import {ElasticService} from "@app/Services";
 import {ElasticIndexes} from "@app/Utils/Constants";
 import {classToPlain} from "class-transformer";
 import {BlockResponse} from "@app/Http/Responses";
-import {last} from "rxjs/operators";
 
 @Controller('blocks')
 @UseInterceptors(CacheInterceptor)
@@ -25,7 +24,7 @@ export default class BlocksController {
             sort: {"height": "desc"}
         });
 
-        if (!result || !result.body || !result.body.hits || !result.body.hits.hits || result.body.hits.hits.length == 0) {
+        if (!result || !result.body || !result.body.hits || !result.body.hits.hits) {
             throw new NotFoundException('blocks_not_found');
         }
 

@@ -4,6 +4,7 @@ import { Job, Queue } from 'bull';
 import { ElasticIndexes, NotificationChannels, NotificationEvents, QueueJobs, Queues } from '@app/Utils/Constants';
 import { BlockchainService, ElasticService } from '@app/Services';
 import { config } from '@app/Utils/Config';
+import moment from 'moment';
 
 const extractValueFromEvents = async (events: [{ type, attributes: [{ key, value }] }], key: string) => {
     let retn = null;
@@ -95,7 +96,7 @@ export default class TransactionConsumer {
             from_address: senderAddress,
             to_address: recipientAddress,
             name: tx.tx.value.memo,
-            dispatched_at: tx.timestamp,
+            dispatched_at: moment(tx.timestamp).format('yyyy-MM-DD HH:mm:ss'),
             msgs: JSON.stringify(tx.tx.value.msg),
             raw: JSON.stringify(tx),
         };
