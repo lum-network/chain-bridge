@@ -8,10 +8,14 @@ import {TransactionResponse} from "@app/Http/Responses";
 @Controller('transactions')
 @UseInterceptors(CacheInterceptor)
 export default class TransactionsController {
+
+    constructor(private readonly _elasticService: ElasticService) {
+    }
+
     @Get('')
     async fetch(){
         // We get the 50 last transactions stored in ES
-        const result = await ElasticService.getInstance().documentSearch(ElasticIndexes.INDEX_TRANSACTIONS, {
+        const result = await this._elasticService.documentSearch(ElasticIndexes.INDEX_TRANSACTIONS, {
             size: 50,
             sort: { "dispatched_at": "desc" },
             query: {
@@ -28,12 +32,12 @@ export default class TransactionsController {
 
     @Get(':hash')
     async show(@Req() req: Request){
-        if(!(await ElasticService.getInstance().documentExists(ElasticIndexes.INDEX_TRANSACTIONS, req.params.hash))){
+        if(!(await this._elasticService.documentExists(ElasticIndexes.INDEX_TRANSACTIONS, req.params.hash))){
             throw new NotFoundException('transaction_not_found');
         }
 
         // We get the transaction from ES
-        const result = await ElasticService.getInstance().documentGet(ElasticIndexes.INDEX_TRANSACTIONS, req.params.hash);
+        const result = await this._elasticService.documentGet(ElasticIndexes.INDEX_TRANSACTIONS, req.params.hash);
         if (!result || !result.body || !result.body._source) {
             throw new NotFoundException('failed_to_fetch_transaction');
         }

@@ -12,7 +12,9 @@ import {config} from "@app/Utils/Config";
 export default class BlockScheduler {
     private _logger: Logger = new Logger(BlockScheduler.name);
 
-    constructor(@InjectQueue(Queues.QUEUE_DEFAULT) private readonly _queue: Queue) {
+    constructor(
+        @InjectQueue(Queues.QUEUE_DEFAULT) private readonly _queue: Queue,
+        private readonly _elasticService: ElasticService) {
     }
 
     @Cron(CronExpression.EVERY_10_SECONDS)
@@ -26,12 +28,12 @@ export default class BlockScheduler {
         const ingestLength = config.getBlockIngestionMaxLength();
 
         // We get the last block stored in ES
-        const lastBlock = await ElasticService.getInstance().documentSearch(ElasticIndexes.INDEX_BLOCKS, {
+        const lastBlock = await this._elasticService.documentSearch(ElasticIndexes.INDEX_BLOCKS, {
             size: 1,
             sort: {"height": "desc"}
         });
         // Ensure we have all the required data
-        let lastBlockHeight: number = 0;
+        let lastBlockHeight = 0;
         try {
             if (lastBlock && lastBlock.body && lastBlock.body.hits && lastBlock.body.hits.hits && lastBlock.body.hits.hits.length === 1) {
                 lastBlockHeight = lastBlock.body.hits.hits[0]['_source']['height'];
@@ -72,7 +74,7 @@ export default class BlockScheduler {
         }
 
         // For each block, push to the processing queue
-        for (let bl of blocks.result.block_metas.reverse()) {
+        for (const bl of blocks.result.block_metas.reverse()) {
             this._logger.log(`Dispatching block #${bl.header.height} for processing`);
             this._queue.add(QueueJobs.INGEST_BLOCK, {
                 block_height: bl.header.height,

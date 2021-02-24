@@ -10,20 +10,23 @@ import * as utils from 'sandblock-chain-sdk-js/dist/utils';
 import moment from 'moment';
 import { config } from '@app/Utils/Config';
 
-const transformBlockProposerAddress = async (proposer_address: string): Promise<string> => {
-    const encodedAddress = utils.encodeAddress(proposer_address, 'sandvalcons').toString();//TODO: prefix in config
-    const validator = await ElasticService.getInstance().documentGet(ElasticIndexes.INDEX_VALIDATORS, encodedAddress);
-    if (validator && validator.body && validator.body.found) {
-        return validator.body['_source']['address_operator'];
-    }
-    return proposer_address;
-};
-
 @Processor(Queues.QUEUE_DEFAULT)
 export default class BlockConsumer {
     private readonly _logger: Logger = new Logger(BlockConsumer.name);
 
-    constructor(@InjectQueue(Queues.QUEUE_DEFAULT) private readonly _queue: Queue) {
+    constructor(
+        @InjectQueue(Queues.QUEUE_DEFAULT) private readonly _queue: Queue,
+        private readonly _elasticService: ElasticService
+    ) {
+    }
+
+    transformBlockProposerAddress = async (proposer_address: string): Promise<string> => {
+        const encodedAddress = utils.encodeAddress(proposer_address, 'sandvalcons').toString();//TODO: prefix in config
+        const validator = await this._elasticService.documentGet(ElasticIndexes.INDEX_VALIDATORS, encodedAddress);
+        if (validator && validator.body && validator.body.found) {
+            return validator.body['_source']['address_operator'];
+        }
+        return proposer_address;
     }
 
     @Process(QueueJobs.INGEST_BLOCK)
@@ -47,7 +50,7 @@ export default class BlockConsumer {
             dispatched_at: moment(block.block.header.time).format('yyyy-MM-DD HH:mm:ss'),
             num_txs: job.data.num_txs,
             total_txs: (block && block.block && block.block.data && block.block.data.txs) ? block.block.data.txs.length : 0,
-            proposer_address: await transformBlockProposerAddress(block.block.header.proposer_address),
+            proposer_address: await this.transformBlockProposerAddress(block.block.header.proposer_address),
             raw: JSON.stringify(block),
             transactions: [],
         };
@@ -66,8 +69,8 @@ export default class BlockConsumer {
         }
 
         // Ingest or update (allow to relaunch the ingest from scratch to ensure we store the correct data)
-        if ((await ElasticService.getInstance().documentExists(ElasticIndexes.INDEX_BLOCKS, payload.height)) === false) {
-            await ElasticService.getInstance().documentCreate(ElasticIndexes.INDEX_BLOCKS, payload.height, payload);
+        if ((await this._elasticService.documentExists(ElasticIndexes.INDEX_BLOCKS, payload.height)) === false) {
+            await this._elasticService.documentCreate(ElasticIndexes.INDEX_BLOCKS, payload.height, payload);
             this._logger.log(`Block #${payload.height} ingested`);
 
             // Dispatch notification on websockets for frontend
@@ -77,7 +80,7 @@ export default class BlockConsumer {
                 data: payload,
             }).finally(() => null);
         } else {
-            await ElasticService.getInstance().documentUpdate(ElasticIndexes.INDEX_BLOCKS, payload.height, payload);
+            await this._elasticService.documentUpdate(ElasticIndexes.INDEX_BLOCKS, payload.height, payload);
             this._logger.log(`Block #${payload.height} updated`);
         }
     }

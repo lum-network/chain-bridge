@@ -8,7 +8,7 @@ import moment from 'moment';
 
 const extractValueFromEvents = async (events: [{ type, attributes: [{ key, value }] }], key: string) => {
     let retn = null;
-    for (let ev of events) {
+    for (const ev of events) {
         await ev.attributes.forEach(attr => {
             if (attr.key == key) {
                 retn = attr.value;
@@ -21,7 +21,7 @@ const extractValueFromEvents = async (events: [{ type, attributes: [{ key, value
 
 const extractValueFromMsg = async (msgs: [{ type, value: {} }], key: string) => {
     let retn = null;
-    for (let msg of msgs) {
+    for (const msg of msgs) {
         await Object.keys(msg.value).forEach(v => {
             if (v == key) {
                 retn = msg.value[v];
@@ -36,7 +36,9 @@ const extractValueFromMsg = async (msgs: [{ type, value: {} }], key: string) => 
 export default class TransactionConsumer {
     private readonly _logger: Logger = new Logger(TransactionConsumer.name);
 
-    constructor(@InjectQueue(Queues.QUEUE_DEFAULT) private readonly _queue: Queue) {
+    constructor(
+        @InjectQueue(Queues.QUEUE_DEFAULT) private readonly _queue: Queue,
+        private readonly _elasticService: ElasticService) {
     }
 
     @Process(QueueJobs.INGEST_TRANSACTION)
@@ -102,8 +104,8 @@ export default class TransactionConsumer {
         };
 
         // Ingest or update (allow to relaunch the ingest from scratch to ensure we store the correct data)
-        if ((await ElasticService.getInstance().documentExists(ElasticIndexes.INDEX_TRANSACTIONS, payload.hash)) === false) {
-            await ElasticService.getInstance().documentCreate(ElasticIndexes.INDEX_TRANSACTIONS, payload.hash, payload);
+        if ((await this._elasticService.documentExists(ElasticIndexes.INDEX_TRANSACTIONS, payload.hash)) === false) {
+            await this._elasticService.documentCreate(ElasticIndexes.INDEX_TRANSACTIONS, payload.hash, payload);
             this._logger.log(`Transaction ${payload.hash} ingested`);
 
             // Dispatch notification on websockets for frontend
@@ -113,7 +115,7 @@ export default class TransactionConsumer {
                 data: payload,
             }).finally(() => null);
         } else {
-            await ElasticService.getInstance().documentUpdate(ElasticIndexes.INDEX_TRANSACTIONS, payload.hash, payload);
+            await this._elasticService.documentUpdate(ElasticIndexes.INDEX_TRANSACTIONS, payload.hash, payload);
             this._logger.log(`Transaction ${payload.hash} updated`);
         }
     }

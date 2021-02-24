@@ -5,6 +5,10 @@ import { ElasticIndexes } from '@app/Utils/Constants';
 
 @Controller('')
 export default class CoreController {
+
+    constructor(private readonly _elasticService: ElasticService) {
+    }
+
     @Get('search/:data')
     @UseInterceptors(CacheInterceptor)
     async search(@Req() req: Request) {
@@ -18,9 +22,9 @@ export default class CoreController {
         } else if (String(data).startsWith('sand')) {
             return { type: 'account', data };
         } else {
-            if (await ElasticService.getInstance().documentExists(ElasticIndexes.INDEX_BLOCKS, data)) {
+            if (await this._elasticService.documentExists(ElasticIndexes.INDEX_BLOCKS, data)) {
                 return { type: 'block', data };
-            } else if (await ElasticService.getInstance().documentExists(ElasticIndexes.INDEX_TRANSACTIONS, data)) {
+            } else if (await this._elasticService.documentExists(ElasticIndexes.INDEX_TRANSACTIONS, data)) {
                 return { type: 'transaction', data };
             } else {
                 throw new NotFoundException('data_not_found');

@@ -1,20 +1,16 @@
+import { Injectable } from '@nestjs/common';
+
 import {Client} from '@elastic/elasticsearch';
+
 import {ElasticIndexes} from "@app/Utils/Constants";
 import {config} from "@app/Utils/Config";
 
+@Injectable()
 export default class ElasticService {
-    private static _instance: ElasticService;
-    private _client: Client;
+    private readonly _client: Client;
 
     constructor() {
         this._client = new Client({node: `http://${config.getValue<string>('ELASTICSEARCH_HOST')}:${config.getValue<number>('ELASTICSEARCH_PORT')}`});
-    }
-
-    public static getInstance = (): ElasticService => {
-        if (!ElasticService._instance) {
-            ElasticService._instance = new ElasticService();
-        }
-        return ElasticService._instance;
     }
 
     public documentSearch = (index: ElasticIndexes, body: any) => {

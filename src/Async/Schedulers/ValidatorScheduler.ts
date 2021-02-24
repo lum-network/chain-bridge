@@ -5,7 +5,10 @@ import {ElasticIndexes} from "@app/Utils/Constants";
 
 @Injectable()
 export default class ValidatorScheduler {
-    private _logger: Logger = new Logger(ValidatorScheduler.name);
+    private readonly _logger: Logger = new Logger(ValidatorScheduler.name);
+
+    constructor(private readonly _elasticService: ElasticService) {
+    }
 
     @Cron(CronExpression.EVERY_MINUTE)
     async ingest(){
@@ -17,21 +20,21 @@ export default class ValidatorScheduler {
             return;
         }
 
-        for (let set of vss.result.validators){
-            for (let val of vs.result){
+        for (const set of vss.result.validators){
+            for (const val of vs.result){
                 if(val['consensus_pubkey'] !== set['pub_key']){
                     return;
                 }
 
-                let payload = {
+                const payload = {
                     "address_consensus": set['address'],
                     "address_consensus_pub": set['pub_key'],
                     "address_operator": val['operator_address'],
                     "address_operator_pub": ''
                 };
 
-                if ((await ElasticService.getInstance().documentExists(ElasticIndexes.INDEX_VALIDATORS, set['address'])) === false){
-                    await ElasticService.getInstance().documentCreate(ElasticIndexes.INDEX_VALIDATORS, set['address'], payload);
+                if ((await this._elasticService.documentExists(ElasticIndexes.INDEX_VALIDATORS, set['address'])) === false){
+                    await this._elasticService.documentCreate(ElasticIndexes.INDEX_VALIDATORS, set['address'], payload);
                     this._logger.log(`Indexed validator with address ${set['address']}`);
                 }
             }

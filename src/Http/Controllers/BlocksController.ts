@@ -16,10 +16,14 @@ import {BlockResponse} from "@app/Http/Responses";
 @Controller('blocks')
 @UseInterceptors(CacheInterceptor)
 export default class BlocksController {
+
+    constructor(private readonly _elasticService: ElasticService) {
+    }
+
     @Get('')
     async fetch() {
         // We get the 50 last block stored in ES
-        const result = await ElasticService.getInstance().documentSearch(ElasticIndexes.INDEX_BLOCKS, {
+        const result = await this._elasticService.documentSearch(ElasticIndexes.INDEX_BLOCKS, {
             size: 50,
             sort: {"height": "desc"}
         });
@@ -34,7 +38,7 @@ export default class BlocksController {
     @Get('latest')
     async latest() {
         // We get the last block stored in ES
-        const result = await ElasticService.getInstance().documentSearch(ElasticIndexes.INDEX_BLOCKS, {
+        const result = await this._elasticService.documentSearch(ElasticIndexes.INDEX_BLOCKS, {
             size: 1,
             sort: {"height": "desc"}
         });
@@ -49,7 +53,7 @@ export default class BlocksController {
         // Acquire the transactions
         if(source && source.transactions && source.transactions.length > 0) {
             for (const [k, v] of lastBlock.transactions.entries()) {
-                const tx = await ElasticService.getInstance().documentGet(ElasticIndexes.INDEX_TRANSACTIONS, v);
+                const tx = await this._elasticService.documentGet(ElasticIndexes.INDEX_TRANSACTIONS, v);
                 source.transactions[k] = tx.body._source
             }
         }
@@ -59,12 +63,12 @@ export default class BlocksController {
 
     @Get(':height')
     async show(@Req() req: Request) {
-        if (!(await ElasticService.getInstance().documentExists(ElasticIndexes.INDEX_BLOCKS, req.params.height))) {
+        if (!(await this._elasticService.documentExists(ElasticIndexes.INDEX_BLOCKS, req.params.height))) {
             throw new NotFoundException('block_not_found');
         }
 
         // We get the block from ES
-        const result = await ElasticService.getInstance().documentGet(ElasticIndexes.INDEX_BLOCKS, req.params.height);
+        const result = await this._elasticService.documentGet(ElasticIndexes.INDEX_BLOCKS, req.params.height);
         if (!result || !result.body || !result.body._source) {
             throw new InternalServerErrorException('failed_to_fetch_block');
         }
@@ -73,7 +77,7 @@ export default class BlocksController {
         // Acquire the transactions
         if(source && source.transactions && source.transactions.length > 0) {
             for (const [k, v] of source.transactions.entries()) {
-                const tx = await ElasticService.getInstance().documentGet(ElasticIndexes.INDEX_TRANSACTIONS, v);
+                const tx = await this._elasticService.documentGet(ElasticIndexes.INDEX_TRANSACTIONS, v);
                 source.transactions[k] = tx.body._source
             }
         }

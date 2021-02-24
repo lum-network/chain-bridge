@@ -9,6 +9,10 @@ import {TransactionResponse} from "@app/Http/Responses";
 @Controller('accounts')
 @UseInterceptors(CacheInterceptor)
 export default class AccountsController {
+
+    constructor(private readonly _elasticService: ElasticService) {
+    }
+
     @Get(':address')
     async show(@Req() req: Request) {
         // Acquire the account instance
@@ -31,7 +35,7 @@ export default class AccountsController {
         account['withdraw_address'] = (address !== null) ? address.result : req.params.address;
 
         // Inject transactions
-        const result = await ElasticService.getInstance().documentSearch(ElasticIndexes.INDEX_TRANSACTIONS, {
+        const result = await this._elasticService.documentSearch(ElasticIndexes.INDEX_TRANSACTIONS, {
             sort: {"dispatched_at": "desc"},
             query: {
                 bool: {
