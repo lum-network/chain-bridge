@@ -54,7 +54,7 @@ export default class BlockConsumer {
 
         // If we have transaction, we append to the payload the decoded txHash to allow further search of it
         if (payload.total_txs > 0) {
-            for (let tx of block.block.data.txs) {
+            for (const tx of block.block.data.txs) {
                 const txHash = utils.decodeTransactionHash(tx);
                 payload.transactions.push(txHash);
 
