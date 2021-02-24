@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
-import { HealthCheckError, HealthIndicator, HealthIndicatorResult } from '@nestjs/terminus';
-import { ElasticService } from '@app/Services';
+import {Injectable} from "@nestjs/common";
+import {HealthCheckError, HealthIndicator, HealthIndicatorResult} from "@nestjs/terminus";
+import {ElasticService} from "@app/Services";
 
 @Injectable()
 export default class ElasticsearchIndicator extends HealthIndicator {
@@ -8,7 +8,7 @@ export default class ElasticsearchIndicator extends HealthIndicator {
         try {
             const ping = await ElasticService.getInstance().client.ping();
             return this.getStatus('elasticsearch', ping.body);
-        } catch (error) {
+        } catch(error){
             throw new HealthCheckError('Elasticsearch ping failed', error);
         }
     }

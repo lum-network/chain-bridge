@@ -1,6 +1,6 @@
-import { Exclude, Expose, Type } from 'class-transformer';
-import BalanceResponse from '@app/Http/Responses/BalanceResponse';
-import RewardResponse from '@app/Http/Responses/RewardResponse';
+import {Exclude, Expose, Type} from "class-transformer";
+import BalanceResponse from "@app/Http/Responses/BalanceResponse";
+import RewardResponse from "@app/Http/Responses/RewardResponse";
 
 @Exclude()
 export class ValidatorDescriptionResponse {

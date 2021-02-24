@@ -1,4 +1,4 @@
-import SandblockChainClient from 'sandblock-chain-sdk-js/dist/client';
+import SandblockChainClient from "sandblock-chain-sdk-js/dist/client";
 
 export default class BlockchainService {
     private static _instance: BlockchainService;

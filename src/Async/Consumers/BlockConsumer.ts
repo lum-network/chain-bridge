@@ -11,7 +11,7 @@ import moment from 'moment';
 import { config } from '@app/Utils/Config';
 
 const transformBlockProposerAddress = async (proposer_address: string): Promise<string> => {
-    const encodedAddress = utils.encodeAddress(proposer_address, 'sandvalcons').toString(); //TODO: prefix in config
+    const encodedAddress = utils.encodeAddress(proposer_address, 'sandvalcons').toString();//TODO: prefix in config
     const validator = await ElasticService.getInstance().documentGet(ElasticIndexes.INDEX_VALIDATORS, encodedAddress);
     if (validator && validator.body && validator.body.found) {
         return validator.body['_source']['address_operator'];
@@ -23,19 +23,18 @@ const transformBlockProposerAddress = async (proposer_address: string): Promise<
 export default class BlockConsumer {
     private readonly _logger: Logger = new Logger(BlockConsumer.name);
 
-    constructor(@InjectQueue(Queues.QUEUE_DEFAULT) private readonly _queue: Queue) {}
+    constructor(@InjectQueue(Queues.QUEUE_DEFAULT) private readonly _queue: Queue) {
+    }
 
     @Process(QueueJobs.INGEST_BLOCK)
-    async ingestBlock(job: Job<{ block_height: number; num_txs: number }>) {
+    async ingestBlock(job: Job<{ block_height: number, num_txs: number }>) {
         // Only ingest if allowed by the configuration
         if (config.isBlockIngestionEnabled() === false) {
             return;
         }
 
         // Get block from chain
-        const block = await BlockchainService.getInstance()
-            .getClient()
-            .getBlockAtHeightLive(job.data.block_height);
+        const block = await BlockchainService.getInstance().getClient().getBlockAtHeightLive(job.data.block_height);
         if (!block) {
             this._logger.error(`Failed to acquire block at height ${job.data.block_height}`);
             return;
@@ -47,8 +46,7 @@ export default class BlockConsumer {
             height: parseInt(block.block.header.height),
             dispatched_at: moment(block.block.header.time).format('yyyy-MM-DD HH:mm:ss'),
             num_txs: job.data.num_txs,
-            total_txs:
-                block && block.block && block.block.data && block.block.data.txs ? block.block.data.txs.length : 0,
+            total_txs: (block && block.block && block.block.data && block.block.data.txs) ? block.block.data.txs.length : 0,
             proposer_address: await transformBlockProposerAddress(block.block.header.proposer_address),
             raw: JSON.stringify(block),
             transactions: [],
@@ -56,7 +54,7 @@ export default class BlockConsumer {
 
         // If we have transaction, we append to the payload the decoded txHash to allow further search of it
         if (payload.total_txs > 0) {
-            for (const tx of block.block.data.txs) {
+            for (let tx of block.block.data.txs) {
                 const txHash = utils.decodeTransactionHash(tx);
                 payload.transactions.push(txHash);
 
@@ -68,20 +66,16 @@ export default class BlockConsumer {
         }
 
         // Ingest or update (allow to relaunch the ingest from scratch to ensure we store the correct data)
-        if (
-            (await ElasticService.getInstance().documentExists(ElasticIndexes.INDEX_BLOCKS, payload.height)) === false
-        ) {
+        if ((await ElasticService.getInstance().documentExists(ElasticIndexes.INDEX_BLOCKS, payload.height)) === false) {
             await ElasticService.getInstance().documentCreate(ElasticIndexes.INDEX_BLOCKS, payload.height, payload);
             this._logger.log(`Block #${payload.height} ingested`);
 
             // Dispatch notification on websockets for frontend
-            this._queue
-                .add(QueueJobs.NOTIFICATION_SOCKET, {
-                    channel: NotificationChannels.CHANNEL_BLOCKS,
-                    event: NotificationEvents.EVENT_NEW_BLOCK,
-                    data: payload,
-                })
-                .finally(() => null);
+            this._queue.add(QueueJobs.NOTIFICATION_SOCKET, {
+                channel: NotificationChannels.CHANNEL_BLOCKS,
+                event: NotificationEvents.EVENT_NEW_BLOCK,
+                data: payload,
+            }).finally(() => null);
         } else {
             await ElasticService.getInstance().documentUpdate(ElasticIndexes.INDEX_BLOCKS, payload.height, payload);
             this._logger.log(`Block #${payload.height} updated`);
