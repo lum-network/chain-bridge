@@ -1,5 +1,5 @@
-import {Exclude, Expose, Type} from "class-transformer";
-import TransactionResponse from "@app/Http/Responses/TransactionResponse";
+import { Exclude, Expose, Type } from 'class-transformer';
+import TransactionResponse from '@app/Http/Responses/TransactionResponse';
 
 @Exclude()
 export default class BlockResponse {

@@ -11,11 +11,10 @@ import { config } from '@app/Utils/Config';
 export default class NotificationConsumer {
     private readonly _logger: Logger = new Logger(NotificationConsumer.name);
 
-    constructor(private readonly _messageGateway: Gateway) {
-    }
+    constructor(private readonly _messageGateway: Gateway) {}
 
     @Process(QueueJobs.NOTIFICATION_SOCKET)
-    async dispatchNotificationSocket(job: Job<{ channel: string, event: string, data: string }>) {
+    async dispatchNotificationSocket(job: Job<{ channel: string; event: string; data: string }>) {
         if (config.isNotificationDispatchEnabled() == false) {
             return;
         }
