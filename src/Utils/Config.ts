@@ -19,27 +19,27 @@ export default class Config {
 
     public getLumNetworkEndpoint = (): string => {
         return this.getValue<string>('LUM-NETWORK-ENDPOINT', true);
-    }
+    };
 
     public getElasticSearchHost = (): string => {
         return this.getValue<string>('ELASTICSEARCH_HOST', true);
-    }
+    };
 
     public getElasticSearchPort = (): number => {
         return this.getValue<number>('ELASTICSEARCH_PORT', true);
-    }
+    };
 
     public getRedisHost = (): string => {
         return this.getValue<string>('REDIS_HOST', true);
-    }
+    };
 
     public getRedisPort = (): number => {
         return this.getValue<number>('REDIS_PORT', true);
-    }
+    };
 
     public getRedisPrefix = (): string => {
         return this.getValue<string>('REDIS_PREFIX', false).toLowerCase();
-    }
+    };
 
     public isApiEnabled(): boolean {
         const enabled = this.getValue('API_ENABLED');
@@ -48,7 +48,7 @@ export default class Config {
 
     public getApiPort = (): number => {
         return this.getValue<number>('API_PORT', true);
-    }
+    };
 
     public isIngestEnabled(): boolean {
         const enabled = this.getValue('INGEST_ENABLED');
