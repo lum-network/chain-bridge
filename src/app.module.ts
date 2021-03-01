@@ -6,12 +6,7 @@ import { TerminusModule } from '@nestjs/terminus';
 
 import * as redisStore from 'cache-manager-redis-store';
 
-import {
-    AccountsController,
-    BlocksController, CoreController, HealthController,
-    TransactionsController,
-    ValidatorsController,
-} from '@app/Http/Controllers';
+import { AccountsController, BlocksController, CoreController, HealthController, TransactionsController, ValidatorsController } from '@app/Http/Controllers';
 
 import { BlockScheduler, ValidatorScheduler } from '@app/Async/Schedulers';
 import { BlockConsumer, NotificationConsumer, TransactionConsumer } from '@app/Async/Consumers';
@@ -49,8 +44,11 @@ import { Gateway } from '@app/Websocket';
     ],
     controllers: [AccountsController, BlocksController, CoreController, HealthController, TransactionsController, ValidatorsController],
     providers: [
-        BlockConsumer, NotificationConsumer, TransactionConsumer,
-        BlockScheduler, ValidatorScheduler,
+        BlockConsumer,
+        NotificationConsumer,
+        TransactionConsumer,
+        BlockScheduler,
+        ValidatorScheduler,
         ElasticsearchIndicator,
         Gateway,
         ElasticService,
@@ -60,8 +58,7 @@ import { Gateway } from '@app/Websocket';
 export class AppModule implements OnModuleInit {
     private readonly _logger: Logger = new Logger(AppModule.name);
 
-    constructor(private readonly _elasticService: ElasticService) {
-    }
+    constructor(private readonly _elasticService: ElasticService) {}
 
     onModuleInit(): any {
         // Log out

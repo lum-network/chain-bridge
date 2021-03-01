@@ -6,7 +6,7 @@ import { BlockchainService, ElasticService } from '@app/Services';
 import { config } from '@app/Utils/Config';
 import moment from 'moment';
 
-const extractValueFromEvents = async (events: [{ type, attributes: [{ key, value }] }], key: string) => {
+const extractValueFromEvents = async (events: [{ type; attributes: [{ key; value }] }], key: string) => {
     let retn = null;
     for (const ev of events) {
         await ev.attributes.forEach(attr => {
@@ -19,7 +19,7 @@ const extractValueFromEvents = async (events: [{ type, attributes: [{ key, value
     return retn;
 };
 
-const extractValueFromMsg = async (msgs: [{ type, value: {} }], key: string) => {
+const extractValueFromMsg = async (msgs: [{ type; value: {} }], key: string) => {
     let retn = null;
     for (const msg of msgs) {
         await Object.keys(msg.value).forEach(v => {
@@ -36,10 +36,7 @@ const extractValueFromMsg = async (msgs: [{ type, value: {} }], key: string) => 
 export default class TransactionConsumer {
     private readonly _logger: Logger = new Logger(TransactionConsumer.name);
 
-    constructor(
-        @InjectQueue(Queues.QUEUE_DEFAULT) private readonly _queue: Queue,
-        private readonly _elasticService: ElasticService) {
-    }
+    constructor(@InjectQueue(Queues.QUEUE_DEFAULT) private readonly _queue: Queue, private readonly _elasticService: ElasticService) {}
 
     @Process(QueueJobs.INGEST_TRANSACTION)
     async ingestTransaction(job: Job<{ transaction_hash: string }>) {
@@ -49,14 +46,16 @@ export default class TransactionConsumer {
         }
 
         // Acquire the transaction information from the blockchain
-        const tx = await BlockchainService.getInstance().getClient().getTransactionLive(job.data.transaction_hash);
+        const tx = await BlockchainService.getInstance()
+            .getClient()
+            .getTransactionLive(job.data.transaction_hash);
         if (!tx) {
             this._logger.error(`Failed to acquire the transaction data from blockchain for hash ${job.data.transaction_hash}`);
             return;
         }
 
         // Compute events from blockchain
-        let events: [{ type, attributes: [{ key, value }] }];
+        let events: [{ type; attributes: [{ key; value }] }];
         if (tx && tx.logs) {
             if (tx.logs[0] !== undefined) {
                 events = tx.logs[0].events;
@@ -64,8 +63,8 @@ export default class TransactionConsumer {
         }
 
         // Extract interesting values from events
-        const action = await extractValueFromEvents(events, 'action') || 'unknown';
-        let senderAddress = await extractValueFromEvents(events, 'sender') || await extractValueFromMsg(tx.tx.value.msg, 'from_address');
+        const action = (await extractValueFromEvents(events, 'action')) || 'unknown';
+        let senderAddress = (await extractValueFromEvents(events, 'sender')) || (await extractValueFromMsg(tx.tx.value.msg, 'from_address'));
 
         // We try again to get sender with particular types
         if (senderAddress === null) {
@@ -75,7 +74,7 @@ export default class TransactionConsumer {
                 senderAddress = await extractValueFromMsg(tx.tx.value.msg, 'delegator_address');
             }
         }
-        let recipientAddress = await extractValueFromEvents(events, 'recipient') || await extractValueFromMsg(tx.tx.value.msg, 'to_address');
+        let recipientAddress = (await extractValueFromEvents(events, 'recipient')) || (await extractValueFromMsg(tx.tx.value.msg, 'to_address'));
 
         // We try to get recipient with particular types
         if (recipientAddress === null) {
@@ -91,7 +90,7 @@ export default class TransactionConsumer {
             hash: tx.txhash,
             action,
             amount,
-            success: (tx && tx.logs && tx.logs.length && tx.logs.length > 0),
+            success: tx && tx.logs && tx.logs.length && tx.logs.length > 0,
             log: tx.logs[0].log || null,
             gas_wanted: parseInt(tx.gas_wanted),
             gas_used: parseInt(tx.gas_used),
@@ -109,11 +108,13 @@ export default class TransactionConsumer {
             this._logger.log(`Transaction ${payload.hash} ingested`);
 
             // Dispatch notification on websockets for frontend
-            this._queue.add(QueueJobs.NOTIFICATION_SOCKET, {
-                channel: NotificationChannels.CHANNEL_TRANSACTIONS,
-                event: NotificationEvents.EVENT_NEW_TRANSACTION,
-                data: payload,
-            }).finally(() => null);
+            this._queue
+                .add(QueueJobs.NOTIFICATION_SOCKET, {
+                    channel: NotificationChannels.CHANNEL_TRANSACTIONS,
+                    event: NotificationEvents.EVENT_NEW_TRANSACTION,
+                    data: payload,
+                })
+                .finally(() => null);
         } else {
             await this._elasticService.documentUpdate(ElasticIndexes.INDEX_TRANSACTIONS, payload.hash, payload);
             this._logger.log(`Transaction ${payload.hash} updated`);

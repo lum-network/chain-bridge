@@ -5,9 +5,7 @@ import { ElasticIndexes } from '@app/Utils/Constants';
 
 @Controller('')
 export default class CoreController {
-
-    constructor(private readonly _elasticService: ElasticService) {
-    }
+    constructor(private readonly _elasticService: ElasticService) {}
 
     @Get('search/:data')
     @UseInterceptors(CacheInterceptor)

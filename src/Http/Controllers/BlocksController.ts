@@ -1,38 +1,28 @@
-import {
-    CacheInterceptor,
-    Controller,
-    Get,
-    InternalServerErrorException,
-    NotFoundException,
-    Req,
-    UseInterceptors
-} from "@nestjs/common";
-import {Request} from "express";
-import {ElasticService} from "@app/Services";
-import {ElasticIndexes} from "@app/Utils/Constants";
-import {classToPlain} from "class-transformer";
-import {BlockResponse} from "@app/Http/Responses";
+import { CacheInterceptor, Controller, Get, InternalServerErrorException, NotFoundException, Req, UseInterceptors } from '@nestjs/common';
+import { Request } from 'express';
+import { ElasticService } from '@app/Services';
+import { ElasticIndexes } from '@app/Utils/Constants';
+import { classToPlain } from 'class-transformer';
+import { BlockResponse } from '@app/Http/Responses';
 
 @Controller('blocks')
 @UseInterceptors(CacheInterceptor)
 export default class BlocksController {
-
-    constructor(private readonly _elasticService: ElasticService) {
-    }
+    constructor(private readonly _elasticService: ElasticService) {}
 
     @Get('')
     async fetch() {
         // We get the 50 last block stored in ES
         const result = await this._elasticService.documentSearch(ElasticIndexes.INDEX_BLOCKS, {
             size: 50,
-            sort: {"height": "desc"}
+            sort: { height: 'desc' },
         });
 
         if (!result || !result.body || !result.body.hits || !result.body.hits.hits) {
             throw new NotFoundException('blocks_not_found');
         }
 
-        return result.body.hits.hits.map((block) => classToPlain(new BlockResponse(block._source)));
+        return result.body.hits.hits.map(block => classToPlain(new BlockResponse(block._source)));
     }
 
     @Get('latest')
@@ -40,7 +30,7 @@ export default class BlocksController {
         // We get the last block stored in ES
         const result = await this._elasticService.documentSearch(ElasticIndexes.INDEX_BLOCKS, {
             size: 1,
-            sort: {"height": "desc"}
+            sort: { height: 'desc' },
         });
 
         if (!result || !result.body || !result.body.hits || !result.body.hits.hits || result.body.hits.hits.length !== 1) {
@@ -51,10 +41,10 @@ export default class BlocksController {
         const source = lastBlock._source;
 
         // Acquire the transactions
-        if(source && source.transactions && source.transactions.length > 0) {
+        if (source && source.transactions && source.transactions.length > 0) {
             for (const [k, v] of lastBlock.transactions.entries()) {
                 const tx = await this._elasticService.documentGet(ElasticIndexes.INDEX_TRANSACTIONS, v);
-                source.transactions[k] = tx.body._source
+                source.transactions[k] = tx.body._source;
             }
         }
 
@@ -75,10 +65,10 @@ export default class BlocksController {
         const source = result.body._source;
 
         // Acquire the transactions
-        if(source && source.transactions && source.transactions.length > 0) {
+        if (source && source.transactions && source.transactions.length > 0) {
             for (const [k, v] of source.transactions.entries()) {
                 const tx = await this._elasticService.documentGet(ElasticIndexes.INDEX_TRANSACTIONS, v);
-                source.transactions[k] = tx.body._source
+                source.transactions[k] = tx.body._source;
             }
         }
 
