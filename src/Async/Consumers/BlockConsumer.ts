@@ -28,7 +28,7 @@ export default class BlockConsumer {
     @Process(QueueJobs.INGEST_BLOCK)
     async ingestBlock(job: Job<{ block_height: number; num_txs: number }>) {
         // Only ingest if allowed by the configuration
-        if (config.isBlockIngestionEnabled() === false) {
+        if (config.isIngestEnabled() === false) {
             return;
         }
 
@@ -60,7 +60,7 @@ export default class BlockConsumer {
                 payload.transactions.push(txHash);
 
                 // Only ingest if allowed by the configuration
-                if (config.getValue<boolean>('INGEST_BLOCKS_ENABLED')) {
+                if (config.isIngestEnabled()) {
                     this._queue
                         .add(QueueJobs.INGEST_TRANSACTION, {
                             transaction_hash: txHash,

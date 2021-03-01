@@ -15,7 +15,7 @@ export default class NotificationConsumer {
 
     @Process(QueueJobs.NOTIFICATION_SOCKET)
     async dispatchNotificationSocket(job: Job<{ channel: string; event: string; data: string }>) {
-        if (config.isNotificationDispatchEnabled() == false) {
+        if (config.isPushNotifEnabled() == false) {
             return;
         }
 

@@ -17,18 +17,16 @@ export default class BlockScheduler {
     @Cron(CronExpression.EVERY_10_SECONDS)
     async ingest() {
         // Only ingest if allowed by the configuration
-        if (config.isBlockIngestionEnabled() == false) {
+        if (config.isIngestEnabled() == false) {
             return;
         }
 
-        // Acquire the ingestion length from config
-        const ingestLength = config.getBlockIngestionMaxLength();
-
-        // We get the last block stored in ES
+        // We query the most recent block stored in ES
         const lastBlock = await this._elasticService.documentSearch(ElasticIndexes.INDEX_BLOCKS, {
             size: 1,
             sort: { height: 'desc' },
         });
+
         // Ensure we have all the required data
         let lastBlockHeight = 0;
         try {
@@ -36,7 +34,7 @@ export default class BlockScheduler {
                 lastBlockHeight = lastBlock.body.hits.hits[0]['_source']['height'];
             }
         } catch (error) {
-            this._logger.error(`Failed to acquire the last blocked stored in ES`);
+            this._logger.error(`Failed to acquire the most recent block stored in ES`);
             return;
         }
         this._logger.log(`Last block height is ${lastBlockHeight}`);
@@ -58,7 +56,7 @@ export default class BlockScheduler {
 
         // We cap the amount of blocks to proceed on that batch (avoiding race condition)
         let blocksToProceed: number = currentBlockHeight - lastBlockHeight;
-        blocksToProceed = blocksToProceed > ingestLength ? ingestLength : blocksToProceed;
+        blocksToProceed = blocksToProceed > 19 ? 19 : blocksToProceed;
 
         // Prepare required boundaries (required to have leading + to avoid concatenation)
         const start: number = lastBlockHeight + 1;

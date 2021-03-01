@@ -1,10 +1,10 @@
+import * as redisStore from 'cache-manager-redis-store';
+
 import { Logger, Module, OnModuleInit, CacheModule } from '@nestjs/common';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { BullModule } from '@nestjs/bull';
 import { TerminusModule } from '@nestjs/terminus';
-
-import * as redisStore from 'cache-manager-redis-store';
 
 import { AccountsController, BlocksController, CoreController, HealthController, TransactionsController, ValidatorsController } from '@app/Http/Controllers';
 
@@ -27,15 +27,15 @@ import { Gateway } from '@app/Websocket';
         BullModule.registerQueue({
             name: Queues.QUEUE_DEFAULT,
             redis: {
-                host: config.getValue<string>('REDIS_HOST', true),
-                port: config.getValue<number>('REDIS_PORT', true),
+                host: config.getRedisHost(),
+                port: config.getRedisPort(),
             },
-            prefix: config.getMode(),
+            prefix: config.getRedisPrefix(),
         }),
         CacheModule.register({
             store: redisStore,
-            host: config.getValue<string>('REDIS_HOST', true),
-            port: config.getValue<number>('REDIS_PORT', true),
+            host: config.getRedisHost(),
+            port: config.getRedisPort(),
             ttl: 60,
             max: 100,
         }),
@@ -62,9 +62,8 @@ export class AppModule implements OnModuleInit {
 
     onModuleInit(): any {
         // Log out
-        const blocksIngestEnabled = config.isBlockIngestionEnabled() ? 'enabled' : 'disabled';
-        const transactionsIngestEnabled = config.isTransactionsIngestionEnabled() ? 'enabled' : 'disabled';
-        this._logger.log(`AppModule blocks ingestion ${blocksIngestEnabled} and transactions ingestion ${transactionsIngestEnabled} (${config.getBlockIngestionMaxLength()})`);
+        const ingestEnabled = config.isIngestEnabled() ? 'enabled' : 'disabled';
+        this._logger.log(`AppModule ingestion: ${ingestEnabled}`);
 
         // Init the blocks index
         this._elasticService.indexExists(ElasticIndexes.INDEX_BLOCKS).then(async exists => {

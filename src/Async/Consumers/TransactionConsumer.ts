@@ -41,7 +41,7 @@ export default class TransactionConsumer {
     @Process(QueueJobs.INGEST_TRANSACTION)
     async ingestTransaction(job: Job<{ transaction_hash: string }>) {
         // Only ingest if allowed by the configuration
-        if (config.isTransactionsIngestionEnabled() === false) {
+        if (config.isIngestEnabled() === false) {
             return;
         }
 

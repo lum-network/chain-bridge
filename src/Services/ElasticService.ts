@@ -11,7 +11,7 @@ export default class ElasticService {
 
     constructor() {
         this._client = new Client({
-            node: `http://${config.getValue<string>('ELASTICSEARCH_HOST')}:${config.getValue<number>('ELASTICSEARCH_PORT')}`,
+            node: `http://${config.getElasticSearchHost()}:${config.getElasticSearchPort()}`,
         });
     }
 
