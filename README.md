@@ -28,34 +28,26 @@ MODE=DEV
 INGEST_BLOCKS_ENABLED=false
 INGEST_BLOCKS_LENGTH=19
 INGEST_TRANSACTIONS_ENABLED=false
-PUSHER_APP_ID=825937
-PUSHER_KEY=TO_REPLACE
-PUSHER_SECRET=TO_REPLACE
 ```
 
 If you don't know what these params mean, leave them like this, they are preconfigured.
 
 ## Running the required architecture
-The best option is to mirror remote services, type the following commands each in separate terminal.
-
-You should see a bunch of logs, meaning that you are ready for the next step.
-
-If you see any error, the pod name is probably outdated. Please do a `kubectl get pods` in order to get the correct naming.
+The project introduce a docker compose file. You can run it and it will bootstrap the required services.
 
 ```bash
-$ kubectl port-forward chain-redis-59c864c46b-pdrxx 6379:6379
-$ kubectl port-forward chain-elasticsearch-74cd4b666-hbpx6 9200:9200
+docker-compose -f docker-compose.yml up
 ```
 
 ## Running the app
 
 ```bash
-# development
-$ npm run start
+# development (watch mode)
+$ yarn start:dev
 
-# watch mode
-$ npm run start:dev
+# development (normal mode)
+$ yarn start
 
 # production mode
-$ npm run start:prod
+$ yarn start:prod
 ```
