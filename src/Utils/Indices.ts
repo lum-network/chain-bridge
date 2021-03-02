@@ -3,16 +3,13 @@ export const IndexBlocksMapping = {
         properties: {
             chain_id: { type: 'keyword' },
             hash: { type: 'keyword' },
-            height: { type: 'double' },
-            dispatched_at: {
-                type: 'date',
-                format: 'yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis',
-            },
-            num_txs: { type: 'double' },
-            total_txs: { type: 'double' },
+            height: { type: 'integer' },
+            time: { type: 'date' },
+            tx_count: { type: 'integer' },
+            tx_hashes: { type: 'keyword' },
             proposer_address: { type: 'keyword' },
-            raw: { type: 'text' },
-            transactions: { type: 'text' },
+            operator_address: { type: 'keyword' },
+            raw_block: { type: 'object' },
         },
     },
 };
@@ -20,10 +17,10 @@ export const IndexBlocksMapping = {
 export const IndexValidatorsMapping = {
     mappings: {
         properties: {
-            address_consensus: { type: 'keyword' },
-            address_consensus_pub: { type: 'text' },
-            address_operator: { type: 'keyword' },
-            address_operator_pub: { type: 'text' },
+            proposer_address: { type: 'keyword' },
+            consensus_address: { type: 'keyword' },
+            consensus_pubkey: { type: 'keyword' },
+            operator_address: { type: 'keyword' },
         },
     },
 };
@@ -31,15 +28,30 @@ export const IndexValidatorsMapping = {
 export const IndexTransactionsMapping = {
     mappings: {
         properties: {
-            height: { type: 'double' },
-            txhash: { type: 'keyword' },
-            raw_log: { type: 'text' },
-            gas_wanted: { type: 'double' },
-            gas_used: { type: 'double' },
-            dispatched_at: {
-                type: 'date',
-                format: 'yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis',
+            hash: { type: 'keyword' },
+            height: { type: 'integer' },
+            time: { type: 'date' },
+            proposer_address: { type: 'keyword' },
+            operator_address: { type: 'keyword' },
+            block_hash: { type: 'keyword' },
+            success: { type: 'boolean' },
+            code: { type: 'integer' },
+            fees: {
+                type: 'object',
+                properties: {
+                    denom: { type: 'keyword' },
+                    amount: { type: 'double' },
+                },
             },
+            gas_wanted: { type: 'integer' },
+            gas_used: { type: 'integer' },
+            addresses: { type: 'keyword' },
+            memo: { type: 'keyword' },
+            messages: { type: 'object' },
+            raw_logs: { type: 'object' },
+            raw_events: { type: 'object' },
+            raw_tx: { type: 'object' },
+            raw_tx_data: { type: 'object' },
         },
     },
 };

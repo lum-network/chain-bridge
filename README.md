@@ -1,3 +1,7 @@
+# Lum Network - Chain Bridge
+
+Backend service to access the Lum Network and search among blocks and transactions using Elasticsearch.
+
 ## Description
 
 Backend for Sandblock's blockchain explorer.

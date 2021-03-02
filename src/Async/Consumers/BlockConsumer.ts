@@ -1,13 +1,13 @@
-import { Logger } from '@nestjs/common';
-
-import { InjectQueue, Process, Processor } from '@nestjs/bull';
+import moment from 'moment';
 import { Job, Queue } from 'bull';
+import { Logger } from '@nestjs/common';
+import { InjectQueue, Process, Processor } from '@nestjs/bull';
+import { LumUtils, LumRegistry } from '@lum-network/sdk-javascript';
 
 import { ElasticIndexes, NotificationChannels, NotificationEvents, QueueJobs, Queues } from '@app/Utils/Constants';
-import { BlockchainService, ElasticService } from '@app/Services';
+import { BlockDocument, TransactionDocument } from '@app/Utils/Models';
+import { LumNetworkService, ElasticService } from '@app/Services';
 
-import * as utils from 'sandblock-chain-sdk-js/dist/utils';
-import moment from 'moment';
 import { config } from '@app/Utils/Config';
 
 @Processor(Queues.QUEUE_DEFAULT)
@@ -16,76 +16,120 @@ export default class BlockConsumer {
 
     constructor(@InjectQueue(Queues.QUEUE_DEFAULT) private readonly _queue: Queue, private readonly _elasticService: ElasticService) {}
 
-    transformBlockProposerAddress = async (proposer_address: string): Promise<string> => {
-        const encodedAddress = utils.encodeAddress(proposer_address, 'sandvalcons').toString(); //TODO: prefix in config
-        const validator = await this._elasticService.documentGet(ElasticIndexes.INDEX_VALIDATORS, encodedAddress);
-        if (validator && validator.body && validator.body.found) {
-            return validator.body['_source']['address_operator'];
-        }
-        return proposer_address;
-    };
-
     @Process(QueueJobs.INGEST_BLOCK)
-    async ingestBlock(job: Job<{ block_height: number; num_txs: number }>) {
+    async ingestBlock(job: Job<{ blockHeight: number }>) {
         // Only ingest if allowed by the configuration
-        if (config.isBlockIngestionEnabled() === false) {
+        if (config.isIngestEnabled() === false) {
             return;
         }
 
-        // Get block from chain
-        const block = await BlockchainService.getInstance()
-            .getClient()
-            .getBlockAtHeightLive(job.data.block_height);
-        if (!block) {
-            this._logger.error(`Failed to acquire block at height ${job.data.block_height}`);
-            return;
-        }
+        try {
+            this._logger.debug(`Ingesting block ${job.data.blockHeight} (attempt ${job.attemptsMade})`);
 
-        const payload = {
-            chain_id: block.block.header.chain_id,
-            hash: block.block_id.hash,
-            height: parseInt(block.block.header.height),
-            dispatched_at: moment(block.block.header.time).format('yyyy-MM-DD HH:mm:ss'),
-            num_txs: job.data.num_txs,
-            total_txs: block && block.block && block.block.data && block.block.data.txs ? block.block.data.txs.length : 0,
-            proposer_address: await this.transformBlockProposerAddress(block.block.header.proposer_address),
-            raw: JSON.stringify(block),
-            transactions: [],
-        };
+            // Get singleton lum client
+            const lumClt = await LumNetworkService.getClient();
 
-        // If we have transaction, we append to the payload the decoded txHash to allow further search of it
-        if (payload.total_txs > 0) {
-            for (const tx of block.block.data.txs) {
-                const txHash = utils.decodeTransactionHash(tx);
-                payload.transactions.push(txHash);
-
-                // Only ingest if allowed by the configuration
-                if (config.getValue<boolean>('INGEST_BLOCKS_ENABLED')) {
-                    this._queue
-                        .add(QueueJobs.INGEST_TRANSACTION, {
-                            transaction_hash: txHash,
-                        })
-                        .finally(() => null);
-                }
+            // Get block data
+            const block = await lumClt.getBlock(job.data.blockHeight);
+            // Get the operator address
+            let operatorAddress: string | undefined = undefined;
+            try {
+                const validatorDoc = await this._elasticService.documentGet(ElasticIndexes.INDEX_VALIDATORS, LumUtils.toHex(block.block.header.proposerAddress).toUpperCase());
+                operatorAddress = validatorDoc && validatorDoc.body && validatorDoc.body._source && validatorDoc.body._source.operator_address;
+            } catch (error) {
+                throw new Error(`Failed to find validator address, exiting for retry (${error})`);
             }
-        }
 
-        // Ingest or update (allow to relaunch the ingest from scratch to ensure we store the correct data)
-        if ((await this._elasticService.documentExists(ElasticIndexes.INDEX_BLOCKS, payload.height)) === false) {
-            await this._elasticService.documentCreate(ElasticIndexes.INDEX_BLOCKS, payload.height, payload);
-            this._logger.log(`Block #${payload.height} ingested`);
+            // Format block data
+            const blockDoc: BlockDocument = {
+                chain_id: block.block.header.chainId,
+                hash: LumUtils.toHex(block.blockId.hash).toUpperCase(),
+                height: block.block.header.height,
+                time: moment(block.block.header.time as Date).toISOString(),
+                tx_count: block.block.txs.length,
+                tx_hashes: block.block.txs.map(tx => LumUtils.toHex(LumUtils.sha256(tx)).toUpperCase()),
+                proposer_address: LumUtils.toHex(block.block.header.proposerAddress).toUpperCase(),
+                operator_address: operatorAddress,
+                raw_block: LumUtils.toJSON(block),
+            };
+
+            // Fetch and format transactions data
+            const getFormattedTx = async (rawTx: Uint8Array): Promise<TransactionDocument> => {
+                const tx = await lumClt.getTx(LumUtils.sha256(rawTx));
+                const txData = LumRegistry.decodeTx(tx.tx);
+                const logs = LumUtils.parseRawLogs(tx.result.log);
+                const res: TransactionDocument = {
+                    hash: LumUtils.toHex(tx.hash).toUpperCase(),
+                    height: tx.height,
+                    time: blockDoc.time,
+                    block_hash: blockDoc.hash,
+                    proposer_address: blockDoc.proposer_address,
+                    operator_address: blockDoc.operator_address,
+                    success: tx.result.code === 0 && !!tx.result.log,
+                    code: tx.result.code,
+                    fees: txData.authInfo.fee.amount.map(coin => {
+                        return { denom: coin.denom, amount: parseFloat(coin.amount) };
+                    }),
+                    addresses: [],
+                    // TODO: add computed gas fields once made available by the SDK
+                    gas_wanted: 0, // tx.result.gasWanted,
+                    gas_used: 0, // tx.result.gasUsed,
+                    memo: txData.body.memo,
+                    messages: txData.body.messages.map(msg => {
+                        return { typeUrl: msg.typeUrl, value: LumUtils.toJSON(LumRegistry.decode(msg)) };
+                    }),
+                    raw_logs: logs as any[],
+                    raw_events: tx.result.events.map(ev => LumUtils.toJSON(ev)),
+                    raw_tx: LumUtils.toJSON(tx),
+                    raw_tx_data: LumUtils.toJSON(txData),
+                };
+
+                for (let i = 0; i < logs.length; i++) {
+                    const log = logs[i];
+                    for (let e = 0; e < log.events.length; e++) {
+                        const ev = log.events[e];
+                        for (let a = 0; a < ev.attributes.length; a++) {
+                            const attr = ev.attributes[a];
+                            if (attr.key === 'sender' || attr.key === 'recipient' || attr.key === 'validator') {
+                                if (!res.addresses.includes(attr.value)) {
+                                    // Unique addresses
+                                    res.addresses.push(attr.value);
+                                }
+                            } else if (attr.key === 'amount') {
+                                const amount = parseFloat(attr.value);
+                                const denom = attr.value.substr(amount.toString().length);
+                                if (!res.amount || res.amount.amount < amount) {
+                                    // Only keep the largest amount (this is definitely an arbitrary choice)
+                                    res.amount = { amount, denom };
+                                }
+                            }
+                        }
+                    }
+                }
+                return res;
+            };
+            const txDocs = await Promise.all(block.block.txs.map(getFormattedTx));
+
+            // Ingest block and transactions into elasticsearch
+            const bulkPayload: any[] = [{ index: { _index: ElasticIndexes.INDEX_BLOCKS, _id: blockDoc.height } }, blockDoc];
+            for (let i = 0; i < txDocs.length; i++) {
+                bulkPayload.push({ index: { _index: ElasticIndexes.INDEX_TRANSACTIONS, _id: txDocs[i].hash } });
+                bulkPayload.push(txDocs[i]);
+            }
+            await this._elasticService.bulkUpdate({ body: bulkPayload });
 
             // Dispatch notification on websockets for frontend
             this._queue
                 .add(QueueJobs.NOTIFICATION_SOCKET, {
                     channel: NotificationChannels.CHANNEL_BLOCKS,
                     event: NotificationEvents.EVENT_NEW_BLOCK,
-                    data: payload,
+                    data: blockDoc,
                 })
                 .finally(() => null);
-        } else {
-            await this._elasticService.documentUpdate(ElasticIndexes.INDEX_BLOCKS, payload.height, payload);
-            this._logger.log(`Block #${payload.height} updated`);
+        } catch (error) {
+            this._logger.error(`Failed to ingest block ${job.data.blockHeight}: ${error}`);
+            // Throw error to enforce retry strategy
+            throw error;
         }
     }
 }

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-
 import { Client } from '@elastic/elasticsearch';
+import { Bulk } from '@elastic/elasticsearch/api/requestParams'
 
 import { ElasticIndexes } from '@app/Utils/Constants';
 import { config } from '@app/Utils/Config';
@@ -11,7 +11,7 @@ export default class ElasticService {
 
     constructor() {
         this._client = new Client({
-            node: `http://${config.getValue<string>('ELASTICSEARCH_HOST')}:${config.getValue<number>('ELASTICSEARCH_PORT')}`,
+            node: `http://${config.getElasticSearchHost()}:${config.getElasticSearchPort()}`,
         });
     }
 
@@ -52,6 +52,10 @@ export default class ElasticService {
             body: { doc: body },
         });
     };
+
+    public bulkUpdate = (params: Bulk) => {
+        return this._client.bulk(params);
+    }
 
     public indexCreate = (index: ElasticIndexes | string, body: any) => {
         return this._client.indices.create({
