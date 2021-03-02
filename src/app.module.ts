@@ -2,14 +2,14 @@ import * as redisStore from 'cache-manager-redis-store';
 
 import { Logger, Module, OnModuleInit, CacheModule } from '@nestjs/common';
 import { APP_INTERCEPTOR } from '@nestjs/core';
-import { ScheduleModule } from '@nestjs/schedule';
+import { ScheduleModule, SchedulerRegistry } from '@nestjs/schedule';
 import { BullModule } from '@nestjs/bull';
 import { TerminusModule } from '@nestjs/terminus';
 
 import { AccountsController, BlocksController, CoreController, HealthController, TransactionsController, ValidatorsController } from '@app/Http/Controllers';
 
 import { BlockScheduler, ValidatorScheduler } from '@app/Async/Schedulers';
-import { BlockConsumer, NotificationConsumer, TransactionConsumer } from '@app/Async/Consumers';
+import { BlockConsumer, NotificationConsumer } from '@app/Async/Consumers';
 
 import { ElasticService } from '@app/Services';
 import { ElasticIndexes, Queues } from '@app/Utils/Constants';
@@ -46,7 +46,6 @@ import { Gateway } from '@app/Websocket';
     providers: [
         BlockConsumer,
         NotificationConsumer,
-        TransactionConsumer,
         BlockScheduler,
         ValidatorScheduler,
         ElasticsearchIndicator,
@@ -58,9 +57,9 @@ import { Gateway } from '@app/Websocket';
 export class AppModule implements OnModuleInit {
     private readonly _logger: Logger = new Logger(AppModule.name);
 
-    constructor(private readonly _elasticService: ElasticService) {}
+    constructor(private readonly _elasticService: ElasticService, private readonly _scheduleRegistry: SchedulerRegistry) {}
 
-    onModuleInit(): any {
+    onModuleInit() {
         // Log out
         const ingestEnabled = config.isIngestEnabled() ? 'enabled' : 'disabled';
         this._logger.log(`AppModule ingestion: ${ingestEnabled}`);
@@ -88,5 +87,10 @@ export class AppModule implements OnModuleInit {
                 this._logger.debug('Created index transactions');
             }
         });
+    }
+
+    onApplicationBootstrap() {
+        // Force run blocks validators and block backward synchronization at startup
+        // const job = this._scheduleRegistry.getCronJob('validators_live_ingest');
     }
 }
