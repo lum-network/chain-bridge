@@ -25,7 +25,7 @@ import { IndexBlocksMapping, IndexTransactionsMapping, IndexValidatorsMapping } 
 
 import { config } from '@app/Utils/Config';
 
-import { ElasticsearchIndicator } from '@app/Http/Indicators';
+import { ElasticsearchIndicator, LumNetworkIndicator } from '@app/Http/Indicators';
 import { ResponseInterceptor } from '@app/Http/Interceptors';
 import { Gateway } from '@app/Websocket';
 
@@ -55,7 +55,7 @@ import { Gateway } from '@app/Websocket';
         NotificationConsumer,
         BlockScheduler,
         ValidatorScheduler,
-        ElasticsearchIndicator,
+        ElasticsearchIndicator, LumNetworkIndicator,
         Gateway,
         ElasticService,
         LumNetworkService,
