@@ -6,12 +6,19 @@ import { ScheduleModule, SchedulerRegistry } from '@nestjs/schedule';
 import { BullModule } from '@nestjs/bull';
 import { TerminusModule } from '@nestjs/terminus';
 
-import { AccountsController, BlocksController, CoreController, HealthController, TransactionsController, ValidatorsController } from '@app/Http/Controllers';
+import {
+    AccountsController,
+    BlocksController,
+    CoreController,
+    HealthController,
+    TransactionsController,
+    ValidatorsController,
+} from '@app/Http/Controllers';
 
 import { BlockScheduler, ValidatorScheduler } from '@app/Async/Schedulers';
 import { BlockConsumer, NotificationConsumer } from '@app/Async/Consumers';
 
-import { ElasticService } from '@app/Services';
+import { ElasticService, LumNetworkService } from '@app/Services';
 import { ElasticIndexes, Queues } from '@app/Utils/Constants';
 
 import { IndexBlocksMapping, IndexTransactionsMapping, IndexValidatorsMapping } from '@app/Utils/Indices';
@@ -51,13 +58,15 @@ import { Gateway } from '@app/Websocket';
         ElasticsearchIndicator,
         Gateway,
         ElasticService,
+        LumNetworkService,
         { provide: APP_INTERCEPTOR, useClass: ResponseInterceptor },
     ],
 })
 export class AppModule implements OnModuleInit {
     private readonly _logger: Logger = new Logger(AppModule.name);
 
-    constructor(private readonly _elasticService: ElasticService, private readonly _scheduleRegistry: SchedulerRegistry) {}
+    constructor(private readonly _elasticService: ElasticService, private readonly _scheduleRegistry: SchedulerRegistry) {
+    }
 
     onModuleInit() {
         // Log out
@@ -87,10 +96,5 @@ export class AppModule implements OnModuleInit {
                 this._logger.debug('Created index transactions');
             }
         });
-    }
-
-    onApplicationBootstrap() {
-        // Force run blocks validators and block backward synchronization at startup
-        // const job = this._scheduleRegistry.getCronJob('validators_live_ingest');
     }
 }

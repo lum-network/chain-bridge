@@ -1,7 +1,10 @@
-import moment from 'moment';
-import { Job, Queue } from 'bull';
 import { Logger } from '@nestjs/common';
+
+import { Job, Queue } from 'bull';
 import { InjectQueue, Process, Processor } from '@nestjs/bull';
+
+import moment from 'moment';
+
 import { LumUtils, LumRegistry } from '@lum-network/sdk-javascript';
 
 import { ElasticIndexes, NotificationChannels, NotificationEvents, QueueJobs, Queues } from '@app/Utils/Constants';
@@ -14,7 +17,12 @@ import { config } from '@app/Utils/Config';
 export default class BlockConsumer {
     private readonly _logger: Logger = new Logger(BlockConsumer.name);
 
-    constructor(@InjectQueue(Queues.QUEUE_DEFAULT) private readonly _queue: Queue, private readonly _elasticService: ElasticService) {}
+    constructor(
+        @InjectQueue(Queues.QUEUE_DEFAULT) private readonly _queue: Queue,
+        private readonly _elasticService: ElasticService,
+        private readonly _lumNetworkService: LumNetworkService,
+    ) {
+    }
 
     @Process(QueueJobs.INGEST_BLOCK)
     async ingestBlock(job: Job<{ blockHeight: number }>) {
@@ -27,10 +35,11 @@ export default class BlockConsumer {
             this._logger.debug(`Ingesting block ${job.data.blockHeight} (attempt ${job.attemptsMade})`);
 
             // Get singleton lum client
-            const lumClt = await LumNetworkService.getClient();
+            const lumClt = this._lumNetworkService.getClient();
 
             // Get block data
             const block = await lumClt.getBlock(job.data.blockHeight);
+
             // Get the operator address
             let operatorAddress: string | undefined = undefined;
             try {
@@ -55,9 +64,16 @@ export default class BlockConsumer {
 
             // Fetch and format transactions data
             const getFormattedTx = async (rawTx: Uint8Array): Promise<TransactionDocument> => {
+                // Acquire raw TX
                 const tx = await lumClt.getTx(LumUtils.sha256(rawTx));
+
+                // Decode TX to human readable format
                 const txData = LumRegistry.decodeTx(tx.tx);
+
+                // Parse the raw logs
                 const logs = LumUtils.parseRawLogs(tx.result.log);
+
+                // Build the transaction document from information
                 const res: TransactionDocument = {
                     hash: LumUtils.toHex(tx.hash).toUpperCase(),
                     height: tx.height,
@@ -84,12 +100,9 @@ export default class BlockConsumer {
                     raw_tx_data: LumUtils.toJSON(txData),
                 };
 
-                for (let i = 0; i < logs.length; i++) {
-                    const log = logs[i];
-                    for (let e = 0; e < log.events.length; e++) {
-                        const ev = log.events[e];
-                        for (let a = 0; a < ev.attributes.length; a++) {
-                            const attr = ev.attributes[a];
+                for (const log of logs) {
+                    for (const ev of log.events) {
+                        for (const attr of ev.attributes) {
                             if (attr.key === 'sender' || attr.key === 'recipient' || attr.key === 'validator') {
                                 if (!res.addresses.includes(attr.value)) {
                                     // Unique addresses
@@ -111,21 +124,24 @@ export default class BlockConsumer {
             const txDocs = await Promise.all(block.block.txs.map(getFormattedTx));
 
             // Ingest block and transactions into elasticsearch
-            const bulkPayload: any[] = [{ index: { _index: ElasticIndexes.INDEX_BLOCKS, _id: blockDoc.height } }, blockDoc];
-            for (let i = 0; i < txDocs.length; i++) {
-                bulkPayload.push({ index: { _index: ElasticIndexes.INDEX_TRANSACTIONS, _id: txDocs[i].hash } });
-                bulkPayload.push(txDocs[i]);
+            const bulkPayload: any[] = [{
+                index: {
+                    _index: ElasticIndexes.INDEX_BLOCKS,
+                    _id: blockDoc.height,
+                },
+            }, blockDoc];
+            for (const txDoc of txDocs) {
+                bulkPayload.push({ index: { _index: ElasticIndexes.INDEX_TRANSACTIONS, _id: txDoc.hash } });
+                bulkPayload.push(txDoc);
             }
             await this._elasticService.bulkUpdate({ body: bulkPayload });
 
             // Dispatch notification on websockets for frontend
-            this._queue
-                .add(QueueJobs.NOTIFICATION_SOCKET, {
-                    channel: NotificationChannels.CHANNEL_BLOCKS,
-                    event: NotificationEvents.EVENT_NEW_BLOCK,
-                    data: blockDoc,
-                })
-                .finally(() => null);
+            this._queue.add(QueueJobs.NOTIFICATION_SOCKET, {
+                channel: NotificationChannels.CHANNEL_BLOCKS,
+                event: NotificationEvents.EVENT_NEW_BLOCK,
+                data: blockDoc,
+            }).finally(() => null);
         } catch (error) {
             this._logger.error(`Failed to ingest block ${job.data.blockHeight}: ${error}`);
             // Throw error to enforce retry strategy

@@ -1,15 +1,19 @@
+import { Injectable } from '@nestjs/common';
 import { LumClient } from '@lum-network/sdk-javascript';
 
 import { config } from '@app/Utils/Config';
 
-let client: LumClient;
-
+@Injectable()
 export default class LumNetworkService {
-    public static getClient = async (): Promise<LumClient> => {
-        if (client) {
-            return client;
-        }
-        client = await LumClient.connect(config.getLumNetworkEndpoint());
-        return client;
+    private _client: LumClient;
+
+    constructor() {
+        LumClient.connect(config.getLumNetworkEndpoint()).then((client) => {
+            this._client = client;
+        });
+    }
+
+    getClient = (): LumClient => {
+        return this._client;
     };
 }

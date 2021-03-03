@@ -10,22 +10,26 @@ import { ElasticIndexes } from '@app/Utils/Constants';
 export default class ValidatorScheduler {
     private readonly _logger: Logger = new Logger(ValidatorScheduler.name);
 
-    constructor(private readonly _elasticService: ElasticService) {}
+    constructor(
+        private readonly _elasticService: ElasticService,
+        private readonly _lumNetworkService: LumNetworkService,
+    ) {
+    }
 
     @Cron(CronExpression.EVERY_MINUTE, { name: 'validators_live_ingest' })
     async liveIngest() {
         try {
             this._logger.debug(`Ingesting validators set`);
 
-            const clt = await LumNetworkService.getClient();
+            // Acquire lum network client
+            const clt = this._lumNetworkService.getClient();
 
             // Fetch tendermint validators
             const tmValidators = await clt.tmClient.validatorsAll();
 
             // Build validators list
             const validators: ValidatorDocument[] = [];
-            for (let i = 0; i < tmValidators.validators.length; i++) {
-                const val = tmValidators.validators[i];
+            for (const val of tmValidators.validators) {
                 validators.push({
                     proposer_address: LumUtils.toHex(val.address).toUpperCase(),
                     consensus_address: LumUtils.Bech32.encode(LumConstants.LumBech32PrefixConsAddr, val.address),
@@ -36,12 +40,11 @@ export default class ValidatorScheduler {
             // Go through all staking validators to match them with tendermint ones
             const statuses = ['BOND_STATUS_BONDED', 'BOND_STATUS_UNBONDED', 'BOND_STATUS_UNBONDING'];
             let page: Uint8Array | undefined = undefined;
-            for (let s = 0; s < statuses.length; s++) {
+            for (const s of statuses) {
                 page = undefined;
                 while (true) {
-                    const stakingValidators = await clt.queryClient.staking.unverified.validators(statuses[s] as any, page);
-                    for (let i = 0; i < stakingValidators.validators.length; i++) {
-                        const val = stakingValidators.validators[i];
+                    const stakingValidators = await clt.queryClient.staking.unverified.validators(s as any, page);
+                    for (const val of stakingValidators.validators) {
                         const pubKey = LumRegistry.decode(val.consensusPubkey) as LumTypes.PubKey;
                         const consensus_pubkey = LumUtils.Bech32.encode(LumConstants.LumBech32PrefixConsPub, pubKey.key);
                         // Find the tendermint validator and add the operator address to it
@@ -62,9 +65,14 @@ export default class ValidatorScheduler {
 
             // Save to elasticsearch
             const bulkPayload = [];
-            for (let v = 0; v < validators.length; v++) {
-                bulkPayload.push({ index: { _index: ElasticIndexes.INDEX_VALIDATORS, _id: validators[v].proposer_address } });
-                bulkPayload.push(validators[v]);
+            for (const v of validators) {
+                bulkPayload.push({
+                    index: {
+                        _index: ElasticIndexes.INDEX_VALIDATORS,
+                        _id: v.proposer_address,
+                    },
+                });
+                bulkPayload.push(v);
             }
             await this._elasticService.bulkUpdate({ body: bulkPayload });
         } catch (error) {

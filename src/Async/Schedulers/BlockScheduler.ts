@@ -12,7 +12,12 @@ import { config } from '@app/Utils/Config';
 export default class BlockScheduler {
     private _logger: Logger = new Logger(BlockScheduler.name);
 
-    constructor(@InjectQueue(Queues.QUEUE_DEFAULT) private readonly _queue: Queue, private readonly _elasticService: ElasticService) {}
+    constructor(
+        @InjectQueue(Queues.QUEUE_DEFAULT) private readonly _queue: Queue,
+        private readonly _elasticService: ElasticService,
+        private readonly _lumNetworkService: LumNetworkService,
+    ) {
+    }
 
     @Cron(CronExpression.EVERY_10_SECONDS, { name: 'blocks_live_ingest' })
     async liveIngest() {
@@ -23,23 +28,23 @@ export default class BlockScheduler {
 
         try {
             // Get singleton lum client
-            const lumClt = await LumNetworkService.getClient();
+            const lumClt = this._lumNetworkService.getClient();
+
             // Fetch the 20 last blocks
             const lastBlocks = await lumClt.tmClient.blockchain();
-            this._logger.debug(`Dispatching last 20 blocks for ingestion at height ${lastBlocks.lastHeight}`)
-            for (let i = 0; i < lastBlocks.blockMetas.length; i++) {
-                // Push each block into the ingest queue
-                const height = lastBlocks.blockMetas[i].header.height;
-                this._queue
-                    .add(QueueJobs.INGEST_BLOCK, {
-                        blockHeight: height,
-                    }, {
-                        jobId: height,
-                        attempts: 3,
-                        backoff: 60000,
-                    })
-                    .finally(() => null);
-            }
+            this._logger.debug(`Dispatching last 20 blocks for ingestion at height ${lastBlocks.lastHeight}`);
+
+            // For each block, dispatch the ingestion job to the queue
+            lastBlocks.blockMetas.forEach((meta) => {
+                const height = meta.header.height;
+                this._queue.add(QueueJobs.INGEST_BLOCK, {
+                    blockHeight: height,
+                }, {
+                    jobId: height,
+                    attempts: 3,
+                    backoff: 60000,
+                }).finally(() => null);
+            });
         } catch (error) {
             this._logger.error(`Failed to dispatch last blocks ingestion:`, error);
         }
