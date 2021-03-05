@@ -7,10 +7,6 @@ import { config } from '@app/Utils/Config';
 export default class LumNetworkService {
     private _client: LumClient = null;
 
-    constructor() {
-        this.initialise().finally(() => null);
-    }
-
     initialise = async () => {
         try {
             this._client = await LumClient.connect(config.getLumNetworkEndpoint());

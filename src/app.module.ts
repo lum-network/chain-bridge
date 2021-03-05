@@ -1,6 +1,6 @@
 import * as redisStore from 'cache-manager-redis-store';
 
-import { Logger, Module, OnModuleInit, CacheModule } from '@nestjs/common';
+import { Logger, Module, OnModuleInit, CacheModule, OnApplicationBootstrap } from '@nestjs/common';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { ScheduleModule, SchedulerRegistry } from '@nestjs/schedule';
 import { BullModule } from '@nestjs/bull';
@@ -62,7 +62,7 @@ import { Gateway } from '@app/Websocket';
         { provide: APP_INTERCEPTOR, useClass: ResponseInterceptor },
     ],
 })
-export class AppModule implements OnModuleInit {
+export class AppModule implements OnModuleInit, OnApplicationBootstrap {
     private readonly _logger: Logger = new Logger(AppModule.name);
 
     constructor(
@@ -72,12 +72,7 @@ export class AppModule implements OnModuleInit {
     ) {
     }
 
-    onModuleInit() {
-        // We first check lum network service
-        if (!this._lumNetworkService.isInitialized()) {
-            throw new Error(`Cannot initialize the Lum Network Service, exiting...`);
-        }
-
+    async onModuleInit() {
         // Log out
         const ingestEnabled = config.isIngestEnabled() ? 'enabled' : 'disabled';
         this._logger.log(`AppModule ingestion: ${ingestEnabled}`);
@@ -105,5 +100,15 @@ export class AppModule implements OnModuleInit {
                 this._logger.debug('Created index transactions');
             }
         });
+
+        // Make sure to initialize the lum network service
+        await this._lumNetworkService.initialise();
+    }
+
+    onApplicationBootstrap(): any {
+        // If we weren't able to initialize connection with Lum Network, exit the project
+        if (!this._lumNetworkService.isInitialized()) {
+            throw new Error(`Cannot initialize the Lum Network Service, exiting...`);
+        }
     }
 }
