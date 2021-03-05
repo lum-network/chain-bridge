@@ -2,64 +2,79 @@
 
 Backend service to access the Lum Network and search among blocks and transactions using Elasticsearch.
 
+This service is used as an API by the [Lum Network Explorer](https://explorer.lum.network).
+
 ## Description
 
-Backend for Sandblock's blockchain explorer.
+The service provides:
 
-Built on the great Nest.JS with ElasticSearch as database engine, and Redis for caching purposes.
+-   Rest API for serving content (ex: for explorer frontends)
+-   Automatic caching of http requests (default 60s TTL) through Redis
+-   Automatic blockchain data ingestion through async pipes (live ingestion as well as historical data ingestion)
+-   Easy capabilities of scaling according to load requirements
 
-It provides
-* Rest API for serving content to explorer frontends
-* Automatic caching of http requests (60s TTL) through Redis
-* Automatic blockchain ingestion through async pipes, running every 10s (and thus syncing the blocks emitted in the last 10s)
-* Easy capabilities of scaling
+## Deployment
 
-## Installation
+`TBD`
+
+## Development
+
+### Install dependencies
 
 ```bash
 $ yarn install
 ```
 
-## Configure the development environment
-You should have a .env file at the root level with the following entries
+### Configure the environment
+
+You should have a .env file at the root level with the following entries (and the values of your choice)
+
 ```bash
-ELASTICSEARCH_HOST=chain-elasticsearch
+LUM-NETWORK-ENDPOINT=https://node0.testnet.lum.network/rpc
+
+ELASTICSEARCH_HOST=127.0.0.1
 ELASTICSEARCH_PORT=9200
-REDIS_HOST=chain-redis
+
+REDIS_HOST=127.0.0.1
 REDIS_PORT=6379
-PORT=3000
-MODE=DEV
-INGEST_BLOCKS_ENABLED=false
-INGEST_BLOCKS_LENGTH=19
-INGEST_TRANSACTIONS_ENABLED=false
-PUSHER_APP_ID=825937
-PUSHER_KEY=TO_REPLACE
-PUSHER_SECRET=TO_REPLACE
+REDIS_PREFIX=lm-bridge
+
+API_ENABLED=true
+API_PORT=3000
+
+INGEST_ENABLED=true
+
+PUSH_NOTIF_ENABLED=true
 ```
 
 If you don't know what these params mean, leave them like this, they are preconfigured.
 
-## Running the required architecture
-The best option is to mirror remote services, type the following commands each in separate terminal.
+### Launch required third party services
 
-You should see a bunch of logs, meaning that you are ready for the next step.
+The following services are required to run the service:
+- Elasticsearch 7+
+- Redis 5+
+- Lum Network node (RPC endpoint)
 
-If you see any error, the pod name is probably outdated. Please do a `kubectl get pods` in order to get the correct naming.
+You can use the official Lum Network's testnet along the provided [docker-compose](./docker-compose.yml) file to run both Elasticsearch and Redis and get started in a minute:
 
 ```bash
-$ kubectl port-forward chain-redis-59c864c46b-pdrxx 6379:6379
-$ kubectl port-forward chain-elasticsearch-74cd4b666-hbpx6 9200:9200
+docker-compose up
 ```
 
-## Running the app
+### Running the app
+
+As soon as you start the service, it will start ingesting all new blocks every 10 seconds and emitting the associated push notifications. Those blocks will be almost instantly accessible from the provided API endpoints.
+
+The ingestion process for past blocks will only start after a couple minutes in order to let the live syncronization ingest its first data. Only missing blocks and some of their neighbors will be ingested, meaning that a simple restart of the service will not trigger a full re-sync but might trigger only a small re-sync for missing block ranges.
 
 ```bash
 # development
-$ npm run start
+$ yarn start
 
 # watch mode
-$ npm run start:dev
+$ yarn start:dev
 
 # production mode
-$ npm run start:prod
+$ yarn start:prod
 ```
