@@ -65,10 +65,19 @@ import { Gateway } from '@app/Websocket';
 export class AppModule implements OnModuleInit {
     private readonly _logger: Logger = new Logger(AppModule.name);
 
-    constructor(private readonly _elasticService: ElasticService, private readonly _scheduleRegistry: SchedulerRegistry) {
+    constructor(
+        private readonly _elasticService: ElasticService,
+        private readonly _scheduleRegistry: SchedulerRegistry,
+        private readonly _lumNetworkService: LumNetworkService,
+    ) {
     }
 
     onModuleInit() {
+        // We first check lum network service
+        if (!this._lumNetworkService.isInitialized()) {
+            throw new Error(`Cannot initialize the Lum Network Service, exiting...`);
+        }
+
         // Log out
         const ingestEnabled = config.isIngestEnabled() ? 'enabled' : 'disabled';
         this._logger.log(`AppModule ingestion: ${ingestEnabled}`);
