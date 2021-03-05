@@ -210,11 +210,19 @@ export default class BlockConsumer {
                 chainId: job.data.chainId,
                 fromBlock: r1[0],
                 toBlock: r1[1],
+            }, {
+                attempts: 5,
+                backoff: 60000,
+                jobId: `${job.data.chainId}-check-block-range-${r1[0]}-${r1[1]}-v${IngestionDocumentVersion}`,
             });
             await this._queue.add(QueueJobs.TRIGGER_VERIFY_BLOCKS_BACKWARD, {
                 chainId: job.data.chainId,
                 fromBlock: r2[0],
                 toBlock: r2[1],
+            }, {
+                attempts: 5,
+                backoff: 60000,
+                jobId: `${job.data.chainId}-check-block-range-${r2[0]}-${r2[1]}-v${IngestionDocumentVersion}`,
             });
         } else {
             this._logger.debug(`All blocks synced in this range, exiting job.`);
