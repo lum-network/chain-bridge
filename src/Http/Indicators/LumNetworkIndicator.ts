@@ -10,7 +10,7 @@ export default class LumNetworkIndicator extends HealthIndicator {
 
     async isHealthy(): Promise<HealthIndicatorResult> {
         try {
-            const clt = this._lumNetworkService.getClient();
+            const clt = await this._lumNetworkService.getClient();
             const chainId = await clt.getChainId();
             return this.getStatus('lumnetwork', chainId === 'lumnetwork');
         } catch (error) {
