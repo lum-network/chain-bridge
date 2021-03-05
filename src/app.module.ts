@@ -1,7 +1,7 @@
 import * as redisStore from 'cache-manager-redis-store';
 import { Queue } from 'bull';
 
-import { Logger, Module, OnModuleInit, OnApplicationBootstrap, CacheModule } from '@nestjs/common';
+import { Logger, Module, OnModuleInit, CacheModule, OnApplicationBootstrap } from '@nestjs/common';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { BullModule, InjectQueue } from '@nestjs/bull';
@@ -62,12 +62,7 @@ export class AppModule implements OnModuleInit, OnApplicationBootstrap {
 
     constructor(private readonly _elasticService: ElasticService, private readonly _lumNetworkService: LumNetworkService, @InjectQueue(Queues.QUEUE_DEFAULT) private readonly _queue: Queue) {}
 
-    onModuleInit() {
-        // We first check lum network service
-        if (!this._lumNetworkService.isInitialized()) {
-            throw new Error(`Cannot initialize the Lum Network Service, exiting...`);
-        }
-
+    async onModuleInit() {
         // Log out
         const ingestEnabled = config.isIngestEnabled() ? 'enabled' : 'disabled';
         this._logger.log(`AppModule ingestion: ${ingestEnabled}`);
@@ -95,9 +90,17 @@ export class AppModule implements OnModuleInit, OnApplicationBootstrap {
                 this._logger.debug('Created index transactions');
             }
         });
+
+        // Make sure to initialize the lum network service
+        await this._lumNetworkService.initialise();
     }
 
     async onApplicationBootstrap() {
+         // If we weren't able to initialize connection with Lum Network, exit the project
+         if (!this._lumNetworkService.isInitialized()) {
+            throw new Error(`Cannot initialize the Lum Network Service, exiting...`);
+        }
+
         // Trigger block backward ingestion at startup
         const lumClt = await this._lumNetworkService.getClient();
         const chainId = await lumClt.getChainId();
