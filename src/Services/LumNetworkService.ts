@@ -5,15 +5,20 @@ import { config } from '@app/Utils/Config';
 
 @Injectable()
 export default class LumNetworkService {
-    private _client: LumClient;
+    private _client: LumClient = null;
 
     constructor() {
-        LumClient.connect(config.getLumNetworkEndpoint()).then((client) => {
-            this._client = client;
-        });
+        this.initialise().finally(() => null);
     }
 
-    getClient = (): LumClient => {
+    initialise = async () => {
+        this._client = await LumClient.connect(config.getLumNetworkEndpoint());
+    };
+
+    getClient = async (): Promise<LumClient> => {
+        if (!this._client) {
+            await this.initialise();
+        }
         return this._client;
     };
 }

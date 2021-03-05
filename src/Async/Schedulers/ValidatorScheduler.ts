@@ -22,7 +22,7 @@ export default class ValidatorScheduler {
             this._logger.debug(`Ingesting validators set`);
 
             // Acquire lum network client
-            const clt = this._lumNetworkService.getClient();
+            const clt = await this._lumNetworkService.getClient();
 
             // Fetch tendermint validators
             const tmValidators = await clt.tmClient.validatorsAll();

@@ -28,7 +28,7 @@ export default class BlockScheduler {
 
         try {
             // Get singleton lum client
-            const lumClt = this._lumNetworkService.getClient();
+            const lumClt = await this._lumNetworkService.getClient();
 
             // Fetch the 20 last blocks
             const lastBlocks = await lumClt.tmClient.blockchain();

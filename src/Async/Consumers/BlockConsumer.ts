@@ -35,7 +35,7 @@ export default class BlockConsumer {
             this._logger.debug(`Ingesting block ${job.data.blockHeight} (attempt ${job.attemptsMade})`);
 
             // Get singleton lum client
-            const lumClt = this._lumNetworkService.getClient();
+            const lumClt = await this._lumNetworkService.getClient();
 
             // Get block data
             const block = await lumClt.getBlock(job.data.blockHeight);
