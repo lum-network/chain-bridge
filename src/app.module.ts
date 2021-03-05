@@ -60,9 +60,14 @@ import { Gateway } from '@app/Websocket';
 export class AppModule implements OnModuleInit, OnApplicationBootstrap {
     private readonly _logger: Logger = new Logger(AppModule.name);
 
-    constructor(private readonly _elasticService: ElasticService, @InjectQueue(Queues.QUEUE_DEFAULT) private readonly _queue: Queue, private readonly _lumNetworkService: LumNetworkService) {}
+    constructor(private readonly _elasticService: ElasticService, private readonly _lumNetworkService: LumNetworkService, @InjectQueue(Queues.QUEUE_DEFAULT) private readonly _queue: Queue) {}
 
     onModuleInit() {
+        // We first check lum network service
+        if (!this._lumNetworkService.isInitialized()) {
+            throw new Error(`Cannot initialize the Lum Network Service, exiting...`);
+        }
+
         // Log out
         const ingestEnabled = config.isIngestEnabled() ? 'enabled' : 'disabled';
         this._logger.log(`AppModule ingestion: ${ingestEnabled}`);
@@ -97,17 +102,16 @@ export class AppModule implements OnModuleInit, OnApplicationBootstrap {
         const lumClt = await this._lumNetworkService.getClient();
         const chainId = await lumClt.getChainId();
         const blockHeight = await lumClt.getBlockHeight();
-        await this._queue
-            .add(
-                QueueJobs.TRIGGER_VERIFY_BLOCKS_BACKWARD,
-                {
-                    chainId: chainId,
-                    fromBlock: 1,
-                    toBlock: blockHeight,
-                },
-                {
-                    delay: 120000, // Delayed by 2 minutes to avoid some eventual concurrency issues
-                },
-            );
+        await this._queue.add(
+            QueueJobs.TRIGGER_VERIFY_BLOCKS_BACKWARD,
+            {
+                chainId: chainId,
+                fromBlock: 1,
+                toBlock: blockHeight,
+            },
+            {
+                delay: 120000, // Delayed by 2 minutes to avoid some eventual concurrency issues
+            },
+        );
     }
 }
