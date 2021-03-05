@@ -1,25 +1,19 @@
 import * as redisStore from 'cache-manager-redis-store';
+import { Queue } from 'bull';
 
-import { Logger, Module, OnModuleInit, CacheModule } from '@nestjs/common';
+import { Logger, Module, OnModuleInit, OnApplicationBootstrap, CacheModule } from '@nestjs/common';
 import { APP_INTERCEPTOR } from '@nestjs/core';
-import { ScheduleModule, SchedulerRegistry } from '@nestjs/schedule';
-import { BullModule } from '@nestjs/bull';
+import { ScheduleModule } from '@nestjs/schedule';
+import { BullModule, InjectQueue } from '@nestjs/bull';
 import { TerminusModule } from '@nestjs/terminus';
 
-import {
-    AccountsController,
-    BlocksController,
-    CoreController,
-    HealthController,
-    TransactionsController,
-    ValidatorsController,
-} from '@app/Http/Controllers';
+import { AccountsController, BlocksController, CoreController, HealthController, TransactionsController, ValidatorsController } from '@app/Http/Controllers';
 
 import { BlockScheduler, ValidatorScheduler } from '@app/Async/Schedulers';
 import { BlockConsumer, NotificationConsumer } from '@app/Async/Consumers';
 
 import { ElasticService, LumNetworkService } from '@app/Services';
-import { ElasticIndexes, Queues } from '@app/Utils/Constants';
+import { ElasticIndexes, Queues, QueueJobs } from '@app/Utils/Constants';
 
 import { IndexBlocksMapping, IndexTransactionsMapping, IndexValidatorsMapping } from '@app/Utils/Indices';
 
@@ -55,18 +49,18 @@ import { Gateway } from '@app/Websocket';
         NotificationConsumer,
         BlockScheduler,
         ValidatorScheduler,
-        ElasticsearchIndicator, LumNetworkIndicator,
+        ElasticsearchIndicator,
+        LumNetworkIndicator,
         Gateway,
         ElasticService,
         LumNetworkService,
         { provide: APP_INTERCEPTOR, useClass: ResponseInterceptor },
     ],
 })
-export class AppModule implements OnModuleInit {
+export class AppModule implements OnModuleInit, OnApplicationBootstrap {
     private readonly _logger: Logger = new Logger(AppModule.name);
 
-    constructor(private readonly _elasticService: ElasticService, private readonly _scheduleRegistry: SchedulerRegistry) {
-    }
+    constructor(private readonly _elasticService: ElasticService, @InjectQueue(Queues.QUEUE_DEFAULT) private readonly _queue: Queue, private readonly _lumNetworkService: LumNetworkService) {}
 
     onModuleInit() {
         // Log out
@@ -96,5 +90,24 @@ export class AppModule implements OnModuleInit {
                 this._logger.debug('Created index transactions');
             }
         });
+    }
+
+    async onApplicationBootstrap() {
+        // Trigger block backward ingestion at startup
+        const lumClt = await this._lumNetworkService.getClient();
+        const chainId = await lumClt.getChainId();
+        const blockHeight = await lumClt.getBlockHeight();
+        await this._queue
+            .add(
+                QueueJobs.TRIGGER_VERIFY_BLOCKS_BACKWARD,
+                {
+                    chainId: chainId,
+                    fromBlock: 1,
+                    toBlock: blockHeight,
+                },
+                {
+                    delay: 120000, // Delayed by 2 minutes to avoid some eventual concurrency issues
+                },
+            );
     }
 }
