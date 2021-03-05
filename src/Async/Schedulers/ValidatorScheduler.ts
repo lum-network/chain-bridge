@@ -4,17 +4,13 @@ import { LumConstants, LumTypes, LumUtils, LumRegistry } from '@lum-network/sdk-
 
 import { LumNetworkService, ElasticService } from '@app/Services';
 import { ValidatorDocument } from '@app/Utils/Models';
-import { ElasticIndexes } from '@app/Utils/Constants';
+import { ElasticIndexes, IngestionDocumentVersion } from '@app/Utils/Constants';
 
 @Injectable()
 export default class ValidatorScheduler {
     private readonly _logger: Logger = new Logger(ValidatorScheduler.name);
 
-    constructor(
-        private readonly _elasticService: ElasticService,
-        private readonly _lumNetworkService: LumNetworkService,
-    ) {
-    }
+    constructor(private readonly _elasticService: ElasticService, private readonly _lumNetworkService: LumNetworkService) {}
 
     @Cron(CronExpression.EVERY_MINUTE, { name: 'validators_live_ingest' })
     async liveIngest() {
@@ -23,6 +19,7 @@ export default class ValidatorScheduler {
 
             // Acquire lum network client
             const clt = await this._lumNetworkService.getClient();
+            const chainId = await clt.getChainId();
 
             // Fetch tendermint validators
             const tmValidators = await clt.tmClient.validatorsAll();
@@ -31,6 +28,8 @@ export default class ValidatorScheduler {
             const validators: ValidatorDocument[] = [];
             for (const val of tmValidators.validators) {
                 validators.push({
+                    doc_version: IngestionDocumentVersion,
+                    chain_id: chainId,
                     proposer_address: LumUtils.toHex(val.address).toUpperCase(),
                     consensus_address: LumUtils.Bech32.encode(LumConstants.LumBech32PrefixConsAddr, val.address),
                     consensus_pubkey: LumUtils.Bech32.encode(LumConstants.LumBech32PrefixConsPub, val.pubkey.data),
@@ -51,6 +50,7 @@ export default class ValidatorScheduler {
                         for (let v = 0; v < validators.length; v++) {
                             if (validators[v].consensus_pubkey === consensus_pubkey) {
                                 validators[v].operator_address = val.operatorAddress;
+                                validators[v].account_address = LumUtils.Bech32.encode(LumConstants.LumBech32PrefixAccAddr, LumUtils.Bech32.decode(val.operatorAddress).data);
                                 break;
                             }
                         }

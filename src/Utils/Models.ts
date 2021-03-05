@@ -1,5 +1,9 @@
-export interface BlockDocument {
+export interface VersionedChainDocument {
     chain_id: string;
+    doc_version: number;
+}
+
+export interface BlockDocument extends VersionedChainDocument {
     hash: string;
     height: number;
     time: string;
@@ -10,7 +14,7 @@ export interface BlockDocument {
     raw_block: any;
 }
 
-export interface TransactionDocument {
+export interface TransactionDocument extends VersionedChainDocument {
     hash: string;
     height: number;
     time: string;
@@ -32,9 +36,10 @@ export interface TransactionDocument {
     raw_tx_data: any;
 }
 
-export interface ValidatorDocument {
+export interface ValidatorDocument extends VersionedChainDocument {
     proposer_address: string;
     consensus_address: string;
     consensus_pubkey: string;
     operator_address?: string;
+    account_address?: string;
 }

@@ -1,3 +1,10 @@
+/**
+ * Document version to store during ingestion
+ * This number should only be incremented in case one of the document model changes
+ * Incrementing this number will force re-ingest all data ingested with a previous versioning
+ */
+export const IngestionDocumentVersion = 1;
+
 export enum ElasticIndexes {
     INDEX_BLOCKS = 'blocks',
     INDEX_TRANSACTIONS = 'transactions',
@@ -10,7 +17,7 @@ export enum Queues {
 
 export enum QueueJobs {
     INGEST_BLOCK = 'ingest_block',
-    INGEST_TRANSACTION = 'ingest_transaction',
+    TRIGGER_VERIFY_BLOCKS_BACKWARD = 'trigger_verify_blocks_backward',
     NOTIFICATION_SOCKET = 'push_notification',
 }
 
