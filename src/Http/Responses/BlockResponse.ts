@@ -13,16 +13,19 @@ export default class BlockResponse {
     height: number;
 
     @Expose()
-    dispatched_at: Date;
+    time: Date;
 
     @Expose()
-    num_txs: number;
+    tx_count: number;
 
     @Expose()
     total_txs: number;
 
     @Expose()
     proposer_address: string;
+
+    @Expose()
+    operator_address: string;
 
     @Expose()
     @Type(() => TransactionResponse)
