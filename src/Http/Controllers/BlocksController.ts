@@ -63,7 +63,6 @@ export default class BlocksController {
             throw new InternalServerErrorException('failed_to_fetch_block');
         }
 
-        console.log(result)
         const source = result.body._source;
 
         // Acquire the transactions

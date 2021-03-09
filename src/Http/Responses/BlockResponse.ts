@@ -19,9 +19,6 @@ export default class BlockResponse {
     tx_count: number;
 
     @Expose()
-    total_txs: number;
-
-    @Expose()
     proposer_address: string;
 
     @Expose()

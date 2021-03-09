@@ -42,7 +42,7 @@ export default class AccountsController {
 
         // Inject transactions
         const result = await this._elasticService.documentSearch(ElasticIndexes.INDEX_TRANSACTIONS, {
-            sort: { dispatched_at: 'desc' },
+            sort: { time: 'desc' },
             query: {
                 bool: {
                     should: [

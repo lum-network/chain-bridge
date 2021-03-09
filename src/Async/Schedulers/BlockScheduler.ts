@@ -14,7 +14,7 @@ export default class BlockScheduler {
 
     constructor(@InjectQueue(Queues.QUEUE_DEFAULT) private readonly _queue: Queue, private readonly _lumNetworkService: LumNetworkService) {}
 
-    @Cron(CronExpression.EVERY_10_SECONDS, { name: 'blocks_live_ingest' })
+    @Cron(CronExpression.EVERY_5_SECONDS, { name: 'blocks_live_ingest' })
     async liveIngest() {
         // Only ingest if allowed by the configuration
         if (config.isIngestEnabled() == false) {

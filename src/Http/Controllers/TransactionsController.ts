@@ -12,10 +12,11 @@ export default class TransactionsController {
 
     @Get('')
     async fetch() {
+
         // We get the 50 last transactions stored in ES
         const result = await this._elasticService.documentSearch(ElasticIndexes.INDEX_TRANSACTIONS, {
             size: 50,
-            sort: { dispatched_at: 'desc' },
+            sort: { time: 'desc' },
             query: {
                 match_all: {},
             },
