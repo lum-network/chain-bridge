@@ -14,15 +14,12 @@ export default class ValidatorsController {
     @Get('')
     async fetch() {
         const lumClt = await this._lumNetworkService.getClient();
+        const {validators} = lumClt.queryClient.staking.unverified;
 
         // We acquire both bounded and unbonded (candidates) validators
-        const bonded = await lumClt.queryClient.staking.unverified.validators('BOND_STATUS_BONDED');
-        const unbonding = await lumClt.queryClient.staking.unverified.validators('BOND_STATUS_UNBONDING')
-        const unbonded = await lumClt.queryClient.staking.unverified.validators('BOND_STATUS_UNBONDED');
+        const [bonded, unbonding, unbonded] = await Promise.all([validators('BOND_STATUS_BONDED'), validators('BOND_STATUS_UNBONDING'), validators('BOND_STATUS_UNBONDED')])
 
         const results = [...bonded.validators, ...unbonding.validators, ...unbonded.validators];
-
-        console.log(results);
 
         return results.map(validator => plainToClass(ValidatorResponse, validator));
     }
