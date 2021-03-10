@@ -13,7 +13,7 @@ export class ValidatorDescriptionResponse {
     @Expose()
     website: string;
 
-    @Expose()
+    @Expose({name: 'securityContact'})
     security_contact: string;
 
     @Expose()
@@ -26,10 +26,10 @@ export class ValidatorDescriptionResponse {
 
 @Exclude()
 export class ValidatorDelegationResponse {
-    @Expose()
+    @Expose({name: 'delegatorAddress'})
     delegator_address: string;
 
-    @Expose()
+    @Expose({name: 'validatorAddress'})
     validator_address: string;
 
     @Expose()
@@ -45,26 +45,26 @@ export class ValidatorCommissionRatesResponse {
     @Expose()
     rate: number;
 
-    @Expose()
+    @Expose({name: 'maxRate'})
     max_rate: number;
 
-    @Expose()
+    @Expose({name: 'maxChangeRate'})
     max_change_rate: number;
 }
 
 @Exclude()
 export class ValidatorCommissionResponse {
-    @Expose()
+    @Expose({name: 'commissionRates'})
     @Type(() => ValidatorCommissionRatesResponse)
     commission_rates: ValidatorCommissionRatesResponse;
 
-    @Expose()
+    @Expose({name: 'updateTime'})
     update_time: Date;
 }
 
 @Exclude()
 export default class ValidatorResponse {
-    @Expose()
+    @Expose({name: 'operatorAddress'})
     operator_address: string;
 
     @Expose()
@@ -76,7 +76,7 @@ export default class ValidatorResponse {
     @Expose()
     tokens: string;
 
-    @Expose()
+    @Expose({name: 'delegatorShares'})
     delegator_shares: string;
 
     @Expose()
