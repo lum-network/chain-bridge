@@ -61,8 +61,6 @@ export default class AccountsController {
             account['transactions'] = [];
         }
 
-        console.log(account);
-
         return plainToClass(AccountResponse, account);
     }
 }
