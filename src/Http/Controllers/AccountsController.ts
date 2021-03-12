@@ -3,7 +3,7 @@ import { Request } from 'express';
 
 import { ElasticService, LumNetworkService } from '@app/Services';
 import { ElasticIndexes } from '@app/Utils/Constants';
-import { classToPlain, plainToClass } from 'class-transformer';
+import { plainToClass } from 'class-transformer';
 import { AccountResponse, TransactionResponse } from '@app/Http/Responses';
 
 @Controller('accounts')
@@ -56,7 +56,7 @@ export default class AccountsController {
 
         // Inject transactions
         if (transactions && transactions.body && transactions.body.hits && transactions.body.hits.hits) {
-            account['transactions'] = transactions.body.hits.hits.map((hit) => classToPlain(new TransactionResponse(hit._source)));
+            account['transactions'] = transactions.body.hits.hits.map((hit) => plainToClass(TransactionResponse, hit._source));
         } else {
             account['transactions'] = [];
         }

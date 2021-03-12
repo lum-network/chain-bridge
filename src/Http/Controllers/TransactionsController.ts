@@ -1,6 +1,6 @@
 import { CacheInterceptor, Controller, Get, NotFoundException, Req, UseInterceptors } from '@nestjs/common';
 import { Request } from 'express';
-import { classToPlain } from 'class-transformer';
+import { plainToClass } from 'class-transformer';
 import { ElasticService } from '@app/Services';
 import { ElasticIndexes } from '@app/Utils/Constants';
 import { TransactionResponse } from '@app/Http/Responses';
@@ -12,7 +12,6 @@ export default class TransactionsController {
 
     @Get('')
     async fetch() {
-
         // We get the 50 last transactions stored in ES
         const result = await this._elasticService.documentSearch(ElasticIndexes.INDEX_TRANSACTIONS, {
             size: 50,
@@ -26,7 +25,7 @@ export default class TransactionsController {
             throw new NotFoundException('transactions_not_found');
         }
 
-        return result.body.hits.hits.map(block => classToPlain(new TransactionResponse(block._source)));
+        return result.body.hits.hits.map((tx) => plainToClass(TransactionResponse, tx._source));
     }
 
     @Get(':hash')
@@ -41,6 +40,6 @@ export default class TransactionsController {
             throw new NotFoundException('failed_to_fetch_transaction');
         }
 
-        return classToPlain(new TransactionResponse(result.body._source));
+        return plainToClass(TransactionResponse, result.body._source);
     }
 }

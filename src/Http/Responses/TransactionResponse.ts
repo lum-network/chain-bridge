@@ -1,4 +1,7 @@
-import { Exclude, Expose } from 'class-transformer';
+import { Exclude, Expose, Type } from 'class-transformer';
+import BalanceResponse from '@app/Http/Responses/BalanceResponse';
+import MessageResponse, { SendMessageResponse } from '@app/Http/Responses/MessageResponse';
+import { LumMessages } from '@lum-network/sdk-javascript';
 
 @Exclude()
 export default class TransactionResponse {
@@ -9,10 +12,13 @@ export default class TransactionResponse {
     hash: string;
 
     @Expose()
+    block_hash: string;
+
+    @Expose()
     action: string;
 
     @Expose()
-    amount: string;
+    amount: BalanceResponse;
 
     @Expose()
     success: boolean;
@@ -24,20 +30,29 @@ export default class TransactionResponse {
     gas_used: number;
 
     @Expose()
-    from_address: string;
-
-    @Expose()
-    to_address: string;
+    addresses: string[];
 
     @Expose()
     name: string;
 
     @Expose()
-    dispatched_at: Date;
+    time: Date;
 
-    // This JSON field is returned as string to be parsed frontend side
     @Expose()
-    msgs: string;
+    @Type(() => MessageResponse, {
+        discriminator: {
+            property: 'typeUrl',
+            subTypes: [{ value: SendMessageResponse, name: LumMessages.MsgSendUrl }],
+        },
+        keepDiscriminatorProperty: true,
+    })
+    messages: MessageResponse[];
+
+    @Expose()
+    message_type: string | null;
+
+    @Expose()
+    messages_count: number;
 
     constructor(data: Partial<TransactionResponse>) {
         Object.assign(this, data);
