@@ -5,6 +5,7 @@ import { ElasticService, LumNetworkService } from '@app/Services';
 import { ElasticIndexes } from '@app/Utils/Constants';
 import { plainToClass } from 'class-transformer';
 import { AccountResponse, TransactionResponse } from '@app/Http/Responses';
+import { LumConstants } from '@lum-network/sdk-javascript';
 
 @Controller('accounts')
 @UseInterceptors(CacheInterceptor)
@@ -23,7 +24,7 @@ export default class AccountsController {
                         {
                             multi_match: {
                                 query: req.params.address,
-                                fields: ['from_address', 'to_address'],
+                                fields: ['addresses'],
                                 type: 'cross_fields',
                                 operator: 'OR',
                             },
@@ -33,17 +34,21 @@ export default class AccountsController {
             },
         });
 
-        const [account, delegations, rewards, address, transactions] = await Promise.all([
+        const [account, balance, delegations, rewards, address, transactions] = await Promise.all([
             lumClt.queryClient.auth.account(req.params.address),
-            lumClt.queryClient.staking.unverified.delegatorDelegations(req.params.address),
-            lumClt.queryClient.distribution.unverified.delegationTotalRewards(req.params.address),
-            lumClt.queryClient.distribution.unverified.delegatorWithdrawAddress(req.params.address),
+            lumClt.queryClient.bank.balance(req.params.address, LumConstants.LumDenom),
+            lumClt.queryClient.staking.unverified.delegatorDelegations(req.params.address).catch(() => null),
+            lumClt.queryClient.distribution.unverified.delegationTotalRewards(req.params.address).catch(() => null),
+            lumClt.queryClient.distribution.unverified.delegatorWithdrawAddress(req.params.address).catch(() => null),
             txPromise,
         ]);
 
         if (!account || !account.accountNumber) {
             throw new NotFoundException('account_not_found');
         }
+
+        // Inject balance
+        account['balance'] = !!balance ? balance : null;
 
         // Inject delegations
         account['delegations'] = !!delegations ? delegations.delegationResponses : [];
