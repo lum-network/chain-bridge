@@ -46,13 +46,13 @@ export default class AccountsController {
         }
 
         // Inject delegations
-        account['delegations'] = delegations !== null ? delegations.delegationResponses : [];
+        account['delegations'] = !!delegations ? delegations.delegationResponses : [];
 
         // Inject rewards
-        account['all_rewards'] = rewards !== null ? rewards : [];
+        account['all_rewards'] = !!rewards ? rewards : [];
 
         // Inject withdraw address
-        account['withdraw_address'] = address !== null ? address.withdrawAddress : req.params.address;
+        account['withdraw_address'] = !!address ? address.withdrawAddress : req.params.address;
 
         // Inject transactions
         if (transactions && transactions.body && transactions.body.hits && transactions.body.hits.hits) {

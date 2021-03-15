@@ -5,3 +5,5 @@ export { default as TransactionResponse } from './TransactionResponse';
 export { default as ValidatorResponse } from './ValidatorResponse';
 export { default as DelegationResponse } from './DelegationResponse';
 export { default as MessageResponse } from './MessageResponse';
+export { default as DescriptionResponse } from './DescriptionResponse';
+export { default as CommissionResponse } from './CommissionResponse';
