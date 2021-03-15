@@ -2,7 +2,7 @@ import { CacheInterceptor, Controller, Get, InternalServerErrorException, NotFou
 import { Request } from 'express';
 import { ElasticService } from '@app/Services';
 import { ElasticIndexes } from '@app/Utils/Constants';
-import { classToPlain } from 'class-transformer';
+import { plainToClass } from 'class-transformer';
 import { BlockResponse } from '@app/Http/Responses';
 
 @Controller('blocks')
@@ -22,7 +22,7 @@ export default class BlocksController {
             throw new NotFoundException('blocks_not_found');
         }
 
-        return result.body.hits.hits.map(block => classToPlain(new BlockResponse(block._source)));
+        return result.body.hits.hits.map((block) => plainToClass(BlockResponse, block._source));
     }
 
     @Get('latest')
@@ -48,7 +48,7 @@ export default class BlocksController {
             }
         }
 
-        return classToPlain(new BlockResponse(source));
+        return plainToClass(BlockResponse, source);
     }
 
     @Get(':height')
@@ -64,15 +64,18 @@ export default class BlocksController {
         }
 
         const source = result.body._source;
-
+        console.log('Hello: ', source);
         // Acquire the transactions
-        if (source && source.transactions && source.transactions.length > 0) {
-            for (const [k, v] of source.transactions.entries()) {
+        if (source && source.tx_hashes && source.tx_hashes.length > 0) {
+            source.transactions = [];
+
+            for (const [k, v] of source.tx_hashes.entries()) {
                 const tx = await this._elasticService.documentGet(ElasticIndexes.INDEX_TRANSACTIONS, v);
+
                 source.transactions[k] = tx.body._source;
             }
         }
 
-        return classToPlain(new BlockResponse(source));
+        return plainToClass(BlockResponse, source);
     }
 }
