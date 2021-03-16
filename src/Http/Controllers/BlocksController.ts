@@ -64,7 +64,6 @@ export default class BlocksController {
         }
 
         const source = result.body._source;
-        console.log('Hello: ', source);
         // Acquire the transactions
         if (source && source.tx_hashes && source.tx_hashes.length > 0) {
             source.transactions = [];
