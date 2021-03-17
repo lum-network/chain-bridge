@@ -2,6 +2,7 @@ import { CacheInterceptor, Controller, Get, NotFoundException, Req, UseIntercept
 import { Request } from 'express';
 import { ElasticService } from '@app/Services';
 import { ElasticIndexes } from '@app/Utils/Constants';
+import { LumConstants } from '@lum-network/sdk-javascript';
 
 @Controller('')
 export default class CoreController {
@@ -15,9 +16,9 @@ export default class CoreController {
         // We check the different combinations
         if (/^\d+$/.test(data)) {
             return { type: 'block', data };
-        } else if (String(data).startsWith('sandvaloper')) {
+        } else if (String(data).startsWith(LumConstants.LumBech32PrefixValAddr)) {
             return { type: 'validator', data };
-        } else if (String(data).startsWith('sand')) {
+        } else if (String(data).startsWith(LumConstants.LumBech32PrefixAccAddr)) {
             return { type: 'account', data };
         } else {
             if (await this._elasticService.documentExists(ElasticIndexes.INDEX_BLOCKS, data)) {
