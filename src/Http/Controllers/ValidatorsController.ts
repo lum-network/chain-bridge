@@ -2,13 +2,14 @@ import { CacheInterceptor, Controller, Get, NotFoundException, Req, UseIntercept
 import { Request } from 'express';
 import { plainToClass } from 'class-transformer';
 
-import { LumNetworkService } from '@app/Services';
-import { ValidatorResponse } from '@app/Http/Responses';
+import { ElasticService, LumNetworkService } from '@app/Services';
+import { BlockResponse, ValidatorResponse } from '@app/Http/Responses';
+import { ElasticIndexes } from '@app/Utils/Constants';
 
 @Controller('validators')
 @UseInterceptors(CacheInterceptor)
 export default class ValidatorsController {
-    constructor(private readonly _lumNetworkService: LumNetworkService) {}
+    constructor(private readonly _lumNetworkService: LumNetworkService, private readonly _elasticService: ElasticService) {}
 
     @Get('')
     async fetch() {
@@ -25,12 +26,31 @@ export default class ValidatorsController {
 
     @Get(':address')
     async show(@Req() req: Request) {
+        const blocksPromise = this._elasticService.documentSearch(ElasticIndexes.INDEX_BLOCKS, {
+            size: 5,
+            sort: { time: 'desc' },
+            query: {
+                bool: {
+                    should: [
+                        {
+                            multi_match: {
+                                query: req.params.address,
+                                fields: ['operator_address'],
+                                type: 'cross_fields',
+                                operator: 'OR',
+                            },
+                        },
+                    ],
+                },
+            },
+        });
         const lumClt = await this._lumNetworkService.getClient();
 
-        const [validator, delegations, rewards] = await Promise.all([
+        const [validator, delegations, rewards, blocksResponse] = await Promise.all([
             lumClt.queryClient.staking.unverified.validator(req.params.address),
             lumClt.queryClient.staking.unverified.validatorDelegations(req.params.address),
             lumClt.queryClient.distribution.unverified.validatorOutstandingRewards(req.params.address),
+            blocksPromise,
         ]);
 
         if (!validator) {
@@ -45,11 +65,18 @@ export default class ValidatorsController {
             throw new NotFoundException('validator_rewards_not_found');
         }
 
+        let blocks = [];
+
+        if (blocksResponse && blocksResponse.body && blocksResponse.body.hits && blocksResponse.body.hits.hits) {
+            blocks = blocksResponse.body.hits.hits.map((hit) => plainToClass(BlockResponse, hit._source));
+        }
+
         // Merge
         const result = {
             ...validator.validator,
-            delegations,
+            delegations: delegations.delegationResponses,
             rewards,
+            blocks,
         };
 
         return plainToClass(ValidatorResponse, result);
