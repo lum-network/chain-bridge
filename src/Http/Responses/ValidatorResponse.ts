@@ -75,6 +75,12 @@ export default class ValidatorResponse {
     operator_address: string;
 
     @Expose()
+    address: string;
+
+    @Expose({ name: 'selfBonded' })
+    self_bonded: number;
+
+    @Expose()
     jailed: boolean;
 
     @Expose()

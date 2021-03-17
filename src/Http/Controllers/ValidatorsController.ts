@@ -5,6 +5,7 @@ import { plainToClass } from 'class-transformer';
 import { ElasticService, LumNetworkService } from '@app/Services';
 import { BlockResponse, ValidatorResponse } from '@app/Http/Responses';
 import { ElasticIndexes } from '@app/Utils/Constants';
+import { convertValAddressToAccAddress } from '@app/Utils/Validators';
 
 @Controller('validators')
 @UseInterceptors(CacheInterceptor)
@@ -65,6 +66,16 @@ export default class ValidatorsController {
             throw new NotFoundException('validator_rewards_not_found');
         }
 
+        const address = convertValAddressToAccAddress(validator.validator.operatorAddress);
+
+        const accountDelegations = await lumClt.queryClient.staking.unverified.delegatorDelegations(address).catch(() => null);
+
+        let selfBonded = 0.0;
+
+        for (const delegation of accountDelegations.delegationResponses) {
+            selfBonded += delegation.balance.amount;
+        }
+
         let blocks = [];
 
         if (blocksResponse && blocksResponse.body && blocksResponse.body.hits && blocksResponse.body.hits.hits) {
@@ -74,10 +85,14 @@ export default class ValidatorsController {
         // Merge
         const result = {
             ...validator.validator,
+            address,
+            selfBonded,
             delegations: delegations.delegationResponses,
             rewards,
             blocks,
         };
+
+        console.log(result);
 
         return plainToClass(ValidatorResponse, result);
     }
