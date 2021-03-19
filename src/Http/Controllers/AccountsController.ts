@@ -35,8 +35,8 @@ export default class AccountsController {
         });
 
         const [account, balance, delegations, rewards, address, transactions] = await Promise.all([
-            lumClt.queryClient.auth.account(req.params.address),
-            lumClt.queryClient.bank.balance(req.params.address, LumConstants.LumDenom),
+            lumClt.queryClient.auth.unverified.account(req.params.address).catch(() => null),
+            lumClt.queryClient.bank.unverified.balance(req.params.address, LumConstants.LumDenom),
             lumClt.queryClient.staking.unverified.delegatorDelegations(req.params.address).catch(() => null),
             lumClt.queryClient.distribution.unverified.delegationTotalRewards(req.params.address).catch(() => null),
             lumClt.queryClient.distribution.unverified.delegatorWithdrawAddress(req.params.address).catch(() => null),
