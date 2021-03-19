@@ -7,14 +7,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { BullModule, InjectQueue } from '@nestjs/bull';
 import { TerminusModule } from '@nestjs/terminus';
 
-import {
-    AccountsController,
-    BlocksController,
-    CoreController,
-    HealthController,
-    TransactionsController,
-    ValidatorsController,
-} from '@app/Http/Controllers';
+import { AccountsController, BlocksController, CoreController, HealthController, TransactionsController, ValidatorsController } from '@app/Http/Controllers';
 
 import { BlockScheduler, ValidatorScheduler } from '@app/Async/Schedulers';
 import { BlockConsumer, CoreConsumer, NotificationConsumer } from '@app/Async/Consumers';
@@ -29,7 +22,7 @@ import { config } from '@app/Utils/Config';
 import { ElasticsearchIndicator, LumNetworkIndicator } from '@app/Http/Indicators';
 import { ResponseInterceptor } from '@app/Http/Interceptors';
 import { Gateway } from '@app/Websocket';
-import { LumWallet } from '@lum-network/sdk-javascript';
+import { LumWalletFactory } from '@lum-network/sdk-javascript';
 
 @Module({
     imports: [
@@ -53,7 +46,8 @@ import { LumWallet } from '@lum-network/sdk-javascript';
     ],
     controllers: [AccountsController, BlocksController, CoreController, HealthController, TransactionsController, ValidatorsController],
     providers: [
-        BlockConsumer, CoreConsumer,
+        BlockConsumer,
+        CoreConsumer,
         NotificationConsumer,
         BlockScheduler,
         ValidatorScheduler,
@@ -68,8 +62,7 @@ import { LumWallet } from '@lum-network/sdk-javascript';
 export class AppModule implements OnModuleInit, OnApplicationBootstrap {
     private readonly _logger: Logger = new Logger(AppModule.name);
 
-    constructor(private readonly _elasticService: ElasticService, private readonly _lumNetworkService: LumNetworkService, @InjectQueue(Queues.QUEUE_DEFAULT) private readonly _queue: Queue) {
-    }
+    constructor(private readonly _elasticService: ElasticService, private readonly _lumNetworkService: LumNetworkService, @InjectQueue(Queues.QUEUE_DEFAULT) private readonly _queue: Queue) {}
 
     async onModuleInit() {
         // Log out
@@ -77,7 +70,7 @@ export class AppModule implements OnModuleInit, OnApplicationBootstrap {
         this._logger.log(`AppModule ingestion: ${ingestEnabled}`);
 
         // Init the blocks index
-        this._elasticService.indexExists(ElasticIndexes.INDEX_BLOCKS).then(async exists => {
+        this._elasticService.indexExists(ElasticIndexes.INDEX_BLOCKS).then(async (exists) => {
             if (!exists) {
                 await this._elasticService.indexCreate(ElasticIndexes.INDEX_BLOCKS, IndexBlocksMapping);
                 this._logger.debug('Created index blocks');
@@ -85,7 +78,7 @@ export class AppModule implements OnModuleInit, OnApplicationBootstrap {
         });
 
         // Init the validators index
-        this._elasticService.indexExists(ElasticIndexes.INDEX_VALIDATORS).then(async exists => {
+        this._elasticService.indexExists(ElasticIndexes.INDEX_VALIDATORS).then(async (exists) => {
             if (!exists) {
                 await this._elasticService.indexCreate(ElasticIndexes.INDEX_VALIDATORS, IndexValidatorsMapping);
                 this._logger.debug('Created index validators');
@@ -93,7 +86,7 @@ export class AppModule implements OnModuleInit, OnApplicationBootstrap {
         });
 
         // Init the transactions index
-        this._elasticService.indexExists(ElasticIndexes.INDEX_TRANSACTIONS).then(async exists => {
+        this._elasticService.indexExists(ElasticIndexes.INDEX_TRANSACTIONS).then(async (exists) => {
             if (!exists) {
                 await this._elasticService.indexCreate(ElasticIndexes.INDEX_TRANSACTIONS, IndexTransactionsMapping);
                 this._logger.debug('Created index transactions');
@@ -111,8 +104,8 @@ export class AppModule implements OnModuleInit, OnApplicationBootstrap {
         }
 
         // Display the faucet address
-        const wallet = await LumWallet.fromMnemonic(FAUCET_MNEMONIC);
-        this._logger.log(`Faucet is listening on address ${wallet.address}`);
+        const wallet = await LumWalletFactory.fromMnemonic(FAUCET_MNEMONIC);
+        this._logger.log(`Faucet is listening on address ${wallet.getAddress()}`);
 
         // Trigger block backward ingestion at startup
         const lumClt = await this._lumNetworkService.getClient();
