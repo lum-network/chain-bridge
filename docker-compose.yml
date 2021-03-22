@@ -1,4 +1,4 @@
-version: '2'
+version: '3.8'
 services:
   lm-bridge-redis:
     networks:
@@ -27,6 +27,9 @@ services:
     environment:
       ELASTICSEARCH_HOSTS: http://lm-bridge-elasticsearch:9200
   lm-bridge-metricbeat:
+    user: root
+    volumes:
+      - metricbeat:/usr/share/metricbeat/data
     depends_on:
       - lm-bridge-elasticsearch
       - lm-bridge-kibana
@@ -34,9 +37,18 @@ services:
       - lm-bridge-elasticsearch
     networks:
       - elastic
+    configs:
+      - source: mb_config
+        target: /usr/share/metricbeat/metricbeat.yml
     image: docker.elastic.co/beats/metricbeat:7.11.2
     environment:
+      - KIBANA_HOST="lm-bridge-kibana:5601"
       - ELASTICSEARCH_HOSTS="lm-bridge-elasticsearch:9200"
 networks:
   elastic:
     name: elastic
+volumes:
+  metricbeat:
+configs:
+  ms_config:
+    file: $PWD/elk/beats/metricbeat/config/metricbeat.yml
