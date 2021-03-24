@@ -33,7 +33,7 @@ export default class TransactionResponse {
     addresses: string[];
 
     @Expose()
-    name: string;
+    memo: string;
 
     @Expose()
     time: Date;
