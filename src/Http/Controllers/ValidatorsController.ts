@@ -48,10 +48,10 @@ export default class ValidatorsController {
         const lumClt = await this._lumNetworkService.getClient();
 
         const [validator, delegations, rewards, blocksResponse] = await Promise.all([
-            lumClt.queryClient.staking.unverified.validator(req.params.address),
-            lumClt.queryClient.staking.unverified.validatorDelegations(req.params.address),
-            lumClt.queryClient.distribution.unverified.validatorOutstandingRewards(req.params.address),
-            blocksPromise,
+            lumClt.queryClient.staking.unverified.validator(req.params.address).catch(() => null),
+            lumClt.queryClient.staking.unverified.validatorDelegations(req.params.address).catch(() => null),
+            lumClt.queryClient.distribution.unverified.validatorOutstandingRewards(req.params.address).catch(() => null),
+            blocksPromise.catch(() => null),
         ]);
 
         if (!validator) {
@@ -91,8 +91,6 @@ export default class ValidatorsController {
             rewards,
             blocks,
         };
-
-        console.log(result);
 
         return plainToClass(ValidatorResponse, result);
     }

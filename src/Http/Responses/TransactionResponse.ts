@@ -1,6 +1,12 @@
 import { Exclude, Expose, Type } from 'class-transformer';
 import BalanceResponse from '@app/Http/Responses/BalanceResponse';
-import MessageResponse, { SendMessageResponse } from '@app/Http/Responses/MessageResponse';
+import MessageResponse, {
+    CreateValidatorMessageResponse,
+    DelegateMessageResponse,
+    EditValidatorMessageResponse,
+    SendMessageResponse,
+    UndelegateMessageResponse,
+} from '@app/Http/Responses/MessageResponse';
 import { LumMessages } from '@lum-network/sdk-javascript';
 
 @Exclude()
@@ -42,7 +48,13 @@ export default class TransactionResponse {
     @Type(() => MessageResponse, {
         discriminator: {
             property: 'typeUrl',
-            subTypes: [{ value: SendMessageResponse, name: LumMessages.MsgSendUrl }],
+            subTypes: [
+                { value: SendMessageResponse, name: LumMessages.MsgSendUrl },
+                { value: DelegateMessageResponse, name: LumMessages.MsgDelegateUrl },
+                { value: UndelegateMessageResponse, name: LumMessages.MsgUndelegateUrl },
+                { value: CreateValidatorMessageResponse, name: LumMessages.MsgCreateValidatorUrl },
+                { value: EditValidatorMessageResponse, name: LumMessages.MsgEditValidatorUrl },
+            ],
         },
         keepDiscriminatorProperty: true,
     })
