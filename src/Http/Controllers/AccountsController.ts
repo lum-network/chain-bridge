@@ -34,13 +34,14 @@ export default class AccountsController {
             },
         });
 
-        const [account, balance, delegations, rewards, address, transactions] = await Promise.all([
+        const [account, balance, delegations, rewards, address, unbondings, transactions] = await Promise.all([
             lumClt.queryClient.auth.unverified.account(req.params.address).catch(() => null),
-            lumClt.queryClient.bank.unverified.balance(req.params.address, LumConstants.LumDenom),
+            lumClt.queryClient.bank.unverified.balance(req.params.address, LumConstants.LumDenom).catch(() => null),
             lumClt.queryClient.staking.unverified.delegatorDelegations(req.params.address).catch(() => null),
             lumClt.queryClient.distribution.unverified.delegationTotalRewards(req.params.address).catch(() => null),
             lumClt.queryClient.distribution.unverified.delegatorWithdrawAddress(req.params.address).catch(() => null),
-            txPromise,
+            lumClt.queryClient.staking.unverified.delegatorUnbondingDelegations(req.params.address).catch(() => null),
+            txPromise.catch(() => null),
         ]);
 
         if (!account || !account.accountNumber) {
@@ -58,6 +59,8 @@ export default class AccountsController {
 
         // Inject withdraw address
         account['withdraw_address'] = !!address ? address.withdrawAddress : req.params.address;
+
+        account['unbondings'] = !!unbondings ? unbondings.unbondingResponses : null;
 
         // Inject transactions
         if (transactions && transactions.body && transactions.body.hits && transactions.body.hits.hits) {

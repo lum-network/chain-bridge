@@ -5,6 +5,19 @@ import RewardResponse from '@app/Http/Responses/RewardResponse';
 import TransactionResponse from '@app/Http/Responses/TransactionResponse';
 
 @Exclude()
+class UnbondingEntriesResponse {
+    @Expose()
+    balance: string;
+}
+
+@Exclude()
+class UnbondingResponse {
+    @Expose()
+    @Type(() => UnbondingEntriesResponse)
+    entries: UnbondingEntriesResponse[] = [];
+}
+
+@Exclude()
 export default class AccountResponse {
     @Expose()
     address: string;
@@ -36,6 +49,10 @@ export default class AccountResponse {
 
     @Expose()
     sequence: number;
+
+    @Expose()
+    @Type(() => UnbondingResponse)
+    unbondings: UnbondingResponse[] = [];
 
     constructor(data: Partial<AccountResponse>) {
         Object.assign(this, data);
