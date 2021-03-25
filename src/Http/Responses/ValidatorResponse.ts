@@ -1,6 +1,6 @@
 import { Exclude, Expose, Type } from 'class-transformer';
 import BalanceResponse from '@app/Http/Responses/BalanceResponse';
-import RewardResponse from '@app/Http/Responses/RewardResponse';
+import BlockResponse from '@app/Http/Responses/BlockResponse';
 
 @Exclude()
 export class ValidatorDescriptionResponse {
@@ -13,7 +13,7 @@ export class ValidatorDescriptionResponse {
     @Expose()
     website: string;
 
-    @Expose()
+    @Expose({ name: 'securityContact' })
     security_contact: string;
 
     @Expose()
@@ -25,15 +25,22 @@ export class ValidatorDescriptionResponse {
 }
 
 @Exclude()
-export class ValidatorDelegationResponse {
-    @Expose()
+class ValidatorDelegationDetailsResponse {
+    @Expose({ name: 'delegatorAddress' })
     delegator_address: string;
 
-    @Expose()
+    @Expose({ name: 'validatorAddress' })
     validator_address: string;
 
     @Expose()
     shares: string;
+}
+
+@Exclude()
+export class ValidatorDelegationResponse {
+    @Expose()
+    @Type(() => ValidatorDelegationDetailsResponse)
+    delegation: ValidatorDelegationDetailsResponse;
 
     @Expose()
     @Type(() => BalanceResponse)
@@ -45,27 +52,33 @@ export class ValidatorCommissionRatesResponse {
     @Expose()
     rate: number;
 
-    @Expose()
+    @Expose({ name: 'maxRate' })
     max_rate: number;
 
-    @Expose()
+    @Expose({ name: 'maxChangeRate' })
     max_change_rate: number;
 }
 
 @Exclude()
 export class ValidatorCommissionResponse {
-    @Expose()
+    @Expose({ name: 'commissionRates' })
     @Type(() => ValidatorCommissionRatesResponse)
     commission_rates: ValidatorCommissionRatesResponse;
 
-    @Expose()
+    @Expose({ name: 'updateTime' })
     update_time: Date;
 }
 
 @Exclude()
 export default class ValidatorResponse {
-    @Expose()
+    @Expose({ name: 'operatorAddress' })
     operator_address: string;
+
+    @Expose()
+    address: string;
+
+    @Expose({ name: 'selfBonded' })
+    self_bonded: number;
 
     @Expose()
     jailed: boolean;
@@ -76,7 +89,7 @@ export default class ValidatorResponse {
     @Expose()
     tokens: string;
 
-    @Expose()
+    @Expose({ name: 'delegatorShares' })
     delegator_shares: string;
 
     @Expose()
@@ -88,12 +101,16 @@ export default class ValidatorResponse {
     delegations: ValidatorDelegationResponse[];
 
     @Expose()
-    @Type(() => RewardResponse)
-    rewards: RewardResponse[];
+    @Type(() => BalanceResponse)
+    rewards: BalanceResponse[];
 
     @Expose()
     @Type(() => ValidatorCommissionResponse)
     commission: ValidatorCommissionResponse;
+
+    @Expose()
+    @Type(() => BlockResponse)
+    blocks: BlockResponse[];
 
     constructor(data: Partial<ValidatorResponse>) {
         Object.assign(this, data);

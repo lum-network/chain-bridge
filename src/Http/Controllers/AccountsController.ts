@@ -1,55 +1,29 @@
-import { CacheInterceptor, Controller, Get, NotFoundException, Req, UseInterceptors } from '@nestjs/common';
-import { Request } from 'express';
+import { CacheInterceptor, Controller, Get, NotFoundException, Param, Req, UseInterceptors } from '@nestjs/common';
 
-import { BlockchainService, ElasticService } from '@app/Services';
+import { ElasticService, LumNetworkService } from '@app/Services';
 import { ElasticIndexes } from '@app/Utils/Constants';
-import { classToPlain } from 'class-transformer';
-import { TransactionResponse } from '@app/Http/Responses';
+import { plainToClass } from 'class-transformer';
+import { AccountResponse, TransactionResponse } from '@app/Http/Responses';
+import { LumConstants } from '@lum-network/sdk-javascript';
 
 @Controller('accounts')
 @UseInterceptors(CacheInterceptor)
 export default class AccountsController {
-    constructor(private readonly _elasticService: ElasticService) {}
+    constructor(private readonly _elasticService: ElasticService, private readonly _lumNetworkService: LumNetworkService) {}
 
     @Get(':address')
-    async show(@Req() req: Request) {
-        // Acquire the account instance
-        let account = await BlockchainService.getInstance()
-            .getClient()
-            .getAccountLive(req.params.address);
-        if (!account || !account.result || !account.result.value) {
-            throw new NotFoundException('account_not_found');
-        }
-        account = account.result.value;
+    async show(@Param('address') address: string) {
+        const lumClt = await this._lumNetworkService.getClient();
 
-        // Inject delegations
-        const delegations = await BlockchainService.getInstance()
-            .getClient()
-            .getDelegatorDelegations(req.params.address);
-        account['delegations'] = delegations !== null ? delegations.result : [];
-
-        // Inject rewards
-        const rewards = await BlockchainService.getInstance()
-            .getClient()
-            .getAllDelegatorRewards(req.params.address);
-        account['all_rewards'] = rewards !== null ? rewards.result : [];
-
-        // Inject withdraw address
-        const address = await BlockchainService.getInstance()
-            .getClient()
-            .getDelegatorWithdrawAddress(req.params.address);
-        account['withdraw_address'] = address !== null ? address.result : req.params.address;
-
-        // Inject transactions
-        const result = await this._elasticService.documentSearch(ElasticIndexes.INDEX_TRANSACTIONS, {
-            sort: { dispatched_at: 'desc' },
+        const txPromise = this._elasticService.documentSearch(ElasticIndexes.INDEX_TRANSACTIONS, {
+            sort: { time: 'desc' },
             query: {
                 bool: {
                     should: [
                         {
                             multi_match: {
-                                query: account.address,
-                                fields: ['from_address', 'to_address'],
+                                query: address,
+                                fields: ['addresses'],
                                 type: 'cross_fields',
                                 operator: 'OR',
                             },
@@ -58,14 +32,42 @@ export default class AccountsController {
                 },
             },
         });
-        if (result && result.body && result.body.hits && result.body.hits.hits) {
-            account['transactions'] = result.body.hits.hits.map(hit => classToPlain(new TransactionResponse(hit._source)));
+
+        const [account, balance, delegations, rewards, validatorAddress, unbondings, transactions] = await Promise.all([
+            lumClt.queryClient.auth.unverified.account(address).catch(() => null),
+            lumClt.queryClient.bank.unverified.balance(address, LumConstants.LumDenom).catch(() => null),
+            lumClt.queryClient.staking.unverified.delegatorDelegations(address).catch(() => null),
+            lumClt.queryClient.distribution.unverified.delegationTotalRewards(address).catch(() => null),
+            lumClt.queryClient.distribution.unverified.delegatorWithdrawAddress(address).catch(() => null),
+            lumClt.queryClient.staking.unverified.delegatorUnbondingDelegations(address).catch(() => null),
+            txPromise.catch(() => null),
+        ]);
+
+        if (!account || !account.accountNumber) {
+            throw new NotFoundException('account_not_found');
+        }
+
+        // Inject balance
+        account['balance'] = !!balance ? balance : null;
+
+        // Inject delegations
+        account['delegations'] = !!delegations ? delegations.delegationResponses : [];
+
+        // Inject rewards
+        account['all_rewards'] = !!rewards ? rewards : [];
+
+        // Inject withdraw address
+        account['withdraw_address'] = !!validatorAddress ? validatorAddress.withdrawAddress : address;
+
+        account['unbondings'] = !!unbondings ? unbondings.unbondingResponses : null;
+
+        // Inject transactions
+        if (transactions && transactions.body && transactions.body.hits && transactions.body.hits.hits) {
+            account['transactions'] = transactions.body.hits.hits.map((hit) => plainToClass(TransactionResponse, hit._source));
         } else {
             account['transactions'] = [];
         }
 
-        return account;
-        // Disabled until we figure out the proper response type
-        //return classToPlain(new AccountResponse(account));
+        return plainToClass(AccountResponse, account);
     }
 }

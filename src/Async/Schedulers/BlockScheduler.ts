@@ -31,7 +31,7 @@ export default class BlockScheduler {
             this._logger.debug(`Dispatching last 20 blocks for ingestion at height ${lastBlocks.lastHeight}`);
 
             // For each block, dispatch the ingestion job to the queue
-            lastBlocks.blockMetas.forEach(async meta => {
+            for (const meta of lastBlocks.blockMetas) {
                 const height = meta.header.height;
                 await this._queue.add(
                     QueueJobs.INGEST_BLOCK,
@@ -45,7 +45,7 @@ export default class BlockScheduler {
                         backoff: 60000,
                     },
                 );
-            });
+            }
         } catch (error) {
             this._logger.error(`Failed to dispatch last blocks ingestion:`, error);
         }

@@ -30,6 +30,8 @@ export interface TransactionDocument extends VersionedChainDocument {
     addresses: string[];
     memo: string;
     messages: { typeUrl: string; value: any }[];
+    message_type: string;
+    messages_count: number;
     raw_logs: any[];
     raw_events: any[];
     raw_tx: any;

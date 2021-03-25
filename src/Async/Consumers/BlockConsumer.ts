@@ -52,7 +52,7 @@ export default class BlockConsumer {
                 height: block.block.header.height,
                 time: moment(block.block.header.time as Date).toISOString(),
                 tx_count: block.block.txs.length,
-                tx_hashes: block.block.txs.map(tx => LumUtils.toHex(LumUtils.sha256(tx)).toUpperCase()),
+                tx_hashes: block.block.txs.map((tx) => LumUtils.toHex(LumUtils.sha256(tx)).toUpperCase()),
                 proposer_address: LumUtils.toHex(block.block.header.proposerAddress).toUpperCase(),
                 operator_address: operatorAddress,
                 raw_block: LumUtils.toJSON(block),
@@ -81,7 +81,7 @@ export default class BlockConsumer {
                     operator_address: blockDoc.operator_address,
                     success: tx.result.code === 0 && !!tx.result.log,
                     code: tx.result.code,
-                    fees: txData.authInfo.fee.amount.map(coin => {
+                    fees: txData.authInfo.fee.amount.map((coin) => {
                         return { denom: coin.denom, amount: parseFloat(coin.amount) };
                     }),
                     addresses: [],
@@ -89,11 +89,13 @@ export default class BlockConsumer {
                     gas_wanted: 0, // tx.result.gasWanted,
                     gas_used: 0, // tx.result.gasUsed,
                     memo: txData.body.memo,
-                    messages: txData.body.messages.map(msg => {
+                    messages: txData.body.messages.map((msg) => {
                         return { typeUrl: msg.typeUrl, value: LumUtils.toJSON(LumRegistry.decode(msg)) };
                     }),
+                    message_type: txData.body.messages.length ? txData.body.messages[0].typeUrl : null,
+                    messages_count: txData.body.messages.length,
                     raw_logs: logs as any[],
-                    raw_events: tx.result.events.map(ev => LumUtils.toJSON(ev)),
+                    raw_events: tx.result.events.map((ev) => LumUtils.toJSON(ev)),
                     raw_tx: LumUtils.toJSON(tx),
                     raw_tx_data: LumUtils.toJSON(txData),
                 };
@@ -206,24 +208,32 @@ export default class BlockConsumer {
             const r1 = [job.data.fromBlock, job.data.fromBlock + Math.floor((job.data.toBlock - job.data.fromBlock) / 2)];
             const r2 = [r1[1] + 1, job.data.toBlock];
             this._logger.debug(`Trigger block backward check for ranges [${r1[0]}, ${r1[1]}], [${r2[0]}, ${r2[1]}]`);
-            await this._queue.add(QueueJobs.TRIGGER_VERIFY_BLOCKS_BACKWARD, {
-                chainId: job.data.chainId,
-                fromBlock: r1[0],
-                toBlock: r1[1],
-            }, {
-                attempts: 5,
-                backoff: 60000,
-                jobId: `${job.data.chainId}-check-block-range-${r1[0]}-${r1[1]}-v${IngestionDocumentVersion}`,
-            });
-            await this._queue.add(QueueJobs.TRIGGER_VERIFY_BLOCKS_BACKWARD, {
-                chainId: job.data.chainId,
-                fromBlock: r2[0],
-                toBlock: r2[1],
-            }, {
-                attempts: 5,
-                backoff: 60000,
-                jobId: `${job.data.chainId}-check-block-range-${r2[0]}-${r2[1]}-v${IngestionDocumentVersion}`,
-            });
+            await this._queue.add(
+                QueueJobs.TRIGGER_VERIFY_BLOCKS_BACKWARD,
+                {
+                    chainId: job.data.chainId,
+                    fromBlock: r1[0],
+                    toBlock: r1[1],
+                },
+                {
+                    attempts: 5,
+                    backoff: 60000,
+                    jobId: `${job.data.chainId}-check-block-range-${r1[0]}-${r1[1]}-v${IngestionDocumentVersion}`,
+                },
+            );
+            await this._queue.add(
+                QueueJobs.TRIGGER_VERIFY_BLOCKS_BACKWARD,
+                {
+                    chainId: job.data.chainId,
+                    fromBlock: r2[0],
+                    toBlock: r2[1],
+                },
+                {
+                    attempts: 5,
+                    backoff: 60000,
+                    jobId: `${job.data.chainId}-check-block-range-${r2[0]}-${r2[1]}-v${IngestionDocumentVersion}`,
+                },
+            );
         } else {
             this._logger.debug(`All blocks synced in this range, exiting job.`);
         }

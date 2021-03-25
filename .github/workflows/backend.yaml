@@ -2,12 +2,12 @@ name: Build and deploy the Explorer Backend
 on:
   push:
     branches:
-      - master
+      - develop
 
 env:
   REGISTRY_TOKEN: ${{ secrets.REGISTRY_TOKEN }}
-  REGISTRY_ADDRESS: rg.fr-par.scw.cloud/sandblock
-  REGISTRY_ADDRESS_PROJECT: chain-explorer-backend
+  REGISTRY_ADDRESS: rg.fr-par.scw.cloud/lum-network
+  REGISTRY_ADDRESS_PROJECT: bridge
 
 jobs:
   bump-version-push-tag:

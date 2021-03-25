@@ -10,10 +10,10 @@ import { TerminusModule } from '@nestjs/terminus';
 import { AccountsController, BlocksController, CoreController, HealthController, TransactionsController, ValidatorsController } from '@app/Http/Controllers';
 
 import { BlockScheduler, ValidatorScheduler } from '@app/Async/Schedulers';
-import { BlockConsumer, NotificationConsumer } from '@app/Async/Consumers';
+import { BlockConsumer, CoreConsumer, NotificationConsumer } from '@app/Async/Consumers';
 
 import { ElasticService, LumNetworkService } from '@app/Services';
-import { ElasticIndexes, Queues, QueueJobs } from '@app/Utils/Constants';
+import { ElasticIndexes, Queues, QueueJobs, FAUCET_MNEMONIC } from '@app/Utils/Constants';
 
 import { IndexBlocksMapping, IndexTransactionsMapping, IndexValidatorsMapping } from '@app/Utils/Indices';
 
@@ -22,6 +22,7 @@ import { config } from '@app/Utils/Config';
 import { ElasticsearchIndicator, LumNetworkIndicator } from '@app/Http/Indicators';
 import { ResponseInterceptor } from '@app/Http/Interceptors';
 import { Gateway } from '@app/Websocket';
+import { LumWalletFactory } from '@lum-network/sdk-javascript';
 
 @Module({
     imports: [
@@ -46,6 +47,7 @@ import { Gateway } from '@app/Websocket';
     controllers: [AccountsController, BlocksController, CoreController, HealthController, TransactionsController, ValidatorsController],
     providers: [
         BlockConsumer,
+        CoreConsumer,
         NotificationConsumer,
         BlockScheduler,
         ValidatorScheduler,
@@ -68,7 +70,7 @@ export class AppModule implements OnModuleInit, OnApplicationBootstrap {
         this._logger.log(`AppModule ingestion: ${ingestEnabled}`);
 
         // Init the blocks index
-        this._elasticService.indexExists(ElasticIndexes.INDEX_BLOCKS).then(async exists => {
+        this._elasticService.indexExists(ElasticIndexes.INDEX_BLOCKS).then(async (exists) => {
             if (!exists) {
                 await this._elasticService.indexCreate(ElasticIndexes.INDEX_BLOCKS, IndexBlocksMapping);
                 this._logger.debug('Created index blocks');
@@ -76,7 +78,7 @@ export class AppModule implements OnModuleInit, OnApplicationBootstrap {
         });
 
         // Init the validators index
-        this._elasticService.indexExists(ElasticIndexes.INDEX_VALIDATORS).then(async exists => {
+        this._elasticService.indexExists(ElasticIndexes.INDEX_VALIDATORS).then(async (exists) => {
             if (!exists) {
                 await this._elasticService.indexCreate(ElasticIndexes.INDEX_VALIDATORS, IndexValidatorsMapping);
                 this._logger.debug('Created index validators');
@@ -84,7 +86,7 @@ export class AppModule implements OnModuleInit, OnApplicationBootstrap {
         });
 
         // Init the transactions index
-        this._elasticService.indexExists(ElasticIndexes.INDEX_TRANSACTIONS).then(async exists => {
+        this._elasticService.indexExists(ElasticIndexes.INDEX_TRANSACTIONS).then(async (exists) => {
             if (!exists) {
                 await this._elasticService.indexCreate(ElasticIndexes.INDEX_TRANSACTIONS, IndexTransactionsMapping);
                 this._logger.debug('Created index transactions');
@@ -96,10 +98,14 @@ export class AppModule implements OnModuleInit, OnApplicationBootstrap {
     }
 
     async onApplicationBootstrap() {
-         // If we weren't able to initialize connection with Lum Network, exit the project
-         if (!this._lumNetworkService.isInitialized()) {
+        // If we weren't able to initialize connection with Lum Network, exit the project
+        if (!this._lumNetworkService.isInitialized()) {
             throw new Error(`Cannot initialize the Lum Network Service, exiting...`);
         }
+
+        // Display the faucet address
+        const wallet = await LumWalletFactory.fromMnemonic(FAUCET_MNEMONIC);
+        this._logger.log(`Faucet is listening on address ${wallet.getAddress()}`);
 
         // Trigger block backward ingestion at startup
         const lumClt = await this._lumNetworkService.getClient();
