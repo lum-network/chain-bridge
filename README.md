@@ -1,8 +1,10 @@
 # Lum Network - Chain Bridge
 
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+
 Backend service to access the Lum Network and search among blocks and transactions using Elasticsearch.
 
-This service is used as an API by the [Lum Network Explorer](https://explorer.lum.network).
+This service is used as an API by the [Lum Network Explorer](https://explorer.lum.network) (code hosted [here](https://github.com/lum-network/explorer)).
 
 ## Description
 
