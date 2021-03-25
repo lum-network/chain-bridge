@@ -19,7 +19,7 @@ export default class CoreConsumer {
             return;
         }
         const clt = await this._lumNetworkService.getClient();
-        const sendMsg = LumMessages.BuildMsgSend(wallet.getAddress(), job.data.address, [{ denom: LumConstants.LumDenom, amount: '100' }]);
+        const sendMsg = LumMessages.BuildMsgSend(wallet.getAddress(), job.data.address, [{ denom: LumConstants.LumDenom, amount: '10000' }]);
         const fee = {
             amount: [{ denom: LumConstants.LumDenom, amount: '0' }],
             gas: '100000',

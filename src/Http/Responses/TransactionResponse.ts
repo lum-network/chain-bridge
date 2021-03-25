@@ -36,6 +36,9 @@ export default class TransactionResponse {
     gas_used: number;
 
     @Expose()
+    fees: BalanceResponse[];
+
+    @Expose()
     addresses: string[];
 
     @Expose()
