@@ -1,10 +1,9 @@
-import {Exclude, Expose} from "class-transformer";
+import { Exclude, Expose, Type } from 'class-transformer';
+import BalanceResponse from '@app/Http/Responses/BalanceResponse';
 
 @Exclude()
 export default class RewardResponse {
     @Expose()
-    denom: string;
-
-    @Expose()
-    amount: number;
+    @Type(() => BalanceResponse)
+    total: BalanceResponse[];
 }

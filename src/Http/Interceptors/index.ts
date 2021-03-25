@@ -1,1 +1,1 @@
-export {default as ResponseInterceptor} from './ResponseInterceptor';
+export { default as ResponseInterceptor } from './ResponseInterceptor';

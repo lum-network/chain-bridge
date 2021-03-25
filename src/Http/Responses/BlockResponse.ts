@@ -1,5 +1,5 @@
-import {Exclude, Expose, Type} from "class-transformer";
-import TransactionResponse from "@app/Http/Responses/TransactionResponse";
+import { Exclude, Expose, Type } from 'class-transformer';
+import TransactionResponse from '@app/Http/Responses/TransactionResponse';
 
 @Exclude()
 export default class BlockResponse {
@@ -13,16 +13,16 @@ export default class BlockResponse {
     height: number;
 
     @Expose()
-    dispatched_at: Date;
+    time: Date;
 
     @Expose()
-    num_txs: number;
-
-    @Expose()
-    total_txs: number;
+    tx_count: number;
 
     @Expose()
     proposer_address: string;
+
+    @Expose()
+    operator_address: string;
 
     @Expose()
     @Type(() => TransactionResponse)

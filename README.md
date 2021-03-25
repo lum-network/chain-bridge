@@ -1,52 +1,81 @@
+# Lum Network - Chain Bridge
+
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+
+Backend service to access the Lum Network and search among blocks and transactions using Elasticsearch.
+
+This service is used as an API by the [Lum Network Explorer](https://explorer.lum.network) (code hosted [here](https://github.com/lum-network/explorer)).
+
 ## Description
 
-Backend for Sandblock's blockchain explorer.
+The service provides:
 
-Built on the great Nest.JS with ElasticSearch as database engine, and Redis for caching purposes.
+-   Rest API for serving content (ex: for explorer frontends)
+-   Automatic caching of http requests (default 60s TTL) through Redis
+-   Automatic blockchain data ingestion through async pipes (live ingestion as well as historical data ingestion)
+-   Easy capabilities of scaling according to load requirements
 
-It provides
-* Rest API for serving content to explorer frontends
-* Automatic caching of http requests (60s TTL) through Redis
-* Automatic blockchain ingestion through async pipes, running every 10s (and thus syncing the blocks emitted in the last 10s)
-* Easy capabilities of scaling
+## Deployment
 
-## Installation
+`TBD`
+
+## Development
+
+### Install dependencies
 
 ```bash
 $ yarn install
 ```
 
-## Configure the development environment
-You should have a .env file at the root level with the following entries
+### Configure the environment
+
+You should have a .env file at the root level with the following entries (and the values of your choice)
+
 ```bash
-ELASTICSEARCH_HOST=chain-elasticsearch
+LUM-NETWORK-ENDPOINT=https://node0.testnet.lum.network/rpc
+
+ELASTICSEARCH_HOST=127.0.0.1
 ELASTICSEARCH_PORT=9200
-REDIS_HOST=chain-redis
+
+REDIS_HOST=127.0.0.1
 REDIS_PORT=6379
-PORT=3000
-MODE=DEV
-INGEST_BLOCKS_ENABLED=false
-INGEST_BLOCKS_LENGTH=19
-INGEST_TRANSACTIONS_ENABLED=false
+REDIS_PREFIX=lm-bridge
+
+API_ENABLED=true
+API_PORT=3000
+
+INGEST_ENABLED=true
+
+PUSH_NOTIF_ENABLED=true
 ```
 
 If you don't know what these params mean, leave them like this, they are preconfigured.
 
-## Running the required architecture
-The project introduce a docker compose file. You can run it and it will bootstrap the required services.
+### Launch required third party services
+
+The following services are required to run the service:
+- Elasticsearch 7+
+- Redis 5+
+- Lum Network node (RPC endpoint)
+
+You can use the official Lum Network's testnet along the provided [docker-compose](./docker-compose.yml) file to run both Elasticsearch and Redis and get started in a minute:
 
 ```bash
-docker-compose -f docker-compose.yml up
+docker-compose up
 ```
 
-## Running the app
+### Running the app
+
+As soon as you start the service, it will start ingesting all new blocks every 10 seconds and emitting the associated push notifications. Those blocks will be almost instantly accessible from the provided API endpoints.
+
+The ingestion process for past blocks will only start after a couple minutes in order to let the live syncronization ingest its first data. Only missing blocks and some of their neighbors will be ingested, meaning that a simple restart of the service will not trigger a full re-sync but might trigger only a small re-sync for missing block ranges.
 
 ```bash
-# development (watch mode)
-$ yarn start:dev
-
-# development (normal mode)
+# development
 $ yarn start
+
+# watch mode
+$ yarn start:dev
 
 # production mode
 $ yarn start:prod

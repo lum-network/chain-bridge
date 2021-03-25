@@ -1,3 +1,3 @@
-export {default as BlockConsumer} from './BlockConsumer';
-export {default as NotificationConsumer} from './NotificationConsumer';
-export {default as TransactionConsumer} from './TransactionConsumer';
+export { default as BlockConsumer } from './BlockConsumer';
+export { default as CoreConsumer } from './CoreConsumer';
+export { default as NotificationConsumer } from './NotificationConsumer';

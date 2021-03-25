@@ -1,85 +1,66 @@
-import {Injectable, Logger} from "@nestjs/common";
-import {Cron, CronExpression} from "@nestjs/schedule";
+import { Injectable, Logger } from '@nestjs/common';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
-import {Queue} from "bull";
-import {InjectQueue} from "@nestjs/bull";
+import { Queue } from 'bull';
+import { InjectQueue } from '@nestjs/bull';
 
-import {BlockchainService, ElasticService} from "@app/Services";
-import {ElasticIndexes, QueueJobs, Queues} from "@app/Utils/Constants";
-import {config} from "@app/Utils/Config";
+import { LumNetworkService } from '@app/Services';
+import { QueueJobs, Queues, IngestionDocumentVersion } from '@app/Utils/Constants';
+import { config } from '@app/Utils/Config';
 
 @Injectable()
 export default class BlockScheduler {
     private _logger: Logger = new Logger(BlockScheduler.name);
 
-    constructor(
-        @InjectQueue(Queues.QUEUE_DEFAULT) private readonly _queue: Queue,
-        private readonly _elasticService: ElasticService) {
-    }
+    constructor(@InjectQueue(Queues.QUEUE_DEFAULT) private readonly _queue: Queue, private readonly _lumNetworkService: LumNetworkService) {}
 
-    @Cron(CronExpression.EVERY_10_SECONDS)
-    async ingest() {
+    @Cron(CronExpression.EVERY_10_SECONDS, { name: 'blocks_live_ingest' })
+    async liveIngest() {
         // Only ingest if allowed by the configuration
-        if (config.isBlockIngestionEnabled() == false) {
+        if (config.isIngestEnabled() == false) {
             return;
         }
 
-        // Acquire the ingestion length from config
-        const ingestLength = config.getBlockIngestionMaxLength();
-
-        // We get the last block stored in ES
-        const lastBlock = await this._elasticService.documentSearch(ElasticIndexes.INDEX_BLOCKS, {
-            size: 1,
-            sort: {"height": "desc"}
-        });
-        // Ensure we have all the required data
-        let lastBlockHeight = 0;
         try {
-            if (lastBlock && lastBlock.body && lastBlock.body.hits && lastBlock.body.hits.hits && lastBlock.body.hits.hits.length === 1) {
-                lastBlockHeight = lastBlock.body.hits.hits[0]['_source']['height'];
+            // Get singleton lum client
+            const lumClt = await this._lumNetworkService.getClient();
+            const chainId = await lumClt.getChainId();
+
+            // Fetch the 20 last blocks
+            const lastBlocks = await lumClt.tmClient.blockchain();
+            this._logger.debug(`Dispatching last 20 blocks for ingestion at height ${lastBlocks.lastHeight}`);
+
+            // For each block, dispatch the ingestion job to the queue
+            for (const meta of lastBlocks.blockMetas) {
+                const height = meta.header.height;
+                await this._queue.add(
+                    QueueJobs.INGEST_BLOCK,
+                    {
+                        blockHeight: height,
+                        notify: true,
+                    },
+                    {
+                        jobId: `${chainId}-block-${height}-v${IngestionDocumentVersion}`,
+                        attempts: 5,
+                        backoff: 60000,
+                    },
+                );
             }
         } catch (error) {
-            this._logger.error(`Failed to acquire the last blocked stored in ES`);
-            return;
+            this._logger.error(`Failed to dispatch last blocks ingestion:`, error);
         }
-        this._logger.log(`Last block height is ${lastBlockHeight}`);
+    }
 
-        // Get the current status of blockchain
-        const currentStatus = await BlockchainService.getInstance().getClient().getStatus();
-        if (!currentStatus || !currentStatus.result || !currentStatus.result.sync_info || !currentStatus.result.sync_info.latest_block_height) {
-            this._logger.error('Blockchain did not answer to our status call');
-            return;
-        }
-        const currentBlockHeight: number = parseInt(currentStatus.result.sync_info.latest_block_height);
-
-        // If the actual height is the last one, don't do anything (avoiding race condition)
-        if (lastBlockHeight == currentBlockHeight) {
-            return;
-        }
-
-        // We cap the amount of blocks to proceed on that batch (avoiding race condition)
-        let blocksToProceed: number = currentBlockHeight - lastBlockHeight;
-        blocksToProceed = (blocksToProceed > ingestLength) ? ingestLength : blocksToProceed;
-
-        // Prepare required boundaries (required to have leading + to avoid concatenation)
-        const start: number = lastBlockHeight + 1;
-        const end: number = +start + +blocksToProceed;
-        this._logger.log(`Syncing from ${start} to ${end}`);
-
-        // Acquire the list of blocks
-        const blocks: any = (await BlockchainService.getInstance().getClient().getBlocksBetween(start, end));
-        if (!blocks || !blocks.result || !blocks.result.block_metas) {
-            this._logger.error(`Unable to get blocks between ${start} and ${end}`);
-            return;
-        }
-
-        // For each block, push to the processing queue
-        for (const bl of blocks.result.block_metas.reverse()) {
-            this._logger.log(`Dispatching block #${bl.header.height} for processing`);
-            this._queue.add(QueueJobs.INGEST_BLOCK, {
-                block_height: bl.header.height,
-                num_txs: bl.num_txs
-            }).finally(() => null);
-        }
+    @Cron(CronExpression.EVERY_DAY_AT_4AM, { name: 'blocks_backward_ingest' })
+    async backwardIngest() {
+        // Daily check that we did not miss a block sync somehow
+        const clt = await this._lumNetworkService.getClient();
+        const chainId = await clt.getChainId();
+        const blockHeight = await clt.getBlockHeight();
+        await this._queue.add(QueueJobs.TRIGGER_VERIFY_BLOCKS_BACKWARD, {
+            chainId: chainId,
+            fromBlock: 1,
+            toBlock: blockHeight,
+        });
     }
 }

@@ -1,12 +1,7 @@
-import {
-    ConnectedSocket,
-    MessageBody, OnGatewayConnection, OnGatewayInit,
-    SubscribeMessage,
-    WebSocketGateway,
-    WebSocketServer,
-} from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { ConnectedSocket, MessageBody, OnGatewayConnection, OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Logger } from '@nestjs/common';
+
 import { NotificationChannels } from '@app/Utils/Constants';
 
 @WebSocketGateway()
@@ -22,7 +17,7 @@ export default class Gateway implements OnGatewayInit, OnGatewayConnection {
     }
 
     handleConnection(client: any, ...args: any[]): any {
-        this._logger.debug('New connection of user ID ' + client.id);
+        this._logger.debug('New connection of user ID ' + client.id, ...args);
     }
 
     @SubscribeMessage('action:listen-channel')

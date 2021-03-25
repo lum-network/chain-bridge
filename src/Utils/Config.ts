@@ -1,8 +1,7 @@
 require('dotenv').config();
 
 export default class Config {
-    constructor(private env: { [k: string]: string | undefined }) {
-    }
+    constructor(private env: { [k: string]: string | undefined }) {}
 
     public getValue<T>(key: string, throwOnMissing = true): T {
         const value = this.env[key];
@@ -10,7 +9,7 @@ export default class Config {
             throw new Error(`Config error - missing env.${key}`);
         }
 
-        return value as unknown as T;
+        return (value as unknown) as T;
     }
 
     public ensureValues(keys: string[]) {
@@ -18,45 +17,60 @@ export default class Config {
         return this;
     }
 
-    public getPort() {
-        return this.getValue('PORT', true);
-    }
+    public getLumNetworkEndpoint = (): string => {
+        return this.getValue<string>('LUM-NETWORK-ENDPOINT', true);
+    };
 
-    public getMode(): string {
-        return this.getValue<string>('MODE', false).toLowerCase();
-    }
+    public getElasticSearchHost = (): string => {
+        return this.getValue<string>('ELASTICSEARCH_HOST', true);
+    };
 
-    public isBlockIngestionEnabled(): boolean {
-        const enabled = this.getValue('INGEST_BLOCKS_ENABLED');
+    public getElasticSearchPort = (): number => {
+        return this.getValue<number>('ELASTICSEARCH_PORT', true);
+    };
+
+    public getRedisHost = (): string => {
+        return this.getValue<string>('REDIS_HOST', true);
+    };
+
+    public getRedisPort = (): number => {
+        return this.getValue<number>('REDIS_PORT', true);
+    };
+
+    public getRedisPrefix = (): string => {
+        return this.getValue<string>('REDIS_PREFIX', false).toLowerCase();
+    };
+
+    public isApiEnabled(): boolean {
+        const enabled = this.getValue('API_ENABLED');
         return enabled === 'true' || enabled === true;
     }
 
-    public isTransactionsIngestionEnabled(): boolean {
-        const enabled = this.getValue('INGEST_TRANSACTIONS_ENABLED');
+    public getApiPort = (): number => {
+        return this.getValue<number>('API_PORT', true);
+    };
+
+    public isIngestEnabled(): boolean {
+        const enabled = this.getValue('INGEST_ENABLED');
         return enabled === 'true' || enabled === true;
     }
 
-    public isNotificationDispatchEnabled(): boolean {
-        const enabled = this.getValue('DISPATCH_NOTIFICATIONS_ENABLED');
+    public isPushNotifEnabled(): boolean {
+        const enabled = this.getValue('PUSH_NOTIF_ENABLED');
         return enabled === 'true' || enabled === true;
-    }
-
-    public getBlockIngestionMaxLength(): number {
-        return this.getValue<number>('INGEST_BLOCKS_LENGTH');
     }
 }
 
-const config = new Config(process.env)
-    .ensureValues([
-        'ELASTICSEARCH_HOST',
-        'ELASTICSEARCH_PORT',
-        'REDIS_HOST',
-        'REDIS_PORT',
-        'MODE',
-        'PORT',
-        'INGEST_BLOCKS_ENABLED',
-        'INGEST_TRANSACTIONS_ENABLED',
-        'DISPATCH_NOTIFICATIONS_ENABLED'
-    ]);
+const config = new Config(process.env).ensureValues([
+    'LUM-NETWORK-ENDPOINT',
+    'ELASTICSEARCH_HOST',
+    'ELASTICSEARCH_PORT',
+    'REDIS_HOST',
+    'REDIS_PORT',
+    'API_ENABLED',
+    'API_PORT',
+    'INGEST_ENABLED',
+    'PUSH_NOTIF_ENABLED',
+]);
 
 export { config };

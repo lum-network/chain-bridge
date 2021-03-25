@@ -1,46 +1,43 @@
-import { Logger, Module, OnModuleInit, CacheModule } from '@nestjs/common';
+import * as redisStore from 'cache-manager-redis-store';
+import { Queue } from 'bull';
+
+import { Logger, Module, OnModuleInit, CacheModule, OnApplicationBootstrap } from '@nestjs/common';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
-import { BullModule } from '@nestjs/bull';
+import { BullModule, InjectQueue } from '@nestjs/bull';
 import { TerminusModule } from '@nestjs/terminus';
 
-import * as redisStore from 'cache-manager-redis-store';
-
-import {
-    AccountsController,
-    BlocksController, CoreController, HealthController,
-    TransactionsController,
-    ValidatorsController,
-} from '@app/Http/Controllers';
+import { AccountsController, BlocksController, CoreController, HealthController, TransactionsController, ValidatorsController } from '@app/Http/Controllers';
 
 import { BlockScheduler, ValidatorScheduler } from '@app/Async/Schedulers';
-import { BlockConsumer, NotificationConsumer, TransactionConsumer } from '@app/Async/Consumers';
+import { BlockConsumer, CoreConsumer, NotificationConsumer } from '@app/Async/Consumers';
 
-import { ElasticService } from '@app/Services';
-import { ElasticIndexes, Queues } from '@app/Utils/Constants';
+import { ElasticService, LumNetworkService } from '@app/Services';
+import { ElasticIndexes, Queues, QueueJobs, FAUCET_MNEMONIC } from '@app/Utils/Constants';
 
 import { IndexBlocksMapping, IndexTransactionsMapping, IndexValidatorsMapping } from '@app/Utils/Indices';
 
 import { config } from '@app/Utils/Config';
 
-import { ElasticsearchIndicator } from '@app/Http/Indicators';
+import { ElasticsearchIndicator, LumNetworkIndicator } from '@app/Http/Indicators';
 import { ResponseInterceptor } from '@app/Http/Interceptors';
 import { Gateway } from '@app/Websocket';
+import { LumWalletFactory } from '@lum-network/sdk-javascript';
 
 @Module({
     imports: [
         BullModule.registerQueue({
             name: Queues.QUEUE_DEFAULT,
             redis: {
-                host: config.getValue<string>('REDIS_HOST', true),
-                port: config.getValue<number>('REDIS_PORT', true),
+                host: config.getRedisHost(),
+                port: config.getRedisPort(),
             },
-            prefix: config.getMode(),
+            prefix: config.getRedisPrefix(),
         }),
         CacheModule.register({
             store: redisStore,
-            host: config.getValue<string>('REDIS_HOST', true),
-            port: config.getValue<number>('REDIS_PORT', true),
+            host: config.getRedisHost(),
+            port: config.getRedisPort(),
             ttl: 60,
             max: 100,
         }),
@@ -49,28 +46,31 @@ import { Gateway } from '@app/Websocket';
     ],
     controllers: [AccountsController, BlocksController, CoreController, HealthController, TransactionsController, ValidatorsController],
     providers: [
-        BlockConsumer, NotificationConsumer, TransactionConsumer,
-        BlockScheduler, ValidatorScheduler,
+        BlockConsumer,
+        CoreConsumer,
+        NotificationConsumer,
+        BlockScheduler,
+        ValidatorScheduler,
         ElasticsearchIndicator,
+        LumNetworkIndicator,
         Gateway,
         ElasticService,
+        LumNetworkService,
         { provide: APP_INTERCEPTOR, useClass: ResponseInterceptor },
     ],
 })
-export class AppModule implements OnModuleInit {
+export class AppModule implements OnModuleInit, OnApplicationBootstrap {
     private readonly _logger: Logger = new Logger(AppModule.name);
 
-    constructor(private readonly _elasticService: ElasticService) {
-    }
+    constructor(private readonly _elasticService: ElasticService, private readonly _lumNetworkService: LumNetworkService, @InjectQueue(Queues.QUEUE_DEFAULT) private readonly _queue: Queue) {}
 
-    onModuleInit(): any {
+    async onModuleInit() {
         // Log out
-        const blocksIngestEnabled = config.isBlockIngestionEnabled() ? 'enabled' : 'disabled';
-        const transactionsIngestEnabled = config.isTransactionsIngestionEnabled() ? 'enabled' : 'disabled';
-        this._logger.log(`AppModule blocks ingestion ${blocksIngestEnabled} and transactions ingestion ${transactionsIngestEnabled} (${config.getBlockIngestionMaxLength()})`);
+        const ingestEnabled = config.isIngestEnabled() ? 'enabled' : 'disabled';
+        this._logger.log(`AppModule ingestion: ${ingestEnabled}`);
 
         // Init the blocks index
-        this._elasticService.indexExists(ElasticIndexes.INDEX_BLOCKS).then(async exists => {
+        this._elasticService.indexExists(ElasticIndexes.INDEX_BLOCKS).then(async (exists) => {
             if (!exists) {
                 await this._elasticService.indexCreate(ElasticIndexes.INDEX_BLOCKS, IndexBlocksMapping);
                 this._logger.debug('Created index blocks');
@@ -78,7 +78,7 @@ export class AppModule implements OnModuleInit {
         });
 
         // Init the validators index
-        this._elasticService.indexExists(ElasticIndexes.INDEX_VALIDATORS).then(async exists => {
+        this._elasticService.indexExists(ElasticIndexes.INDEX_VALIDATORS).then(async (exists) => {
             if (!exists) {
                 await this._elasticService.indexCreate(ElasticIndexes.INDEX_VALIDATORS, IndexValidatorsMapping);
                 this._logger.debug('Created index validators');
@@ -86,11 +86,41 @@ export class AppModule implements OnModuleInit {
         });
 
         // Init the transactions index
-        this._elasticService.indexExists(ElasticIndexes.INDEX_TRANSACTIONS).then(async exists => {
+        this._elasticService.indexExists(ElasticIndexes.INDEX_TRANSACTIONS).then(async (exists) => {
             if (!exists) {
                 await this._elasticService.indexCreate(ElasticIndexes.INDEX_TRANSACTIONS, IndexTransactionsMapping);
                 this._logger.debug('Created index transactions');
             }
         });
+
+        // Make sure to initialize the lum network service
+        await this._lumNetworkService.initialise();
+    }
+
+    async onApplicationBootstrap() {
+        // If we weren't able to initialize connection with Lum Network, exit the project
+        if (!this._lumNetworkService.isInitialized()) {
+            throw new Error(`Cannot initialize the Lum Network Service, exiting...`);
+        }
+
+        // Display the faucet address
+        const wallet = await LumWalletFactory.fromMnemonic(FAUCET_MNEMONIC);
+        this._logger.log(`Faucet is listening on address ${wallet.getAddress()}`);
+
+        // Trigger block backward ingestion at startup
+        const lumClt = await this._lumNetworkService.getClient();
+        const chainId = await lumClt.getChainId();
+        const blockHeight = await lumClt.getBlockHeight();
+        await this._queue.add(
+            QueueJobs.TRIGGER_VERIFY_BLOCKS_BACKWARD,
+            {
+                chainId: chainId,
+                fromBlock: 1,
+                toBlock: blockHeight,
+            },
+            {
+                delay: 120000, // Delayed by 2 minutes to avoid some eventual concurrency issues
+            },
+        );
     }
 }
