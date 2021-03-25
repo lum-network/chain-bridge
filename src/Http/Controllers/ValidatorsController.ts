@@ -1,5 +1,4 @@
-import { CacheInterceptor, Controller, Get, NotFoundException, Req, UseInterceptors } from '@nestjs/common';
-import { Request } from 'express';
+import { CacheInterceptor, Controller, Get, NotFoundException, Param, Req, UseInterceptors } from '@nestjs/common';
 import { plainToClass } from 'class-transformer';
 
 import { ElasticService, LumNetworkService } from '@app/Services';
@@ -26,7 +25,7 @@ export default class ValidatorsController {
     }
 
     @Get(':address')
-    async show(@Req() req: Request) {
+    async show(@Param('address') address: string) {
         const blocksPromise = this._elasticService.documentSearch(ElasticIndexes.INDEX_BLOCKS, {
             size: 5,
             sort: { time: 'desc' },
@@ -35,7 +34,7 @@ export default class ValidatorsController {
                     should: [
                         {
                             multi_match: {
-                                query: req.params.address,
+                                query: address,
                                 fields: ['operator_address'],
                                 type: 'cross_fields',
                                 operator: 'OR',
@@ -48,9 +47,9 @@ export default class ValidatorsController {
         const lumClt = await this._lumNetworkService.getClient();
 
         const [validator, delegations, rewards, blocksResponse] = await Promise.all([
-            lumClt.queryClient.staking.unverified.validator(req.params.address).catch(() => null),
-            lumClt.queryClient.staking.unverified.validatorDelegations(req.params.address).catch(() => null),
-            lumClt.queryClient.distribution.unverified.validatorOutstandingRewards(req.params.address).catch(() => null),
+            lumClt.queryClient.staking.unverified.validator(address).catch(() => null),
+            lumClt.queryClient.staking.unverified.validatorDelegations(address).catch(() => null),
+            lumClt.queryClient.distribution.unverified.validatorOutstandingRewards(address).catch(() => null),
             blocksPromise.catch(() => null),
         ]);
 
@@ -66,9 +65,9 @@ export default class ValidatorsController {
             throw new NotFoundException('validator_rewards_not_found');
         }
 
-        const address = convertValAddressToAccAddress(validator.validator.operatorAddress);
+        const valAddress = convertValAddressToAccAddress(validator.validator.operatorAddress);
 
-        const accountDelegations = await lumClt.queryClient.staking.unverified.delegatorDelegations(address).catch(() => null);
+        const accountDelegations = await lumClt.queryClient.staking.unverified.delegatorDelegations(valAddress).catch(() => null);
 
         let selfBonded = 0.0;
 

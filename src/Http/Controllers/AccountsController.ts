@@ -1,5 +1,4 @@
-import { CacheInterceptor, Controller, Get, NotFoundException, Req, UseInterceptors } from '@nestjs/common';
-import { Request } from 'express';
+import { CacheInterceptor, Controller, Get, NotFoundException, Param, Req, UseInterceptors } from '@nestjs/common';
 
 import { ElasticService, LumNetworkService } from '@app/Services';
 import { ElasticIndexes } from '@app/Utils/Constants';
@@ -13,7 +12,7 @@ export default class AccountsController {
     constructor(private readonly _elasticService: ElasticService, private readonly _lumNetworkService: LumNetworkService) {}
 
     @Get(':address')
-    async show(@Req() req: Request) {
+    async show(@Param('address') address: string) {
         const lumClt = await this._lumNetworkService.getClient();
 
         const txPromise = this._elasticService.documentSearch(ElasticIndexes.INDEX_TRANSACTIONS, {
@@ -23,7 +22,7 @@ export default class AccountsController {
                     should: [
                         {
                             multi_match: {
-                                query: req.params.address,
+                                query: address,
                                 fields: ['addresses'],
                                 type: 'cross_fields',
                                 operator: 'OR',
@@ -34,13 +33,13 @@ export default class AccountsController {
             },
         });
 
-        const [account, balance, delegations, rewards, address, unbondings, transactions] = await Promise.all([
-            lumClt.queryClient.auth.unverified.account(req.params.address).catch(() => null),
-            lumClt.queryClient.bank.unverified.balance(req.params.address, LumConstants.LumDenom).catch(() => null),
-            lumClt.queryClient.staking.unverified.delegatorDelegations(req.params.address).catch(() => null),
-            lumClt.queryClient.distribution.unverified.delegationTotalRewards(req.params.address).catch(() => null),
-            lumClt.queryClient.distribution.unverified.delegatorWithdrawAddress(req.params.address).catch(() => null),
-            lumClt.queryClient.staking.unverified.delegatorUnbondingDelegations(req.params.address).catch(() => null),
+        const [account, balance, delegations, rewards, validatorAddress, unbondings, transactions] = await Promise.all([
+            lumClt.queryClient.auth.unverified.account(address).catch(() => null),
+            lumClt.queryClient.bank.unverified.balance(address, LumConstants.LumDenom).catch(() => null),
+            lumClt.queryClient.staking.unverified.delegatorDelegations(address).catch(() => null),
+            lumClt.queryClient.distribution.unverified.delegationTotalRewards(address).catch(() => null),
+            lumClt.queryClient.distribution.unverified.delegatorWithdrawAddress(address).catch(() => null),
+            lumClt.queryClient.staking.unverified.delegatorUnbondingDelegations(address).catch(() => null),
             txPromise.catch(() => null),
         ]);
 
@@ -58,7 +57,7 @@ export default class AccountsController {
         account['all_rewards'] = !!rewards ? rewards : [];
 
         // Inject withdraw address
-        account['withdraw_address'] = !!address ? address.withdrawAddress : req.params.address;
+        account['withdraw_address'] = !!validatorAddress ? validatorAddress.withdrawAddress : address;
 
         account['unbondings'] = !!unbondings ? unbondings.unbondingResponses : null;
 
