@@ -1,7 +1,7 @@
 import { Exclude, Expose, Type } from 'class-transformer';
 import BalanceResponse from '@app/Http/Responses/BalanceResponse';
 import DelegationResponse from '@app/Http/Responses/DelegationResponse';
-import RewardResponse from '@app/Http/Responses/RewardResponse';
+import AllRewardResponse from '@app/Http/Responses/RewardResponse';
 import TransactionResponse from '@app/Http/Responses/TransactionResponse';
 
 @Exclude()
@@ -40,8 +40,8 @@ export default class AccountResponse {
     delegations: DelegationResponse[];
 
     @Expose()
-    @Type(() => RewardResponse)
-    all_rewards: RewardResponse;
+    @Type(() => AllRewardResponse)
+    all_rewards: AllRewardResponse;
 
     @Expose()
     @Type(() => TransactionResponse)
