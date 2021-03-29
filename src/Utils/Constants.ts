@@ -32,4 +32,4 @@ export enum NotificationEvents {
     EVENT_NEW_TRANSACTION = 'new-transaction',
 }
 
-export const FAUCET_MNEMONIC = 'minute people rate opinion salt erosion comic panel license fragile mass thank wash shallow wire turn rug cloud speak tiger ignore abstract draft height';
+export const FAUCET_MNEMONIC = 'bar guess duty decrease uncle code bus key usual wash jaguar artefact helmet maze expand board acquire birth candy expose have eagle iron desk';
