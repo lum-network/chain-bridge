@@ -19,7 +19,7 @@ export enum QueueJobs {
     INGEST_BLOCK = 'ingest_block',
     TRIGGER_VERIFY_BLOCKS_BACKWARD = 'trigger_verify_blocks_backward',
     NOTIFICATION_SOCKET = 'push_notification',
-    MINT_FAUCET_REQUEST = 'mint_faucet_request'
+    MINT_FAUCET_REQUEST = 'mint_faucet_request',
 }
 
 export enum NotificationChannels {

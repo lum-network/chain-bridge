@@ -134,3 +134,19 @@ export class UndelegateMessageResponse extends MessageResponse {
     @Type(() => UndelegateValueResponse)
     value: UndelegateValueResponse;
 }
+
+@Exclude()
+class GetRewardValueResponse {
+    @Expose({ name: 'delegatorAddress' })
+    delegator_address: string;
+
+    @Expose({ name: 'validatorAddress' })
+    validator_address: string;
+}
+
+@Exclude()
+export class GetRewardMessageResponse extends MessageResponse {
+    @Expose()
+    @Type(() => GetRewardValueResponse)
+    value: GetRewardValueResponse;
+}

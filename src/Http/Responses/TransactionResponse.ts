@@ -4,6 +4,7 @@ import MessageResponse, {
     CreateValidatorMessageResponse,
     DelegateMessageResponse,
     EditValidatorMessageResponse,
+    GetRewardMessageResponse,
     SendMessageResponse,
     UndelegateMessageResponse,
 } from '@app/Http/Responses/MessageResponse';
@@ -57,6 +58,7 @@ export default class TransactionResponse {
                 { value: UndelegateMessageResponse, name: LumMessages.MsgUndelegateUrl },
                 { value: CreateValidatorMessageResponse, name: LumMessages.MsgCreateValidatorUrl },
                 { value: EditValidatorMessageResponse, name: LumMessages.MsgEditValidatorUrl },
+                { value: GetRewardMessageResponse, name: LumMessages.MsgWithdrawDelegatorRewardUrl },
             ],
         },
         keepDiscriminatorProperty: true,
