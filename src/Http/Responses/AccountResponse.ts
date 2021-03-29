@@ -8,6 +8,12 @@ import TransactionResponse from '@app/Http/Responses/TransactionResponse';
 class UnbondingEntriesResponse {
     @Expose()
     balance: string;
+
+    @Expose({ name: 'completionTime' })
+    completion_time: string;
+
+    @Expose({ name: 'creationHeight' })
+    height: any;
 }
 
 @Exclude()
@@ -15,6 +21,9 @@ class UnbondingResponse {
     @Expose()
     @Type(() => UnbondingEntriesResponse)
     entries: UnbondingEntriesResponse[] = [];
+
+    @Expose({ name: 'validatorAddress' })
+    validator_address: string;
 }
 
 @Exclude()

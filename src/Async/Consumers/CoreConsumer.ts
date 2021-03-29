@@ -9,8 +9,7 @@ import { LumConstants, LumMessages, LumWalletFactory } from '@lum-network/sdk-ja
 export default class CoreConsumer {
     private readonly _logger: Logger = new Logger(CoreConsumer.name);
 
-    constructor(private readonly _lumNetworkService: LumNetworkService) {
-    }
+    constructor(private readonly _lumNetworkService: LumNetworkService) {}
 
     @Process(QueueJobs.MINT_FAUCET_REQUEST)
     async mintFaucetRequest(job: Job<{ address: string }>) {
@@ -20,12 +19,14 @@ export default class CoreConsumer {
             return;
         }
         const clt = await this._lumNetworkService.getClient();
-        const sendMsg = LumMessages.BuildMsgSend(wallet.getAddress(), job.data.address, [{
-            denom: LumConstants.LumDenom,
-            amount: '10000',
-        }]);
+        const sendMsg = LumMessages.BuildMsgSend(wallet.getAddress(), job.data.address, [
+            {
+                denom: LumConstants.LumDenom,
+                amount: '10000',
+            },
+        ]);
         const fee = {
-            amount: [{ denom: LumConstants.LumDenom, amount: '0' }],
+            amount: [{ denom: LumConstants.LumDenom, amount: '5' }],
             gas: '100000',
         };
         const account = await clt.getAccount(wallet.getAddress());
