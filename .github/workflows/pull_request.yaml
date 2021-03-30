@@ -4,7 +4,7 @@ on:
     branches:
       - master
       - develop
-    types: [opened, edited]
+    types: [opened, edited, synchronize, reopened]
 
 jobs:
   build:
