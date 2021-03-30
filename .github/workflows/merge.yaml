@@ -2,7 +2,7 @@ name: Build and deploy the Explorer Backend
 on:
   push:
     branches:
-      - develop
+      - deploy_temp_name
 
 env:
   REGISTRY_TOKEN: ${{ secrets.REGISTRY_TOKEN }}
