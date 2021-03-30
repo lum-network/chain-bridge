@@ -1,8 +1,8 @@
-name: Build and deploy the Explorer Backend
+name: Build and deploy the Explorer Backend when pushed on master
 on:
   push:
     branches:
-      - deploy_temp_name
+      - develop
 
 env:
   REGISTRY_TOKEN: ${{ secrets.REGISTRY_TOKEN }}
@@ -61,3 +61,13 @@ jobs:
           docker build -t $REGISTRY_ADDRESS/$REGISTRY_ADDRESS_PROJECT:latest -t $REGISTRY_ADDRESS/$REGISTRY_ADDRESS_PROJECT:"${{ steps.vars.outputs.version_tag_number }}" .
           docker push $REGISTRY_ADDRESS/$REGISTRY_ADDRESS_PROJECT:${{ steps.vars.outputs.version_tag_number }}
           docker push $REGISTRY_ADDRESS/$REGISTRY_ADDRESS_PROJECT:latest
+
+  deploy_testnet:
+    name: Upgrade the kubernetes service with the latest pushed version
+    runs-on: ubuntu-latest
+    needs: build
+    environment: testnet
+    steps:
+      - name: test
+        run: |
+          echo this is my test after manual approval

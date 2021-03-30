@@ -1,4 +1,4 @@
-name: Lint, format, test, build and deploy the explorer bridge
+name: Lint, format and test the bridge on pull request events
 on:
   pull_request:
     branches:
