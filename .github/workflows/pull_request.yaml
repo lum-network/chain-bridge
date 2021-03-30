@@ -32,4 +32,4 @@ jobs:
         run: yarn lint
 
       - name: Test the code
-        run: yarn test
+        run: yarn test --passWithNoTests
