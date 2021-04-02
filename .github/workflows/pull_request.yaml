@@ -1,9 +1,6 @@
 name: Lint, format and test the bridge on pull request events
 on:
   pull_request:
-    branches:
-      - master
-      - develop
     types: [opened, edited, synchronize, reopened]
 
 jobs:
@@ -18,6 +15,7 @@ jobs:
         with:
           python-version: '3.x'
           architecture: 'x64'
+
       - uses: actions/setup-node@v1
         with:
           node-version: '10'
