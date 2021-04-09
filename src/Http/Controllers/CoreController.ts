@@ -1,4 +1,4 @@
-import { CacheInterceptor, Controller, Get, NotFoundException, Param, Req, UseInterceptors } from '@nestjs/common';
+import { CacheInterceptor, Controller, Get, NotFoundException, Param, UseInterceptors } from '@nestjs/common';
 import { ElasticService } from '@app/Services';
 import { ElasticIndexes, QueueJobs, Queues } from '@app/Utils/Constants';
 import { LumConstants } from '@lum-network/sdk-javascript';
