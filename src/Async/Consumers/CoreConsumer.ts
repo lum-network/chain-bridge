@@ -1,9 +1,10 @@
 import { Process, Processor } from '@nestjs/bull';
 import { Job } from 'bull';
-import { FAUCET_MNEMONIC, QueueJobs, Queues } from '@app/Utils/Constants';
+import { QueueJobs, Queues } from '@app/Utils/Constants';
 import { Logger } from '@nestjs/common';
 import { LumNetworkService } from '@app/Services';
 import { LumConstants, LumMessages, LumWalletFactory } from '@lum-network/sdk-javascript';
+import { config } from '@app/Utils/Config';
 
 @Processor(Queues.QUEUE_DEFAULT)
 export default class CoreConsumer {
@@ -13,7 +14,7 @@ export default class CoreConsumer {
 
     @Process(QueueJobs.MINT_FAUCET_REQUEST)
     async mintFaucetRequest(job: Job<{ address: string }>) {
-        const wallet = await LumWalletFactory.fromMnemonic(FAUCET_MNEMONIC);
+        const wallet = await LumWalletFactory.fromMnemonic(config.getFaucetMnemonic());
         if (!wallet) {
             this._logger.error(`Unable to generate wallet for address ${job.data.address}`);
             return;

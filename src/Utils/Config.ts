@@ -50,6 +50,10 @@ export default class Config {
         return this.getValue<number>('API_PORT', true);
     };
 
+    public getFaucetMnemonic = (): string => {
+        return this.getValue<string>('FAUCET_MNEMONIC', false);
+    };
+
     public isIngestEnabled(): boolean {
         const enabled = this.getValue('INGEST_ENABLED');
         return enabled === 'true' || enabled === true;

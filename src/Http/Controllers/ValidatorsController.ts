@@ -21,7 +21,7 @@ export default class ValidatorsController {
 
         const results = [...bonded.validators, ...unbonding.validators, ...unbonded.validators];
 
-        return results.map((validator) => plainToClass(ValidatorResponse, validator));
+        return results.map(validator => plainToClass(ValidatorResponse, validator));
     }
 
     @Get(':address')
@@ -78,7 +78,7 @@ export default class ValidatorsController {
         let blocks = [];
 
         if (blocksResponse && blocksResponse.body && blocksResponse.body.hits && blocksResponse.body.hits.hits) {
-            blocks = blocksResponse.body.hits.hits.map((hit) => plainToClass(BlockResponse, hit._source));
+            blocks = blocksResponse.body.hits.hits.map(hit => plainToClass(BlockResponse, hit._source));
         }
 
         // Merge

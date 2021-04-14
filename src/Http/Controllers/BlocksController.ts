@@ -1,12 +1,4 @@
-import {
-    CacheInterceptor,
-    Controller,
-    Get,
-    InternalServerErrorException,
-    NotFoundException,
-    Param,
-    UseInterceptors,
-} from '@nestjs/common';
+import { CacheInterceptor, Controller, Get, InternalServerErrorException, NotFoundException, Param, UseInterceptors } from '@nestjs/common';
 import { ElasticService } from '@app/Services';
 import { ElasticIndexes } from '@app/Utils/Constants';
 import { plainToClass } from 'class-transformer';
@@ -15,8 +7,7 @@ import { BlockResponse } from '@app/Http/Responses';
 @Controller('blocks')
 @UseInterceptors(CacheInterceptor)
 export default class BlocksController {
-    constructor(private readonly _elasticService: ElasticService) {
-    }
+    constructor(private readonly _elasticService: ElasticService) {}
 
     @Get('')
     async fetch() {
@@ -30,7 +21,7 @@ export default class BlocksController {
             throw new NotFoundException('blocks_not_found');
         }
 
-        return result.body.hits.hits.map((block) => plainToClass(BlockResponse, block._source));
+        return result.body.hits.hits.map(block => plainToClass(BlockResponse, block._source));
     }
 
     @Get('latest')

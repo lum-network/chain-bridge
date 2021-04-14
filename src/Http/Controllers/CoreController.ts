@@ -7,11 +7,7 @@ import { InjectQueue } from '@nestjs/bull';
 
 @Controller('')
 export default class CoreController {
-    constructor(
-        private readonly _elasticService: ElasticService,
-        @InjectQueue(Queues.QUEUE_DEFAULT) private readonly _queue: Queue,
-    ) {
-    }
+    constructor(private readonly _elasticService: ElasticService, @InjectQueue(Queues.QUEUE_DEFAULT) private readonly _queue: Queue) {}
 
     @Get('search/:data')
     @UseInterceptors(CacheInterceptor)
