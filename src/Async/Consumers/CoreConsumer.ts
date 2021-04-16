@@ -3,7 +3,7 @@ import { Job } from 'bull';
 import { QueueJobs, Queues } from '@app/Utils/Constants';
 import { Logger } from '@nestjs/common';
 import { LumNetworkService } from '@app/Services';
-import { LumConstants, LumMessages, LumWalletFactory } from '@lum-network/sdk-javascript';
+import { LumMessages, LumWalletFactory } from '@lum-network/sdk-javascript';
 import { config } from '@app/Utils/Config';
 
 @Processor(Queues.QUEUE_DEFAULT)
@@ -22,12 +22,12 @@ export default class CoreConsumer {
         const clt = await this._lumNetworkService.getClient();
         const sendMsg = LumMessages.BuildMsgSend(wallet.getAddress(), job.data.address, [
             {
-                denom: LumConstants.LumDenom,
-                amount: '10000',
+                denom: 'ulum',
+                amount: '1',
             },
         ]);
         const fee = {
-            amount: [{ denom: LumConstants.LumDenom, amount: '5' }],
+            amount: [{ denom: 'ulum', amount: '5' }],
             gas: '100000',
         };
         const account = await clt.getAccount(wallet.getAddress());
