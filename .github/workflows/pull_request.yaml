@@ -1,0 +1,33 @@
+name: Lint, format and test the bridge on pull request events
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+jobs:
+  build:
+    name: Build, lint and format the code
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - uses: actions/setup-python@v1
+        with:
+          python-version: '3.x'
+          architecture: 'x64'
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '10'
+
+      - name: Install the project dependencies
+        run: yarn install
+
+      - name: Format the code
+        run: yarn format
+
+      - name: Lint the code
+        run: yarn lint
+
+      - name: Test the code
+        run: yarn test --passWithNoTests

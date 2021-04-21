@@ -1,4 +1,4 @@
-import { CacheInterceptor, Controller, Get, NotFoundException, Param, Req, UseInterceptors } from '@nestjs/common';
+import { CacheInterceptor, Controller, Get, NotFoundException, Param, UseInterceptors } from '@nestjs/common';
 import { ElasticService } from '@app/Services';
 import { ElasticIndexes, QueueJobs, Queues } from '@app/Utils/Constants';
 import { LumConstants } from '@lum-network/sdk-javascript';
@@ -7,11 +7,7 @@ import { InjectQueue } from '@nestjs/bull';
 
 @Controller('')
 export default class CoreController {
-    constructor(
-        private readonly _elasticService: ElasticService,
-        @InjectQueue(Queues.QUEUE_DEFAULT) private readonly _queue: Queue,
-    ) {
-    }
+    constructor(private readonly _elasticService: ElasticService, @InjectQueue(Queues.QUEUE_DEFAULT) private readonly _queue: Queue) {}
 
     @Get('search/:data')
     @UseInterceptors(CacheInterceptor)

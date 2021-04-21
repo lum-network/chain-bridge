@@ -19,7 +19,7 @@ export enum QueueJobs {
     INGEST_BLOCK = 'ingest_block',
     TRIGGER_VERIFY_BLOCKS_BACKWARD = 'trigger_verify_blocks_backward',
     NOTIFICATION_SOCKET = 'push_notification',
-    MINT_FAUCET_REQUEST = 'mint_faucet_request'
+    MINT_FAUCET_REQUEST = 'mint_faucet_request',
 }
 
 export enum NotificationChannels {
@@ -31,5 +31,3 @@ export enum NotificationEvents {
     EVENT_NEW_BLOCK = 'new-block',
     EVENT_NEW_TRANSACTION = 'new-transaction',
 }
-
-export const FAUCET_MNEMONIC = 'minute people rate opinion salt erosion comic panel license fragile mass thank wash shallow wire turn rug cloud speak tiger ignore abstract draft height';

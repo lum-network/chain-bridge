@@ -1,4 +1,4 @@
-import { CacheInterceptor, Controller, Get, NotFoundException, Param, Req, UseInterceptors } from '@nestjs/common';
+import { CacheInterceptor, Controller, Get, NotFoundException, Param, UseInterceptors } from '@nestjs/common';
 import { plainToClass } from 'class-transformer';
 
 import { ElasticService, LumNetworkService } from '@app/Services';
@@ -21,7 +21,7 @@ export default class ValidatorsController {
 
         const results = [...bonded.validators, ...unbonding.validators, ...unbonded.validators];
 
-        return results.map((validator) => plainToClass(ValidatorResponse, validator));
+        return results.map(validator => plainToClass(ValidatorResponse, validator));
     }
 
     @Get(':address')
@@ -65,9 +65,9 @@ export default class ValidatorsController {
             throw new NotFoundException('validator_rewards_not_found');
         }
 
-        const valAddress = convertValAddressToAccAddress(validator.validator.operatorAddress);
+        const accAddress = convertValAddressToAccAddress(validator.validator.operatorAddress);
 
-        const accountDelegations = await lumClt.queryClient.staking.unverified.delegatorDelegations(valAddress).catch(() => null);
+        const accountDelegations = await lumClt.queryClient.staking.unverified.delegatorDelegations(accAddress).catch(() => null);
 
         let selfBonded = 0.0;
 
@@ -78,13 +78,13 @@ export default class ValidatorsController {
         let blocks = [];
 
         if (blocksResponse && blocksResponse.body && blocksResponse.body.hits && blocksResponse.body.hits.hits) {
-            blocks = blocksResponse.body.hits.hits.map((hit) => plainToClass(BlockResponse, hit._source));
+            blocks = blocksResponse.body.hits.hits.map(hit => plainToClass(BlockResponse, hit._source));
         }
 
         // Merge
         const result = {
             ...validator.validator,
-            address,
+            address: accAddress,
             selfBonded,
             delegations: delegations.delegationResponses,
             rewards,

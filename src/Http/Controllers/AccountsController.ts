@@ -1,4 +1,4 @@
-import { CacheInterceptor, Controller, Get, NotFoundException, Param, Req, UseInterceptors } from '@nestjs/common';
+import { CacheInterceptor, Controller, Get, NotFoundException, Param, UseInterceptors } from '@nestjs/common';
 
 import { ElasticService, LumNetworkService } from '@app/Services';
 import { ElasticIndexes } from '@app/Utils/Constants';
@@ -35,7 +35,7 @@ export default class AccountsController {
 
         const [account, balance, delegations, rewards, validatorAddress, unbondings, transactions] = await Promise.all([
             lumClt.queryClient.auth.unverified.account(address).catch(() => null),
-            lumClt.queryClient.bank.unverified.balance(address, LumConstants.LumDenom).catch(() => null),
+            lumClt.queryClient.bank.unverified.balance(address, LumConstants.MicroLumDenom).catch(() => null),
             lumClt.queryClient.staking.unverified.delegatorDelegations(address).catch(() => null),
             lumClt.queryClient.distribution.unverified.delegationTotalRewards(address).catch(() => null),
             lumClt.queryClient.distribution.unverified.delegatorWithdrawAddress(address).catch(() => null),
@@ -63,7 +63,7 @@ export default class AccountsController {
 
         // Inject transactions
         if (transactions && transactions.body && transactions.body.hits && transactions.body.hits.hits) {
-            account['transactions'] = transactions.body.hits.hits.map((hit) => plainToClass(TransactionResponse, hit._source));
+            account['transactions'] = transactions.body.hits.hits.map(hit => plainToClass(TransactionResponse, hit._source));
         } else {
             account['transactions'] = [];
         }

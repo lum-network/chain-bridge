@@ -10,8 +10,7 @@ export default class LumNetworkService {
     initialise = async () => {
         try {
             this._client = await LumClient.connect(config.getLumNetworkEndpoint());
-        } catch (e) {
-        }
+        } catch (e) {}
     };
 
     isInitialized = (): boolean => {
