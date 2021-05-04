@@ -6,6 +6,7 @@ on:
       - improvement/sbc-71
 
 env:
+  ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
   REGISTRY_TOKEN: ${{ secrets.REGISTRY_TOKEN }}
   REGISTRY_ADDRESS: rg.fr-par.scw.cloud/lum-network
   REGISTRY_ADDRESS_PROJECT: bridge
@@ -81,7 +82,7 @@ jobs:
         uses: actions/checkout@master
         with:
           repository: lum-network/infrastructure-deployments
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: $ACCESS_TOKEN
           path: 'helm'
 
       - name: test
