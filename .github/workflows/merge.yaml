@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - develop
+      - improvement/sbc-71
 
 env:
   REGISTRY_TOKEN: ${{ secrets.REGISTRY_TOKEN }}
@@ -67,6 +68,21 @@ jobs:
     needs: build
     environment: testnet
     steps:
+      - name: Download version number from bump-version-push-tag
+        uses: actions/download-artifact@v1
+        with:
+          name: new_version
+
+      - name: Create version number variable
+        id: vars
+        run: echo ::set-output name=version_tag_number::$(cat new_version/new_version.txt)
+
+      - name: Clone the infrastructure deployments repository
+        uses: actions/checkout@master
+        with:
+          repository: lum-network/infrastructure-deployments
+          token: ${{ secrets.GITHUB_TOKEN }}
+          path: 'helm'
+
       - name: test
-        run: |
-          echo this is my test after manual approval
+        run: ls -la helm
