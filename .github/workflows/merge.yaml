@@ -93,9 +93,6 @@ jobs:
           release: 'lum-network-bridge'
           namespace: 'lum-network'
           chart: 'helm/lum-network/bridge'
-          value-files: >-
-          [
-            "helm/lum-network/values.yaml"
-          ]
+          value-files: 'helm/lum-network/values.yaml'
         env:
           KUBECONFIG_FILE: ${{ secrets.KUBECONFIG }}
