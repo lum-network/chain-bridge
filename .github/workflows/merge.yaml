@@ -87,5 +87,15 @@ jobs:
           path: 'helm'
           token: ${{ secrets.PAT }}
 
-      - name: test
-        run: ls -la helm
+      - name: Deploy the upgrade
+        uses: deliverybot/helm@v1
+        with:
+          release: 'lum-network-bridge'
+          namespace: 'lum-network'
+          chart: 'helm/lum-network/bridge'
+          value-files: >-
+          [
+            "helm/lum-network/values.yaml"
+          ]
+        env:
+          KUBECONFIG_FILE: ${{ secrets.KUBECONFIG }}
