@@ -94,5 +94,7 @@ jobs:
           namespace: 'lum-network'
           chart: 'helm/lum-network/bridge'
           value-files: 'helm/lum-network/values.yaml'
+          atomic: true
+          helm: 'helm3'
         env:
           KUBECONFIG_FILE: ${{ secrets.KUBECONFIG }}
