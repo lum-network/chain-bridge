@@ -25,15 +25,7 @@ import {
 import { BlockConsumer, BlockScheduler, CoreConsumer, NotificationConsumer, ValidatorScheduler } from '@app/async';
 
 import { ElasticService, LumNetworkService } from '@app/services';
-import {
-    ElasticIndexes,
-    Queues,
-    QueueJobs,
-    config,
-    IndexBlocksMapping,
-    IndexValidatorsMapping,
-    IndexTransactionsMapping,
-} from '@app/utils';
+import { ElasticIndexes, Queues, QueueJobs, config, IndexBlocksMapping, IndexValidatorsMapping, IndexTransactionsMapping } from '@app/utils';
 
 import { GatewayWebsocket } from '@app/websocket';
 
@@ -75,8 +67,7 @@ import { GatewayWebsocket } from '@app/websocket';
 export class AppModule implements OnModuleInit, OnApplicationBootstrap {
     private readonly _logger: Logger = new Logger(AppModule.name);
 
-    constructor(private readonly _elasticService: ElasticService, private readonly _lumNetworkService: LumNetworkService, @InjectQueue(Queues.QUEUE_DEFAULT) private readonly _queue: Queue) {
-    }
+    constructor(private readonly _elasticService: ElasticService, private readonly _lumNetworkService: LumNetworkService, @InjectQueue(Queues.QUEUE_DEFAULT) private readonly _queue: Queue) {}
 
     async onModuleInit() {
         // Log out

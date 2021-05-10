@@ -1,5 +1,5 @@
-import {Exclude, Expose, Transform, Type} from 'class-transformer';
-import Long from "long";
+import { Exclude, Expose, Transform, Type } from 'class-transformer';
+import Long from 'long';
 import { BalanceResponse } from '@app/http/responses/balance.response';
 import { CommissionResponse } from '@app/http/responses/commission.response';
 import { DescriptionResponse } from '@app/http/responses/description.response';
@@ -161,7 +161,7 @@ class OpenBeamValueResponse {
     creator: string;
 
     @Expose()
-    @Transform((value) => value.low)
+    @Transform(value => value.low)
     amount: number;
 
     @Expose()
@@ -186,7 +186,7 @@ class UpdateBeamValueResponse {
     id: string;
 
     @Expose()
-    @Transform((value) => value.low)
+    @Transform(value => value.low)
     amount: number;
 }
 

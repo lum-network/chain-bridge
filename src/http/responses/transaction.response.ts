@@ -1,13 +1,18 @@
-import {Exclude, Expose, Type} from 'class-transformer';
-import {LumMessages} from '@lum-network/sdk-javascript';
-import {BalanceResponse} from '@app/http/responses/balance.response';
+import { Exclude, Expose, Type } from 'class-transformer';
+import { LumMessages } from '@lum-network/sdk-javascript';
+import { BalanceResponse } from '@app/http/responses/balance.response';
 import {
-    CancelBeamMessageResponse, ClaimBeamMessageResponse,
+    CancelBeamMessageResponse,
+    ClaimBeamMessageResponse,
     CreateValidatorMessageResponse,
-    DelegateMessageResponse, EditValidatorMessageResponse, GetRewardMessageResponse,
-    MessageResponse, OpenBeamMessageResponse,
+    DelegateMessageResponse,
+    EditValidatorMessageResponse,
+    GetRewardMessageResponse,
+    MessageResponse,
+    OpenBeamMessageResponse,
     SendMessageResponse,
-    UndelegateMessageResponse, UpdateBeamMessageResponse,
+    UndelegateMessageResponse,
+    UpdateBeamMessageResponse,
 } from '@app/http/responses/message.response';
 
 @Exclude()
@@ -53,16 +58,16 @@ export class TransactionResponse {
         discriminator: {
             property: 'typeUrl',
             subTypes: [
-                {value: SendMessageResponse, name: LumMessages.MsgSendUrl},
-                {value: DelegateMessageResponse, name: LumMessages.MsgDelegateUrl},
-                {value: UndelegateMessageResponse, name: LumMessages.MsgUndelegateUrl},
-                {value: CreateValidatorMessageResponse, name: LumMessages.MsgCreateValidatorUrl},
-                {value: EditValidatorMessageResponse, name: LumMessages.MsgEditValidatorUrl},
-                {value: GetRewardMessageResponse, name: LumMessages.MsgWithdrawDelegatorRewardUrl},
-                {value: OpenBeamMessageResponse, name: LumMessages.MsgOpenBeamUrl},
-                {value: UpdateBeamMessageResponse, name: LumMessages.MsgUpdateBeamUrl},
-                {value: CancelBeamMessageResponse, name: LumMessages.MsgCancelBeamUrl},
-                {value: ClaimBeamMessageResponse, name: LumMessages.MsgClaimBeamUrl}
+                { value: SendMessageResponse, name: LumMessages.MsgSendUrl },
+                { value: DelegateMessageResponse, name: LumMessages.MsgDelegateUrl },
+                { value: UndelegateMessageResponse, name: LumMessages.MsgUndelegateUrl },
+                { value: CreateValidatorMessageResponse, name: LumMessages.MsgCreateValidatorUrl },
+                { value: EditValidatorMessageResponse, name: LumMessages.MsgEditValidatorUrl },
+                { value: GetRewardMessageResponse, name: LumMessages.MsgWithdrawDelegatorRewardUrl },
+                { value: OpenBeamMessageResponse, name: LumMessages.MsgOpenBeamUrl },
+                { value: UpdateBeamMessageResponse, name: LumMessages.MsgUpdateBeamUrl },
+                { value: CancelBeamMessageResponse, name: LumMessages.MsgCancelBeamUrl },
+                { value: ClaimBeamMessageResponse, name: LumMessages.MsgClaimBeamUrl },
             ],
         },
         keepDiscriminatorProperty: true,
