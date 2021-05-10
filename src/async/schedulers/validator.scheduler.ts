@@ -3,8 +3,8 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { LumConstants, LumTypes, LumUtils, LumRegistry } from '@lum-network/sdk-javascript';
 
 import { LumNetworkService, ElasticService } from '@app/services';
-import { ValidatorDocument } from '@app/utils/Models';
-import { ElasticIndexes, IngestionDocumentVersion } from '@app/utils/Constants';
+import { ValidatorDocument } from '@app/utils/models';
+import { ElasticIndexes, IngestionDocumentVersion } from '@app/utils/constants';
 
 @Injectable()
 export class ValidatorScheduler {

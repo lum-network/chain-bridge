@@ -7,11 +7,11 @@ import moment from 'moment';
 
 import { LumUtils, LumRegistry } from '@lum-network/sdk-javascript';
 
-import { ElasticIndexes, NotificationChannels, NotificationEvents, QueueJobs, Queues, IngestionDocumentVersion } from '@app/utils/Constants';
-import { BlockDocument, TransactionDocument } from '@app/utils/Models';
+import { ElasticIndexes, NotificationChannels, NotificationEvents, QueueJobs, Queues, IngestionDocumentVersion } from '@app/utils/constants';
+import { BlockDocument, TransactionDocument } from '@app/utils/models';
 import { LumNetworkService, ElasticService } from '@app/services';
 
-import { config } from '@app/utils/Config';
+import { config } from '@app/utils/config';
 
 @Processor(Queues.QUEUE_DEFAULT)
 export class BlockConsumer {

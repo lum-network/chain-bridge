@@ -1,6 +1,6 @@
 import { CacheInterceptor, Controller, Get, InternalServerErrorException, NotFoundException, Param, UseInterceptors } from '@nestjs/common';
 import { ElasticService } from '@app/services';
-import { ElasticIndexes } from '@app/utils/Constants';
+import { ElasticIndexes } from '@app/utils/constants';
 import { plainToClass } from 'class-transformer';
 import { BlockResponse } from '@app/http/responses';
 

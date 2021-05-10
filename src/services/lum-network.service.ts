@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { LumClient } from '@lum-network/sdk-javascript';
 
-import { config } from '@app/utils/Config';
+import { config } from '@app/utils/config';
 
 @Injectable()
 export class LumNetworkService {

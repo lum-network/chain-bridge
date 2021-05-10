@@ -1,10 +1,10 @@
 import { Process, Processor } from '@nestjs/bull';
 import { Job } from 'bull';
-import { QueueJobs, Queues } from '@app/utils/Constants';
+import { QueueJobs, Queues } from '@app/utils/constants';
 import { Logger } from '@nestjs/common';
 import { LumNetworkService } from '@app/services';
 import { LumConstants, LumMessages, LumWalletFactory } from '@lum-network/sdk-javascript';
-import { config } from '@app/utils/Config';
+import { config } from '@app/utils/config';
 
 @Processor(Queues.QUEUE_DEFAULT)
 export class CoreConsumer {
