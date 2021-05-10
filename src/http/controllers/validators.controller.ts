@@ -8,8 +8,7 @@ import { ElasticIndexes, convertValAddressToAccAddress } from '@app/utils';
 @Controller('validators')
 @UseInterceptors(CacheInterceptor)
 export class ValidatorsController {
-    constructor(private readonly _lumNetworkService: LumNetworkService, private readonly _elasticService: ElasticService) {
-    }
+    constructor(private readonly _lumNetworkService: LumNetworkService, private readonly _elasticService: ElasticService) {}
 
     @Get('')
     async fetch() {

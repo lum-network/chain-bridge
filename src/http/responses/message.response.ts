@@ -1,4 +1,5 @@
-import { Exclude, Expose, Type } from 'class-transformer';
+import { Exclude, Expose, Transform, Type } from 'class-transformer';
+import Long from 'long';
 import { BalanceResponse } from '@app/http/responses/balance.response';
 import { CommissionResponse } from '@app/http/responses/commission.response';
 import { DescriptionResponse } from '@app/http/responses/description.response';
@@ -149,4 +150,83 @@ export class GetRewardMessageResponse extends MessageResponse {
     @Expose()
     @Type(() => GetRewardValueResponse)
     value: GetRewardValueResponse;
+}
+
+@Exclude()
+class OpenBeamValueResponse {
+    @Expose()
+    id: string;
+
+    @Expose()
+    creator: string;
+
+    @Expose()
+    @Transform(value => value.low)
+    amount: number;
+
+    @Expose()
+    secret: string;
+
+    //TODO: add reward and review
+}
+
+@Exclude()
+export class OpenBeamMessageResponse extends MessageResponse {
+    @Expose()
+    @Type(() => OpenBeamValueResponse)
+    value: OpenBeamValueResponse;
+}
+
+@Exclude()
+class UpdateBeamValueResponse {
+    @Expose()
+    updater: string;
+
+    @Expose()
+    id: string;
+
+    @Expose()
+    @Transform(value => value.low)
+    amount: number;
+}
+
+@Exclude()
+export class UpdateBeamMessageResponse extends MessageResponse {
+    @Expose()
+    @Type(() => UpdateBeamValueResponse)
+    value: UpdateBeamValueResponse;
+}
+
+@Exclude()
+class CancelBeamValueResponse {
+    @Expose()
+    updater: string;
+
+    @Expose()
+    id: string;
+}
+
+@Exclude()
+export class CancelBeamMessageResponse extends MessageResponse {
+    @Expose()
+    @Type(() => CancelBeamValueResponse)
+    value: CancelBeamValueResponse;
+}
+
+@Exclude()
+class ClaimBeamValueResponse {
+    @Expose()
+    claimer: string;
+
+    @Expose()
+    id: string;
+
+    @Expose()
+    secret: string;
+}
+
+@Exclude()
+export class ClaimBeamMessageResponse extends MessageResponse {
+    @Expose()
+    value: ClaimBeamValueResponse;
 }
