@@ -22,7 +22,7 @@
     },
     "dependencies": {
         "@elastic/elasticsearch": "^7.9.1",
-        "@lum-network/sdk-javascript": "^0.3.5",
+        "@lum-network/sdk-javascript": "^0.3.6",
         "@nestjs/bull": "^0.2.2",
         "@nestjs/common": "^7.0.0",
         "@nestjs/core": "^7.0.0",
@@ -36,6 +36,7 @@
         "cache-manager-redis-store": "^2.0.0",
         "class-transformer": "^0.3.1",
         "dotenv": "^8.2.0",
+        "long": "^4.0.0",
         "moment": "^2.29.1",
         "reflect-metadata": "^0.1.13",
         "rimraf": "^3.0.2",
