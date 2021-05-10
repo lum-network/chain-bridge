@@ -1,28 +1,41 @@
-import * as redisStore from 'cache-manager-redis-store';
-import { Queue } from 'bull';
-
 import { Logger, Module, OnModuleInit, CacheModule, OnApplicationBootstrap } from '@nestjs/common';
+import { BullModule, InjectQueue } from '@nestjs/bull';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
-import { BullModule, InjectQueue } from '@nestjs/bull';
 import { TerminusModule } from '@nestjs/terminus';
 
-import { AccountsController, BlocksController, CoreController, HealthController, TransactionsController, ValidatorsController } from '@app/Http/Controllers';
+import * as redisStore from 'cache-manager-redis-store';
 
-import { BlockScheduler, ValidatorScheduler } from '@app/Async/Schedulers';
-import { BlockConsumer, CoreConsumer, NotificationConsumer } from '@app/Async/Consumers';
-
-import { ElasticService, LumNetworkService } from '@app/Services';
-import { ElasticIndexes, Queues, QueueJobs } from '@app/Utils/Constants';
-
-import { IndexBlocksMapping, IndexTransactionsMapping, IndexValidatorsMapping } from '@app/Utils/Indices';
-
-import { config } from '@app/Utils/Config';
-
-import { ElasticsearchIndicator, LumNetworkIndicator } from '@app/Http/Indicators';
-import { ResponseInterceptor } from '@app/Http/Interceptors';
-import { Gateway } from '@app/Websocket';
 import { LumWalletFactory } from '@lum-network/sdk-javascript';
+
+import { Queue } from 'bull';
+
+import {
+    AccountsController,
+    BlocksController,
+    CoreController,
+    ElasticsearchIndicator,
+    LumNetworkIndicator,
+    HealthController,
+    ResponseInterceptor,
+    TransactionsController,
+    ValidatorsController,
+} from '@app/http';
+
+import { BlockConsumer, BlockScheduler, CoreConsumer, NotificationConsumer, ValidatorScheduler } from '@app/async';
+
+import { ElasticService, LumNetworkService } from '@app/services';
+import {
+    ElasticIndexes,
+    Queues,
+    QueueJobs,
+    config,
+    IndexBlocksMapping,
+    IndexValidatorsMapping,
+    IndexTransactionsMapping,
+} from '@app/utils';
+
+import { GatewayWebsocket } from '@app/websocket';
 
 @Module({
     imports: [
@@ -53,7 +66,7 @@ import { LumWalletFactory } from '@lum-network/sdk-javascript';
         ValidatorScheduler,
         ElasticsearchIndicator,
         LumNetworkIndicator,
-        Gateway,
+        GatewayWebsocket,
         ElasticService,
         LumNetworkService,
         { provide: APP_INTERCEPTOR, useClass: ResponseInterceptor },
@@ -62,7 +75,8 @@ import { LumWalletFactory } from '@lum-network/sdk-javascript';
 export class AppModule implements OnModuleInit, OnApplicationBootstrap {
     private readonly _logger: Logger = new Logger(AppModule.name);
 
-    constructor(private readonly _elasticService: ElasticService, private readonly _lumNetworkService: LumNetworkService, @InjectQueue(Queues.QUEUE_DEFAULT) private readonly _queue: Queue) {}
+    constructor(private readonly _elasticService: ElasticService, private readonly _lumNetworkService: LumNetworkService, @InjectQueue(Queues.QUEUE_DEFAULT) private readonly _queue: Queue) {
+    }
 
     async onModuleInit() {
         // Log out
