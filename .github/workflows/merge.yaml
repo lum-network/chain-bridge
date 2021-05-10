@@ -85,6 +85,9 @@ jobs:
           path: 'helm'
           token: ${{ secrets.PAT }}
 
+      - name: Update the helm file
+        run: sed -i -e 's/latest/${{ steps.vars.outputs.version_tag_number }}/g' helm/lum-network/values.yaml
+
       - name: Deploy the upgrade
         uses: deliverybot/helm@v1
         with:
