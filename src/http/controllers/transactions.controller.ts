@@ -1,7 +1,7 @@
 import { CacheInterceptor, Controller, Get, NotFoundException, Param, UseInterceptors } from '@nestjs/common';
 import { plainToClass } from 'class-transformer';
 import { ElasticService } from '@app/services';
-import { ElasticIndexes } from '@app/utils/Constants';
+import { ElasticIndexes } from '@app/utils/constants';
 import { TransactionResponse } from '@app/http/responses';
 
 @Controller('transactions')

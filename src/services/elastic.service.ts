@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { Client } from '@elastic/elasticsearch';
 import { Bulk } from '@elastic/elasticsearch/api/requestParams';
 
-import { ElasticIndexes } from '@app/utils/Constants';
-import { config } from '@app/utils/Config';
+import { ElasticIndexes } from '@app/utils/constants';
+import { config } from '@app/utils/config';
 
 @Injectable()
 export class ElasticService {

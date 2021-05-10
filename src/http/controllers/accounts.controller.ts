@@ -1,7 +1,7 @@
 import { CacheInterceptor, Controller, Get, NotFoundException, Param, UseInterceptors } from '@nestjs/common';
 
 import { ElasticService, LumNetworkService } from '@app/services';
-import { ElasticIndexes } from '@app/utils/Constants';
+import { ElasticIndexes } from '@app/utils/constants';
 import { plainToClass } from 'class-transformer';
 import { AccountResponse, TransactionResponse } from '@app/http/responses';
 import { LumConstants } from '@lum-network/sdk-javascript';

@@ -5,8 +5,8 @@ import { Queue } from 'bull';
 import { InjectQueue } from '@nestjs/bull';
 
 import { LumNetworkService } from '@app/services';
-import { QueueJobs, Queues, IngestionDocumentVersion } from '@app/utils/Constants';
-import { config } from '@app/utils/Config';
+import { QueueJobs, Queues, IngestionDocumentVersion } from '@app/utils/constants';
+import { config } from '@app/utils/config';
 
 @Injectable()
 export class BlockScheduler {
