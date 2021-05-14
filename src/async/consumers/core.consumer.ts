@@ -6,7 +6,7 @@ import { LumNetworkService } from '@app/services';
 import { LumConstants, LumMessages, LumWalletFactory } from '@lum-network/sdk-javascript';
 import { config } from '@app/utils/config';
 
-@Processor(Queues.QUEUE_DEFAULT)
+@Processor(Queues.QUEUE_FAUCET)
 export class CoreConsumer {
     private readonly _logger: Logger = new Logger(CoreConsumer.name);
 

@@ -37,7 +37,18 @@ import { GatewayWebsocket } from '@app/websocket';
                 host: config.getRedisHost(),
                 port: config.getRedisPort(),
             },
+            prefix: config.getRedisPrefix()
+        },{
+            name: Queues.QUEUE_FAUCET,
+            redis: {
+                host: config.getRedisHost(),
+                port: config.getRedisPort(),
+            },
             prefix: config.getRedisPrefix(),
+            limiter: {
+                max: 1,
+                duration: 30
+            }
         }),
         CacheModule.register({
             store: redisStore,

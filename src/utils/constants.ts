@@ -13,6 +13,7 @@ export enum ElasticIndexes {
 
 export enum Queues {
     QUEUE_DEFAULT = 'default',
+    QUEUE_FAUCET = 'faucet'
 }
 
 export enum QueueJobs {
