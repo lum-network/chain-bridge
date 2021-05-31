@@ -30,7 +30,22 @@ export class SendMessageResponse extends MessageResponse {
 }
 
 @Exclude()
-class MultiSendValueResponse {}
+class MultiSendSingleMessage {
+    @Expose()
+    address: string;
+
+    @Expose()
+    coins: BalanceResponse[]
+}
+
+@Exclude()
+class MultiSendValueResponse {
+    @Expose()
+    inputs: MultiSendSingleMessage[];
+
+    @Expose()
+    outputs: MultiSendSingleMessage[];
+}
 
 @Exclude()
 export class MultiSendResponse extends MessageResponse {

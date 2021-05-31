@@ -23,7 +23,7 @@ export class CoreConsumer {
         const sendMsg = LumMessages.BuildMsgSend(wallet.getAddress(), job.data.address, [
             {
                 denom: LumConstants.MicroLumDenom,
-                amount: '1000000',
+                amount: '1000000000',
             },
         ]);
         const fee = {
