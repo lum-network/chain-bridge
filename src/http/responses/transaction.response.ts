@@ -8,7 +8,7 @@ import {
     DelegateMessageResponse,
     EditValidatorMessageResponse,
     GetRewardMessageResponse,
-    MessageResponse,
+    MessageResponse, MultiSendResponse,
     OpenBeamMessageResponse,
     SendMessageResponse,
     UndelegateMessageResponse,
@@ -59,6 +59,7 @@ export class TransactionResponse {
             property: 'typeUrl',
             subTypes: [
                 { value: SendMessageResponse, name: LumMessages.MsgSendUrl },
+                { value: MultiSendResponse, name: LumMessages.MsgMultiSendUrl },
                 { value: DelegateMessageResponse, name: LumMessages.MsgDelegateUrl },
                 { value: UndelegateMessageResponse, name: LumMessages.MsgUndelegateUrl },
                 { value: CreateValidatorMessageResponse, name: LumMessages.MsgCreateValidatorUrl },

@@ -1,5 +1,4 @@
 import { Exclude, Expose, Transform, Type } from 'class-transformer';
-import Long from 'long';
 import { BalanceResponse } from '@app/http/responses/balance.response';
 import { CommissionResponse } from '@app/http/responses/commission.response';
 import { DescriptionResponse } from '@app/http/responses/description.response';
@@ -30,7 +29,22 @@ export class SendMessageResponse extends MessageResponse {
 }
 
 @Exclude()
-class MultiSendValueResponse {}
+class MultiSendSingleMessage {
+    @Expose()
+    address: string;
+
+    @Expose()
+    coins: BalanceResponse[]
+}
+
+@Exclude()
+class MultiSendValueResponse {
+    @Expose()
+    inputs: MultiSendSingleMessage[];
+
+    @Expose()
+    outputs: MultiSendSingleMessage[];
+}
 
 @Exclude()
 export class MultiSendResponse extends MessageResponse {
