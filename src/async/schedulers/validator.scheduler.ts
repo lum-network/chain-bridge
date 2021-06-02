@@ -42,7 +42,7 @@ export class ValidatorScheduler {
             for (const s of statuses) {
                 page = undefined;
                 while (true) {
-                    const stakingValidators = await clt.queryClient.staking.unverified.validators(s as any, page);
+                    const stakingValidators = await clt.queryClient.staking.validators(s as any, page);
                     for (const val of stakingValidators.validators) {
                         const pubKey = LumRegistry.decode(val.consensusPubkey) as LumTypes.PubKey;
                         const consensus_pubkey = LumUtils.Bech32.encode(LumConstants.LumBech32PrefixConsPub, pubKey.key);
@@ -76,7 +76,7 @@ export class ValidatorScheduler {
             }
             await this._elasticService.bulkUpdate({ body: bulkPayload });
         } catch (error) {
-            this._logger.error(`Failed to ingest validators:`, error);
+            this._logger.error(`Failed to ingest validators: ${error}`, error.stack);
         }
     }
 }

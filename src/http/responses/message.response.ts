@@ -34,7 +34,7 @@ class MultiSendSingleMessage {
     address: string;
 
     @Expose()
-    coins: BalanceResponse[]
+    coins: BalanceResponse[];
 }
 
 @Exclude()
@@ -209,22 +209,6 @@ export class UpdateBeamMessageResponse extends MessageResponse {
     @Expose()
     @Type(() => UpdateBeamValueResponse)
     value: UpdateBeamValueResponse;
-}
-
-@Exclude()
-class CancelBeamValueResponse {
-    @Expose()
-    updater: string;
-
-    @Expose()
-    id: string;
-}
-
-@Exclude()
-export class CancelBeamMessageResponse extends MessageResponse {
-    @Expose()
-    @Type(() => CancelBeamValueResponse)
-    value: CancelBeamValueResponse;
 }
 
 @Exclude()

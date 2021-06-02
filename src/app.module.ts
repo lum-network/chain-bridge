@@ -31,25 +31,28 @@ import { GatewayWebsocket } from '@app/websocket';
 
 @Module({
     imports: [
-        BullModule.registerQueue({
-            name: Queues.QUEUE_DEFAULT,
-            redis: {
-                host: config.getRedisHost(),
-                port: config.getRedisPort(),
+        BullModule.registerQueue(
+            {
+                name: Queues.QUEUE_DEFAULT,
+                redis: {
+                    host: config.getRedisHost(),
+                    port: config.getRedisPort(),
+                },
+                prefix: config.getRedisPrefix(),
             },
-            prefix: config.getRedisPrefix()
-        },{
-            name: Queues.QUEUE_FAUCET,
-            redis: {
-                host: config.getRedisHost(),
-                port: config.getRedisPort(),
+            {
+                name: Queues.QUEUE_FAUCET,
+                redis: {
+                    host: config.getRedisHost(),
+                    port: config.getRedisPort(),
+                },
+                prefix: config.getRedisPrefix(),
+                limiter: {
+                    max: 1,
+                    duration: 30,
+                },
             },
-            prefix: config.getRedisPrefix(),
-            limiter: {
-                max: 1,
-                duration: 30
-            }
-        }),
+        ),
         CacheModule.register({
             store: redisStore,
             host: config.getRedisHost(),
