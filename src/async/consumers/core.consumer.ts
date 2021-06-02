@@ -3,7 +3,7 @@ import { Job } from 'bull';
 import { QueueJobs, Queues } from '@app/utils/constants';
 import { Logger } from '@nestjs/common';
 import { LumNetworkService } from '@app/services';
-import { LumConstants, LumMessages, LumWalletFactory } from '@lum-network/sdk-javascript';
+import { LumConstants, LumMessages, LumTypes, LumWalletFactory } from '@lum-network/sdk-javascript';
 import { config } from '@app/utils/config';
 
 @Processor(Queues.QUEUE_FAUCET)
@@ -23,7 +23,7 @@ export class CoreConsumer {
         const sendMsg = LumMessages.BuildMsgSend(wallet.getAddress(), job.data.address, [
             {
                 denom: LumConstants.MicroLumDenom,
-                amount: '1000000',
+                amount: '100000000',
             },
         ]);
         const fee = {
@@ -35,13 +35,18 @@ export class CoreConsumer {
             this._logger.error('Cannot dispatch faucet request, failed to acquire account instance');
             return;
         }
-        const doc = {
+        const doc: LumTypes.Doc = {
             fee,
             memo: 'Faucet',
             messages: [sendMsg],
-            accountNumber: account.accountNumber,
-            sequence: account.sequence,
             chainId: await clt.getChainId(),
+            signers: [
+                {
+                    accountNumber: account.accountNumber,
+                    sequence: account.sequence,
+                    publicKey: wallet.getPublicKey(),
+                },
+            ],
         };
         const result = await clt.signAndBroadcastTx(wallet, doc);
         this._logger.debug(result);

@@ -34,12 +34,12 @@ export class AccountsController {
         });
 
         const [account, balance, delegations, rewards, validatorAddress, unbondings, transactions] = await Promise.all([
-            lumClt.queryClient.auth.unverified.account(address).catch(() => null),
-            lumClt.queryClient.bank.unverified.balance(address, LumConstants.MicroLumDenom).catch(() => null),
-            lumClt.queryClient.staking.unverified.delegatorDelegations(address).catch(() => null),
-            lumClt.queryClient.distribution.unverified.delegationTotalRewards(address).catch(() => null),
-            lumClt.queryClient.distribution.unverified.delegatorWithdrawAddress(address).catch(() => null),
-            lumClt.queryClient.staking.unverified.delegatorUnbondingDelegations(address).catch(() => null),
+            lumClt.queryClient.auth.account(address).catch(() => null),
+            lumClt.queryClient.bank.balance(address, LumConstants.MicroLumDenom).catch(() => null),
+            lumClt.queryClient.staking.delegatorDelegations(address).catch(() => null),
+            lumClt.queryClient.distribution.delegationTotalRewards(address).catch(() => null),
+            lumClt.queryClient.distribution.delegatorWithdrawAddress(address).catch(() => null),
+            lumClt.queryClient.staking.delegatorUnbondingDelegations(address).catch(() => null),
             txPromise.catch(() => null),
         ]);
 
