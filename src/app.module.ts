@@ -120,8 +120,10 @@ export class AppModule implements OnModuleInit, OnApplicationBootstrap {
         }
 
         // Display the faucet address
-        const wallet = await LumWalletFactory.fromMnemonic(config.getFaucetMnemonic());
-        this._logger.log(`Faucet is listening on address ${wallet.getAddress()}`);
+        if (config.getFaucetMnemonic()) {
+            const wallet = await LumWalletFactory.fromMnemonic(config.getFaucetMnemonic());
+            this._logger.log(`Faucet is listening on address ${wallet.getAddress()}`);
+        }
 
         // Trigger block backward ingestion at startup
         const lumClt = await this._lumNetworkService.getClient();
