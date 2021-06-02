@@ -41,7 +41,10 @@
         "reflect-metadata": "^0.1.13",
         "rimraf": "^3.0.2",
         "rxjs": "^6.5.4",
-        "sandblock-chain-sdk-js": "^1.0.37"
+        "lodash": "^4.17.21",
+        "hosted-git-info": "^2.8.9",
+        "xmlhttprequest-ssl": "^1.6.2",
+        "node-notifier": "^8.0.1"
     },
     "devDependencies": {
         "@nestjs/cli": "^7.0.0",
