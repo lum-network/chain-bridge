@@ -1,9 +1,10 @@
-import { CacheInterceptor, Controller, Get, NotFoundException, Param, UseInterceptors } from '@nestjs/common';
+import { BadRequestException, CacheInterceptor, Controller, Get, NotFoundException, Param, UseInterceptors } from '@nestjs/common';
 import { ElasticService } from '@app/services';
 import { ElasticIndexes, QueueJobs, Queues } from '@app/utils/constants';
 import { LumConstants } from '@lum-network/sdk-javascript';
 import { Queue } from 'bull';
 import { InjectQueue } from '@nestjs/bull';
+import { config } from '@app/utils';
 
 @Controller('')
 export class CoreController {
@@ -32,6 +33,9 @@ export class CoreController {
 
     @Get('faucet/:address')
     async faucet(@Param('address') address: string) {
+        if (!config.getFaucetMnemonic()) {
+            throw new BadRequestException('faucet_not_available');
+        }
         return this._queue.add(QueueJobs.MINT_FAUCET_REQUEST, { address });
     }
 }

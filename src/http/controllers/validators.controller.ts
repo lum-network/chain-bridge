@@ -13,7 +13,7 @@ export class ValidatorsController {
     @Get('')
     async fetch() {
         const lumClt = await this._lumNetworkService.getClient();
-        const { validators } = lumClt.queryClient.staking.unverified;
+        const { validators } = lumClt.queryClient.staking;
 
         // We acquire both bounded and unbonded (candidates) validators
         const [bonded, unbonding, unbonded] = await Promise.all([validators('BOND_STATUS_BONDED'), validators('BOND_STATUS_UNBONDING'), validators('BOND_STATUS_UNBONDED')]);
@@ -46,9 +46,9 @@ export class ValidatorsController {
         const lumClt = await this._lumNetworkService.getClient();
 
         const [validator, delegations, rewards, blocksResponse] = await Promise.all([
-            lumClt.queryClient.staking.unverified.validator(address).catch(() => null),
-            lumClt.queryClient.staking.unverified.validatorDelegations(address).catch(() => null),
-            lumClt.queryClient.distribution.unverified.validatorOutstandingRewards(address).catch(() => null),
+            lumClt.queryClient.staking.validator(address).catch(() => null),
+            lumClt.queryClient.staking.validatorDelegations(address).catch(() => null),
+            lumClt.queryClient.distribution.validatorOutstandingRewards(address).catch(() => null),
             blocksPromise.catch(() => null),
         ]);
 
@@ -66,7 +66,7 @@ export class ValidatorsController {
 
         const accAddress = convertValAddressToAccAddress(validator.validator.operatorAddress);
 
-        const accountDelegations = await lumClt.queryClient.staking.unverified.delegatorDelegations(accAddress).catch(() => null);
+        const accountDelegations = await lumClt.queryClient.staking.delegatorDelegations(accAddress).catch(() => null);
 
         let selfBonded = 0.0;
 

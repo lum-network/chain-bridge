@@ -5,7 +5,7 @@ import { InjectQueue, Process, Processor } from '@nestjs/bull';
 
 import moment from 'moment';
 
-import { LumUtils, LumRegistry } from '@lum-network/sdk-javascript';
+import { LumUtils, LumRegistry, LumMessages, LumConstants } from '@lum-network/sdk-javascript';
 
 import { ElasticIndexes, NotificationChannels, NotificationEvents, QueueJobs, Queues, IngestionDocumentVersion } from '@app/utils/constants';
 import { BlockDocument, TransactionDocument } from '@app/utils/models';
@@ -79,15 +79,14 @@ export class BlockConsumer {
                     block_hash: blockDoc.hash,
                     proposer_address: blockDoc.proposer_address,
                     operator_address: blockDoc.operator_address,
-                    success: tx.result.code === 0 && !!tx.result.log,
+                    success: tx.result.code === 0,
                     code: tx.result.code,
                     fees: txData.authInfo.fee.amount.map(coin => {
                         return { denom: coin.denom, amount: parseFloat(coin.amount) };
                     }),
                     addresses: [],
-                    // TODO: add computed gas fields once made available by the SDK
-                    gas_wanted: 0, // tx.result.gasWanted,
-                    gas_used: 0, // tx.result.gasUsed,
+                    gas_wanted: ((tx.result as unknown) as { gasWanted: number }).gasWanted,
+                    gas_used: ((tx.result as unknown) as { gasUsed: number }).gasUsed,
                     memo: txData.body.memo,
                     messages: txData.body.messages.map(msg => {
                         return { typeUrl: msg.typeUrl, value: LumUtils.toJSON(LumRegistry.decode(msg)) };
@@ -119,6 +118,19 @@ export class BlockConsumer {
                         }
                     }
                 }
+
+                // Multisend case
+                if (res.messages.length === 1 && res.messages[0].typeUrl === LumMessages.MsgMultiSendUrl) {
+                    res.amount = {
+                        denom: LumConstants.MicroLumDenom,
+                        amount: !res.messages[0].value.inputs
+                            ? '0'
+                            : res.messages[0].value.inputs
+                                  .map((i: any) => (!i.coins ? 0 : i.coins.map((c: any) => (c.denom === LumConstants.MicroLumDenom ? parseInt(c.amount) : 0)).reduce((a: number, b: number) => a + b)))
+                                  .reduce((a: number, b: number) => a + b),
+                    };
+                }
+
                 return res;
             };
             const txDocs = await Promise.all(block.block.txs.map(getFormattedTx));
@@ -148,7 +160,7 @@ export class BlockConsumer {
                 });
             }
         } catch (error) {
-            this._logger.error(`Failed to ingest block ${job.data.blockHeight}: ${error}`);
+            this._logger.error(`Failed to ingest block ${job.data.blockHeight}: ${error}`, error.stack);
             // Throw error to enforce retry strategy
             throw error;
         }

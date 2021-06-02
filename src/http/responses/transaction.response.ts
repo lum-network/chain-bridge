@@ -2,13 +2,13 @@ import { Exclude, Expose, Type } from 'class-transformer';
 import { LumMessages } from '@lum-network/sdk-javascript';
 import { BalanceResponse } from '@app/http/responses/balance.response';
 import {
-    CancelBeamMessageResponse,
     ClaimBeamMessageResponse,
     CreateValidatorMessageResponse,
     DelegateMessageResponse,
     EditValidatorMessageResponse,
     GetRewardMessageResponse,
-    MessageResponse, MultiSendResponse,
+    MessageResponse,
+    MultiSendResponse,
     OpenBeamMessageResponse,
     SendMessageResponse,
     UndelegateMessageResponse,
@@ -67,7 +67,6 @@ export class TransactionResponse {
                 { value: GetRewardMessageResponse, name: LumMessages.MsgWithdrawDelegatorRewardUrl },
                 { value: OpenBeamMessageResponse, name: LumMessages.MsgOpenBeamUrl },
                 { value: UpdateBeamMessageResponse, name: LumMessages.MsgUpdateBeamUrl },
-                { value: CancelBeamMessageResponse, name: LumMessages.MsgCancelBeamUrl },
                 { value: ClaimBeamMessageResponse, name: LumMessages.MsgClaimBeamUrl },
             ],
         },

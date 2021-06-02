@@ -47,6 +47,9 @@ API_PORT=3000
 INGEST_ENABLED=true
 
 PUSH_NOTIF_ENABLED=true
+
+# To enable faucet in testnet environment
+FAUCET_MNEMONIC="my mnemonic phrase"
 ```
 
 If you don't know what these params mean, leave them like this, they are preconfigured.

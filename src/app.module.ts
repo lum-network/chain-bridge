@@ -31,25 +31,28 @@ import { GatewayWebsocket } from '@app/websocket';
 
 @Module({
     imports: [
-        BullModule.registerQueue({
-            name: Queues.QUEUE_DEFAULT,
-            redis: {
-                host: config.getRedisHost(),
-                port: config.getRedisPort(),
+        BullModule.registerQueue(
+            {
+                name: Queues.QUEUE_DEFAULT,
+                redis: {
+                    host: config.getRedisHost(),
+                    port: config.getRedisPort(),
+                },
+                prefix: config.getRedisPrefix(),
             },
-            prefix: config.getRedisPrefix()
-        },{
-            name: Queues.QUEUE_FAUCET,
-            redis: {
-                host: config.getRedisHost(),
-                port: config.getRedisPort(),
+            {
+                name: Queues.QUEUE_FAUCET,
+                redis: {
+                    host: config.getRedisHost(),
+                    port: config.getRedisPort(),
+                },
+                prefix: config.getRedisPrefix(),
+                limiter: {
+                    max: 1,
+                    duration: 30,
+                },
             },
-            prefix: config.getRedisPrefix(),
-            limiter: {
-                max: 1,
-                duration: 30
-            }
-        }),
+        ),
         CacheModule.register({
             store: redisStore,
             host: config.getRedisHost(),
@@ -120,8 +123,10 @@ export class AppModule implements OnModuleInit, OnApplicationBootstrap {
         }
 
         // Display the faucet address
-        const wallet = await LumWalletFactory.fromMnemonic(config.getFaucetMnemonic());
-        this._logger.log(`Faucet is listening on address ${wallet.getAddress()}`);
+        if (config.getFaucetMnemonic()) {
+            const wallet = await LumWalletFactory.fromMnemonic(config.getFaucetMnemonic());
+            this._logger.log(`Faucet is listening on address ${wallet.getAddress()}`);
+        }
 
         // Trigger block backward ingestion at startup
         const lumClt = await this._lumNetworkService.getClient();
