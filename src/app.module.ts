@@ -136,7 +136,7 @@ export class AppModule implements OnModuleInit, OnApplicationBootstrap {
             QueueJobs.TRIGGER_VERIFY_BLOCKS_BACKWARD,
             {
                 chainId: chainId,
-                fromBlock: 1,
+                fromBlock: 2,
                 toBlock: blockHeight,
             },
             {
