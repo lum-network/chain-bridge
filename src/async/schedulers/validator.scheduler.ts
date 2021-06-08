@@ -55,7 +55,7 @@ export class ValidatorScheduler {
                             }
                         }
                     }
-                    if (stakingValidators.pagination && stakingValidators.pagination.nextKey) {
+                    if (stakingValidators.pagination && stakingValidators.pagination.nextKey && stakingValidators.pagination.nextKey.length > 0) {
                         page = stakingValidators.pagination.nextKey;
                     } else {
                         break;

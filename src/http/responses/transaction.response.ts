@@ -1,5 +1,5 @@
-import { Exclude, Expose, Type } from 'class-transformer';
-import { LumMessages } from '@lum-network/sdk-javascript';
+import { Exclude, Expose, Type, Transform } from 'class-transformer';
+import { LumMessages, LumTypes } from '@lum-network/sdk-javascript';
 import { BalanceResponse } from '@app/http/responses/balance.response';
 import {
     ClaimBeamMessageResponse,
@@ -79,6 +79,9 @@ export class TransactionResponse {
 
     @Expose()
     messages_count: number;
+
+    @Expose()
+    raw_logs: LumTypes.Log[];
 
     constructor(data: Partial<TransactionResponse>) {
         Object.assign(this, data);

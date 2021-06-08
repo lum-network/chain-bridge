@@ -41,7 +41,7 @@ export class BlockConsumer {
                 const validatorDoc = await this._elasticService.documentGet(ElasticIndexes.INDEX_VALIDATORS, LumUtils.toHex(block.block.header.proposerAddress).toUpperCase());
                 operatorAddress = validatorDoc && validatorDoc.body && validatorDoc.body._source && validatorDoc.body._source.operator_address;
             } catch (error) {
-                throw new Error(`Failed to find validator address, exiting for retry (${error})`);
+                throw new Error(`Failed to find validator address for ${LumUtils.toHex(block.block.header.proposerAddress).toUpperCase()}, exiting for retry (${error})`);
             }
 
             // Format block data
