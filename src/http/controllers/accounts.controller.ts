@@ -34,8 +34,8 @@ export class AccountsController {
         });
 
         const [account, balance, delegations, rewards, validatorAddress, unbondings, transactions] = await Promise.all([
-            lumClt.queryClient.auth.account(address).catch(() => null),
-            lumClt.queryClient.bank.balance(address, LumConstants.MicroLumDenom).catch(() => null),
+            lumClt.getAccount(address).catch(() => null),
+            lumClt.getBalance(address, LumConstants.MicroLumDenom).catch(() => null),
             lumClt.queryClient.staking.delegatorDelegations(address).catch(() => null),
             lumClt.queryClient.distribution.delegationTotalRewards(address).catch(() => null),
             lumClt.queryClient.distribution.delegatorWithdrawAddress(address).catch(() => null),

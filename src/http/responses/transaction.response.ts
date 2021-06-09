@@ -1,4 +1,4 @@
-import { Exclude, Expose, Type, Transform } from 'class-transformer';
+import { Exclude, Expose, Type } from 'class-transformer';
 import { LumMessages, LumTypes } from '@lum-network/sdk-javascript';
 import { BalanceResponse } from '@app/http/responses/balance.response';
 import {
