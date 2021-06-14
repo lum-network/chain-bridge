@@ -1,4 +1,4 @@
-import { Exclude, Expose, Transform, Type } from 'class-transformer';
+import { Exclude, Expose, Type } from 'class-transformer';
 import { BalanceResponse } from '@app/http/responses/balance.response';
 import { CommissionResponse } from '@app/http/responses/commission.response';
 import { DescriptionResponse } from '@app/http/responses/description.response';
