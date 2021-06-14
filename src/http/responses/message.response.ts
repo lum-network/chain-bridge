@@ -175,8 +175,7 @@ class OpenBeamValueResponse {
     creator: string;
 
     @Expose()
-    @Transform(value => value.low)
-    amount: number;
+    amount: BalanceResponse;
 
     @Expose()
     secret: string;
@@ -200,8 +199,7 @@ class UpdateBeamValueResponse {
     id: string;
 
     @Expose()
-    @Transform(value => value.low)
-    amount: number;
+    amount: BalanceResponse;
 }
 
 @Exclude()
