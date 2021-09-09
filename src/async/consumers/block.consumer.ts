@@ -168,6 +168,12 @@ export class BlockConsumer {
 
     @Process(QueueJobs.TRIGGER_VERIFY_BLOCKS_BACKWARD)
     async verifyBlocksBackward(job: Job<{ chainId: string; fromBlock: number; toBlock: number }>) {
+        if (!config.isIngestBackwardEnabled()) {
+            this._logger.debug('Backward ingest is disabled');
+
+            return;
+        }
+
         this._logger.debug(`Verifying range from block ${job.data.fromBlock} to block ${job.data.toBlock} for chain with id ${job.data.chainId}`);
         const res = await this._elasticService.client.count({
             index: ElasticIndexes.INDEX_BLOCKS,
