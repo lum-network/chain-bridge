@@ -39,11 +39,7 @@ export class CoreController {
 
         const [inflation] = await Promise.all([lumClt.queryClient.mint.inflation().catch(() => null)]);
 
-        const stats = {
-            inflation,
-        };
-
-        return plainToClass(StatsResponse, stats);
+        return plainToClass(StatsResponse, { inflation });
     }
 
     @Get('faucet/:address')
