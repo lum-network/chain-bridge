@@ -27,6 +27,11 @@ export class BlockConsumer {
         }
 
         try {
+            // Ignore blocks already in elastic
+            if (await this._elasticService.documentExists(ElasticIndexes.INDEX_BLOCKS, job.data.blockHeight)) {
+                return;
+            }
+
             this._logger.debug(`Ingesting block ${job.data.blockHeight} (attempt ${job.attemptsMade})`);
 
             // Get singleton lum client
