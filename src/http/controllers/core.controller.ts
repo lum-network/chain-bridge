@@ -34,7 +34,7 @@ export class CoreController {
     }
 
     @Get('stats')
-    async stat() {
+    async stats() {
         const lumClt = await this._lumNetworkService.getClient();
 
         const [inflation] = await Promise.all([lumClt.queryClient.mint.inflation().catch(() => null)]);
