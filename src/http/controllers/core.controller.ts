@@ -37,7 +37,9 @@ export class CoreController {
     async stats() {
         const lumClt = await this._lumNetworkService.getClient();
 
-        const [inflation] = await Promise.all([lumClt.queryClient.mint.inflation().catch(() => null)]);
+        let inflation = '0';
+
+        inflation = await lumClt.queryClient.mint.inflation().catch(() => null);
 
         return plainToClass(StatsResponse, { inflation });
     }
