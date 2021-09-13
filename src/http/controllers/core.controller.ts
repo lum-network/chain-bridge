@@ -1,14 +1,16 @@
 import { BadRequestException, CacheInterceptor, Controller, Get, NotFoundException, Param, UseInterceptors } from '@nestjs/common';
-import { ElasticService } from '@app/services';
+import { ElasticService, LumNetworkService } from '@app/services';
 import { ElasticIndexes, QueueJobs, Queues } from '@app/utils/constants';
 import { LumConstants } from '@lum-network/sdk-javascript';
 import { Queue } from 'bull';
 import { InjectQueue } from '@nestjs/bull';
 import { config } from '@app/utils';
+import { plainToClass } from 'class-transformer';
+import { StatsResponse } from '@app/http/responses';
 
 @Controller('')
 export class CoreController {
-    constructor(private readonly _elasticService: ElasticService, @InjectQueue(Queues.QUEUE_FAUCET) private readonly _queue: Queue) {}
+    constructor(private readonly _elasticService: ElasticService, @InjectQueue(Queues.QUEUE_FAUCET) private readonly _queue: Queue, private readonly _lumNetworkService: LumNetworkService) {}
 
     @Get('search/:data')
     @UseInterceptors(CacheInterceptor)
@@ -29,6 +31,19 @@ export class CoreController {
                 throw new NotFoundException('data_not_found');
             }
         }
+    }
+
+    @Get('stats')
+    async stat() {
+        const lumClt = await this._lumNetworkService.getClient();
+
+        const [inflation] = await Promise.all([lumClt.queryClient.mint.inflation().catch(() => null)]);
+
+        const stats = {
+            inflation,
+        };
+
+        return plainToClass(StatsResponse, stats);
     }
 
     @Get('faucet/:address')

@@ -683,10 +683,10 @@
   resolved "https://registry.yarnpkg.com/@ledgerhq/logs/-/logs-5.46.0.tgz#fc850416716d77090c1c5a8c186118561fbd8d8b"
   integrity sha512-WiFy1uwRhcqkj6aTSha532Nl6Gdsv5GN+Nsbp7pY66Zg+6WUE/SBmpwHEJfEXzEfARI5+A718a3trGinY6Dftg==
 
-"@lum-network/sdk-javascript@^0.4.8":
-  version "0.4.8"
-  resolved "https://registry.yarnpkg.com/@lum-network/sdk-javascript/-/sdk-javascript-0.4.8.tgz#483e87d6166c93cc2b1d6464c18c12e4050f7e2e"
-  integrity sha512-NW7AE+16YRs0qG+PzsE9ZuJSwD6D0t6WA9Kxb2aO11PZxYFCfQGSvkjSTo8LkamC0ZgLiDNKfYX+55S+wHV4Cg==
+"@lum-network/sdk-javascript@^0.4.9":
+  version "0.4.9"
+  resolved "https://registry.yarnpkg.com/@lum-network/sdk-javascript/-/sdk-javascript-0.4.9.tgz#20e4d0f96fc463d44cf25e7ab4aa2e4e1b06923d"
+  integrity sha512-Qz8jWYkSDSdu3pXPHLdQwdZxl1bPjkeHOAG9kiuHqkhmbR0zjAZQ0P2wG0E9pOvxfckpVLJIuENVBLFcQXGaBg==
   dependencies:
     "@cosmjs/crypto" "^0.26.0"
     "@cosmjs/encoding" "^0.26.0"
