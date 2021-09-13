@@ -39,6 +39,10 @@ import { GatewayWebsocket } from '@app/websocket';
                     port: config.getRedisPort(),
                 },
                 prefix: config.getRedisPrefix(),
+                defaultJobOptions: {
+                    removeOnComplete: true,
+                    removeOnFail: true
+                }
             },
             {
                 name: Queues.QUEUE_FAUCET,
@@ -51,14 +55,18 @@ import { GatewayWebsocket } from '@app/websocket';
                     max: 1,
                     duration: 30,
                 },
+                defaultJobOptions: {
+                    removeOnComplete: true,
+                    removeOnFail: true
+                }
             },
         ),
         CacheModule.register({
             store: redisStore,
             host: config.getRedisHost(),
             port: config.getRedisPort(),
-            ttl: 60,
-            max: 100,
+            ttl: 10,
+            max: 50,
         }),
         ScheduleModule.forRoot(),
         TerminusModule,
