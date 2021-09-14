@@ -37,11 +37,9 @@ export class CoreController {
     async stats() {
         const lumClt = await this._lumNetworkService.getClient();
 
-        let inflation = '0';
+        const inflation = await lumClt.queryClient.mint.inflation().catch(() => null);
 
-        inflation = await lumClt.queryClient.mint.inflation().catch(() => null);
-
-        return plainToClass(StatsResponse, { inflation });
+        return plainToClass(StatsResponse, { inflation: inflation || '0' });
     }
 
     @Get('faucet/:address')
