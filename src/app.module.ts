@@ -20,6 +20,7 @@ import {
     ResponseInterceptor,
     TransactionsController,
     ValidatorsController,
+    GovernanceController,
 } from '@app/http';
 
 import { BlockConsumer, BlockScheduler, CoreConsumer, NotificationConsumer, ValidatorScheduler } from '@app/async';
@@ -71,7 +72,7 @@ import { GatewayWebsocket } from '@app/websocket';
         ScheduleModule.forRoot(),
         TerminusModule,
     ],
-    controllers: [AccountsController, BlocksController, CoreController, HealthController, TransactionsController, ValidatorsController],
+    controllers: [AccountsController, BlocksController, CoreController, HealthController, TransactionsController, ValidatorsController, GovernanceController],
     providers: [
         BlockConsumer,
         CoreConsumer,
