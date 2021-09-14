@@ -115,8 +115,13 @@ export class BlockConsumer {
                             } else if (attr.key === 'amount') {
                                 const amount = parseFloat(attr.value);
                                 const denom = attr.value.substr(amount.toString().length);
-                                if (!res.amount || res.amount.amount < amount) {
-                                    // Only keep the largest amount (this is definitely an arbitrary choice)
+
+                                if (!res.amount) {
+                                    res.amount = { amount, denom };
+                                }
+
+                                // We get relevant amount with particular types
+                                if (ev.type === 'delegate' || ev.type === 'unbond' || ev.type === 'withdraw_rewards') {
                                     res.amount = { amount, denom };
                                 }
                             }
