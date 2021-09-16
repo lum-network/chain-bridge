@@ -59,6 +59,11 @@ export class Config {
         return enabled === 'true' || enabled === true;
     }
 
+    public isIngestBackwardEnabled(): boolean {
+        const enabled = this.getValue('INGEST_BACKWARD_ENABLED');
+        return enabled === 'true' || enabled === true;
+    }
+
     public isPushNotifEnabled(): boolean {
         const enabled = this.getValue('PUSH_NOTIF_ENABLED');
         return enabled === 'true' || enabled === true;
@@ -74,6 +79,7 @@ const config = new Config(process.env).ensureValues([
     'API_ENABLED',
     'API_PORT',
     'INGEST_ENABLED',
+    'INGEST_BACKWARD_ENABLED',
     'PUSH_NOTIF_ENABLED',
 ]);
 
