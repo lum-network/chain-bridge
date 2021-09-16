@@ -60,6 +60,10 @@ export class AccountResponse {
     @Type(() => UnbondingResponse)
     unbondings: UnbondingResponse[] = [];
 
+    @Expose()
+    @Type(() => BalanceResponse)
+    commissions: BalanceResponse[] = [];
+
     constructor(data: Partial<AccountResponse>) {
         Object.assign(this, data);
     }
