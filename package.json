@@ -1,6 +1,6 @@
 {
     "name": "server",
-    "version": "0.0.1",
+    "version": "0.1.0",
     "description": "",
     "author": "",
     "private": true,
@@ -22,7 +22,7 @@
     },
     "dependencies": {
         "@elastic/elasticsearch": "^7.9.1",
-        "@lum-network/sdk-javascript": "^0.4.9",
+        "@lum-network/sdk-javascript": "^0.5.1",
         "@nestjs/bull": "^0.2.2",
         "@nestjs/common": "^7.0.0",
         "@nestjs/core": "^7.0.0",
