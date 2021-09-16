@@ -8,3 +8,4 @@ export * from './message.response';
 export * from './reward.response';
 export * from './transaction.response';
 export * from './validator.response';
+export * from './stats.response';
