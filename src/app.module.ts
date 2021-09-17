@@ -42,8 +42,8 @@ import { GatewayWebsocket } from '@app/websocket';
                 prefix: config.getRedisPrefix(),
                 defaultJobOptions: {
                     removeOnComplete: true,
-                    removeOnFail: true
-                }
+                    removeOnFail: true,
+                },
             },
             {
                 name: Queues.QUEUE_FAUCET,
@@ -58,8 +58,8 @@ import { GatewayWebsocket } from '@app/websocket';
                 },
                 defaultJobOptions: {
                     removeOnComplete: true,
-                    removeOnFail: true
-                }
+                    removeOnFail: true,
+                },
             },
         ),
         CacheModule.register({
@@ -145,7 +145,7 @@ export class AppModule implements OnModuleInit, OnApplicationBootstrap {
             QueueJobs.TRIGGER_VERIFY_BLOCKS_BACKWARD,
             {
                 chainId: chainId,
-                fromBlock: 2,
+                fromBlock: 1,
                 toBlock: blockHeight,
             },
             {
