@@ -243,3 +243,21 @@ export class SubmitProposalMessageResponse extends MessageResponse {
     @Type(() => SubmitProposalValueResponse)
     value: SubmitProposalValueResponse;
 }
+
+class DepositValueResponse {
+    @Expose({ name: 'proposalId' })
+    proposal_id: any;
+
+    @Expose({ name: 'depositor' })
+    depositor_address: string;
+
+    @Expose({ name: 'amount' })
+    amount: BalanceResponse[];
+}
+
+@Exclude()
+export class DepositMessageResponse extends MessageResponse {
+    @Expose()
+    @Type(() => DepositValueResponse)
+    value: DepositValueResponse;
+}
