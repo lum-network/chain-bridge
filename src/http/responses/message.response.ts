@@ -232,6 +232,9 @@ export class ClaimBeamMessageResponse extends MessageResponse {
 class SubmitProposalValueResponse {
     @Expose({ name: 'proposer' })
     proposer_address: string;
+
+    @Expose({ name: 'initialDeposit' })
+    initial_deposit: BalanceResponse[];
 }
 
 @Exclude()
