@@ -224,5 +224,19 @@ class ClaimBeamValueResponse {
 @Exclude()
 export class ClaimBeamMessageResponse extends MessageResponse {
     @Expose()
+    @Type(() => ClaimBeamValueResponse)
     value: ClaimBeamValueResponse;
+}
+
+@Exclude()
+class SubmitProposalValueResponse {
+    @Expose({ name: 'proposer' })
+    proposer_address: string;
+}
+
+@Exclude()
+export class SubmitProposalMessageResponse extends MessageResponse {
+    @Expose()
+    @Type(() => SubmitProposalValueResponse)
+    value: SubmitProposalValueResponse;
 }

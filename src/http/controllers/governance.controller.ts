@@ -1,7 +1,6 @@
-import { CacheInterceptor, Controller, Get, Post, UseInterceptors } from '@nestjs/common';
+import { CacheInterceptor, Controller, Get, UseInterceptors } from '@nestjs/common';
 import { LumNetworkService } from '@app/services';
 import { ProposalStatus } from '@lum-network/sdk-javascript/build/codec/cosmos/gov/v1beta1/gov';
-import { LumConstants, LumMessages } from '@lum-network/sdk-javascript';
 
 @Controller('governance')
 @UseInterceptors(CacheInterceptor)
@@ -25,16 +24,4 @@ export class GovernanceController {
 
         return results;
     }
-
-    // @Post('message')
-    // async message() {
-    //     const lumClt = await this._lumNetworkService.getClient();
-    //
-    //     const msg = LumMessages.BuildMsgSubmitProposal('lum1kqypcqjpcyd7e3y0449fl9y5pfdj7vz4rkmkl2', [{ denom: LumConstants.MicroLumDenom, amount: '1000000000' }]);
-    //
-    //     const fee = {
-    //         amount: [{ denom: LumConstants.MicroLumDenom, amount: '1000000' }],
-    //         gas: '500000',
-    //     };
-    // }
 }

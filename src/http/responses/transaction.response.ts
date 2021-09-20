@@ -13,6 +13,7 @@ import {
     SendMessageResponse,
     UndelegateMessageResponse,
     UpdateBeamMessageResponse,
+    SubmitProposalMessageResponse,
 } from '@app/http/responses/message.response';
 
 @Exclude()
@@ -68,6 +69,7 @@ export class TransactionResponse {
                 { value: OpenBeamMessageResponse, name: LumMessages.MsgOpenBeamUrl },
                 { value: UpdateBeamMessageResponse, name: LumMessages.MsgUpdateBeamUrl },
                 { value: ClaimBeamMessageResponse, name: LumMessages.MsgClaimBeamUrl },
+                { value: SubmitProposalMessageResponse, name: LumMessages.MsgSubmitProposalUrl },
             ],
         },
         keepDiscriminatorProperty: true,
