@@ -15,6 +15,7 @@ import {
     UpdateBeamMessageResponse,
     SubmitProposalMessageResponse,
     DepositMessageResponse,
+    VoteMessageResponse,
 } from '@app/http/responses/message.response';
 
 @Exclude()
@@ -72,6 +73,7 @@ export class TransactionResponse {
                 { value: ClaimBeamMessageResponse, name: LumMessages.MsgClaimBeamUrl },
                 { value: SubmitProposalMessageResponse, name: LumMessages.MsgSubmitProposalUrl },
                 { value: DepositMessageResponse, name: LumMessages.MsgDepositUrl },
+                { value: VoteMessageResponse, name: LumMessages.MsgVoteUrl },
             ],
         },
         keepDiscriminatorProperty: true,

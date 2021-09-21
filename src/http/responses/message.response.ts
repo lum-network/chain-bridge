@@ -244,6 +244,7 @@ export class SubmitProposalMessageResponse extends MessageResponse {
     value: SubmitProposalValueResponse;
 }
 
+@Exclude()
 class DepositValueResponse {
     @Expose({ name: 'proposalId' })
     proposal_id: any;
@@ -260,4 +261,23 @@ export class DepositMessageResponse extends MessageResponse {
     @Expose()
     @Type(() => DepositValueResponse)
     value: DepositValueResponse;
+}
+
+@Exclude()
+class VoteValueResponse {
+    @Expose({ name: 'proposalId' })
+    proposal_id: any;
+
+    @Expose({ name: 'voter' })
+    voter_address: string;
+
+    @Expose({ name: 'option' })
+    option: number;
+}
+
+@Exclude()
+export class VoteMessageResponse extends MessageResponse {
+    @Expose()
+    @Type(() => VoteValueResponse)
+    value: VoteValueResponse;
 }
