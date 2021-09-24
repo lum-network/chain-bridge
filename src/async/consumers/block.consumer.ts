@@ -120,6 +120,11 @@ export class BlockConsumer {
                                     res.amount = { amount, denom };
                                 }
 
+                                // We get auto claim reward amount with unbond
+                                if (ev.type === 'unbond') {
+                                    res.auto_claim_reward = res.amount;
+                                }
+
                                 // We get relevant amount with particular types
                                 if (ev.type === 'delegate' || ev.type === 'unbond' || ev.type === 'withdraw_rewards') {
                                     res.amount = { amount, denom };

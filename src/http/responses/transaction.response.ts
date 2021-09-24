@@ -36,6 +36,9 @@ export class TransactionResponse {
     amount: BalanceResponse;
 
     @Expose()
+    auto_claim_reward: BalanceResponse;
+
+    @Expose()
     success: boolean;
 
     @Expose()
