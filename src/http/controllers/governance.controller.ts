@@ -19,7 +19,8 @@ export class GovernanceController {
                 ProposalStatus.PROPOSAL_STATUS_VOTING_PERIOD |
                 ProposalStatus.PROPOSAL_STATUS_PASSED |
                 ProposalStatus.PROPOSAL_STATUS_REJECTED |
-                ProposalStatus.PROPOSAL_STATUS_FAILED,
+                ProposalStatus.PROPOSAL_STATUS_FAILED |
+                ProposalStatus.UNRECOGNIZED,
             '',
             '',
         );
