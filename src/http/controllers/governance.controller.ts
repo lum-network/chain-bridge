@@ -1,4 +1,4 @@
-import { CacheInterceptor, Controller, Get, UseInterceptors } from '@nestjs/common';
+import { CacheInterceptor, Controller, Get, Param, UseInterceptors } from '@nestjs/common';
 import { LumNetworkService } from '@app/services';
 import { ProposalStatus } from '@lum-network/sdk-javascript/build/codec/cosmos/gov/v1beta1/gov';
 import { plainToClass } from 'class-transformer';
@@ -26,5 +26,14 @@ export class GovernanceController {
         );
 
         return results.proposals.map(proposal => plainToClass(ProposalResponse, proposal));
+    }
+
+    @Get('proposals/:id')
+    async get(@Param('id') id: string) {
+        const lumClt = await this._lumNetworkService.getClient();
+
+        const result = await lumClt.queryClient.gov.proposal(id);
+
+        return plainToClass(ProposalResponse, result.proposal);
     }
 }
