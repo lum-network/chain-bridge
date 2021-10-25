@@ -1,8 +1,9 @@
-import { CacheInterceptor, Controller, Get, Param, UseInterceptors } from '@nestjs/common';
+import { CacheInterceptor, Controller, Get, NotFoundException, Param, UseInterceptors } from '@nestjs/common';
 import { LumNetworkService } from '@app/services';
 import { ProposalStatus } from '@lum-network/sdk-javascript/build/codec/cosmos/gov/v1beta1/gov';
 import { plainToClass } from 'class-transformer';
 import { ProposalResponse } from '@app/http/responses/proposal.response';
+import { decodeContent } from '@app/utils';
 
 @Controller('governance')
 @UseInterceptors(CacheInterceptor)
@@ -25,7 +26,7 @@ export class GovernanceController {
             '',
         );
 
-        return results.proposals.map(proposal => plainToClass(ProposalResponse, proposal));
+        return results.proposals.map(proposal => plainToClass(ProposalResponse, decodeContent(proposal)));
     }
 
     @Get('proposals/:id')
@@ -34,6 +35,12 @@ export class GovernanceController {
 
         const result = await lumClt.queryClient.gov.proposal(id);
 
-        return plainToClass(ProposalResponse, result.proposal);
+        if (!result || !result.proposal) {
+            throw new NotFoundException('proposal_not_found');
+        }
+
+        const proposal = decodeContent(result.proposal);
+
+        return plainToClass(ProposalResponse, proposal);
     }
 }

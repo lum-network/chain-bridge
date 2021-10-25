@@ -18,6 +18,15 @@ class ResultResponse {
 }
 
 @Exclude()
+class ContentResponse {
+    @Expose()
+    title: string;
+
+    @Expose()
+    description: string;
+}
+
+@Exclude()
 export class ProposalResponse {
     @Expose({ name: 'proposalId' })
     proposal_id: any;
@@ -36,6 +45,10 @@ export class ProposalResponse {
 
     @Expose()
     status: ProposalStatus;
+
+    @Expose()
+    @Type(() => ContentResponse)
+    content: ContentResponse;
 
     @Expose({ name: 'totalDeposit' })
     @Type(() => BalanceResponse)
