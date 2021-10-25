@@ -3,7 +3,7 @@ import { ProposalStatus } from '@lum-network/sdk-javascript/build/codec/cosmos/g
 import { BalanceResponse } from '@app/http';
 
 @Exclude()
-class ResultResponse {
+export class ResultResponse {
     @Expose()
     yes: number;
 

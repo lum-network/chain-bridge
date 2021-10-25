@@ -2,7 +2,7 @@ import { CacheInterceptor, Controller, Get, NotFoundException, Param, UseInterce
 import { LumNetworkService } from '@app/services';
 import { ProposalStatus } from '@lum-network/sdk-javascript/build/codec/cosmos/gov/v1beta1/gov';
 import { plainToClass } from 'class-transformer';
-import { ProposalResponse } from '@app/http/responses/proposal.response';
+import { ProposalResponse, ResultResponse } from '@app/http/responses/proposal.response';
 import { decodeContent } from '@app/utils';
 
 @Controller('governance')
@@ -42,5 +42,18 @@ export class GovernanceController {
         const proposal = decodeContent(result.proposal);
 
         return plainToClass(ProposalResponse, proposal);
+    }
+
+    @Get('proposals/:id/tally')
+    async getTallyResults(@Param('id') id: string) {
+        const lumClt = await this._lumNetworkService.getClient();
+
+        const result = await lumClt.queryClient.gov.tally(id);
+
+        if (!result || !result.tally) {
+            throw new NotFoundException('tally_not_found');
+        }
+
+        return plainToClass(ResultResponse, result.tally);
     }
 }
