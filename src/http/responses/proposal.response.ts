@@ -56,7 +56,7 @@ export class ProposalResponse {
 
     @Expose({ name: 'finalTallyResult' })
     @Type(() => ResultResponse)
-    result: ResultResponse;
+    final_result: ResultResponse;
 
     constructor(data: Partial<ProposalResponse>) {
         Object.assign(this, data);
