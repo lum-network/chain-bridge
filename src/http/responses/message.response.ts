@@ -224,5 +224,60 @@ class ClaimBeamValueResponse {
 @Exclude()
 export class ClaimBeamMessageResponse extends MessageResponse {
     @Expose()
+    @Type(() => ClaimBeamValueResponse)
     value: ClaimBeamValueResponse;
+}
+
+@Exclude()
+class SubmitProposalValueResponse {
+    @Expose({ name: 'proposer' })
+    proposer_address: string;
+
+    @Expose({ name: 'initialDeposit' })
+    initial_deposit: BalanceResponse[];
+}
+
+@Exclude()
+export class SubmitProposalMessageResponse extends MessageResponse {
+    @Expose()
+    @Type(() => SubmitProposalValueResponse)
+    value: SubmitProposalValueResponse;
+}
+
+@Exclude()
+class DepositValueResponse {
+    @Expose({ name: 'proposalId' })
+    proposal_id: any;
+
+    @Expose({ name: 'depositor' })
+    depositor_address: string;
+
+    @Expose({ name: 'amount' })
+    amount: BalanceResponse[];
+}
+
+@Exclude()
+export class DepositMessageResponse extends MessageResponse {
+    @Expose()
+    @Type(() => DepositValueResponse)
+    value: DepositValueResponse;
+}
+
+@Exclude()
+class VoteValueResponse {
+    @Expose({ name: 'proposalId' })
+    proposal_id: any;
+
+    @Expose({ name: 'voter' })
+    voter_address: string;
+
+    @Expose({ name: 'option' })
+    option: number;
+}
+
+@Exclude()
+export class VoteMessageResponse extends MessageResponse {
+    @Expose()
+    @Type(() => VoteValueResponse)
+    value: VoteValueResponse;
 }

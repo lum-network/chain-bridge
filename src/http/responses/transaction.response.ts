@@ -13,6 +13,9 @@ import {
     SendMessageResponse,
     UndelegateMessageResponse,
     UpdateBeamMessageResponse,
+    SubmitProposalMessageResponse,
+    DepositMessageResponse,
+    VoteMessageResponse,
 } from '@app/http/responses/message.response';
 
 @Exclude()
@@ -31,6 +34,9 @@ export class TransactionResponse {
 
     @Expose()
     amount: BalanceResponse;
+
+    @Expose()
+    auto_claim_reward: BalanceResponse;
 
     @Expose()
     success: boolean;
@@ -68,6 +74,9 @@ export class TransactionResponse {
                 { value: OpenBeamMessageResponse, name: LumMessages.MsgOpenBeamUrl },
                 { value: UpdateBeamMessageResponse, name: LumMessages.MsgUpdateBeamUrl },
                 { value: ClaimBeamMessageResponse, name: LumMessages.MsgClaimBeamUrl },
+                { value: SubmitProposalMessageResponse, name: LumMessages.MsgSubmitProposalUrl },
+                { value: DepositMessageResponse, name: LumMessages.MsgDepositUrl },
+                { value: VoteMessageResponse, name: LumMessages.MsgVoteUrl },
             ],
         },
         keepDiscriminatorProperty: true,

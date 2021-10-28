@@ -120,6 +120,11 @@ export class BlockConsumer {
                                     res.amount = { amount, denom };
                                 }
 
+                                // We get auto claim reward amount with unbond
+                                if (ev.type === 'unbond') {
+                                    res.auto_claim_reward = res.amount;
+                                }
+
                                 // We get relevant amount with particular types
                                 if (ev.type === 'delegate' || ev.type === 'unbond' || ev.type === 'withdraw_rewards') {
                                     res.amount = { amount, denom };
@@ -192,7 +197,7 @@ export class BlockConsumer {
                     bool: {
                         must: [
                             {
-                                term: {
+                                match: {
                                     chain_id: job.data.chainId,
                                 },
                             },
@@ -214,6 +219,7 @@ export class BlockConsumer {
                 },
             },
         });
+
         this._logger.debug(`Found ${res.body.count}/${job.data.toBlock - job.data.fromBlock} block synced`);
         const missing = job.data.toBlock - job.data.fromBlock - res.body.count;
         if (missing > 0 && job.data.toBlock - job.data.fromBlock <= 1000) {

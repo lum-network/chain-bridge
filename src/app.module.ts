@@ -20,6 +20,7 @@ import {
     ResponseInterceptor,
     TransactionsController,
     ValidatorsController,
+    GovernanceController,
 } from '@app/http';
 
 import { BlockConsumer, BlockScheduler, CoreConsumer, NotificationConsumer, ValidatorScheduler } from '@app/async';
@@ -41,8 +42,8 @@ import { GatewayWebsocket } from '@app/websocket';
                 prefix: config.getRedisPrefix(),
                 defaultJobOptions: {
                     removeOnComplete: true,
-                    removeOnFail: true
-                }
+                    removeOnFail: true,
+                },
             },
             {
                 name: Queues.QUEUE_FAUCET,
@@ -57,8 +58,8 @@ import { GatewayWebsocket } from '@app/websocket';
                 },
                 defaultJobOptions: {
                     removeOnComplete: true,
-                    removeOnFail: true
-                }
+                    removeOnFail: true,
+                },
             },
         ),
         CacheModule.register({
@@ -71,7 +72,7 @@ import { GatewayWebsocket } from '@app/websocket';
         ScheduleModule.forRoot(),
         TerminusModule,
     ],
-    controllers: [AccountsController, BlocksController, CoreController, HealthController, TransactionsController, ValidatorsController],
+    controllers: [AccountsController, BlocksController, CoreController, HealthController, TransactionsController, ValidatorsController, GovernanceController],
     providers: [
         BlockConsumer,
         CoreConsumer,
@@ -144,7 +145,7 @@ export class AppModule implements OnModuleInit, OnApplicationBootstrap {
             QueueJobs.TRIGGER_VERIFY_BLOCKS_BACKWARD,
             {
                 chainId: chainId,
-                fromBlock: 2,
+                fromBlock: 1,
                 toBlock: blockHeight,
             },
             {

@@ -44,17 +44,12 @@ export class AccountsController {
             txPromise.catch(() => null),
         ]);
 
-        console.log('--1-->', account);
         if (!account) {
             throw new NotFoundException('account_not_found');
         }
 
-        console.log('--2-->');
-
         // Inject balance
         account['balance'] = !!balance ? balance : null;
-
-        console.log('--3-->');
 
         // Inject delegations
         account['delegations'] = !!delegations ? delegations.delegationResponses : [];
@@ -68,10 +63,9 @@ export class AccountsController {
         // Add unbondings
         account['unbondings'] = !!unbondings ? unbondings.unbondingResponses : null;
 
-        console.log('--4-->');
         // Add commissions
         account['commissions'] = !!commissions && !!commissions.commission ? commissions.commission.commission : null;
-        console.log('--5-->');
+
         // Inject transactions
         if (transactions && transactions.body && transactions.body.hits && transactions.body.hits.hits) {
             account['transactions'] = transactions.body.hits.hits.map(hit => plainToClass(TransactionResponse, hit._source));
