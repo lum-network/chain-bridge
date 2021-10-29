@@ -27,6 +27,7 @@ export interface TransactionDocument extends VersionedChainDocument {
     gas_wanted: number;
     gas_used: number;
     amount?: { amount: number; denom: string };
+    auto_claim_reward?: { amount: number; denom: string };
     addresses: string[];
     memo: string;
     messages: { typeUrl: string; value: any }[];
