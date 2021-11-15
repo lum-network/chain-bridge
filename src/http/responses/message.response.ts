@@ -282,8 +282,23 @@ export class VoteMessageResponse extends MessageResponse {
     value: VoteValueResponse;
 }
 
-// @Exclude()
-class CreateVestingAccountValueResponse {}
+@Exclude()
+class CreateVestingAccountValueResponse {
+    @Expose({ name: 'fromAddress' })
+    from_address: string;
+
+    @Expose({ name: 'toAddress' })
+    to_address: string;
+
+    @Expose({ name: 'endTime' })
+    end_time: any;
+
+    @Expose()
+    delayed: boolean;
+
+    @Expose()
+    amount: BalanceResponse[];
+}
 
 @Exclude()
 export class CreateVestingAccountResponse extends MessageResponse {
