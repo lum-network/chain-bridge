@@ -16,6 +16,7 @@ import {
     SubmitProposalMessageResponse,
     DepositMessageResponse,
     VoteMessageResponse,
+    CreateVestingAccountResponse,
 } from '@app/http/responses/message.response';
 
 @Exclude()
@@ -77,6 +78,8 @@ export class TransactionResponse {
                 { value: SubmitProposalMessageResponse, name: LumMessages.MsgSubmitProposalUrl },
                 { value: DepositMessageResponse, name: LumMessages.MsgDepositUrl },
                 { value: VoteMessageResponse, name: LumMessages.MsgVoteUrl },
+                // FIXME: Add LumMessages
+                { value: CreateVestingAccountResponse, name: '/cosmos.vesting.v1beta1.MsgCreateVestingAccount' },
             ],
         },
         keepDiscriminatorProperty: true,

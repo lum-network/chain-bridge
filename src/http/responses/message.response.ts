@@ -281,3 +281,13 @@ export class VoteMessageResponse extends MessageResponse {
     @Type(() => VoteValueResponse)
     value: VoteValueResponse;
 }
+
+// @Exclude()
+class CreateVestingAccountValueResponse {}
+
+@Exclude()
+export class CreateVestingAccountResponse extends MessageResponse {
+    @Expose()
+    @Type(() => CreateVestingAccountValueResponse)
+    value: CreateVestingAccountValueResponse;
+}

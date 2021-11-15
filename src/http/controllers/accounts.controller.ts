@@ -33,7 +33,7 @@ export class AccountsController {
             },
         });
 
-        const [account, balance, delegations, rewards, withdrawAddress, unbondings, commissions, transactions] = await Promise.all([
+        const [account, balance, delegations, rewards, withdrawAddress, unbondings, commissions, transactions, test] = await Promise.all([
             lumClt.getAccount(address).catch(() => null),
             lumClt.getBalance(address, LumConstants.MicroLumDenom).catch(() => null),
             lumClt.queryClient.staking.delegatorDelegations(address).catch(() => null),
@@ -42,11 +42,14 @@ export class AccountsController {
             lumClt.queryClient.staking.delegatorUnbondingDelegations(address).catch(() => null),
             lumClt.queryClient.distribution.validatorCommission(LumUtils.Bech32.encode(LumConstants.LumBech32PrefixValAddr, LumUtils.Bech32.decode(address).data)).catch(() => null),
             txPromise.catch(() => null),
+            lumClt.getAllSupplies(),
         ]);
 
         if (!account) {
             throw new NotFoundException('account_not_found');
         }
+
+        console.log('TEST: ', test);
 
         // Inject balance
         account['balance'] = !!balance ? balance : null;
