@@ -1,5 +1,6 @@
 import { Exclude, Expose, Type } from 'class-transformer';
 import { AllRewardResponse, BalanceResponse, DelegationResponse, TransactionResponse } from '@app/http';
+import Long from 'long';
 
 @Exclude()
 class UnbondingEntriesResponse {
@@ -10,7 +11,7 @@ class UnbondingEntriesResponse {
     completion_time: string;
 
     @Expose({ name: 'creationHeight' })
-    height: any;
+    height: Long;
 }
 
 @Exclude()

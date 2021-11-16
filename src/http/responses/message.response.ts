@@ -2,6 +2,7 @@ import { Exclude, Expose, Type } from 'class-transformer';
 import { BalanceResponse } from '@app/http/responses/balance.response';
 import { CommissionResponse } from '@app/http/responses/commission.response';
 import { DescriptionResponse } from '@app/http/responses/description.response';
+import Long from 'long';
 
 @Exclude()
 export abstract class MessageResponse {
@@ -247,7 +248,7 @@ export class SubmitProposalMessageResponse extends MessageResponse {
 @Exclude()
 class DepositValueResponse {
     @Expose({ name: 'proposalId' })
-    proposal_id: any;
+    proposal_id: Long;
 
     @Expose({ name: 'depositor' })
     depositor_address: string;
@@ -266,7 +267,7 @@ export class DepositMessageResponse extends MessageResponse {
 @Exclude()
 class VoteValueResponse {
     @Expose({ name: 'proposalId' })
-    proposal_id: any;
+    proposal_id: Long;
 
     @Expose({ name: 'voter' })
     voter_address: string;
@@ -291,7 +292,7 @@ class CreateVestingAccountValueResponse {
     to_address: string;
 
     @Expose({ name: 'endTime' })
-    end_time: any;
+    end_time: Long;
 
     @Expose()
     delayed: boolean;
