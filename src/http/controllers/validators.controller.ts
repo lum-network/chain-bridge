@@ -18,7 +18,14 @@ export class ValidatorsController {
         // We acquire both bounded and unbonded (candidates) validators
         const [bonded, unbonding, unbonded] = await Promise.all([validators('BOND_STATUS_BONDED'), validators('BOND_STATUS_UNBONDING'), validators('BOND_STATUS_UNBONDED')]);
 
-        const results = [...bonded.validators, ...unbonding.validators, ...unbonded.validators];
+        let allBondedValidators = bonded.validators;
+
+        while (bonded.pagination && bonded.pagination.nextKey && bonded.pagination.nextKey.length) {
+            const newPage = await validators('BOND_STATUS_BONDED', bonded.pagination.nextKey);
+            allBondedValidators = [...allBondedValidators, ...newPage.validators];
+        }
+
+        const results = [...allBondedValidators, ...unbonding.validators, ...unbonded.validators];
 
         return results.map(validator => plainToClass(ValidatorResponse, validator));
     }
