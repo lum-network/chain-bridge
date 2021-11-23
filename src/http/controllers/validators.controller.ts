@@ -77,8 +77,10 @@ export class ValidatorsController {
 
         let selfBonded = 0.0;
 
-        for (const delegation of accountDelegations.delegationResponses) {
-            selfBonded += delegation.balance.amount;
+        for (const accountDelegation of accountDelegations.delegationResponses) {
+            if (accountDelegation.delegation.validatorAddress === validator.validator.operatorAddress) {
+                selfBonded = accountDelegation.balance.amount;
+            }
         }
 
         let blocks = [];
@@ -93,6 +95,7 @@ export class ValidatorsController {
             address: accAddress,
             selfBonded,
             delegations: delegations.delegationResponses,
+            delegationsNextKey: delegations.pagination.nextKey.toString(),
             rewards,
             blocks,
         };
