@@ -100,6 +100,9 @@ export class ValidatorResponse {
     @Type(() => ValidatorDelegationResponse)
     delegations: ValidatorDelegationResponse[];
 
+    @Expose({ name: 'delegationsNextKey' })
+    delegations_next_key: string;
+
     @Expose()
     @Type(() => BalanceResponse)
     rewards: BalanceResponse[];

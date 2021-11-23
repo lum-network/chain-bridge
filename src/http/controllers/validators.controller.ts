@@ -18,7 +18,14 @@ export class ValidatorsController {
         // We acquire both bounded and unbonded (candidates) validators
         const [bonded, unbonding, unbonded] = await Promise.all([validators('BOND_STATUS_BONDED'), validators('BOND_STATUS_UNBONDING'), validators('BOND_STATUS_UNBONDED')]);
 
-        const results = [...bonded.validators, ...unbonding.validators, ...unbonded.validators];
+        let allBondedValidators = bonded.validators;
+
+        while (bonded.pagination && bonded.pagination.nextKey && bonded.pagination.nextKey.length) {
+            const newPage = await validators('BOND_STATUS_BONDED', bonded.pagination.nextKey);
+            allBondedValidators = [...allBondedValidators, ...newPage.validators];
+        }
+
+        const results = [...allBondedValidators, ...unbonding.validators, ...unbonded.validators];
 
         return results.map(validator => plainToClass(ValidatorResponse, validator));
     }
@@ -70,8 +77,10 @@ export class ValidatorsController {
 
         let selfBonded = 0.0;
 
-        for (const delegation of accountDelegations.delegationResponses) {
-            selfBonded += delegation.balance.amount;
+        for (const accountDelegation of accountDelegations.delegationResponses) {
+            if (accountDelegation.delegation.validatorAddress === validator.validator.operatorAddress) {
+                selfBonded = accountDelegation.balance.amount;
+            }
         }
 
         let blocks = [];
@@ -86,6 +95,7 @@ export class ValidatorsController {
             address: accAddress,
             selfBonded,
             delegations: delegations.delegationResponses,
+            delegationsNextKey: delegations.pagination.nextKey.toString(),
             rewards,
             blocks,
         };
