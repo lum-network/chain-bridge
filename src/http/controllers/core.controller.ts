@@ -37,9 +37,13 @@ export class CoreController {
     async stats() {
         const lumClt = await this._lumNetworkService.getClient();
 
-        const inflation = await lumClt.queryClient.mint.inflation().catch(() => null);
+        const [inflation, totalSupply, chainId] = await Promise.all([
+            lumClt.queryClient.mint.inflation().catch(() => null),
+            lumClt.getAllSupplies().catch(() => null),
+            lumClt.getChainId().catch(() => null),
+        ]);
 
-        return plainToClass(StatsResponse, { inflation: inflation || '0' });
+        return plainToClass(StatsResponse, { inflation: inflation || '0', totalSupply, chainId });
     }
 
     @Get('faucet/:address')
