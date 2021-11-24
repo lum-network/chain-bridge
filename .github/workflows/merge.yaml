@@ -92,7 +92,7 @@ jobs:
         uses: deliverybot/helm@v1
         with:
           release: 'lum-network-bridge'
-          namespace: 'lum-network'
+          namespace: 'lum-network-testnet'
           chart: 'helm/lum-network/bridge'
           value-files: 'helm/lum-network/values.yaml'
           atomic: true
