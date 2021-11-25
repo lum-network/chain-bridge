@@ -77,6 +77,9 @@ export class ValidatorResponse {
     @Expose()
     address: string;
 
+    @Expose()
+    genesis: boolean;
+
     @Expose({ name: 'selfBonded' })
     self_bonded: number;
 
