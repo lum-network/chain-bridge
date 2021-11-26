@@ -79,8 +79,7 @@ export class TransactionResponse {
                 { value: SubmitProposalMessageResponse, name: LumMessages.MsgSubmitProposalUrl },
                 { value: DepositMessageResponse, name: LumMessages.MsgDepositUrl },
                 { value: VoteMessageResponse, name: LumMessages.MsgVoteUrl },
-                // FIXME: Add LumMessages
-                { value: CreateVestingAccountResponse, name: '/cosmos.vesting.v1beta1.MsgCreateVestingAccount' },
+                { value: CreateVestingAccountResponse, name: LumMessages.MsgCreateVestingAccountUrl },
                 { value: BeginRedelegateMessageResponse, name: LumMessages.MsgBeginRedelegateUrl },
             ],
         },
