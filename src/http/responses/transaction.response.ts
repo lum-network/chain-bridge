@@ -17,6 +17,7 @@ import {
     DepositMessageResponse,
     VoteMessageResponse,
     BeginRedelegateMessageResponse,
+    WithdrawValidatorCommissionMessageResponse,
 } from '@app/http/responses/message.response';
 
 @Exclude()
@@ -79,6 +80,7 @@ export class TransactionResponse {
                 { value: DepositMessageResponse, name: LumMessages.MsgDepositUrl },
                 { value: VoteMessageResponse, name: LumMessages.MsgVoteUrl },
                 { value: BeginRedelegateMessageResponse, name: LumMessages.MsgBeginRedelegateUrl },
+                { value: WithdrawValidatorCommissionMessageResponse, name: LumMessages.MsgWithdrawValidatorCommissionUrl },
             ],
         },
         keepDiscriminatorProperty: true,

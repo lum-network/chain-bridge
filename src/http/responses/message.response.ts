@@ -303,3 +303,13 @@ export class BeginRedelegateMessageResponse extends MessageResponse {
     @Type(() => BeginRedelegateValueResponse)
     value: BeginRedelegateValueResponse;
 }
+
+// @Exclude()
+class WithdrawValidatorCommissionValueResponse {}
+
+@Exclude()
+export class WithdrawValidatorCommissionMessageResponse extends MessageResponse {
+    @Expose()
+    @Type(() => WithdrawValidatorCommissionValueResponse)
+    value: WithdrawValidatorCommissionValueResponse;
+}
