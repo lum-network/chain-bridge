@@ -307,3 +307,25 @@ export class CreateVestingAccountResponse extends MessageResponse {
     @Type(() => CreateVestingAccountValueResponse)
     value: CreateVestingAccountValueResponse;
 }
+
+@Exclude()
+class BeginRedelegateValueResponse {
+    @Expose({ name: 'delegatorAddress' })
+    delegator_address: string;
+
+    @Expose({ name: 'validatorSrcAddress' })
+    validator_src_address: string;
+
+    @Expose({ name: 'validatorDstAddress' })
+    validator_dst_address: string;
+
+    @Expose()
+    amount: BalanceResponse;
+}
+
+@Exclude()
+export class BeginRedelegateMessageResponse extends MessageResponse {
+    @Expose()
+    @Type(() => BeginRedelegateValueResponse)
+    value: BeginRedelegateValueResponse;
+}
