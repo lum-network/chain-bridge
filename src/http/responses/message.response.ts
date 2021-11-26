@@ -248,7 +248,7 @@ export class SubmitProposalMessageResponse extends MessageResponse {
 @Exclude()
 class DepositValueResponse {
     @Expose({ name: 'proposalId' })
-    proposal_id: Long;
+    proposal_id: any;
 
     @Expose({ name: 'depositor' })
     depositor_address: string;

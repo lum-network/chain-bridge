@@ -17,6 +17,7 @@ import {
     DepositMessageResponse,
     VoteMessageResponse,
     CreateVestingAccountResponse,
+    BeginRedelegateMessageResponse,
 } from '@app/http/responses/message.response';
 
 @Exclude()
@@ -80,6 +81,7 @@ export class TransactionResponse {
                 { value: VoteMessageResponse, name: LumMessages.MsgVoteUrl },
                 // FIXME: Add LumMessages
                 { value: CreateVestingAccountResponse, name: '/cosmos.vesting.v1beta1.MsgCreateVestingAccount' },
+                { value: BeginRedelegateMessageResponse, name: LumMessages.MsgBeginRedelegateUrl },
             ],
         },
         keepDiscriminatorProperty: true,
