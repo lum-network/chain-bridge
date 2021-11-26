@@ -4,6 +4,7 @@ import { plainToClass } from 'class-transformer';
 import { ElasticService, LumNetworkService } from '@app/services';
 import { BlockResponse, ValidatorResponse } from '@app/http/responses';
 import { ElasticIndexes, convertValAddressToAccAddress } from '@app/utils';
+import { LumUtils } from '@lum-network/sdk-javascript';
 
 @Controller('validators')
 @UseInterceptors(CacheInterceptor)
@@ -16,7 +17,12 @@ export class ValidatorsController {
         const { validators } = lumClt.queryClient.staking;
 
         // We acquire both bounded and unbonded (candidates) validators
-        const [bonded, unbonding, unbonded] = await Promise.all([validators('BOND_STATUS_BONDED'), validators('BOND_STATUS_UNBONDING'), validators('BOND_STATUS_UNBONDED')]);
+        const [bonded, unbonding, unbonded, tmValidators] = await Promise.all([
+            validators('BOND_STATUS_BONDED'),
+            validators('BOND_STATUS_UNBONDING'),
+            validators('BOND_STATUS_UNBONDED'),
+            lumClt.tmClient.validatorsAll(1),
+        ]);
 
         let allBondedValidators = bonded.validators;
 
@@ -27,7 +33,28 @@ export class ValidatorsController {
 
         const results = [...allBondedValidators, ...unbonding.validators, ...unbonded.validators];
 
-        return results.map(validator => plainToClass(ValidatorResponse, validator));
+        const mapResults = results.map(validator => plainToClass(ValidatorResponse, validator));
+
+        // Get the operator addresses
+        const operatorAddresses: string[] = [];
+
+        for (const tmValidator of tmValidators.validators) {
+            try {
+                const validatorDoc = await this._elasticService.documentGet(ElasticIndexes.INDEX_VALIDATORS, LumUtils.toHex(tmValidator.address).toUpperCase());
+
+                operatorAddresses.push(validatorDoc && validatorDoc.body && validatorDoc.body._source && validatorDoc.body._source.operator_address);
+            } catch (e) {}
+        }
+
+        for (const [key, validator] of Object.entries(mapResults)) {
+            const genesis = operatorAddresses.find(value => value === validator.operator_address);
+
+            if (genesis) {
+                mapResults[key].genesis = true;
+            }
+        }
+
+        return mapResults;
     }
 
     @Get(':address')
