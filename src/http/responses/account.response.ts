@@ -25,6 +25,45 @@ class UnbondingResponse {
 }
 
 @Exclude()
+class RedelegationEntry {
+    @Expose({ name: 'completionTime' })
+    completion_time: string;
+}
+
+@Exclude()
+class RedelegationEntries {
+    @Expose()
+    balance: string;
+
+    @Expose({ name: 'redelegationEntry' })
+    @Type(() => RedelegationEntry)
+    redelegation_entry: RedelegationEntry;
+}
+
+@Exclude()
+class RedelegationDetails {
+    @Expose({ name: 'delegatorAddress' })
+    delegator_address: string;
+
+    @Expose({ name: 'validatorSrcAddress' })
+    validator_src_address: string;
+
+    @Expose({ name: 'validatorDstAddress' })
+    validator_dst_address: string;
+}
+
+@Exclude()
+class RedelegationResponse {
+    @Expose()
+    @Type(() => RedelegationDetails)
+    redelegation: RedelegationDetails;
+
+    @Expose()
+    @Type(() => RedelegationEntries)
+    entries: RedelegationEntries[];
+}
+
+@Exclude()
 export class AccountResponse {
     @Expose()
     address: string;
@@ -60,6 +99,10 @@ export class AccountResponse {
     @Expose()
     @Type(() => UnbondingResponse)
     unbondings: UnbondingResponse[] = [];
+
+    @Expose()
+    @Type(() => RedelegationResponse)
+    redelegations: RedelegationResponse[] = [];
 
     @Expose()
     @Type(() => BalanceResponse)
