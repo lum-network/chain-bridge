@@ -50,6 +50,14 @@ export class AccountsController {
             throw new NotFoundException('account_not_found');
         }
 
+        let vesting: any;
+
+        try {
+            vesting = LumUtils.estimatedVesting(account);
+        } catch (e) {
+            vesting = null;
+        }
+
         const redelegationsResponse: RedelegationResponse[] = [];
 
         for (const [, redelegation] of redelegations.redelegationResponses.entries()) {
@@ -58,6 +66,9 @@ export class AccountsController {
 
         // Inject balance
         account['balance'] = !!balance ? balance : null;
+
+        // Inject vesting
+        account['vesting'] = vesting;
 
         // Inject delegations
         account['delegations'] = !!delegations ? delegations.delegationResponses : [];

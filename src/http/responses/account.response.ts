@@ -3,6 +3,39 @@ import { AllRewardResponse, BalanceResponse, DelegationResponse, TransactionResp
 import Long from 'long';
 
 @Exclude()
+class VestingResponse {
+    @Expose({ name: 'startsAt' })
+    starts_at: string;
+
+    @Expose({ name: 'endsAt' })
+    ends_at: string;
+
+    @Expose()
+    time: string;
+
+    @Expose({ name: 'unlockedPercentage' })
+    unlocked_percentage: number;
+
+    @Expose({ name: 'lockedPercentage' })
+    locked_percentage: number;
+
+    @Expose({ name: 'totalCoins' })
+    total_coins: BalanceResponse;
+
+    @Expose({ name: 'unlockedCoins' })
+    unlocked_coins: BalanceResponse;
+
+    @Expose({ name: 'lockedCoins' })
+    locked_coins: BalanceResponse;
+
+    @Expose({ name: 'lockedDelegatedCoins' })
+    locked_delegated_coins: BalanceResponse;
+
+    @Expose({ name: 'lockedBankCoins' })
+    locked_bank_coins: BalanceResponse;
+}
+
+@Exclude()
 class UnbondingEntriesResponse {
     @Expose()
     balance: string;
@@ -107,6 +140,10 @@ export class AccountResponse {
     @Expose()
     @Type(() => BalanceResponse)
     commissions: BalanceResponse[] = [];
+
+    @Expose()
+    @Type(() => VestingResponse)
+    vesting: VestingResponse;
 
     constructor(data: Partial<AccountResponse>) {
         Object.assign(this, data);
