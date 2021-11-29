@@ -330,8 +330,10 @@ export class BeginRedelegateMessageResponse extends MessageResponse {
     value: BeginRedelegateValueResponse;
 }
 
-// @Exclude()
-class WithdrawValidatorCommissionValueResponse {}
+class WithdrawValidatorCommissionValueResponse {
+    @Expose({ name: 'validatorAddress' })
+    validator_address: string;
+}
 
 @Exclude()
 export class WithdrawValidatorCommissionMessageResponse extends MessageResponse {
