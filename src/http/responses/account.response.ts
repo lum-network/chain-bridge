@@ -1,5 +1,39 @@
 import { Exclude, Expose, Type } from 'class-transformer';
 import { AllRewardResponse, BalanceResponse, DelegationResponse, TransactionResponse } from '@app/http';
+import Long from 'long';
+
+@Exclude()
+class VestingResponse {
+    @Expose({ name: 'startsAt' })
+    starts_at: string;
+
+    @Expose({ name: 'endsAt' })
+    ends_at: string;
+
+    @Expose()
+    time: string;
+
+    @Expose({ name: 'unlockedPercentage' })
+    unlocked_percentage: number;
+
+    @Expose({ name: 'lockedPercentage' })
+    locked_percentage: number;
+
+    @Expose({ name: 'totalCoins' })
+    total_coins: BalanceResponse;
+
+    @Expose({ name: 'unlockedCoins' })
+    unlocked_coins: BalanceResponse;
+
+    @Expose({ name: 'lockedCoins' })
+    locked_coins: BalanceResponse;
+
+    @Expose({ name: 'lockedDelegatedCoins' })
+    locked_delegated_coins: BalanceResponse;
+
+    @Expose({ name: 'lockedBankCoins' })
+    locked_bank_coins: BalanceResponse;
+}
 
 @Exclude()
 class UnbondingEntriesResponse {
@@ -10,7 +44,7 @@ class UnbondingEntriesResponse {
     completion_time: string;
 
     @Expose({ name: 'creationHeight' })
-    height: any;
+    height: Long;
 }
 
 @Exclude()
@@ -21,6 +55,45 @@ class UnbondingResponse {
 
     @Expose({ name: 'validatorAddress' })
     validator_address: string;
+}
+
+@Exclude()
+class RedelegationEntry {
+    @Expose({ name: 'completionTime' })
+    completion_time: string;
+}
+
+@Exclude()
+class RedelegationEntries {
+    @Expose()
+    balance: string;
+
+    @Expose({ name: 'redelegationEntry' })
+    @Type(() => RedelegationEntry)
+    redelegation_entry: RedelegationEntry;
+}
+
+@Exclude()
+class RedelegationDetails {
+    @Expose({ name: 'delegatorAddress' })
+    delegator_address: string;
+
+    @Expose({ name: 'validatorSrcAddress' })
+    validator_src_address: string;
+
+    @Expose({ name: 'validatorDstAddress' })
+    validator_dst_address: string;
+}
+
+@Exclude()
+class RedelegationResponse {
+    @Expose()
+    @Type(() => RedelegationDetails)
+    redelegation: RedelegationDetails;
+
+    @Expose()
+    @Type(() => RedelegationEntries)
+    entries: RedelegationEntries[];
 }
 
 @Exclude()
@@ -61,8 +134,16 @@ export class AccountResponse {
     unbondings: UnbondingResponse[] = [];
 
     @Expose()
+    @Type(() => RedelegationResponse)
+    redelegations: RedelegationResponse[] = [];
+
+    @Expose()
     @Type(() => BalanceResponse)
     commissions: BalanceResponse[] = [];
+
+    @Expose()
+    @Type(() => VestingResponse)
+    vesting: VestingResponse;
 
     constructor(data: Partial<AccountResponse>) {
         Object.assign(this, data);

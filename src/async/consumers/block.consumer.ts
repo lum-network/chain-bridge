@@ -210,7 +210,7 @@ export class BlockConsumer {
                                 range: {
                                     height: {
                                         gte: job.data.fromBlock,
-                                        lte: job.data.toBlock,
+                                        lte: job.data.toBlock - 1,
                                     },
                                 },
                             },

@@ -5,6 +5,7 @@ import { ElasticIndexes } from '@app/utils/constants';
 import { plainToClass } from 'class-transformer';
 import { AccountResponse, TransactionResponse } from '@app/http/responses';
 import { LumConstants, LumUtils } from '@lum-network/sdk-javascript';
+import { RedelegationResponse } from '@lum-network/sdk-javascript/build/codec/cosmos/staking/v1beta1/staking';
 
 @Controller('accounts')
 @UseInterceptors(CacheInterceptor)
@@ -33,13 +34,14 @@ export class AccountsController {
             },
         });
 
-        const [account, balance, delegations, rewards, withdrawAddress, unbondings, commissions, transactions] = await Promise.all([
+        const [account, balance, delegations, rewards, withdrawAddress, unbondings, redelegations, commissions, transactions] = await Promise.all([
             lumClt.getAccount(address).catch(() => null),
             lumClt.getBalance(address, LumConstants.MicroLumDenom).catch(() => null),
             lumClt.queryClient.staking.delegatorDelegations(address).catch(() => null),
             lumClt.queryClient.distribution.delegationTotalRewards(address).catch(() => null),
             lumClt.queryClient.distribution.delegatorWithdrawAddress(address).catch(() => null),
             lumClt.queryClient.staking.delegatorUnbondingDelegations(address).catch(() => null),
+            lumClt.queryClient.staking.redelegations(address, '', '').catch(() => null),
             lumClt.queryClient.distribution.validatorCommission(LumUtils.Bech32.encode(LumConstants.LumBech32PrefixValAddr, LumUtils.Bech32.decode(address).data)).catch(() => null),
             txPromise.catch(() => null),
         ]);
@@ -48,8 +50,25 @@ export class AccountsController {
             throw new NotFoundException('account_not_found');
         }
 
+        let vesting: any;
+
+        try {
+            vesting = LumUtils.estimatedVesting(account);
+        } catch (e) {
+            vesting = null;
+        }
+
+        const redelegationsResponse: RedelegationResponse[] = [];
+
+        for (const [, redelegation] of redelegations.redelegationResponses.entries()) {
+            redelegationsResponse.push(redelegation);
+        }
+
         // Inject balance
         account['balance'] = !!balance ? balance : null;
+
+        // Inject vesting
+        account['vesting'] = vesting;
 
         // Inject delegations
         account['delegations'] = !!delegations ? delegations.delegationResponses : [];
@@ -62,6 +81,9 @@ export class AccountsController {
 
         // Add unbondings
         account['unbondings'] = !!unbondings ? unbondings.unbondingResponses : null;
+
+        // Inject redelegations
+        account['redelegations'] = redelegationsResponse;
 
         // Add commissions
         account['commissions'] = !!commissions && !!commissions.commission ? commissions.commission.commission : null;
