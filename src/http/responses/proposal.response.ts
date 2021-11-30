@@ -1,6 +1,7 @@
 import { Expose, Exclude, Type } from 'class-transformer';
 import { ProposalStatus } from '@lum-network/sdk-javascript/build/codec/cosmos/gov/v1beta1/gov';
 import { BalanceResponse } from '@app/http';
+import Long from 'long';
 
 @Exclude()
 export class ResultResponse {
@@ -29,7 +30,7 @@ class ContentResponse {
 @Exclude()
 export class ProposalResponse {
     @Expose({ name: 'proposalId' })
-    proposal_id: any;
+    proposal_id: Long;
 
     @Expose({ name: 'submitTime' })
     submit_time: string;

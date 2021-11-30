@@ -2,6 +2,7 @@ import { Exclude, Expose, Type } from 'class-transformer';
 import { BalanceResponse } from '@app/http/responses/balance.response';
 import { CommissionResponse } from '@app/http/responses/commission.response';
 import { DescriptionResponse } from '@app/http/responses/description.response';
+import Long from 'long';
 
 @Exclude()
 export abstract class MessageResponse {
@@ -266,7 +267,7 @@ export class DepositMessageResponse extends MessageResponse {
 @Exclude()
 class VoteValueResponse {
     @Expose({ name: 'proposalId' })
-    proposal_id: any;
+    proposal_id: Long;
 
     @Expose({ name: 'voter' })
     voter_address: string;
@@ -280,6 +281,31 @@ export class VoteMessageResponse extends MessageResponse {
     @Expose()
     @Type(() => VoteValueResponse)
     value: VoteValueResponse;
+}
+
+@Exclude()
+class CreateVestingAccountValueResponse {
+    @Expose({ name: 'fromAddress' })
+    from_address: string;
+
+    @Expose({ name: 'toAddress' })
+    to_address: string;
+
+    @Expose({ name: 'endTime' })
+    end_time: Long;
+
+    @Expose()
+    delayed: boolean;
+
+    @Expose()
+    amount: BalanceResponse[];
+}
+
+@Exclude()
+export class CreateVestingAccountResponse extends MessageResponse {
+    @Expose()
+    @Type(() => CreateVestingAccountValueResponse)
+    value: CreateVestingAccountValueResponse;
 }
 
 @Exclude()
@@ -302,4 +328,16 @@ export class BeginRedelegateMessageResponse extends MessageResponse {
     @Expose()
     @Type(() => BeginRedelegateValueResponse)
     value: BeginRedelegateValueResponse;
+}
+
+class WithdrawValidatorCommissionValueResponse {
+    @Expose({ name: 'validatorAddress' })
+    validator_address: string;
+}
+
+@Exclude()
+export class WithdrawValidatorCommissionMessageResponse extends MessageResponse {
+    @Expose()
+    @Type(() => WithdrawValidatorCommissionValueResponse)
+    value: WithdrawValidatorCommissionValueResponse;
 }
