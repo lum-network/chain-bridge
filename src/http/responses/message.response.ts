@@ -330,6 +330,7 @@ export class BeginRedelegateMessageResponse extends MessageResponse {
     value: BeginRedelegateValueResponse;
 }
 
+@Exclude()
 class WithdrawValidatorCommissionValueResponse {
     @Expose({ name: 'validatorAddress' })
     validator_address: string;
@@ -340,4 +341,17 @@ export class WithdrawValidatorCommissionMessageResponse extends MessageResponse 
     @Expose()
     @Type(() => WithdrawValidatorCommissionValueResponse)
     value: WithdrawValidatorCommissionValueResponse;
+}
+
+@Exclude()
+class UnjailValueResponse {
+    @Expose({ name: 'validatorAddr' })
+    validator_address: string;
+}
+
+@Exclude()
+export class UnjailMessageResponse extends MessageResponse {
+    @Expose()
+    @Type(() => UnjailValueResponse)
+    value: UnjailValueResponse;
 }
