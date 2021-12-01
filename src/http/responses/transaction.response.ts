@@ -19,6 +19,7 @@ import {
     CreateVestingAccountResponse,
     BeginRedelegateMessageResponse,
     WithdrawValidatorCommissionMessageResponse,
+    UnjailMessageResponse,
 } from '@app/http/responses/message.response';
 
 @Exclude()
@@ -83,6 +84,7 @@ export class TransactionResponse {
                 { value: CreateVestingAccountResponse, name: LumMessages.MsgCreateVestingAccountUrl },
                 { value: BeginRedelegateMessageResponse, name: LumMessages.MsgBeginRedelegateUrl },
                 { value: WithdrawValidatorCommissionMessageResponse, name: LumMessages.MsgWithdrawValidatorCommissionUrl },
+                { value: UnjailMessageResponse, name: LumMessages.MsgUnjailUrl },
             ],
         },
         keepDiscriminatorProperty: true,
