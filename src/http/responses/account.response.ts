@@ -36,6 +36,18 @@ class VestingResponse {
 }
 
 @Exclude()
+class AirdropResponse {
+    @Expose()
+    address: string;
+
+    @Expose({ name: 'actionCompleted' })
+    action_completed: boolean[];
+
+    @Expose({ name: 'initialClaimableAmount' })
+    initial_claimable_amount: BalanceResponse[];
+}
+
+@Exclude()
 class UnbondingEntriesResponse {
     @Expose()
     balance: string;
@@ -144,6 +156,10 @@ export class AccountResponse {
     @Expose()
     @Type(() => VestingResponse)
     vesting: VestingResponse;
+
+    @Expose()
+    @Type(() => AirdropResponse)
+    airdrop: AirdropResponse;
 
     constructor(data: Partial<AccountResponse>) {
         Object.assign(this, data);
