@@ -41,7 +41,7 @@ class AirdropResponse {
     address: string;
 
     @Expose({ name: 'actionCompleted' })
-    actionCompleted: boolean[];
+    action_completed: boolean[];
 
     @Expose({ name: 'initialClaimableAmount' })
     initial_claimable_amount: BalanceResponse[];
