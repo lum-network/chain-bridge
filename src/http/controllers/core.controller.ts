@@ -4,7 +4,7 @@ import { ElasticIndexes, QueueJobs, Queues } from '@app/utils/constants';
 import { LumConstants } from '@lum-network/sdk-javascript';
 import { Queue } from 'bull';
 import { InjectQueue } from '@nestjs/bull';
-import { config } from '@app/utils';
+import { config, OsmosisApi } from '@app/utils';
 import { plainToClass } from 'class-transformer';
 import { StatsResponse } from '@app/http/responses';
 
@@ -46,11 +46,25 @@ export class CoreController {
         return plainToClass(StatsResponse, { inflation: inflation || '0', totalSupply, chainId });
     }
 
+    @Get('lum')
+    async lum() {
+        const client = OsmosisApi.getInstance();
+
+        const res = await client.getLum();
+
+        if (!res || !res.length) {
+            throw new BadRequestException('data_not_found');
+        }
+
+        return res[0];
+    }
+
     @Get('faucet/:address')
     async faucet(@Param('address') address: string) {
         if (!config.getFaucetMnemonic()) {
             throw new BadRequestException('faucet_not_available');
         }
+
         return this._queue.add(QueueJobs.MINT_FAUCET_REQUEST, { address });
     }
 }

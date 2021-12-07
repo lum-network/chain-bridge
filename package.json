@@ -31,6 +31,7 @@
         "@nestjs/schedule": "^0.4.1",
         "@nestjs/terminus": "^7.0.1",
         "@nestjs/websockets": "^7.6.13",
+        "axios": "^0.24.0",
         "bull": "^3.18.0",
         "cache-manager": "^3.4.0",
         "cache-manager-redis-store": "^2.0.0",
