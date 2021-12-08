@@ -20,6 +20,9 @@ export class LumResponse {
     @Expose()
     name: number;
 
+    @Expose({ name: 'previousDayPrice' })
+    previous_day_price: number;
+
     constructor(data: Partial<LumResponse>) {
         Object.assign(this, data);
     }

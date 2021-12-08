@@ -18,6 +18,8 @@ class OsmosisApi extends HttpClient {
     }
 
     public getLum = () => this.instance.get<LumResponse[]>('/tokens/v1/LUM');
+
+    public getPreviousDayLum = () => this.instance.get('/tokens/v1/historical/LUM/chart?range=1d');
 }
 
 export default OsmosisApi;

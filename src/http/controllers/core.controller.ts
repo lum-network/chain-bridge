@@ -6,7 +6,7 @@ import { Queue } from 'bull';
 import { InjectQueue } from '@nestjs/bull';
 import { config, OsmosisApi } from '@app/utils';
 import { plainToClass } from 'class-transformer';
-import { StatsResponse } from '@app/http/responses';
+import { LumResponse, StatsResponse } from '@app/http/responses';
 
 @Controller('')
 export class CoreController {
@@ -50,13 +50,18 @@ export class CoreController {
     async lum() {
         const client = OsmosisApi.getInstance();
 
-        const res = await client.getLum();
+        const [lum, previousDayLum] = await Promise.all([client.getLum().catch(() => null), client.getPreviousDayLum().catch(() => null)]);
 
-        if (!res || !res.length) {
+        if (!lum || !lum.length || !previousDayLum || !previousDayLum.length) {
             throw new BadRequestException('data_not_found');
         }
 
-        return res[0];
+        const res = {
+            ...lum[0],
+            previousDayPrice: previousDayLum[0].open,
+        };
+
+        return plainToClass(LumResponse, res);
     }
 
     @Get('faucet/:address')
