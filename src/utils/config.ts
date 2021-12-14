@@ -4,6 +4,8 @@ export class Config {
     constructor(private env: { [k: string]: string | undefined }) {
         if (fs.existsSync(".env")) {
             require('dotenv').config();
+        } else {
+            console.log(env);
         }
     }
 
@@ -22,7 +24,7 @@ export class Config {
     }
 
     public getLumNetworkEndpoint = (): string => {
-        return this.getValue<string>('LUM-NETWORK-ENDPOINT', true);
+        return this.getValue<string>('LUM_NETWORK_ENDPOINT', true);
     };
 
     public getElasticSearchHost = (): string => {
