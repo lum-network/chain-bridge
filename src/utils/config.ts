@@ -1,7 +1,11 @@
-require('dotenv').config();
+import fs from 'fs';
 
 export class Config {
-    constructor(private env: { [k: string]: string | undefined }) {}
+    constructor(private env: { [k: string]: string | undefined }) {
+        if (fs.existsSync(".env")) {
+            require('dotenv').config();
+        }
+    }
 
     public getValue<T>(key: string, throwOnMissing = true): T {
         const value = this.env[key];
@@ -83,4 +87,4 @@ const config = new Config(process.env).ensureValues([
     'PUSH_NOTIF_ENABLED',
 ]);
 
-export { config };
+export {config};
