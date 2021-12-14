@@ -77,7 +77,7 @@ export class Config {
 }
 
 const config = new Config(process.env).ensureValues([
-    'LUM-NETWORK-ENDPOINT',
+    'LUM_NETWORK_ENDPOINT',
     'ELASTICSEARCH_HOST',
     'ELASTICSEARCH_PORT',
     'REDIS_HOST',
