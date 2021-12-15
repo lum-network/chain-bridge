@@ -1,7 +1,13 @@
-require('dotenv').config();
+import fs from 'fs';
 
 export class Config {
-    constructor(private env: { [k: string]: string | undefined }) {}
+    constructor(private env: { [k: string]: string | undefined }) {
+        if (fs.existsSync(".env")) {
+            require('dotenv').config();
+        } else {
+            console.log(env);
+        }
+    }
 
     public getValue<T>(key: string, throwOnMissing = true): T {
         const value = this.env[key];
@@ -18,7 +24,7 @@ export class Config {
     }
 
     public getLumNetworkEndpoint = (): string => {
-        return this.getValue<string>('LUM-NETWORK-ENDPOINT', true);
+        return this.getValue<string>('LUM_NETWORK_ENDPOINT', true);
     };
 
     public getElasticSearchHost = (): string => {
@@ -71,7 +77,7 @@ export class Config {
 }
 
 const config = new Config(process.env).ensureValues([
-    'LUM-NETWORK-ENDPOINT',
+    'LUM_NETWORK_ENDPOINT',
     'ELASTICSEARCH_HOST',
     'ELASTICSEARCH_PORT',
     'REDIS_HOST',
@@ -83,4 +89,4 @@ const config = new Config(process.env).ensureValues([
     'PUSH_NOTIF_ENABLED',
 ]);
 
-export { config };
+export {config};
