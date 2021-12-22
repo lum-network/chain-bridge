@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import {Injectable, Logger} from '@nestjs/common';
 import { LumClient } from '@lum-network/sdk-javascript';
 
 import { config } from '@app/utils/config';
@@ -6,11 +6,16 @@ import { config } from '@app/utils/config';
 @Injectable()
 export class LumNetworkService {
     private _client: LumClient = null;
+    private readonly _logger: Logger = new Logger(LumNetworkService.name);
 
     initialise = async () => {
         try {
             this._client = await LumClient.connect(config.getLumNetworkEndpoint());
-        } catch (e) {}
+            const chainId = await this._client.getChainId();
+            this._logger.log(`Connection established to Lum Network on ${config.getLumNetworkEndpoint()} = ${chainId}`)
+        } catch (e) {
+            console.error(e);
+        }
     };
 
     isInitialized = (): boolean => {
