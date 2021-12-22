@@ -9,3 +9,4 @@ export * from './reward.response';
 export * from './transaction.response';
 export * from './validator.response';
 export * from './stats.response';
+export * from './lum.response';
