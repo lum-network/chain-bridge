@@ -29,6 +29,8 @@ import { ElasticService, LumNetworkService } from '@app/services';
 import { ElasticIndexes, Queues, QueueJobs, config, IndexBlocksMapping, IndexValidatorsMapping, IndexTransactionsMapping } from '@app/utils';
 
 import { GatewayWebsocket } from '@app/websocket';
+import { HttpModule } from '@nestjs/axios';
+import { LumService } from '@app/services/lum.service';
 
 @Module({
     imports: [
@@ -71,6 +73,7 @@ import { GatewayWebsocket } from '@app/websocket';
         }),
         ScheduleModule.forRoot(),
         TerminusModule,
+        HttpModule,
     ],
     controllers: [AccountsController, BlocksController, CoreController, HealthController, TransactionsController, ValidatorsController, GovernanceController],
     providers: [
@@ -84,6 +87,7 @@ import { GatewayWebsocket } from '@app/websocket';
         GatewayWebsocket,
         ElasticService,
         LumNetworkService,
+        LumService,
         { provide: APP_INTERCEPTOR, useClass: ResponseInterceptor },
     ],
 })
