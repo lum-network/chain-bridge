@@ -4,13 +4,19 @@ import { ElasticIndexes, QueueJobs, Queues } from '@app/utils/constants';
 import { LumConstants } from '@lum-network/sdk-javascript';
 import { Queue } from 'bull';
 import { InjectQueue } from '@nestjs/bull';
-import { config, OsmosisApi } from '@app/utils';
+import { config } from '@app/utils';
 import { plainToClass } from 'class-transformer';
 import { LumResponse, StatsResponse } from '@app/http/responses';
+import { LumService } from '@app/services/lum.service';
 
 @Controller('')
 export class CoreController {
-    constructor(private readonly _elasticService: ElasticService, @InjectQueue(Queues.QUEUE_FAUCET) private readonly _queue: Queue, private readonly _lumNetworkService: LumNetworkService) {}
+    constructor(
+        private readonly _elasticService: ElasticService,
+        @InjectQueue(Queues.QUEUE_FAUCET) private readonly _queue: Queue,
+        private readonly _lumNetworkService: LumNetworkService,
+        private readonly _lumService: LumService,
+    ) {}
 
     @Get('search/:data')
     @UseInterceptors(CacheInterceptor)
@@ -48,17 +54,15 @@ export class CoreController {
 
     @Get('lum')
     async lum() {
-        const client = OsmosisApi.getInstance();
+        const [lum, previousDayLum] = await Promise.all([this._lumService.getLum().catch(() => null), this._lumService.getPreviousDayLum().catch(() => null)]);
 
-        const [lum, previousDayLum] = await Promise.all([client.getLum().catch(() => null), client.getPreviousDayLum().catch(() => null)]);
-
-        if (!lum || !lum.length || !previousDayLum || !previousDayLum.length) {
+        if (!lum || !lum.data || !lum.data.length || !previousDayLum || !previousDayLum.data || !previousDayLum.data.length) {
             throw new BadRequestException('data_not_found');
         }
 
         const res = {
-            ...lum[0],
-            previousDayPrice: previousDayLum[0].open,
+            ...lum.data[0],
+            previousDayPrice: previousDayLum.data[0].open,
         };
 
         return plainToClass(LumResponse, res);
