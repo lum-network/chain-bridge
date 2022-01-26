@@ -683,10 +683,10 @@
   resolved "https://registry.yarnpkg.com/@ledgerhq/logs/-/logs-6.10.0.tgz#c012c1ecc1a0e53d50e6af381618dca5268461c1"
   integrity sha512-lLseUPEhSFUXYTKj6q7s2O3s2vW2ebgA11vMAlKodXGf5AFw4zUoEbTz9CoFOC9jS6xY4Qr8BmRnxP/odT4Uuw==
 
-"@lum-network/sdk-javascript@^0.7.1":
-  version "0.7.1"
-  resolved "https://registry.yarnpkg.com/@lum-network/sdk-javascript/-/sdk-javascript-0.7.1.tgz#bb28b8831495d8725be5d2d50e172147de34ea2c"
-  integrity sha512-vlU5fs9JJZfuoKskN8LNMMXqIZo6kqYunW7oanYILSsC28nxBCDy9HsN8R95KRzR4yF/rgiblx9CuKFZb+tDUw==
+"@lum-network/sdk-javascript@^0.7.4":
+  version "0.7.4"
+  resolved "https://registry.yarnpkg.com/@lum-network/sdk-javascript/-/sdk-javascript-0.7.4.tgz#199c70742bd1f73b02cf3eee2a2a7d7de584b7b8"
+  integrity sha512-wEuPjejXH9Q2XWFLPAiXNXZmDbPDIvl4L0kG9k4j4Ip40CboWSlx+esHqQVSNtPgzMXJt5mJuV1HiD6PjdU35w==
   dependencies:
     "@cosmjs/amino" "^0.26.5"
     "@cosmjs/crypto" "^0.26.5"
