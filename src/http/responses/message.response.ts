@@ -355,3 +355,48 @@ export class UnjailMessageResponse extends MessageResponse {
     @Type(() => UnjailValueResponse)
     value: UnjailValueResponse;
 }
+
+class TimeoutValueResponse {}
+
+@Exclude()
+export class TimeoutMessageResponse extends MessageResponse {
+    @Expose()
+    @Type(() => TimeoutValueResponse)
+    value: TimeoutValueResponse;
+}
+
+class TransferValueResponse {}
+
+@Exclude()
+export class TransferMessageResponse extends MessageResponse {
+    @Expose()
+    @Type(() => TransferValueResponse)
+    value: TransferValueResponse;
+}
+
+class UpdateClientValueResponse {}
+
+@Exclude()
+export class UpdateClientMessageResponse extends MessageResponse {
+    @Expose()
+    @Type(() => UpdateClientValueResponse)
+    value: UpdateClientValueResponse;
+}
+
+class AcknowledgementValueResponse {}
+
+@Exclude()
+export class AcknowledgementMessageResponse extends MessageResponse {
+    @Expose()
+    @Type(() => AcknowledgementValueResponse)
+    value: AcknowledgementValueResponse;
+}
+
+class RecvPacketValueResponse {}
+
+@Exclude()
+export class RecvPacketMessageResponse extends MessageResponse {
+    @Expose()
+    @Type(() => RecvPacketValueResponse)
+    value: RecvPacketValueResponse;
+}

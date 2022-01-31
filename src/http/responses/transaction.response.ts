@@ -20,6 +20,11 @@ import {
     BeginRedelegateMessageResponse,
     WithdrawValidatorCommissionMessageResponse,
     UnjailMessageResponse,
+    TimeoutMessageResponse,
+    TransferMessageResponse,
+    UpdateClientMessageResponse,
+    AcknowledgementMessageResponse,
+    RecvPacketMessageResponse,
 } from '@app/http/responses/message.response';
 
 @Exclude()
@@ -85,6 +90,11 @@ export class TransactionResponse {
                 { value: BeginRedelegateMessageResponse, name: LumMessages.MsgBeginRedelegateUrl },
                 { value: WithdrawValidatorCommissionMessageResponse, name: LumMessages.MsgWithdrawValidatorCommissionUrl },
                 { value: UnjailMessageResponse, name: LumMessages.MsgUnjailUrl },
+                { value: TimeoutMessageResponse, name: LumMessages.MsgTimeoutUrl },
+                { value: TransferMessageResponse, name: LumMessages.MsgTransferUrl },
+                { value: UpdateClientMessageResponse, name: LumMessages.MsgUpdateClientUrl },
+                { value: AcknowledgementMessageResponse, name: LumMessages.MsgAcknowledgementUrl },
+                { value: RecvPacketMessageResponse, name: LumMessages.MsgRecvPacketUrl },
             ],
         },
         keepDiscriminatorProperty: true,
