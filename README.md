@@ -46,6 +46,8 @@ API_PORT=3000
 
 INGEST_ENABLED=true
 
+INGEST_BACKWARD_ENABLED=true
+
 PUSH_NOTIF_ENABLED=true
 
 # To enable faucet in testnet environment
