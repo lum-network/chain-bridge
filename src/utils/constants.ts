@@ -9,6 +9,7 @@ export enum ElasticIndexes {
     INDEX_BLOCKS = 'blocks',
     INDEX_TRANSACTIONS = 'transactions',
     INDEX_VALIDATORS = 'validators',
+    INDEX_BEAMS = 'beams',
 }
 
 export enum Queues {

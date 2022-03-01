@@ -46,3 +46,20 @@ export interface ValidatorDocument extends VersionedChainDocument {
     operator_address?: string;
     account_address?: string;
 }
+
+export interface BeamDocument extends VersionedChainDocument {
+    creator_address: string;
+    id: string;
+    status?: number;
+    secret: string;
+    claim_address: string;
+    funds_withdrawn?: boolean;
+    claimed?: boolean;
+    cancel_reason?: string;
+    hide_content?: boolean;
+    schema: string;
+    claim_expires_at_block: number;
+    closes_at_block: number;
+    amount: { amount: string; denom: string };
+    data: string;
+}
