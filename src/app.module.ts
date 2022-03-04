@@ -31,6 +31,7 @@ import { ElasticIndexes, Queues, QueueJobs, config, IndexBlocksMapping, IndexVal
 import { GatewayWebsocket } from '@app/websocket';
 import { HttpModule } from '@nestjs/axios';
 import { LumService } from '@app/services/lum.service';
+import { BeamsController } from '@app/http/controllers/beams.controller';
 
 @Module({
     imports: [
@@ -75,7 +76,7 @@ import { LumService } from '@app/services/lum.service';
         TerminusModule,
         HttpModule,
     ],
-    controllers: [AccountsController, BlocksController, CoreController, HealthController, TransactionsController, ValidatorsController, GovernanceController],
+    controllers: [AccountsController, BlocksController, CoreController, HealthController, TransactionsController, ValidatorsController, BeamsController, GovernanceController],
     providers: [
         BlockConsumer,
         CoreConsumer,
