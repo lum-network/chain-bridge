@@ -8,10 +8,11 @@ import moment from 'moment';
 import { LumUtils, LumRegistry, LumMessages, LumConstants } from '@lum-network/sdk-javascript';
 
 import { ElasticIndexes, NotificationChannels, NotificationEvents, QueueJobs, Queues, IngestionDocumentVersion } from '@app/utils/constants';
-import { BlockDocument, TransactionDocument } from '@app/utils/models';
+import { BeamDocument, BlockDocument, TransactionDocument } from '@app/utils/models';
 import { LumNetworkService, ElasticService } from '@app/services';
 
 import { config } from '@app/utils/config';
+import { isBeam } from '@app/utils';
 
 @Processor(Queues.QUEUE_DEFAULT)
 export class BlockConsumer {
@@ -148,6 +149,28 @@ export class BlockConsumer {
 
                 return res;
             };
+
+            const getFormattedBeam = (value: any): BeamDocument => {
+                return {
+                    doc_version: IngestionDocumentVersion,
+                    chain_id: blockDoc.chain_id,
+                    creator_address: value.creatorAddress,
+                    id: value.id,
+                    status: value.status,
+                    secret: value.secret,
+                    claim_address: value.claimAddress,
+                    funds_withdrawn: value.fundsWithdrawn,
+                    claimed: value.claimed,
+                    cancel_reason: value.cancelReason,
+                    hide_content: value.hideContent,
+                    schema: value.schema,
+                    claim_expires_at_block: value.claimExpiresAtBlock,
+                    closes_at_block: value.closesAtBlock,
+                    amount: value.amount,
+                    data: JSON.stringify(value.data),
+                };
+            };
+
             const txDocs = await Promise.all(block.block.txs.map(getFormattedTx));
 
             // Ingest block and transactions into elasticsearch
@@ -163,6 +186,15 @@ export class BlockConsumer {
             for (const txDoc of txDocs) {
                 bulkPayload.push({ index: { _index: ElasticIndexes.INDEX_TRANSACTIONS, _id: txDoc.hash } });
                 bulkPayload.push(txDoc);
+
+                for (const message of txDoc.messages) {
+                    if (isBeam(message.typeUrl)) {
+                        const beamDoc = getFormattedBeam(message.value);
+
+                        bulkPayload.push({ index: { _index: ElasticIndexes.INDEX_BEAMS, _id: beamDoc.id } });
+                        bulkPayload.push(beamDoc);
+                    }
+                }
             }
             await this._elasticService.bulkUpdate({ body: bulkPayload });
 
