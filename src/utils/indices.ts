@@ -55,3 +55,30 @@ export const IndexTransactionsMapping = {
         },
     },
 };
+
+export const IndexBeamsMapping = {
+    mappings: {
+        properties: {
+            creator_address: { type: 'keyword' },
+            id: { type: 'keyword' },
+            status: { type: 'integer' },
+            secret: { type: 'keyword' },
+            claim_address: { type: 'keyword' },
+            funds_withdrawn: { type: 'boolean' },
+            claimed: { type: 'boolean' },
+            cancel_reason: { type: 'keyword' },
+            hide_content: { type: 'boolean' },
+            schema: { type: 'keyword' },
+            claim_expires_at_block: { type: 'integer' },
+            closes_at_block: { type: 'integer' },
+            amount: {
+                type: 'object',
+                properties: {
+                    denom: { type: 'keyword' },
+                    amount: { type: 'double' },
+                },
+            },
+            data: { type: 'object' },
+        },
+    },
+};
