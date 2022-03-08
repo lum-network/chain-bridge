@@ -9,17 +9,23 @@ export class BeamsController {
 
     @Get('')
     async fetch() {
-        // We get the 50 last block stored in ES
-        const result = await this._elasticService.documentSearch(ElasticIndexes.INDEX_BEAMS, {
-            size: 50,
-            sort: { height: 'desc' },
-        });
+        // We get the 50 last beams stored in ES
+        // const result = await this._elasticService.documentSearch(ElasticIndexes.INDEX_BEAMS, {
+        //     size: 50,
+        //     sort: { height: 'desc' },
+        // });
+        //
+        // console.log(result);
+        //
+        // if (!result || !result.body || !result.body.hits || !result.body.hits.hits) {
+        //     throw new NotFoundException('beams_not_found');
+        // }
+        //
+        // return result.body.hits.hits.map(beam => beam._source);
 
-        if (!result || !result.body || !result.body.hits || !result.body.hits.hits) {
-            throw new NotFoundException('beams_not_found');
-        }
+        const lumClt = await this._lumNetworkService.getClient();
 
-        return result.body.hits.hits.map(beam => beam._source);
+        return await lumClt.queryClient.beam.fetch();
     }
 
     @Get(':id')

@@ -26,7 +26,7 @@ import {
 import { BlockConsumer, BlockScheduler, CoreConsumer, NotificationConsumer, ValidatorScheduler } from '@app/async';
 
 import { ElasticService, LumNetworkService } from '@app/services';
-import { ElasticIndexes, Queues, QueueJobs, config, IndexBlocksMapping, IndexValidatorsMapping, IndexTransactionsMapping } from '@app/utils';
+import { ElasticIndexes, Queues, QueueJobs, config, IndexBlocksMapping, IndexValidatorsMapping, IndexTransactionsMapping, IndexBeamsMapping } from '@app/utils';
 
 import { GatewayWebsocket } from '@app/websocket';
 import { HttpModule } from '@nestjs/axios';
@@ -123,6 +123,14 @@ export class AppModule implements OnModuleInit, OnApplicationBootstrap {
             if (!exists) {
                 await this._elasticService.indexCreate(ElasticIndexes.INDEX_TRANSACTIONS, IndexTransactionsMapping);
                 this._logger.debug('Created index transactions');
+            }
+        });
+
+        // Init the beams index
+        this._elasticService.indexExists(ElasticIndexes.INDEX_BEAMS).then(async exists => {
+            if (!exists) {
+                await this._elasticService.indexCreate(ElasticIndexes.INDEX_BEAMS, IndexBeamsMapping);
+                this._logger.debug('Created index beams');
             }
         });
 

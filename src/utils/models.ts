@@ -61,5 +61,5 @@ export interface BeamDocument extends VersionedChainDocument {
     claim_expires_at_block: number;
     closes_at_block: number;
     amount: { amount: string; denom: string };
-    data: string;
+    data: any;
 }
