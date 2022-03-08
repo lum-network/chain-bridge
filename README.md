@@ -63,7 +63,7 @@ The following services are required to run the service:
 - Redis 5+
 - Lum Network node (RPC endpoint)
 
-You can use the official Lum Network's testnet along the provided [docker-compose](./docker-compose.yml) file to run both Elasticsearch and Redis and get started in a minute:
+You can use the official Lum Network's testnet along the provided [docker-compose](tools/docker-compose.yml) file to run both Elasticsearch and Redis and get started in a minute:
 
 ```bash
 docker-compose up
