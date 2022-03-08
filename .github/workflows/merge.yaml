@@ -86,7 +86,7 @@ jobs:
           token: ${{ secrets.PAT }}
 
       - name: Update the helm file
-        run: sed -i -e 's/latest/${{ steps.vars.outputs.version_tag_number }}/g' helm/lum-network/values.yaml
+        run: sed -i -e 's/latest/${{ steps.vars.outputs.version_tag_number }}/g' helm/values/lum-network.testnet.yml
 
       - name: Deploy the upgrade
         uses: deliverybot/helm@v1
@@ -94,7 +94,47 @@ jobs:
           release: 'lum-network-bridge'
           namespace: 'lum-network-testnet'
           chart: 'helm/lum-network/bridge'
-          value-files: 'helm/lum-network/values.yaml'
+          value-files: 'helm/values/lum-network.testnet.yml'
+          atomic: true
+          helm: 'helm3'
+        env:
+          KUBECONFIG_FILE: ${{ secrets.KUBECONFIG }}
+
+  deploy_mainnet:
+    name: Upgrade the kubernetes service with the latest pushed version
+    runs-on: ubuntu-latest
+    needs: build
+    environment: mainnet
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Download version number from bump-version-push-tag
+        uses: actions/download-artifact@v1
+        with:
+          name: new_version
+
+      - name: Create version number variable
+        id: vars
+        run: echo ::set-output name=version_tag_number::$(cat new_version/new_version.txt)
+
+      - name: Clone the infrastructure deployments repository
+        uses: actions/checkout@master
+        with:
+          repository: lum-network/infrastructure-deployments
+          path: 'helm'
+          token: ${{ secrets.PAT }}
+
+      - name: Update the helm file
+        run: sed -i -e 's/latest/${{ steps.vars.outputs.version_tag_number }}/g' helm/values/lum-network.mainnet.yml
+
+      - name: Deploy the upgrade
+        uses: deliverybot/helm@v1
+        with:
+          release: 'lum-network-bridge'
+          namespace: 'lum-network-mainnet'
+          chart: 'helm/lum-network/bridge'
+          value-files: 'helm/values/lum-network.mainnet.yml'
           atomic: true
           helm: 'helm3'
         env:
