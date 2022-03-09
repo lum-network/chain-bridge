@@ -1,10 +1,11 @@
 import { CacheInterceptor, Controller, Get, NotFoundException, Param, UseInterceptors } from '@nestjs/common';
 import { plainToClass } from 'class-transformer';
 
+import { LumUtils } from '@lum-network/sdk-javascript';
+
 import { ElasticService, LumNetworkService } from '@app/services';
 import { BlockResponse, ValidatorResponse } from '@app/http/responses';
 import { ElasticIndexes, convertValAddressToAccAddress } from '@app/utils';
-import { LumUtils } from '@lum-network/sdk-javascript';
 
 @Controller('validators')
 @UseInterceptors(CacheInterceptor)

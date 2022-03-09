@@ -1,13 +1,15 @@
 import { BadRequestException, CacheInterceptor, Controller, Get, NotFoundException, Param, UseInterceptors } from '@nestjs/common';
-import { ElasticService, LumNetworkService } from '@app/services';
-import { ElasticIndexes, QueueJobs, Queues } from '@app/utils/constants';
-import { LumConstants } from '@lum-network/sdk-javascript';
-import { Queue } from 'bull';
 import { InjectQueue } from '@nestjs/bull';
-import { config } from '@app/utils';
+
 import { plainToClass } from 'class-transformer';
+
+import { Queue } from 'bull';
+
+import { LumConstants } from '@lum-network/sdk-javascript';
+
+import { ElasticService, LumService, LumNetworkService } from '@app/services';
+import { ElasticIndexes, QueueJobs, Queues, config } from '@app/utils';
 import { LumResponse, StatsResponse } from '@app/http/responses';
-import { LumService } from '@app/services/lum.service';
 
 @Controller('')
 export class CoreController {

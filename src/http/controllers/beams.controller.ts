@@ -9,14 +9,12 @@ export class BeamsController {
     @Get('')
     async fetch() {
         const lumClt = await this._lumNetworkService.getClient();
-
         return await lumClt.queryClient.beam.fetch();
     }
 
     @Get(':id')
     async get(@Param('id') id: string) {
         const lumClt = await this._lumNetworkService.getClient();
-
         return await lumClt.queryClient.beam.get(id);
     }
 }
