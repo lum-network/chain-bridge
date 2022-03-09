@@ -56,9 +56,15 @@ jobs:
       - name: Build, tag and push the built image
         run: |
           docker login $REGISTRY_ADDRESS -u nologin -p $REGISTRY_TOKEN
-          docker build -t $REGISTRY_ADDRESS/$REGISTRY_ADDRESS_PROJECT:latest -t $REGISTRY_ADDRESS/$REGISTRY_ADDRESS_PROJECT:"${{ steps.vars.outputs.version_tag_number }}" .
-          docker push $REGISTRY_ADDRESS/$REGISTRY_ADDRESS_PROJECT:${{ steps.vars.outputs.version_tag_number }}
-          docker push $REGISTRY_ADDRESS/$REGISTRY_ADDRESS_PROJECT:latest
+          docker build -t $REGISTRY_ADDRESS/$REGISTRY_ADDRESS_PROJECT-api:latest -t $REGISTRY_ADDRESS/$REGISTRY_ADDRESS_PROJECT-api:"${{ steps.vars.outputs.version_tag_number }}" -f tools/API.Dockerfile .
+          docker build -t $REGISTRY_ADDRESS/$REGISTRY_ADDRESS_PROJECT-sync-consumer:latest -t $REGISTRY_ADDRESS/$REGISTRY_ADDRESS_PROJECT-sync-consumer:"${{ steps.vars.outputs.version_tag_number }}" -f tools/SyncConsumer.Dockerfile .
+          docker build -t $REGISTRY_ADDRESS/$REGISTRY_ADDRESS_PROJECT-sync-scheduler:latest -t $REGISTRY_ADDRESS/$REGISTRY_ADDRESS_PROJECT-sync-scheduler:"${{ steps.vars.outputs.version_tag_number }}" -f tools/SyncScheduler.Dockerfile .
+          docker push $REGISTRY_ADDRESS/$REGISTRY_ADDRESS_PROJECT-api:${{ steps.vars.outputs.version_tag_number }}
+          docker push $REGISTRY_ADDRESS/$REGISTRY_ADDRESS_PROJECT-api:latest
+          docker push $REGISTRY_ADDRESS/$REGISTRY_ADDRESS_PROJECT-sync-consumer:${{ steps.vars.outputs.version_tag_number }}
+          docker push $REGISTRY_ADDRESS/$REGISTRY_ADDRESS_PROJECT-sync-consumer:latest
+          docker push $REGISTRY_ADDRESS/$REGISTRY_ADDRESS_PROJECT-sync-scheduler:${{ steps.vars.outputs.version_tag_number }}
+          docker push $REGISTRY_ADDRESS/$REGISTRY_ADDRESS_PROJECT-sync-scheduler:latest
 
   deploy_testnet:
     name: Upgrade the kubernetes service with the latest pushed version
