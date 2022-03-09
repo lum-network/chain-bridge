@@ -33,7 +33,7 @@ export class ValidatorsController {
 
         const results = [...allBondedValidators, ...unbonding.validators, ...unbonded.validators];
 
-        const mapResults = results.map(validator => plainToClass(ValidatorResponse, validator));
+        const mapResults = results.map((validator) => plainToClass(ValidatorResponse, validator));
 
         // Get the operator addresses
         const operatorAddresses: string[] = [];
@@ -47,7 +47,7 @@ export class ValidatorsController {
         }
 
         for (const [key, validator] of Object.entries(mapResults)) {
-            const genesis = operatorAddresses.find(value => value === validator.operator_address);
+            const genesis = operatorAddresses.find((value) => value === validator.operator_address);
 
             if (genesis) {
                 mapResults[key].genesis = true;
@@ -113,7 +113,7 @@ export class ValidatorsController {
         let blocks = [];
 
         if (blocksResponse && blocksResponse.body && blocksResponse.body.hits && blocksResponse.body.hits.hits) {
-            blocks = blocksResponse.body.hits.hits.map(hit => plainToClass(BlockResponse, hit._source));
+            blocks = blocksResponse.body.hits.hits.map((hit) => plainToClass(BlockResponse, hit._source));
         }
 
         // Merge

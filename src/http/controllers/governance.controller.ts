@@ -26,7 +26,7 @@ export class GovernanceController {
             '',
         );
 
-        return results.proposals.map(proposal => plainToClass(ProposalResponse, decodeContent(proposal)));
+        return results.proposals.map((proposal) => plainToClass(ProposalResponse, decodeContent(proposal)));
     }
 
     @Get('proposals/:id')

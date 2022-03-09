@@ -94,7 +94,7 @@ export class AccountsController {
 
         // Inject transactions
         if (transactions && transactions.body && transactions.body.hits && transactions.body.hits.hits) {
-            account['transactions'] = transactions.body.hits.hits.map(hit => plainToClass(TransactionResponse, hit._source));
+            account['transactions'] = transactions.body.hits.hits.map((hit) => plainToClass(TransactionResponse, hit._source));
         } else {
             account['transactions'] = [];
         }

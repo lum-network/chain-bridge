@@ -24,7 +24,7 @@ export class TransactionsController {
             throw new NotFoundException('transactions_not_found');
         }
 
-        return result.body.hits.hits.map(tx => plainToClass(TransactionResponse, tx._source));
+        return result.body.hits.hits.map((tx) => plainToClass(TransactionResponse, tx._source));
     }
 
     @Get(':hash')

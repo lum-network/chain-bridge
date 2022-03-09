@@ -58,7 +58,7 @@ export class BlockConsumer {
                 height: block.block.header.height,
                 time: moment(block.block.header.time as Date).toISOString(),
                 tx_count: block.block.txs.length,
-                tx_hashes: block.block.txs.map(tx => LumUtils.toHex(LumUtils.sha256(tx)).toUpperCase()),
+                tx_hashes: block.block.txs.map((tx) => LumUtils.toHex(LumUtils.sha256(tx)).toUpperCase()),
                 proposer_address: LumUtils.toHex(block.block.header.proposerAddress).toUpperCase(),
                 operator_address: operatorAddress,
                 raw_block: LumUtils.toJSON(block),
@@ -87,20 +87,20 @@ export class BlockConsumer {
                     operator_address: blockDoc.operator_address,
                     success: tx.result.code === 0,
                     code: tx.result.code,
-                    fees: txData.authInfo.fee.amount.map(coin => {
+                    fees: txData.authInfo.fee.amount.map((coin) => {
                         return { denom: coin.denom, amount: parseFloat(coin.amount) };
                     }),
                     addresses: [],
-                    gas_wanted: ((tx.result as unknown) as { gasWanted: number }).gasWanted,
-                    gas_used: ((tx.result as unknown) as { gasUsed: number }).gasUsed,
+                    gas_wanted: (tx.result as unknown as { gasWanted: number }).gasWanted,
+                    gas_used: (tx.result as unknown as { gasUsed: number }).gasUsed,
                     memo: txData.body.memo,
-                    messages: txData.body.messages.map(msg => {
+                    messages: txData.body.messages.map((msg) => {
                         return { typeUrl: msg.typeUrl, value: LumUtils.toJSON(LumRegistry.decode(msg)) };
                     }),
                     message_type: txData.body.messages.length ? txData.body.messages[0].typeUrl : null,
                     messages_count: txData.body.messages.length,
                     raw_logs: logs as any[],
-                    raw_events: tx.result.events.map(ev => LumUtils.toJSON(ev)),
+                    raw_events: tx.result.events.map((ev) => LumUtils.toJSON(ev)),
                     raw_tx: LumUtils.toJSON(tx),
                     raw_tx_data: LumUtils.toJSON(txData),
                 };

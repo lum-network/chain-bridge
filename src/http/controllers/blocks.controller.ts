@@ -21,7 +21,7 @@ export class BlocksController {
             throw new NotFoundException('blocks_not_found');
         }
 
-        return result.body.hits.hits.map(block => plainToClass(BlockResponse, block._source));
+        return result.body.hits.hits.map((block) => plainToClass(BlockResponse, block._source));
     }
 
     @Get('latest')

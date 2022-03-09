@@ -1,4 +1,5 @@
 export * from './accounts.controller';
+export * from './beams.controller';
 export * from './blocks.controller';
 export * from './core.controller';
 export * from './health.controller';
