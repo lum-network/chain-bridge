@@ -9,7 +9,6 @@ import { ElasticService, LumNetworkService } from '@app/services';
 import { ElasticIndexes } from '@app/utils/constants';
 import { AccountResponse, TransactionResponse } from '@app/http/responses';
 
-
 @Controller('accounts')
 @UseInterceptors(CacheInterceptor)
 export class AccountsController {

@@ -1,14 +1,14 @@
 import { HttpModule } from '@nestjs/axios';
-import { Module, OnModuleInit, OnApplicationBootstrap } from '@nestjs/common';
+import { Module, OnApplicationBootstrap, OnModuleInit } from '@nestjs/common';
 import { BullModule, InjectQueue } from '@nestjs/bull';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 
 import { Queue } from 'bull';
 
 import { BlockConsumer, CoreConsumer, NotificationConsumer } from '@app/async';
 
-import { ElasticService, LumService, LumNetworkService } from '@app/services';
-import { Queues, config } from '@app/utils';
-import { GatewayWebsocket } from '@app/websocket';
+import { ElasticService, LumNetworkService, LumService } from '@app/services';
+import { config, Queues } from '@app/utils';
 
 @Module({
     imports: [
@@ -42,10 +42,19 @@ import { GatewayWebsocket } from '@app/websocket';
                 },
             },
         ),
+        ClientsModule.register([
+            {
+                name: 'API',
+                transport: Transport.REDIS,
+                options: {
+                    url: config.getRedisURL(),
+                },
+            },
+        ]),
         HttpModule,
     ],
     controllers: [],
-    providers: [BlockConsumer, CoreConsumer, GatewayWebsocket, NotificationConsumer, ElasticService, LumNetworkService, LumService],
+    providers: [BlockConsumer, CoreConsumer, NotificationConsumer, ElasticService, LumNetworkService, LumService],
 })
 export class SyncConsumerModule implements OnModuleInit, OnApplicationBootstrap {
     constructor(private readonly _elasticService: ElasticService, private readonly _lumNetworkService: LumNetworkService, @InjectQueue(Queues.QUEUE_DEFAULT) private readonly _queue: Queue) {}

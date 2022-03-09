@@ -47,6 +47,10 @@ export class Config {
         return this.getValue<string>('REDIS_PREFIX', false).toLowerCase();
     };
 
+    public getRedisURL = (): string => {
+        return `redis://${this.getRedisHost()}:${this.getRedisPort()}`;
+    };
+
     public getFaucetMnemonic = (): string => {
         return this.getValue<string>('FAUCET_MNEMONIC', false);
     };

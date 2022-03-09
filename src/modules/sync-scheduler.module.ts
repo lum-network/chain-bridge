@@ -2,6 +2,7 @@ import { HttpModule } from '@nestjs/axios';
 import { Logger, Module, OnModuleInit, OnApplicationBootstrap } from '@nestjs/common';
 import { BullModule, InjectQueue } from '@nestjs/bull';
 import { ScheduleModule } from '@nestjs/schedule';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 
 import { Queue } from 'bull';
 
@@ -42,6 +43,15 @@ import { Queues, QueueJobs, config } from '@app/utils';
                 },
             },
         ),
+        ClientsModule.register([
+            {
+                name: 'API',
+                transport: Transport.REDIS,
+                options: {
+                    url: config.getRedisURL(),
+                },
+            },
+        ]),
         ScheduleModule.forRoot(),
         HttpModule,
     ],

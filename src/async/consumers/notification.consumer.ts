@@ -1,16 +1,14 @@
 import { Process, Processor } from '@nestjs/bull';
-import { Logger } from '@nestjs/common';
+import { Inject } from '@nestjs/common';
+import { ClientProxy } from '@nestjs/microservices';
 
 import { Job } from 'bull';
 
-import { QueueJobs, Queues, config } from '@app/utils';
-import { GatewayWebsocket } from '@app/websocket';
+import { QueueJobs, Queues, config, makeRequest } from '@app/utils';
 
 @Processor(Queues.QUEUE_DEFAULT)
 export class NotificationConsumer {
-    private readonly _logger: Logger = new Logger(NotificationConsumer.name);
-
-    constructor(private readonly _messageGateway: GatewayWebsocket) {}
+    constructor(@Inject('API') private readonly _client: ClientProxy) {}
 
     @Process(QueueJobs.NOTIFICATION_SOCKET)
     async dispatchNotificationSocket(job: Job<{ channel: string; event: string; data: string }>) {
@@ -18,9 +16,6 @@ export class NotificationConsumer {
             return;
         }
 
-        this._logger.log(`Dispatching notification on channel ${job.data.channel}...`);
-        if (this._messageGateway && this._messageGateway._server) {
-            this._messageGateway._server.to(job.data.channel).emit(job.data.event, job.data.data);
-        }
+        await makeRequest(this._client, 'notifySocket', job.data);
     }
 }
