@@ -85,7 +85,7 @@ export class CoreController {
     }
 
     @MessagePattern('notifySocket')
-    async notifySocket(@Payload() data: { channel: string; event: string; data: string }, @Ctx() context: RedisContext): Promise<void> {
+    async notifySocket(@Payload() data: { channel: string; event: string; data: string }): Promise<void> {
         this._logger.log(`Dispatching notification on channel ${data.channel}...`);
         if (this._messageGateway && this._messageGateway._server) {
             this._messageGateway._server.to(data.channel).emit(data.event, data.data);

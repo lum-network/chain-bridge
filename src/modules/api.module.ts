@@ -4,7 +4,7 @@ import { BullModule } from '@nestjs/bull';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { TerminusModule } from '@nestjs/terminus';
 
-import {ConsoleModule} from "nestjs-console";
+import { ConsoleModule } from 'nestjs-console';
 
 import { LumWalletFactory } from '@lum-network/sdk-javascript';
 
@@ -28,7 +28,7 @@ import { ElasticService, LumService, LumNetworkService } from '@app/services';
 import { ElasticIndexes, config, IndexBlocksMapping, IndexValidatorsMapping, IndexTransactionsMapping, IndexBeamsMapping, Queues } from '@app/utils';
 
 import { GatewayWebsocket } from '@app/websocket';
-import {BlocksCommands, TransactionsCommands, ValidatorsCommands} from "@app/console/commands";
+import { BlocksCommands, TransactionsCommands, ValidatorsCommands } from '@app/console/commands';
 
 @Module({
     imports: [
@@ -61,11 +61,16 @@ import {BlocksCommands, TransactionsCommands, ValidatorsCommands} from "@app/con
     ],
     controllers: [AccountsController, BlocksController, CoreController, HealthController, TransactionsController, ValidatorsController, BeamsController, GovernanceController],
     providers: [
-        ElasticsearchIndicator, LumNetworkIndicator,
+        ElasticsearchIndicator,
+        LumNetworkIndicator,
         GatewayWebsocket,
-        ElasticService, LumNetworkService, LumService,
-        BlocksCommands, TransactionsCommands, ValidatorsCommands,
-        { provide: APP_INTERCEPTOR, useClass: ResponseInterceptor }
+        ElasticService,
+        LumNetworkService,
+        LumService,
+        BlocksCommands,
+        TransactionsCommands,
+        ValidatorsCommands,
+        { provide: APP_INTERCEPTOR, useClass: ResponseInterceptor },
     ],
 })
 export class ApiModule implements OnModuleInit, OnApplicationBootstrap {
