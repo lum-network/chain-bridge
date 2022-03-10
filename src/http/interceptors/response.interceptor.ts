@@ -16,7 +16,7 @@ export class ResponseInterceptor<T> implements NestInterceptor<T, Response<T>> {
                 code: 200,
                 message: '',
                 result: data,
-                length: data instanceof Array ? data.length : null,
+                length: data instanceof Array ? data.length : 1,
             })),
         );
     }

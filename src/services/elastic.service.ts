@@ -71,6 +71,17 @@ export class ElasticService {
         return body;
     };
 
+    public indexClear = async(index: ElasticIndexes | string): Promise<void> => {
+        await this._client.deleteByQuery({
+            index,
+            body: {
+                query: {
+                    match_all: {}
+                }
+            }
+        });
+    }
+
     get client(): Client {
         return this._client;
     }
