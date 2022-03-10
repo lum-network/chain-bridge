@@ -1,6 +1,6 @@
 import { BadRequestException, CacheInterceptor, Controller, Get, Logger, NotFoundException, Param, UseInterceptors } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bull';
-import { Ctx, MessagePattern, Payload, RedisContext } from '@nestjs/microservices';
+import { MessagePattern, Payload } from '@nestjs/microservices';
 
 import { plainToClass } from 'class-transformer';
 
