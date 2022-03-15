@@ -12,11 +12,11 @@ export interface Response<T> {
 export class ResponseInterceptor<T> implements NestInterceptor<T, Response<T>> {
     intercept(context: ExecutionContext, next: CallHandler): Observable<Response<T>> {
         return next.handle().pipe(
-            map(data => ({
+            map((data) => ({
                 code: 200,
                 message: '',
                 result: data,
-                length: data instanceof Array ? data.length : null,
+                length: data instanceof Array ? data.length : 1,
             })),
         );
     }

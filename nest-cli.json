@@ -1,4 +1,21 @@
 {
-  "collection": "@nestjs/schematics",
-  "sourceRoot": "src"
+    "collection": "@nestjs/schematics",
+    "sourceRoot": "src",
+    "projects": {
+        "api": {
+            "type": "application",
+            "root": "src",
+            "entryFile": "api"
+        },
+        "sync:consumer": {
+            "type": "application",
+            "root": "src",
+            "entryFile": "sync_consumer"
+        },
+        "sync:scheduler": {
+            "type": "application",
+            "root": "src",
+            "entryFile": "sync_scheduler"
+        }
+    }
 }

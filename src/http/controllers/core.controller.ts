@@ -1,21 +1,28 @@
-import { BadRequestException, CacheInterceptor, Controller, Get, NotFoundException, Param, UseInterceptors } from '@nestjs/common';
-import { ElasticService, LumNetworkService } from '@app/services';
-import { ElasticIndexes, QueueJobs, Queues } from '@app/utils/constants';
-import { LumConstants } from '@lum-network/sdk-javascript';
-import { Queue } from 'bull';
+import { BadRequestException, CacheInterceptor, Controller, Get, Logger, NotFoundException, Param, UseInterceptors } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bull';
-import { config } from '@app/utils';
+import { MessagePattern, Payload } from '@nestjs/microservices';
+
 import { plainToClass } from 'class-transformer';
+
+import { Queue } from 'bull';
+
+import { LumConstants } from '@lum-network/sdk-javascript';
+
+import { ElasticService, LumService, LumNetworkService } from '@app/services';
+import { ElasticIndexes, QueueJobs, Queues, config } from '@app/utils';
 import { LumResponse, StatsResponse } from '@app/http/responses';
-import { LumService } from '@app/services/lum.service';
+import { GatewayWebsocket } from '@app/websocket';
 
 @Controller('')
 export class CoreController {
+    private readonly _logger: Logger = new Logger(CoreController.name);
+
     constructor(
-        private readonly _elasticService: ElasticService,
         @InjectQueue(Queues.QUEUE_FAUCET) private readonly _queue: Queue,
+        private readonly _elasticService: ElasticService,
         private readonly _lumNetworkService: LumNetworkService,
         private readonly _lumService: LumService,
+        private readonly _messageGateway: GatewayWebsocket,
     ) {}
 
     @Get('search/:data')
@@ -75,5 +82,13 @@ export class CoreController {
         }
 
         return this._queue.add(QueueJobs.MINT_FAUCET_REQUEST, { address });
+    }
+
+    @MessagePattern('notifySocket')
+    async notifySocket(@Payload() data: { channel: string; event: string; data: string }): Promise<void> {
+        this._logger.log(`Dispatching notification on channel ${data.channel}...`);
+        if (this._messageGateway && this._messageGateway._server) {
+            this._messageGateway._server.to(data.channel).emit(data.event, data.data);
+        }
     }
 }

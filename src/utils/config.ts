@@ -2,7 +2,7 @@ import fs from 'fs';
 
 export class Config {
     constructor(private env: { [k: string]: string | undefined }) {
-        if (fs.existsSync(".env")) {
+        if (fs.existsSync('.env')) {
             require('dotenv').config();
         } else {
             console.log(env);
@@ -15,11 +15,11 @@ export class Config {
             throw new Error(`Config error - missing env.${key}`);
         }
 
-        return (value as unknown) as T;
+        return value as unknown as T;
     }
 
     public ensureValues(keys: string[]) {
-        keys.forEach(k => this.getValue(k, true));
+        keys.forEach((k) => this.getValue(k, true));
         return this;
     }
 
@@ -47,13 +47,8 @@ export class Config {
         return this.getValue<string>('REDIS_PREFIX', false).toLowerCase();
     };
 
-    public isApiEnabled(): boolean {
-        const enabled = this.getValue('API_ENABLED');
-        return enabled === 'true' || enabled === true;
-    }
-
-    public getApiPort = (): number => {
-        return this.getValue<number>('API_PORT', true);
+    public getRedisURL = (): string => {
+        return `redis://${this.getRedisHost()}:${this.getRedisPort()}`;
     };
 
     public getFaucetMnemonic = (): string => {
@@ -82,11 +77,9 @@ const config = new Config(process.env).ensureValues([
     'ELASTICSEARCH_PORT',
     'REDIS_HOST',
     'REDIS_PORT',
-    'API_ENABLED',
-    'API_PORT',
     'INGEST_ENABLED',
     'INGEST_BACKWARD_ENABLED',
     'PUSH_NOTIF_ENABLED',
 ]);
 
-export {config};
+export { config };

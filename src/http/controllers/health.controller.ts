@@ -1,5 +1,6 @@
 import { Controller, Get } from '@nestjs/common';
 import { HealthCheck, HealthCheckService } from '@nestjs/terminus';
+
 import { ElasticsearchIndicator, LumNetworkIndicator } from '@app/http/indicators';
 
 @Controller('health')

@@ -1,5 +1,7 @@
 import { CacheInterceptor, Controller, Get, NotFoundException, Param, UseInterceptors } from '@nestjs/common';
+
 import { plainToClass } from 'class-transformer';
+
 import { ElasticService } from '@app/services';
 import { ElasticIndexes } from '@app/utils/constants';
 import { TransactionResponse } from '@app/http/responses';
@@ -24,7 +26,7 @@ export class TransactionsController {
             throw new NotFoundException('transactions_not_found');
         }
 
-        return result.body.hits.hits.map(tx => plainToClass(TransactionResponse, tx._source));
+        return result.body.hits.hits.map((tx) => plainToClass(TransactionResponse, tx._source));
     }
 
     @Get(':hash')
