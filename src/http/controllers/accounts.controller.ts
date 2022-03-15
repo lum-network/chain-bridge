@@ -1,11 +1,13 @@
 import { CacheInterceptor, Controller, Get, NotFoundException, Param, UseInterceptors } from '@nestjs/common';
 
-import { ElasticService, LumNetworkService } from '@app/services';
-import { ElasticIndexes } from '@app/utils/constants';
-import { plainToClass } from 'class-transformer';
-import { AccountResponse, TransactionResponse } from '@app/http/responses';
 import { LumConstants, LumUtils } from '@lum-network/sdk-javascript';
 import { RedelegationResponse } from '@lum-network/sdk-javascript/build/codec/cosmos/staking/v1beta1/staking';
+
+import { plainToClass } from 'class-transformer';
+
+import { ElasticService, LumNetworkService } from '@app/services';
+import { ElasticIndexes } from '@app/utils/constants';
+import { AccountResponse, TransactionResponse } from '@app/http/responses';
 
 @Controller('accounts')
 @UseInterceptors(CacheInterceptor)
@@ -94,7 +96,7 @@ export class AccountsController {
 
         // Inject transactions
         if (transactions && transactions.body && transactions.body.hits && transactions.body.hits.hits) {
-            account['transactions'] = transactions.body.hits.hits.map(hit => plainToClass(TransactionResponse, hit._source));
+            account['transactions'] = transactions.body.hits.hits.map((hit) => plainToClass(TransactionResponse, hit._source));
         } else {
             account['transactions'] = [];
         }

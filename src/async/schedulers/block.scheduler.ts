@@ -1,12 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { InjectQueue } from '@nestjs/bull';
 import { Cron, CronExpression } from '@nestjs/schedule';
 
 import { Queue } from 'bull';
-import { InjectQueue } from '@nestjs/bull';
 
 import { LumNetworkService } from '@app/services';
-import { QueueJobs, Queues, IngestionDocumentVersion } from '@app/utils/constants';
-import { config } from '@app/utils/config';
+import { QueueJobs, Queues, IngestionDocumentVersion, config } from '@app/utils';
 
 @Injectable()
 export class BlockScheduler {

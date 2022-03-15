@@ -12,7 +12,7 @@ export class ValidatorScheduler {
 
     constructor(private readonly _elasticService: ElasticService, private readonly _lumNetworkService: LumNetworkService) {}
 
-    @Cron(CronExpression.EVERY_MINUTE, { name: 'validators_live_ingest' })
+    @Cron(CronExpression.EVERY_30_SECONDS, { name: 'validators_live_ingest' })
     async liveIngest() {
         try {
             this._logger.debug(`Ingesting validators set`);

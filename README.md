@@ -15,10 +15,6 @@ The service provides:
 -   Automatic blockchain data ingestion through async pipes (live ingestion as well as historical data ingestion)
 -   Easy capabilities of scaling according to load requirements
 
-## Deployment
-
-`TBD`
-
 ## Development
 
 ### Install dependencies
@@ -32,7 +28,7 @@ $ yarn install
 You should have a .env file at the root level with the following entries (and the values of your choice)
 
 ```bash
-LUM-NETWORK-ENDPOINT=https://node0.testnet.lum.network/rpc
+LUM_NETWORK_ENDPOINT=http://127.0.0.1:26657
 
 ELASTICSEARCH_HOST=127.0.0.1
 ELASTICSEARCH_PORT=9200
@@ -40,9 +36,6 @@ ELASTICSEARCH_PORT=9200
 REDIS_HOST=127.0.0.1
 REDIS_PORT=6379
 REDIS_PREFIX=lm-bridge
-
-API_ENABLED=true
-API_PORT=3000
 
 INGEST_ENABLED=true
 
@@ -63,7 +56,7 @@ The following services are required to run the service:
 - Redis 5+
 - Lum Network node (RPC endpoint)
 
-You can use the official Lum Network's testnet along the provided [docker-compose](./docker-compose.yml) file to run both Elasticsearch and Redis and get started in a minute:
+You can use the official Lum Network's testnet along the provided [docker-compose](tools/docker-compose.yml) file to run both Elasticsearch and Redis and get started in a minute:
 
 ```bash
 docker-compose up
@@ -71,17 +64,22 @@ docker-compose up
 
 ### Running the app
 
+The implementation comes as a microservice, allowing for separate load integration by scaling specific components.
+
+In order to have all parts started, you must run every single one in a separate terminal window.
+
 As soon as you start the service, it will start ingesting all new blocks every 10 seconds and emitting the associated push notifications. Those blocks will be almost instantly accessible from the provided API endpoints.
 
 The ingestion process for past blocks will only start after a couple minutes in order to let the live syncronization ingest its first data. Only missing blocks and some of their neighbors will be ingested, meaning that a simple restart of the service will not trigger a full re-sync but might trigger only a small re-sync for missing block ranges.
 
 ```bash
 # development
-$ yarn start
-
-# watch mode
-$ yarn start:dev
+$ yarn start:api:dev
+$ yarn start:sync:consumer:dev
+$ yarn start:sync:scheduler:dev
 
 # production mode
-$ yarn start:prod
+$ yarn start:api:prod
+$ yarn start:sync:consumer:prod
+$ yarn start:sync:scheduler:prod
 ```

@@ -5,6 +5,7 @@ export * from './commission.response';
 export * from './delegation.response';
 export * from './description.response';
 export * from './message.response';
+export * from './proposal.response';
 export * from './reward.response';
 export * from './transaction.response';
 export * from './validator.response';
