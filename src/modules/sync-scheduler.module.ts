@@ -8,7 +8,14 @@ import { Queue } from 'bull';
 
 import { BlockScheduler, ValidatorScheduler } from '@app/async';
 
-import { ElasticService, LumService, LumNetworkService } from '@app/services';
+import {
+    ElasticService,
+    LumService,
+    LumNetworkService,
+    BlockService,
+    TransactionService,
+    ValidatorService
+} from '@app/services';
 import { Queues, QueueJobs, config } from '@app/utils';
 
 @Module({
@@ -56,7 +63,7 @@ import { Queues, QueueJobs, config } from '@app/utils';
         HttpModule,
     ],
     controllers: [],
-    providers: [BlockScheduler, ValidatorScheduler, ElasticService, LumNetworkService, LumService],
+    providers: [BlockService, TransactionService, ValidatorService, BlockScheduler, ValidatorScheduler, ElasticService, LumNetworkService, LumService],
 })
 export class SyncSchedulerModule implements OnModuleInit, OnApplicationBootstrap {
     private readonly _logger: Logger = new Logger(SyncSchedulerModule.name);
