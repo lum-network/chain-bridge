@@ -19,7 +19,7 @@
         "start:api:prod": "node dist/api",
         "start:sync:consumer:dev": "nest start sync:consumer --watch",
         "start:sync:consumer:debug": "nest start sync:consumer --debug --watch",
-        "start:sync:consumer:prod": "node dist/sync_scheduler",
+        "start:sync:consumer:prod": "node dist/sync_consumer",
         "start:sync:scheduler:dev": "nest start sync:scheduler --watch",
         "start:sync:scheduler:debug": "nest start sync:scheduler --debug --watch",
         "start:sync:scheduler:prod": "node dist/sync_scheduler",
