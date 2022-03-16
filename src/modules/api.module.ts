@@ -24,7 +24,14 @@ import {
     ValidatorsController,
 } from '@app/http';
 
-import { ElasticService, LumService, LumNetworkService } from '@app/services';
+import {
+    ElasticService,
+    LumService,
+    LumNetworkService,
+    BlockService,
+    TransactionService,
+    ValidatorService
+} from '@app/services';
 import { ElasticIndexes, config, IndexBlocksMapping, IndexValidatorsMapping, IndexTransactionsMapping, IndexBeamsMapping, Queues } from '@app/utils';
 
 import { GatewayWebsocket } from '@app/websocket';
@@ -61,6 +68,9 @@ import { BlocksCommands, TransactionsCommands, ValidatorsCommands } from '@app/c
     ],
     controllers: [AccountsController, BlocksController, CoreController, HealthController, TransactionsController, ValidatorsController, BeamsController, GovernanceController],
     providers: [
+        BlockService,
+        TransactionService,
+        ValidatorService,
         ElasticsearchIndicator,
         LumNetworkIndicator,
         GatewayWebsocket,
