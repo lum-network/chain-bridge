@@ -69,6 +69,14 @@ export class Config {
         const enabled = this.getValue('PUSH_NOTIF_ENABLED');
         return enabled === 'true' || enabled === true;
     }
+
+    public getApiPort(): number {
+        return this.getValue<number>('API_PORT', true);
+    }
+
+    public getSentryDsn(): string {
+        return this.getValue<string>('SENTRY_DSN', false);
+    }
 }
 
 const config = new Config(process.env).ensureValues([
@@ -80,6 +88,7 @@ const config = new Config(process.env).ensureValues([
     'INGEST_ENABLED',
     'INGEST_BACKWARD_ENABLED',
     'PUSH_NOTIF_ENABLED',
+    'API_PORT',
 ]);
 
 export { config };

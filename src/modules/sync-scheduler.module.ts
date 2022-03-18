@@ -8,14 +8,7 @@ import { Queue } from 'bull';
 
 import { BlockScheduler, ValidatorScheduler } from '@app/async';
 
-import {
-    ElasticService,
-    LumService,
-    LumNetworkService,
-    BlockService,
-    TransactionService,
-    ValidatorService
-} from '@app/services';
+import { ElasticService, LumService, LumNetworkService, BlockService, TransactionService, ValidatorService } from '@app/services';
 import { Queues, QueueJobs, config } from '@app/utils';
 
 @Module({

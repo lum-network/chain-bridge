@@ -63,7 +63,7 @@ export class AccountsController {
 
         const redelegationsResponse: RedelegationResponse[] = [];
 
-        if(redelegations) {
+        if (redelegations) {
             for (const [, redelegation] of redelegations.redelegationResponses.entries()) {
                 redelegationsResponse.push(redelegation);
             }
