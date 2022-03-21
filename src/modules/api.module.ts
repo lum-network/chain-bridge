@@ -1,7 +1,7 @@
 import { HttpModule } from '@nestjs/axios';
 import { Logger, Module, OnModuleInit, CacheModule, OnApplicationBootstrap } from '@nestjs/common';
 import { BullModule } from '@nestjs/bull';
-import { APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { TerminusModule } from '@nestjs/terminus';
 
 import { ConsoleModule } from 'nestjs-console';
@@ -18,20 +18,14 @@ import {
     ElasticsearchIndicator,
     GovernanceController,
     HealthController,
+    HttpExceptionFilter,
     LumNetworkIndicator,
     ResponseInterceptor,
     TransactionsController,
     ValidatorsController,
 } from '@app/http';
 
-import {
-    ElasticService,
-    LumService,
-    LumNetworkService,
-    BlockService,
-    TransactionService,
-    ValidatorService
-} from '@app/services';
+import { ElasticService, LumService, LumNetworkService, BlockService, TransactionService, ValidatorService } from '@app/services';
 import { ElasticIndexes, config, IndexBlocksMapping, IndexValidatorsMapping, IndexTransactionsMapping, IndexBeamsMapping, Queues } from '@app/utils';
 
 import { GatewayWebsocket } from '@app/websocket';
@@ -80,6 +74,7 @@ import { BlocksCommands, TransactionsCommands, ValidatorsCommands } from '@app/c
         BlocksCommands,
         TransactionsCommands,
         ValidatorsCommands,
+        { provide: APP_FILTER, useClass: HttpExceptionFilter },
         { provide: APP_INTERCEPTOR, useClass: ResponseInterceptor },
     ],
 })

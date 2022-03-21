@@ -7,14 +7,7 @@ import { Queue } from 'bull';
 
 import { BlockConsumer, CoreConsumer, NotificationConsumer } from '@app/async';
 
-import {
-    BlockService,
-    ElasticService,
-    LumNetworkService,
-    LumService,
-    TransactionService,
-    ValidatorService
-} from '@app/services';
+import { BlockService, ElasticService, LumNetworkService, LumService, TransactionService, ValidatorService } from '@app/services';
 import { config, Queues } from '@app/utils';
 
 @Module({

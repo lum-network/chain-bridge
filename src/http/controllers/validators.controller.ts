@@ -1,16 +1,14 @@
-import {CacheInterceptor, Controller, Get, Param, UseInterceptors} from '@nestjs/common';
+import { CacheInterceptor, Controller, Get, Param, UseInterceptors } from '@nestjs/common';
 
-import {plainToClass} from 'class-transformer';
+import { plainToClass } from 'class-transformer';
 
-import {ValidatorService} from '@app/services';
-import {ValidatorResponse} from '@app/http/responses';
+import { ValidatorService } from '@app/services';
+import { ValidatorResponse } from '@app/http/responses';
 
 @Controller('validators')
 @UseInterceptors(CacheInterceptor)
 export class ValidatorsController {
-
-    constructor(private readonly _validatorService: ValidatorService) {
-    }
+    constructor(private readonly _validatorService: ValidatorService) {}
 
     @Get('')
     async fetch() {

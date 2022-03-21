@@ -63,8 +63,10 @@ export class AccountsController {
 
         const redelegationsResponse: RedelegationResponse[] = [];
 
-        for (const [, redelegation] of redelegations.redelegationResponses.entries()) {
-            redelegationsResponse.push(redelegation);
+        if (redelegations) {
+            for (const [, redelegation] of redelegations.redelegationResponses.entries()) {
+                redelegationsResponse.push(redelegation);
+            }
         }
 
         // Inject balance

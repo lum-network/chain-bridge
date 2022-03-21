@@ -1,15 +1,14 @@
-import {Injectable, NotFoundException} from "@nestjs/common";
+import { Injectable, NotFoundException } from '@nestjs/common';
 
-import {plainToClass} from "class-transformer";
+import { plainToClass } from 'class-transformer';
 
-import {LumUtils} from "@lum-network/sdk-javascript";
+import { LumUtils } from '@lum-network/sdk-javascript';
 
-import {BlockResponse, ValidatorResponse} from "@app/http";
-import {convertValAddressToAccAddress, ElasticIndexes} from "@app/utils";
+import { BlockResponse, ValidatorResponse } from '@app/http';
+import { convertValAddressToAccAddress, ElasticIndexes } from '@app/utils';
 
-import {LumNetworkService} from "@app/services/lum-network.service";
-import {ElasticService} from "@app/services/elastic.service";
-
+import { LumNetworkService } from '@app/services/lum-network.service';
+import { ElasticService } from '@app/services/elastic.service';
 
 @Injectable()
 export class ValidatorService {
@@ -58,7 +57,7 @@ export class ValidatorService {
         }
 
         return mapResults;
-    }
+    };
 
     get = async (address: string): Promise<any> => {
         const blocksPromise = this._elasticService.documentSearch(ElasticIndexes.INDEX_BLOCKS, {
@@ -128,5 +127,5 @@ export class ValidatorService {
             rewards,
             blocks,
         };
-    }
+    };
 }
