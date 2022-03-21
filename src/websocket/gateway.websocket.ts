@@ -1,11 +1,19 @@
-import { Logger } from '@nestjs/common';
-import { ConnectedSocket, MessageBody, OnGatewayConnection, OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+import {Logger} from '@nestjs/common';
+import {
+    ConnectedSocket,
+    MessageBody,
+    OnGatewayConnection,
+    OnGatewayInit,
+    SubscribeMessage,
+    WebSocketGateway,
+    WebSocketServer
+} from '@nestjs/websockets';
 
-import { Server, Socket } from 'socket.io';
+import {Server, Socket} from 'socket.io';
 
-import { NotificationChannels } from '@app/utils';
+import {NotificationChannels} from '@app/utils';
 
-@WebSocketGateway()
+@WebSocketGateway({cors: true})
 export class GatewayWebsocket implements OnGatewayInit, OnGatewayConnection {
     private _logger: Logger = new Logger(GatewayWebsocket.name);
 
