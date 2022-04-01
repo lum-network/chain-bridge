@@ -69,7 +69,7 @@ export class CoreController {
 
         const res = {
             ...lum.data[0],
-            previousDayPrice: previousDayLum.data[0].open,
+            previous_day_price: previousDayLum.data[0].open,
         };
 
         return plainToClass(LumResponse, res);
