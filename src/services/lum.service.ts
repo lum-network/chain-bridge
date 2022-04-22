@@ -8,5 +8,5 @@ export class LumService {
 
     getLum = (): Promise<any> => this.httpService.get(`${OSMOSIS_API_URL}/tokens/v2/LUM`).toPromise();
 
-    getPreviousDayLum = (): Promise<any> => this.httpService.get(`${OSMOSIS_API_URL}/tokens/v1/historical/LUM/chart?range=1d`).toPromise();
+    getPreviousDayLum = (): Promise<any> => this.httpService.get(`${OSMOSIS_API_URL}/tokens/v2/historical/LUM/chart?tf=60`).toPromise();
 }
