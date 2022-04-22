@@ -20,11 +20,11 @@ jobs:
 
       - name: Bump version and push new tag
         id: bump_version
-        uses: anothrNick/github-tag-action@1.17.2
+        uses: anothrNick/github-tag-action@1.39.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           WITH_V: true
-          RELEASE_BRANCHES: production
+          RELEASE_BRANCHES: master
 
       - name: Save new version number result into file
         shell: bash
