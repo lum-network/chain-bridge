@@ -24,7 +24,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           WITH_V: true
-          RELEASE_BRANCHES: master
+
+      - name: Print generated version
+        shell: bash
+        run: |
+          echo "${{ steps.bump_version.outputs.tag }}"
 
       - name: Save new version number result into file
         shell: bash
@@ -52,6 +56,11 @@ jobs:
       - name: Create version number variable
         id: vars
         run: echo ::set-output name=version_tag_number::$(cat new_version/new_version.txt)
+
+      - name: Print generated version
+        shell: bash
+        run: |
+          echo "${{ steps.vars.outputs.version_tag_number }}"
 
       - name: Build, tag and push the built image
         run: |
