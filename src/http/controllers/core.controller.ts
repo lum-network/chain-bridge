@@ -63,13 +63,13 @@ export class CoreController {
     async lum() {
         const [lum, previousDayLum] = await Promise.all([this._lumService.getLum().catch(() => null), this._lumService.getPreviousDayLum().catch(() => null)]);
 
-        if (!lum || !lum.data || !lum.data.length || !previousDayLum || !previousDayLum.data || !previousDayLum.data.length) {
+        if (!lum || !lum.data || !lum.data.length || !previousDayLum || !previousDayLum.data || !previousDayLum.data.length || !previousDayLum.data[previousDayLum.data.length - 24]) {
             throw new BadRequestException('data_not_found');
         }
 
         const res = {
             ...lum.data[0],
-            previous_day_price: previousDayLum.data[0].open,
+            previous_day_price: previousDayLum.data[previousDayLum.data.length - 24].close,
         };
 
         return plainToClass(LumResponse, res);
