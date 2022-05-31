@@ -1,17 +1,27 @@
-import { BadRequestException, CacheInterceptor, Controller, Get, Logger, NotFoundException, Param, UseInterceptors } from '@nestjs/common';
-import { InjectQueue } from '@nestjs/bull';
-import { MessagePattern, Payload } from '@nestjs/microservices';
+import {
+    BadRequestException,
+    CacheInterceptor,
+    Controller,
+    Get,
+    Logger,
+    NotFoundException,
+    Param,
+    UseInterceptors
+} from '@nestjs/common';
+import {InjectQueue} from '@nestjs/bull';
+import {ConfigService} from "@nestjs/config";
+import {MessagePattern, Payload} from '@nestjs/microservices';
 
-import { plainToClass } from 'class-transformer';
+import {plainToClass} from 'class-transformer';
 
-import { Queue } from 'bull';
+import {Queue} from 'bull';
 
-import { LumConstants } from '@lum-network/sdk-javascript';
+import {LumConstants} from '@lum-network/sdk-javascript';
 
-import { ElasticService, LumService, LumNetworkService } from '@app/services';
-import { ElasticIndexes, QueueJobs, Queues, config } from '@app/utils';
-import { LumResponse, StatsResponse } from '@app/http/responses';
-import { GatewayWebsocket } from '@app/websocket';
+import {ElasticService, LumService, LumNetworkService} from '@app/services';
+import {ElasticIndexes, QueueJobs, Queues} from '@app/utils';
+import {LumResponse, StatsResponse} from '@app/http/responses';
+import {GatewayWebsocket} from '@app/websocket';
 
 @Controller('')
 export class CoreController {
@@ -19,27 +29,29 @@ export class CoreController {
 
     constructor(
         @InjectQueue(Queues.QUEUE_FAUCET) private readonly _queue: Queue,
+        private readonly _configService: ConfigService,
         private readonly _elasticService: ElasticService,
         private readonly _lumNetworkService: LumNetworkService,
         private readonly _lumService: LumService,
         private readonly _messageGateway: GatewayWebsocket,
-    ) {}
+    ) {
+    }
 
     @Get('search/:data')
     @UseInterceptors(CacheInterceptor)
     async search(@Param('data') data: string) {
         // We check the different combinations
         if (/^\d+$/.test(data)) {
-            return { type: 'block', data };
+            return {type: 'block', data};
         } else if (String(data).startsWith(LumConstants.LumBech32PrefixValAddr)) {
-            return { type: 'validator', data };
+            return {type: 'validator', data};
         } else if (String(data).startsWith(LumConstants.LumBech32PrefixAccAddr)) {
-            return { type: 'account', data };
+            return {type: 'account', data};
         } else {
             if (await this._elasticService.documentExists(ElasticIndexes.INDEX_BLOCKS, data)) {
-                return { type: 'block', data };
+                return {type: 'block', data};
             } else if (await this._elasticService.documentExists(ElasticIndexes.INDEX_TRANSACTIONS, data)) {
-                return { type: 'transaction', data };
+                return {type: 'transaction', data};
             } else {
                 throw new NotFoundException('data_not_found');
             }
@@ -56,7 +68,7 @@ export class CoreController {
             lumClt.getChainId().catch(() => null),
         ]);
 
-        return plainToClass(StatsResponse, { inflation: inflation || '0', totalSupply, chainId });
+        return plainToClass(StatsResponse, {inflation: inflation || '0', totalSupply, chainId});
     }
 
     @Get('lum')
@@ -77,11 +89,11 @@ export class CoreController {
 
     @Get('faucet/:address')
     async faucet(@Param('address') address: string) {
-        if (!config.getFaucetMnemonic()) {
+        if (!this._configService.get<string>('FAUCET_MNEMONIC')) {
             throw new BadRequestException('faucet_not_available');
         }
 
-        return this._queue.add(QueueJobs.MINT_FAUCET_REQUEST, { address });
+        return this._queue.add(QueueJobs.MINT_FAUCET_REQUEST, {address});
     }
 
     @MessagePattern('notifySocket')

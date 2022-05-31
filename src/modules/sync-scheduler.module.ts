@@ -4,35 +4,47 @@ import { BullModule, InjectQueue } from '@nestjs/bull';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 
+import {ConfigModule, ConfigService} from "@nestjs/config";
+import * as Joi from "joi";
+
 import { Queue } from 'bull';
 
 import { BlockScheduler, ValidatorScheduler } from '@app/async';
 
 import { ElasticService, LumService, LumNetworkService, BlockService, TransactionService, ValidatorService } from '@app/services';
-import { Queues, QueueJobs, config } from '@app/utils';
+import {Queues, QueueJobs, ConfigMap} from '@app/utils';
 
 @Module({
     imports: [
-        BullModule.registerQueue(
-            {
-                name: Queues.QUEUE_DEFAULT,
+        ConfigModule.forRoot({
+            isGlobal: true,
+            validationSchema: Joi.object(ConfigMap),
+        }),
+        BullModule.registerQueueAsync({
+            name: Queues.QUEUE_DEFAULT,
+            imports: [ConfigModule],
+            inject: [ConfigService],
+            useFactory: (configService: ConfigService) => ({
                 redis: {
-                    host: config.getRedisHost(),
-                    port: config.getRedisPort(),
+                    host: configService.get<string>('REDIS_HOST'),
+                    port: configService.get<number>('REDIS_PORT')
                 },
-                prefix: config.getRedisPrefix(),
+                prefix: configService.get<string>('REDIS_PREFIX'),
                 defaultJobOptions: {
                     removeOnComplete: true,
                     removeOnFail: true,
                 },
-            },
-            {
-                name: Queues.QUEUE_FAUCET,
+            })
+        },{
+            name: Queues.QUEUE_FAUCET,
+            imports: [ConfigModule],
+            inject: [ConfigService],
+            useFactory: (configService: ConfigService) => ({
                 redis: {
-                    host: config.getRedisHost(),
-                    port: config.getRedisPort(),
+                    host: configService.get<string>('REDIS_HOST'),
+                    port: configService.get<number>('REDIS_PORT')
                 },
-                prefix: config.getRedisPrefix(),
+                prefix: configService.get<string>('REDIS_PREFIX'),
                 limiter: {
                     max: 1,
                     duration: 30,
@@ -41,16 +53,20 @@ import { Queues, QueueJobs, config } from '@app/utils';
                     removeOnComplete: true,
                     removeOnFail: true,
                 },
-            },
-        ),
-        ClientsModule.register([
+            })
+        }),
+        ClientsModule.registerAsync([
             {
                 name: 'API',
-                transport: Transport.REDIS,
-                options: {
-                    url: config.getRedisURL(),
-                },
-            },
+                imports: [ConfigModule],
+                inject: [ConfigService],
+                useFactory: (configService: ConfigService) => ({
+                    transport: Transport.REDIS,
+                    options: {
+                        url: `redis://${configService.get<string>('REDIS_HOST')}:${configService.get<number>('REDIS_PORT')}`,
+                    },
+                })
+            }
         ]),
         ScheduleModule.forRoot(),
         HttpModule,
@@ -61,11 +77,16 @@ import { Queues, QueueJobs, config } from '@app/utils';
 export class SyncSchedulerModule implements OnModuleInit, OnApplicationBootstrap {
     private readonly _logger: Logger = new Logger(SyncSchedulerModule.name);
 
-    constructor(private readonly _elasticService: ElasticService, private readonly _lumNetworkService: LumNetworkService, @InjectQueue(Queues.QUEUE_DEFAULT) private readonly _queue: Queue) {}
+    constructor(
+        @InjectQueue(Queues.QUEUE_DEFAULT) private readonly _queue: Queue,
+        private readonly _configService: ConfigService,
+        private readonly _elasticService: ElasticService,
+        private readonly _lumNetworkService: LumNetworkService
+    ) {}
 
     async onModuleInit() {
         // Log out
-        const ingestEnabled = config.isIngestEnabled() ? 'enabled' : 'disabled';
+        const ingestEnabled = this._configService.get<boolean>('INGEST_ENABLED') ? 'enabled' : 'disabled';
         this._logger.log(`AppModule ingestion: ${ingestEnabled}`);
 
         // Make sure to initialize the lum network service

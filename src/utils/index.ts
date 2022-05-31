@@ -1,3 +1,4 @@
+export * from './beams';
 export * from './config';
 export * from './constants';
 export * from './indices';

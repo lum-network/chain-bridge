@@ -2,36 +2,48 @@ import { HttpModule } from '@nestjs/axios';
 import { Module, OnApplicationBootstrap, OnModuleInit } from '@nestjs/common';
 import { BullModule, InjectQueue } from '@nestjs/bull';
 import { ClientsModule, Transport } from '@nestjs/microservices';
+import {ConfigModule, ConfigService} from "@nestjs/config";
+
+import * as Joi from "joi";
 
 import { Queue } from 'bull';
 
 import { BlockConsumer, CoreConsumer, NotificationConsumer } from '@app/async';
 
 import { BlockService, ElasticService, LumNetworkService, LumService, TransactionService, ValidatorService } from '@app/services';
-import { config, Queues } from '@app/utils';
+import {ConfigMap, Queues} from '@app/utils';
 
 @Module({
     imports: [
-        BullModule.registerQueue(
-            {
-                name: Queues.QUEUE_DEFAULT,
+        ConfigModule.forRoot({
+            isGlobal: true,
+            validationSchema: Joi.object(ConfigMap),
+        }),
+        BullModule.registerQueueAsync({
+            name: Queues.QUEUE_DEFAULT,
+            imports: [ConfigModule],
+            inject: [ConfigService],
+            useFactory: (configService: ConfigService) => ({
                 redis: {
-                    host: config.getRedisHost(),
-                    port: config.getRedisPort(),
+                    host: configService.get<string>('REDIS_HOST'),
+                    port: configService.get<number>('REDIS_PORT')
                 },
-                prefix: config.getRedisPrefix(),
+                prefix: configService.get<string>('REDIS_PREFIX'),
                 defaultJobOptions: {
                     removeOnComplete: true,
                     removeOnFail: true,
                 },
-            },
-            {
-                name: Queues.QUEUE_FAUCET,
+            })
+        },{
+            name: Queues.QUEUE_FAUCET,
+            imports: [ConfigModule],
+            inject: [ConfigService],
+            useFactory: (configService: ConfigService) => ({
                 redis: {
-                    host: config.getRedisHost(),
-                    port: config.getRedisPort(),
+                    host: configService.get<string>('REDIS_HOST'),
+                    port: configService.get<number>('REDIS_PORT')
                 },
-                prefix: config.getRedisPrefix(),
+                prefix: configService.get<string>('REDIS_PREFIX'),
                 limiter: {
                     max: 1,
                     duration: 30,
@@ -40,16 +52,20 @@ import { config, Queues } from '@app/utils';
                     removeOnComplete: true,
                     removeOnFail: true,
                 },
-            },
-        ),
-        ClientsModule.register([
+            })
+        }),
+        ClientsModule.registerAsync([
             {
                 name: 'API',
-                transport: Transport.REDIS,
-                options: {
-                    url: config.getRedisURL(),
-                },
-            },
+                imports: [ConfigModule],
+                inject: [ConfigService],
+                useFactory: (configService: ConfigService) => ({
+                    transport: Transport.REDIS,
+                    options: {
+                        url: `redis://${configService.get<string>('REDIS_HOST')}:${configService.get<number>('REDIS_PORT')}`,
+                    },
+                })
+            }
         ]),
         HttpModule,
     ],

@@ -1,22 +1,12 @@
 import { NestFactory } from '@nestjs/core';
+import {ConfigService} from "@nestjs/config";
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 
 import * as Sentry from '@sentry/node';
 
 import { ApiModule } from '@app/modules';
 
-import { config } from '@app/utils';
-
 async function bootstrap() {
-    // Sentry DSN
-    const sentryDsn = config.getSentryDsn();
-    if (sentryDsn) {
-        Sentry.init({
-            dsn: sentryDsn,
-            tracesSampleRate: 1.0,
-        });
-    }
-
     try {
         // API module setup
         const app = await NestFactory.create(ApiModule);
@@ -27,14 +17,25 @@ async function bootstrap() {
             {
                 transport: Transport.REDIS,
                 options: {
-                    url: config.getRedisURL(),
+                    url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
                 },
             },
             { inheritAppConfig: true },
         );
 
+        const config = app.get(ConfigService);
+
+        // Sentry DSN
+        const sentryDsn = config.get<string>('SENTRY_DSN');
+        if (sentryDsn) {
+            Sentry.init({
+                dsn: sentryDsn,
+                tracesSampleRate: 1.0,
+            });
+        }
+
         await app.startAllMicroservices();
-        await app.listen(config.getApiPort());
+        await app.listen(config.get<string>('API_PORT'));
     } catch (e) {
         Sentry.captureException(e);
     }

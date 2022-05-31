@@ -1,4 +1,5 @@
 import { Logger } from '@nestjs/common';
+import {ConfigService} from "@nestjs/config";
 
 import { Job, Queue } from 'bull';
 import { InjectQueue, Process, Processor } from '@nestjs/bull';
@@ -7,23 +8,28 @@ import moment from 'moment';
 
 import { LumUtils, LumRegistry, LumMessages, LumConstants } from '@lum-network/sdk-javascript';
 
+import { isBeam } from '@app/utils';
 import { ElasticIndexes, NotificationChannels, NotificationEvents, QueueJobs, Queues, IngestionDocumentVersion } from '@app/utils/constants';
 import { BeamDocument, BlockDocument, TransactionDocument } from '@app/utils/models';
+
 import { LumNetworkService, ElasticService } from '@app/services';
 
-import { config } from '@app/utils/config';
-import { isBeam } from '@app/utils';
 
 @Processor(Queues.QUEUE_DEFAULT)
 export class BlockConsumer {
     private readonly _logger: Logger = new Logger(BlockConsumer.name);
 
-    constructor(@InjectQueue(Queues.QUEUE_DEFAULT) private readonly _queue: Queue, private readonly _elasticService: ElasticService, private readonly _lumNetworkService: LumNetworkService) {}
+    constructor(
+        @InjectQueue(Queues.QUEUE_DEFAULT) private readonly _queue: Queue,
+        private readonly _configService: ConfigService,
+        private readonly _elasticService: ElasticService,
+        private readonly _lumNetworkService: LumNetworkService
+    ) {}
 
     @Process(QueueJobs.INGEST_BLOCK)
     async ingestBlock(job: Job<{ blockHeight: number; notify?: boolean }>) {
         // Only ingest if allowed by the configuration
-        if (config.isIngestEnabled() === false) {
+        if (this._configService.get<boolean>('INGEST_ENABLED') === false) {
             return;
         }
 
@@ -215,9 +221,8 @@ export class BlockConsumer {
 
     @Process(QueueJobs.TRIGGER_VERIFY_BLOCKS_BACKWARD)
     async verifyBlocksBackward(job: Job<{ chainId: string; fromBlock: number; toBlock: number }>) {
-        if (!config.isIngestBackwardEnabled()) {
+        if (this._configService.get<boolean>('INGEST_BACKWARD_ENABLED') === false) {
             this._logger.debug('Backward ingest is disabled');
-
             return;
         }
 

@@ -1,14 +1,15 @@
 import { HttpModule } from '@nestjs/axios';
 import { Logger, Module, OnModuleInit, CacheModule, OnApplicationBootstrap } from '@nestjs/common';
+import {ConfigModule, ConfigService} from "@nestjs/config";
 import { BullModule } from '@nestjs/bull';
 import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { TerminusModule } from '@nestjs/terminus';
 
 import { ConsoleModule } from 'nestjs-console';
 
-import { LumWalletFactory } from '@lum-network/sdk-javascript';
-
 import * as redisStore from 'cache-manager-redis-store';
+
+import * as Joi from 'joi';
 
 import {
     AccountsController,
@@ -26,35 +27,55 @@ import {
 } from '@app/http';
 
 import { ElasticService, LumService, LumNetworkService, BlockService, TransactionService, ValidatorService } from '@app/services';
-import { ElasticIndexes, config, IndexBlocksMapping, IndexValidatorsMapping, IndexTransactionsMapping, IndexBeamsMapping, Queues } from '@app/utils';
+import {
+    ElasticIndexes,
+    IndexBlocksMapping,
+    IndexValidatorsMapping,
+    IndexTransactionsMapping,
+    IndexBeamsMapping,
+    Queues,
+    ConfigMap
+} from '@app/utils';
 
 import { GatewayWebsocket } from '@app/websocket';
 import { BlocksCommands, TransactionsCommands, ValidatorsCommands } from '@app/console/commands';
 
 @Module({
     imports: [
-        BullModule.registerQueue({
-            name: Queues.QUEUE_FAUCET,
-            redis: {
-                host: config.getRedisHost(),
-                port: config.getRedisPort(),
-            },
-            prefix: config.getRedisPrefix(),
-            limiter: {
-                max: 1,
-                duration: 30,
-            },
-            defaultJobOptions: {
-                removeOnComplete: true,
-                removeOnFail: true,
-            },
+        ConfigModule.forRoot({
+            isGlobal: true,
+            validationSchema: Joi.object(ConfigMap),
         }),
-        CacheModule.register({
-            store: redisStore,
-            host: config.getRedisHost(),
-            port: config.getRedisPort(),
-            ttl: 10,
-            max: 50,
+        BullModule.registerQueueAsync({
+            name: Queues.QUEUE_FAUCET,
+            imports: [ConfigModule],
+            useFactory: (configService: ConfigService) => ({
+                redis: {
+                    host: configService.get<string>('REDIS_HOST'),
+                    port: configService.get<number>('REDIS_PORT')
+                },
+                prefix: configService.get<string>('REDIS_PREFIX'),
+                limiter: {
+                    max: 1,
+                    duration: 30,
+                },
+                defaultJobOptions: {
+                    removeOnComplete: true,
+                    removeOnFail: true,
+                },
+            }),
+            inject: [ConfigService]
+        }),
+        CacheModule.registerAsync({
+            imports: [ConfigModule],
+            useFactory: (configService: ConfigService) => ({
+                store: redisStore,
+                host: configService.get<string>('REDIS_HOST'),
+                port: configService.get<number>('REDIS_PORT'),
+                ttl: 10,
+                max: 50,
+            }),
+            inject: [ConfigService],
         }),
         ConsoleModule,
         TerminusModule,
@@ -124,12 +145,6 @@ export class ApiModule implements OnModuleInit, OnApplicationBootstrap {
         // If we weren't able to initialize connection with Lum Network, exit the project
         if (!this._lumNetworkService.isInitialized()) {
             throw new Error(`Cannot initialize the Lum Network Service, exiting...`);
-        }
-
-        // Display the faucet address
-        if (config.getFaucetMnemonic()) {
-            const wallet = await LumWalletFactory.fromMnemonic(config.getFaucetMnemonic());
-            this._logger.log(`Faucet is listening on address ${wallet.getAddress()}`);
         }
     }
 }

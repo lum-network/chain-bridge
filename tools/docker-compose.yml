@@ -7,6 +7,12 @@ services:
     command: [ sh, -c, "rm -f /data/dump.rdb && redis-server" ]  # disable persistence
     ports:
       - "6379:6379"
+  lm-bridge-database:
+    image: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: emulator
   lm-bridge-elasticsearch:
     networks:
       - elastic

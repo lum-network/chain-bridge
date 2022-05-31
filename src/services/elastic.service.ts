@@ -1,17 +1,18 @@
 import { Injectable } from '@nestjs/common';
+import {ConfigService} from "@nestjs/config";
+
 import { Client } from '@elastic/elasticsearch';
 import { Bulk } from '@elastic/elasticsearch/api/requestParams';
 
 import { ElasticIndexes } from '@app/utils/constants';
-import { config } from '@app/utils/config';
 
 @Injectable()
 export class ElasticService {
     private readonly _client: Client;
 
-    constructor() {
+    constructor(private readonly _configService: ConfigService) {
         this._client = new Client({
-            node: `http://${config.getElasticSearchHost()}:${config.getElasticSearchPort()}`,
+            node: `http://${this._configService.get<string>('ELASTICSEARCH_HOST')}:${this._configService.get<number>('ELASTICSEARCH_PORT')}`,
         });
     }
 
