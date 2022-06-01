@@ -1,11 +1,11 @@
-import { HttpModule } from '@nestjs/axios';
-import { Logger, Module, OnModuleInit, CacheModule, OnApplicationBootstrap } from '@nestjs/common';
+import {HttpModule} from '@nestjs/axios';
+import {Logger, Module, OnModuleInit, CacheModule, OnApplicationBootstrap} from '@nestjs/common';
 import {ConfigModule, ConfigService} from "@nestjs/config";
-import { BullModule } from '@nestjs/bull';
-import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
-import { TerminusModule } from '@nestjs/terminus';
+import {BullModule} from '@nestjs/bull';
+import {APP_FILTER, APP_INTERCEPTOR} from '@nestjs/core';
+import {TerminusModule} from '@nestjs/terminus';
 
-import { ConsoleModule } from 'nestjs-console';
+import {ConsoleModule} from 'nestjs-console';
 
 import * as redisStore from 'cache-manager-redis-store';
 
@@ -26,7 +26,14 @@ import {
     ValidatorsController,
 } from '@app/http';
 
-import { ElasticService, LumService, LumNetworkService, BlockService, TransactionService, ValidatorService } from '@app/services';
+import {
+    ElasticService,
+    LumService,
+    LumNetworkService,
+    BlockService,
+    TransactionService,
+    ValidatorService
+} from '@app/services';
 import {
     ElasticIndexes,
     IndexBlocksMapping,
@@ -37,8 +44,9 @@ import {
     ConfigMap
 } from '@app/utils';
 
-import { GatewayWebsocket } from '@app/websocket';
-import { BlocksCommands, TransactionsCommands, ValidatorsCommands } from '@app/console/commands';
+import {GatewayWebsocket} from '@app/websocket';
+import {BlocksCommands, TransactionsCommands, ValidatorsCommands} from '@app/console/commands';
+import {databaseProviders} from "@app/database";
 
 @Module({
     imports: [
@@ -83,6 +91,7 @@ import { BlocksCommands, TransactionsCommands, ValidatorsCommands } from '@app/c
     ],
     controllers: [AccountsController, BlocksController, CoreController, HealthController, TransactionsController, ValidatorsController, BeamsController, GovernanceController],
     providers: [
+        ...databaseProviders,
         BlockService,
         TransactionService,
         ValidatorService,
@@ -95,14 +104,15 @@ import { BlocksCommands, TransactionsCommands, ValidatorsCommands } from '@app/c
         BlocksCommands,
         TransactionsCommands,
         ValidatorsCommands,
-        { provide: APP_FILTER, useClass: HttpExceptionFilter },
-        { provide: APP_INTERCEPTOR, useClass: ResponseInterceptor },
+        {provide: APP_FILTER, useClass: HttpExceptionFilter},
+        {provide: APP_INTERCEPTOR, useClass: ResponseInterceptor},
     ],
 })
 export class ApiModule implements OnModuleInit, OnApplicationBootstrap {
     private readonly _logger: Logger = new Logger(ApiModule.name);
 
-    constructor(private readonly _elasticService: ElasticService, private readonly _lumNetworkService: LumNetworkService) {}
+    constructor(private readonly _elasticService: ElasticService, private readonly _lumNetworkService: LumNetworkService) {
+    }
 
     async onModuleInit() {
         // Init the blocks index
