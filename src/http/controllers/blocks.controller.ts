@@ -1,23 +1,25 @@
-import { CacheInterceptor, Controller, Get, NotFoundException, Param, UseInterceptors } from '@nestjs/common';
+import {CacheInterceptor, Controller, Get, NotFoundException, Param, Req, UseInterceptors} from '@nestjs/common';
 
-import { plainToClass } from 'class-transformer';
+import {plainToClass} from 'class-transformer';
 
-import { BlockService } from '@app/services';
-import { BlockResponse } from '@app/http/responses';
+import {BlockService} from '@app/services';
+import {BlockResponse} from '@app/http/responses';
+import {ExplorerRequest} from "@app/utils";
 
 @Controller('blocks')
 @UseInterceptors(CacheInterceptor)
 export class BlocksController {
-    constructor(private readonly _blockService: BlockService) {}
+    constructor(private readonly _blockService: BlockService) {
+    }
 
     @Get('')
-    async fetch() {
-        const blocks = await this._blockService.fetch();
+    async fetch(@Req() request: ExplorerRequest) {
+        const [blocks, total] = await this._blockService.fetch(request.pagination.skip, request.pagination.limit);
         if (!blocks) {
             throw new NotFoundException('blocks_not_found');
         }
 
-        return blocks.map((block) => plainToClass(BlockResponse, block._source));
+        return blocks.map((block) => plainToClass(BlockResponse, block));
     }
 
     @Get('latest')

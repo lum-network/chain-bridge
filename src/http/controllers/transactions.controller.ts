@@ -1,23 +1,25 @@
-import { CacheInterceptor, Controller, Get, NotFoundException, Param, UseInterceptors } from '@nestjs/common';
+import {CacheInterceptor, Controller, Get, NotFoundException, Param, Req, UseInterceptors} from '@nestjs/common';
 
-import { plainToClass } from 'class-transformer';
+import {plainToClass} from 'class-transformer';
 
-import { TransactionService } from '@app/services';
-import { TransactionResponse } from '@app/http/responses';
+import {TransactionService} from '@app/services';
+import {TransactionResponse} from '@app/http/responses';
+import {ExplorerRequest} from "@app/utils";
 
 @Controller('transactions')
 @UseInterceptors(CacheInterceptor)
 export class TransactionsController {
-    constructor(private readonly _transactionService: TransactionService) {}
+    constructor(private readonly _transactionService: TransactionService) {
+    }
 
     @Get('')
-    async fetch() {
-        const transactions = await this._transactionService.fetch();
+    async fetch(@Req() request: ExplorerRequest) {
+        const [transactions, total] = await this._transactionService.fetch(request.pagination.skip, request.pagination.limit);
         if (!transactions) {
             throw new NotFoundException('transactions_not_found');
         }
 
-        return transactions.map((tx) => plainToClass(TransactionResponse, tx._source));
+        return transactions.map((tx) => plainToClass(TransactionResponse, tx));
     }
 
     @Get(':hash')

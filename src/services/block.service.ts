@@ -1,73 +1,33 @@
-import { Injectable } from '@nestjs/common';
-import { ElasticService } from '@app/services/elastic.service';
-import { ElasticIndexes } from '@app/utils';
+import {Inject, Injectable} from '@nestjs/common';
+
+import {Repository} from "typeorm";
+
+import {BlockEntity} from "@app/database";
 
 @Injectable()
 export class BlockService {
-    constructor(private readonly _elasticService: ElasticService) {}
+    constructor(
+        @Inject('BLOCK_REPOSITORY') private readonly _repository: Repository<BlockEntity>
+    ) {
+    }
 
-    fetch = async (): Promise<any[]> => {
-        // We get the 50 last block stored in ES
-        const result = await this._elasticService.documentSearch(ElasticIndexes.INDEX_BLOCKS, {
-            size: 50,
-            sort: { height: 'desc' },
-        });
-
-        if (!result || !result.body || !result.body.hits || !result.body.hits.hits) {
-            return null;
-        }
-
-        return result.body.hits.hits;
+    fetch = async (skip: number, take: number): Promise<[BlockEntity[], number]> => {
+        const query = this._repository.createQueryBuilder('blocks').orderBy('blocks.height', 'DESC').skip(skip).take(take);
+        return query.getManyAndCount();
     };
 
-    getLatest = async (): Promise<any> => {
-        // We get the last block stored in ES
-        const result = await this._elasticService.documentSearch(ElasticIndexes.INDEX_BLOCKS, {
-            size: 1,
-            sort: { height: 'desc' },
-        });
-
-        if (!result || !result.body || !result.body.hits || !result.body.hits.hits || result.body.hits.hits.length !== 1) {
-            return null;
-        }
-
-        const lastBlock = result.body.hits.hits[0];
-        const source = lastBlock._source;
-
-        // Acquire the transactions
-        if (source && source.transactions && source.transactions.length > 0) {
-            for (const [k, v] of lastBlock.transactions.entries()) {
-                const tx = await this._elasticService.documentGet(ElasticIndexes.INDEX_TRANSACTIONS, v);
-                source.transactions[k] = tx.body._source;
-            }
-        }
-
-        return source;
+    getLatest = async (): Promise<BlockEntity> => {
+        //TODO: fetch the transactions as well
+        const query = this._repository.createQueryBuilder('blocks').orderBy('blocks.height', 'DESC').take(1);
+        return query.getOne();
     };
 
-    get = async (height: number): Promise<any> => {
-        if (!(await this._elasticService.documentExists(ElasticIndexes.INDEX_BLOCKS, height))) {
-            return null;
-        }
-
-        // We get the block from ES
-        const result = await this._elasticService.documentGet(ElasticIndexes.INDEX_BLOCKS, height);
-        if (!result || !result.body || !result.body._source) {
-            return null;
-        }
-
-        const source = result.body._source;
-        // Acquire the transactions
-        if (source && source.tx_hashes && source.tx_hashes.length > 0) {
-            source.transactions = [];
-
-            for (const [k, v] of source.tx_hashes.entries()) {
-                const tx = await this._elasticService.documentGet(ElasticIndexes.INDEX_TRANSACTIONS, v);
-
-                source.transactions[k] = tx.body._source;
+    get = async (height: number): Promise<BlockEntity> => {
+        //TODO: fetch the transactions as well
+        return this._repository.findOne({
+            where: {
+                height
             }
-        }
-
-        return source;
+        });
     };
 }

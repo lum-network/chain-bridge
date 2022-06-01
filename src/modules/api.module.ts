@@ -20,7 +20,7 @@ import {
     GovernanceController,
     HealthController,
     HttpExceptionFilter,
-    LumNetworkIndicator,
+    LumNetworkIndicator, PaginationInterceptor,
     ResponseInterceptor,
     TransactionsController,
     ValidatorsController,
@@ -105,6 +105,7 @@ import {databaseProviders} from "@app/database";
         TransactionsCommands,
         ValidatorsCommands,
         {provide: APP_FILTER, useClass: HttpExceptionFilter},
+        {provide: APP_INTERCEPTOR, useClass: PaginationInterceptor},
         {provide: APP_INTERCEPTOR, useClass: ResponseInterceptor},
     ],
 })
