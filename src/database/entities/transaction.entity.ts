@@ -31,7 +31,7 @@ export class TransactionEntity {
     code: number;
 
     @Column({type: "json"})
-    fees: AmountModel;
+    fees: AmountModel[];
 
     @Column({type: "integer"})
     gas_wanted: number;
@@ -43,7 +43,7 @@ export class TransactionEntity {
     amount?: AmountModel;
 
     @Column({type: "json", nullable: true})
-    auto_claim_reward: AmountModel;
+    auto_claim_reward?: AmountModel;
 
     @Column({type: "json", default: () => "'[]'"})
     addresses: string[];
@@ -71,4 +71,8 @@ export class TransactionEntity {
 
     @Column({type: "json"})
     raw_tx_data: string;
+
+    constructor(props?: Partial<TransactionEntity>) {
+        Object.assign(this, props);
+    }
 }

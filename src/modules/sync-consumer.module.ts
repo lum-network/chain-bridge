@@ -10,8 +10,16 @@ import { Queue } from 'bull';
 
 import { BlockConsumer, CoreConsumer, NotificationConsumer } from '@app/async';
 
-import { BlockService, ElasticService, LumNetworkService, LumService, TransactionService, ValidatorService } from '@app/services';
+import {
+    BeamService,
+    BlockService,
+    LumNetworkService,
+    LumService,
+    TransactionService,
+    ValidatorService
+} from '@app/services';
 import {ConfigMap, Queues} from '@app/utils';
+import {databaseProviders} from "@app/database";
 
 @Module({
     imports: [
@@ -70,10 +78,10 @@ import {ConfigMap, Queues} from '@app/utils';
         HttpModule,
     ],
     controllers: [],
-    providers: [BlockService, TransactionService, ValidatorService, BlockConsumer, CoreConsumer, NotificationConsumer, ElasticService, LumNetworkService, LumService],
+    providers: [...databaseProviders, BeamService, BlockService, TransactionService, ValidatorService, BlockConsumer, CoreConsumer, NotificationConsumer, LumNetworkService, LumService],
 })
 export class SyncConsumerModule implements OnModuleInit, OnApplicationBootstrap {
-    constructor(private readonly _elasticService: ElasticService, private readonly _lumNetworkService: LumNetworkService, @InjectQueue(Queues.QUEUE_DEFAULT) private readonly _queue: Queue) {}
+    constructor(private readonly _lumNetworkService: LumNetworkService, @InjectQueue(Queues.QUEUE_DEFAULT) private readonly _queue: Queue) {}
 
     async onModuleInit() {
         // Make sure to initialize the lum network service

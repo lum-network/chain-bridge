@@ -2,7 +2,7 @@ import {ConfigModule, ConfigService} from "@nestjs/config";
 
 import {Connection, createConnection} from "typeorm";
 
-import {BlockEntity, TransactionEntity, ValidatorEntity} from "@app/database/entities";
+import {BeamEntity, BlockEntity, TransactionEntity, ValidatorEntity} from "@app/database/entities";
 
 export const databaseProviders = [
     {
@@ -21,6 +21,11 @@ export const databaseProviders = [
             synchronize: true
         }),
         inject: [ConfigService]
+    },
+    {
+        provide: 'BEAM_REPOSITORY',
+        useFactory: (connection: Connection) => connection.getRepository(BeamEntity),
+        inject: ['DATABASE_CONNECTION']
     },
     {
         provide: 'BLOCK_REPOSITORY',

@@ -1,6 +1,6 @@
 import {Column, Entity, PrimaryColumn} from "typeorm";
 
-@Entity({name: "beams"})
+@Entity({name: "blocks"})
 export class BlockEntity {
     @PrimaryColumn({type: "integer"})
     height: number;
@@ -25,4 +25,8 @@ export class BlockEntity {
 
     @Column({type: "json"})
     raw_block: string;
+
+    constructor(props?: Partial<BlockEntity>) {
+        Object.assign(this, props);
+    }
 }

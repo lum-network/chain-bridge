@@ -1,40 +1,25 @@
-import { CacheInterceptor, Controller, Get, NotFoundException, Param, UseInterceptors } from '@nestjs/common';
+import {CacheInterceptor, Controller, Get, NotFoundException, Param, UseInterceptors} from '@nestjs/common';
 
-import { LumConstants, LumUtils } from '@lum-network/sdk-javascript';
-import { RedelegationResponse } from '@lum-network/sdk-javascript/build/codec/cosmos/staking/v1beta1/staking';
+import {LumConstants, LumUtils} from '@lum-network/sdk-javascript';
+import {RedelegationResponse} from '@lum-network/sdk-javascript/build/codec/cosmos/staking/v1beta1/staking';
 
-import { plainToClass } from 'class-transformer';
+import {plainToClass} from 'class-transformer';
 
-import { ElasticService, LumNetworkService } from '@app/services';
-import { ElasticIndexes } from '@app/utils/constants';
-import { AccountResponse, TransactionResponse } from '@app/http/responses';
+import {LumNetworkService, TransactionService} from '@app/services';
+import {AccountResponse, TransactionResponse} from '@app/http/responses';
 
 @Controller('accounts')
 @UseInterceptors(CacheInterceptor)
 export class AccountsController {
-    constructor(private readonly _elasticService: ElasticService, private readonly _lumNetworkService: LumNetworkService) {}
+    constructor(private readonly _lumNetworkService: LumNetworkService, private readonly _transactionService: TransactionService) {
+    }
 
     @Get(':address')
     async show(@Param('address') address: string) {
         const lumClt = await this._lumNetworkService.getClient();
 
-        const txPromise = this._elasticService.documentSearch(ElasticIndexes.INDEX_TRANSACTIONS, {
-            sort: { time: 'desc' },
-            query: {
-                bool: {
-                    should: [
-                        {
-                            multi_match: {
-                                query: address,
-                                fields: ['addresses'],
-                                type: 'cross_fields',
-                                operator: 'OR',
-                            },
-                        },
-                    ],
-                },
-            },
-        });
+
+        const txPromise = this._transactionService.fetchForAddress(address);
 
         const [account, balance, delegations, rewards, withdrawAddress, unbondings, redelegations, commissions, airdrop, transactions] = await Promise.all([
             lumClt.getAccount(address).catch(() => null),

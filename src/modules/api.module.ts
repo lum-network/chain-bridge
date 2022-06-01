@@ -16,7 +16,6 @@ import {
     BeamsController,
     BlocksController,
     CoreController,
-    ElasticsearchIndicator,
     GovernanceController,
     HealthController,
     HttpExceptionFilter,
@@ -27,19 +26,13 @@ import {
 } from '@app/http';
 
 import {
-    ElasticService,
     LumService,
     LumNetworkService,
     BlockService,
     TransactionService,
-    ValidatorService
+    ValidatorService, BeamService
 } from '@app/services';
 import {
-    ElasticIndexes,
-    IndexBlocksMapping,
-    IndexValidatorsMapping,
-    IndexTransactionsMapping,
-    IndexBeamsMapping,
     Queues,
     ConfigMap
 } from '@app/utils';
@@ -92,13 +85,12 @@ import {databaseProviders} from "@app/database";
     controllers: [AccountsController, BlocksController, CoreController, HealthController, TransactionsController, ValidatorsController, BeamsController, GovernanceController],
     providers: [
         ...databaseProviders,
+        BeamService,
         BlockService,
         TransactionService,
         ValidatorService,
-        ElasticsearchIndicator,
         LumNetworkIndicator,
         GatewayWebsocket,
-        ElasticService,
         LumNetworkService,
         LumService,
         BlocksCommands,
@@ -112,42 +104,10 @@ import {databaseProviders} from "@app/database";
 export class ApiModule implements OnModuleInit, OnApplicationBootstrap {
     private readonly _logger: Logger = new Logger(ApiModule.name);
 
-    constructor(private readonly _elasticService: ElasticService, private readonly _lumNetworkService: LumNetworkService) {
+    constructor(private readonly _lumNetworkService: LumNetworkService) {
     }
 
     async onModuleInit() {
-        // Init the blocks index
-        this._elasticService.indexExists(ElasticIndexes.INDEX_BLOCKS).then(async (exists) => {
-            if (!exists) {
-                await this._elasticService.indexCreate(ElasticIndexes.INDEX_BLOCKS, IndexBlocksMapping);
-                this._logger.debug('Created index blocks');
-            }
-        });
-
-        // Init the validators index
-        this._elasticService.indexExists(ElasticIndexes.INDEX_VALIDATORS).then(async (exists) => {
-            if (!exists) {
-                await this._elasticService.indexCreate(ElasticIndexes.INDEX_VALIDATORS, IndexValidatorsMapping);
-                this._logger.debug('Created index validators');
-            }
-        });
-
-        // Init the transactions index
-        this._elasticService.indexExists(ElasticIndexes.INDEX_TRANSACTIONS).then(async (exists) => {
-            if (!exists) {
-                await this._elasticService.indexCreate(ElasticIndexes.INDEX_TRANSACTIONS, IndexTransactionsMapping);
-                this._logger.debug('Created index transactions');
-            }
-        });
-
-        // Init the beams index
-        this._elasticService.indexExists(ElasticIndexes.INDEX_BEAMS).then(async (exists) => {
-            if (!exists) {
-                await this._elasticService.indexCreate(ElasticIndexes.INDEX_BEAMS, IndexBeamsMapping);
-                this._logger.debug('Created index beams');
-            }
-        });
-
         // Make sure to initialize the lum network service
         await this._lumNetworkService.initialise();
     }

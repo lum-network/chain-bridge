@@ -18,8 +18,8 @@ import {Queue} from 'bull';
 
 import {LumConstants} from '@lum-network/sdk-javascript';
 
-import {ElasticService, LumService, LumNetworkService} from '@app/services';
-import {ElasticIndexes, QueueJobs, Queues} from '@app/utils';
+import {LumService, LumNetworkService, BlockService, TransactionService} from '@app/services';
+import {QueueJobs, Queues} from '@app/utils';
 import {LumResponse, StatsResponse} from '@app/http/responses';
 import {GatewayWebsocket} from '@app/websocket';
 
@@ -29,11 +29,12 @@ export class CoreController {
 
     constructor(
         @InjectQueue(Queues.QUEUE_FAUCET) private readonly _queue: Queue,
+        private readonly _blockService: BlockService,
         private readonly _configService: ConfigService,
-        private readonly _elasticService: ElasticService,
         private readonly _lumNetworkService: LumNetworkService,
         private readonly _lumService: LumService,
         private readonly _messageGateway: GatewayWebsocket,
+        private readonly _transactionService: TransactionService
     ) {
     }
 
@@ -48,9 +49,9 @@ export class CoreController {
         } else if (String(data).startsWith(LumConstants.LumBech32PrefixAccAddr)) {
             return {type: 'account', data};
         } else {
-            if (await this._elasticService.documentExists(ElasticIndexes.INDEX_BLOCKS, data)) {
+            if (await this._blockService.get(parseInt(data, 10))) {
                 return {type: 'block', data};
-            } else if (await this._elasticService.documentExists(ElasticIndexes.INDEX_TRANSACTIONS, data)) {
+            } else if (await this._transactionService.get(data)) {
                 return {type: 'transaction', data};
             } else {
                 throw new NotFoundException('data_not_found');

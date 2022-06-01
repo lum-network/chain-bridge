@@ -14,6 +14,8 @@ services:
     environment:
       POSTGRES_PASSWORD: emulator
   lm-bridge-elasticsearch:
+    logging:
+      driver: none
     networks:
       - elastic
     image: docker.elastic.co/elasticsearch/elasticsearch:7.11.2
@@ -23,6 +25,8 @@ services:
       - discovery.type=single-node
       - xpack.security.enabled=false
   lm-node:
+    logging:
+      driver: none
     image: rg.fr-par.scw.cloud/lum-network/chain:latest
     command:
       - /bin/sh

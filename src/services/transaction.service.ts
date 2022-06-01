@@ -16,11 +16,24 @@ export class TransactionService {
         return query.getManyAndCount();
     };
 
-    get = async (hash: string): Promise<any> => {
+    fetchForAddress = async (address: string): Promise<[TransactionEntity[], number]> => {
+        // TODO: implement
+        return [[], 0];
+    }
+
+    get = async (hash: string): Promise<TransactionEntity> => {
         return this._repository.findOne({
             where: {
                 hash
             }
         });
     };
+
+    save = async (entity: Partial<TransactionEntity>): Promise<TransactionEntity> => {
+        return this._repository.save(entity);
+    }
+
+    saveBulk = async (entities: Partial<TransactionEntity>[]): Promise<TransactionEntity[]> => {
+        return this._repository.save(entities);
+    }
 }

@@ -1,18 +1,18 @@
-import { Logger } from '@nestjs/common';
+import {Logger} from '@nestjs/common';
 import {ConfigService} from "@nestjs/config";
 
-import { Job, Queue } from 'bull';
-import { InjectQueue, Process, Processor } from '@nestjs/bull';
+import {Job, Queue} from 'bull';
+import {InjectQueue, Process, Processor} from '@nestjs/bull';
 
 import moment from 'moment';
 
-import { LumUtils, LumRegistry, LumMessages, LumConstants } from '@lum-network/sdk-javascript';
+import {LumUtils, LumRegistry, LumMessages, LumConstants} from '@lum-network/sdk-javascript';
 
-import { isBeam } from '@app/utils';
-import { ElasticIndexes, NotificationChannels, NotificationEvents, QueueJobs, Queues, IngestionDocumentVersion } from '@app/utils/constants';
-import { BeamDocument, BlockDocument, TransactionDocument } from '@app/utils/models';
+import {isBeam} from '@app/utils';
+import {NotificationChannels, NotificationEvents, QueueJobs, Queues} from '@app/utils/constants';
 
-import { LumNetworkService, ElasticService } from '@app/services';
+import {BeamService, BlockService, LumNetworkService, TransactionService, ValidatorService} from '@app/services';
+import {BeamEntity, BlockEntity, TransactionEntity} from "@app/database";
 
 
 @Processor(Queues.QUEUE_DEFAULT)
@@ -21,10 +21,14 @@ export class BlockConsumer {
 
     constructor(
         @InjectQueue(Queues.QUEUE_DEFAULT) private readonly _queue: Queue,
+        private readonly _beamService: BeamService,
+        private readonly _blockService: BlockService,
         private readonly _configService: ConfigService,
-        private readonly _elasticService: ElasticService,
-        private readonly _lumNetworkService: LumNetworkService
-    ) {}
+        private readonly _lumNetworkService: LumNetworkService,
+        private readonly _transactionService: TransactionService,
+        private readonly _validatorService: ValidatorService,
+    ) {
+    }
 
     @Process(QueueJobs.INGEST_BLOCK)
     async ingestBlock(job: Job<{ blockHeight: number; notify?: boolean }>) {
@@ -35,7 +39,7 @@ export class BlockConsumer {
 
         try {
             // Ignore blocks already in elastic
-            if (await this._elasticService.documentExists(ElasticIndexes.INDEX_BLOCKS, job.data.blockHeight)) {
+            if (await this._blockService.get(job.data.blockHeight)) {
                 return;
             }
 
@@ -48,30 +52,29 @@ export class BlockConsumer {
             const block = await lumClt.getBlock(job.data.blockHeight);
 
             // Get the operator address
+            const proposerAddress = LumUtils.toHex(block.block.header.proposerAddress).toUpperCase();
             let operatorAddress: string | undefined = undefined;
             try {
-                const validatorDoc = await this._elasticService.documentGet(ElasticIndexes.INDEX_VALIDATORS, LumUtils.toHex(block.block.header.proposerAddress).toUpperCase());
-                operatorAddress = validatorDoc && validatorDoc.body && validatorDoc.body._source && validatorDoc.body._source.operator_address;
+                const validatorDoc = await this._validatorService.getByProposerAddress(proposerAddress);
+                operatorAddress = validatorDoc && validatorDoc.operator_address;
             } catch (error) {
-                throw new Error(`Failed to find validator address for ${LumUtils.toHex(block.block.header.proposerAddress).toUpperCase()}, exiting for retry (${error})`);
+                throw new Error(`Failed to find validator address for ${proposerAddress}, exiting for retry (${error})`);
             }
 
             // Format block data
-            const blockDoc: BlockDocument = {
-                doc_version: IngestionDocumentVersion,
-                chain_id: block.block.header.chainId,
+            const blockDoc: BlockEntity = {
                 hash: LumUtils.toHex(block.blockId.hash).toUpperCase(),
                 height: block.block.header.height,
-                time: moment(block.block.header.time as Date).toISOString(),
+                time: moment(block.block.header.time as Date).toDate(),
                 tx_count: block.block.txs.length,
                 tx_hashes: block.block.txs.map((tx) => LumUtils.toHex(LumUtils.sha256(tx)).toUpperCase()),
-                proposer_address: LumUtils.toHex(block.block.header.proposerAddress).toUpperCase(),
+                proposer_address: proposerAddress,
                 operator_address: operatorAddress,
-                raw_block: LumUtils.toJSON(block),
+                raw_block: LumUtils.toJSON(block) as string,
             };
 
             // Fetch and format transactions data
-            const getFormattedTx = async (rawTx: Uint8Array): Promise<TransactionDocument> => {
+            const getFormattedTx = async (rawTx: Uint8Array): Promise<TransactionEntity> => {
                 // Acquire raw TX
                 const tx = await lumClt.getTx(LumUtils.sha256(rawTx));
 
@@ -82,33 +85,32 @@ export class BlockConsumer {
                 const logs = LumUtils.parseRawLogs(tx.result.log);
 
                 // Build the transaction document from information
-                const res: TransactionDocument = {
-                    doc_version: IngestionDocumentVersion,
-                    chain_id: blockDoc.chain_id,
+                const res: TransactionEntity = {
                     hash: LumUtils.toHex(tx.hash).toUpperCase(),
                     height: tx.height,
                     time: blockDoc.time,
+                    block_height: blockDoc.height,
                     block_hash: blockDoc.hash,
                     proposer_address: blockDoc.proposer_address,
                     operator_address: blockDoc.operator_address,
                     success: tx.result.code === 0,
                     code: tx.result.code,
                     fees: txData.authInfo.fee.amount.map((coin) => {
-                        return { denom: coin.denom, amount: parseFloat(coin.amount) };
+                        return {denom: coin.denom, amount: parseFloat(coin.amount)};
                     }),
                     addresses: [],
                     gas_wanted: (tx.result as unknown as { gasWanted: number }).gasWanted,
                     gas_used: (tx.result as unknown as { gasUsed: number }).gasUsed,
                     memo: txData.body.memo,
                     messages: txData.body.messages.map((msg) => {
-                        return { typeUrl: msg.typeUrl, value: LumUtils.toJSON(LumRegistry.decode(msg)) };
+                        return {type_url: msg.typeUrl, value: LumUtils.toJSON(LumRegistry.decode(msg))};
                     }),
                     message_type: txData.body.messages.length ? txData.body.messages[0].typeUrl : null,
                     messages_count: txData.body.messages.length,
                     raw_logs: logs as any[],
                     raw_events: tx.result.events.map((ev) => LumUtils.toJSON(ev)),
-                    raw_tx: LumUtils.toJSON(tx),
-                    raw_tx_data: LumUtils.toJSON(txData),
+                    raw_tx: LumUtils.toJSON(tx) as string,
+                    raw_tx_data: LumUtils.toJSON(txData) as string,
                 };
 
                 for (const log of logs) {
@@ -124,7 +126,7 @@ export class BlockConsumer {
                                 const denom = attr.value.substr(amount.toString().length);
 
                                 if (!res.amount) {
-                                    res.amount = { amount, denom };
+                                    res.amount = {amount, denom};
                                 }
 
                                 // We get auto claim reward amount with unbond
@@ -134,7 +136,7 @@ export class BlockConsumer {
 
                                 // We get relevant amount with particular types
                                 if (ev.type === 'delegate' || ev.type === 'unbond' || ev.type === 'withdraw_rewards') {
-                                    res.amount = { amount, denom };
+                                    res.amount = {amount, denom};
                                 }
                             }
                         }
@@ -142,28 +144,25 @@ export class BlockConsumer {
                 }
 
                 // Multisend case
-                if (res.messages.length === 1 && res.messages[0].typeUrl === LumMessages.MsgMultiSendUrl) {
+                if (res.messages.length === 1 && res.messages[0].type_url === LumMessages.MsgMultiSendUrl) {
                     res.amount = {
                         denom: LumConstants.MicroLumDenom,
                         amount: !res.messages[0].value.inputs
                             ? '0'
                             : res.messages[0].value.inputs
-                                  .map((i: any) => (!i.coins ? 0 : i.coins.map((c: any) => (c.denom === LumConstants.MicroLumDenom ? parseInt(c.amount) : 0)).reduce((a: number, b: number) => a + b)))
-                                  .reduce((a: number, b: number) => a + b),
+                                .map((i: any) => (!i.coins ? 0 : i.coins.map((c: any) => (c.denom === LumConstants.MicroLumDenom ? parseInt(c.amount) : 0)).reduce((a: number, b: number) => a + b)))
+                                .reduce((a: number, b: number) => a + b),
                     };
                 }
 
                 return res;
             };
 
-            const getFormattedBeam = (value: any): BeamDocument => {
+            const getFormattedBeam = (value: any): BeamEntity => {
                 return {
-                    doc_version: IngestionDocumentVersion,
-                    chain_id: blockDoc.chain_id,
                     creator_address: value.creatorAddress,
                     id: value.id,
                     status: value.status,
-                    secret: value.secret,
                     claim_address: value.claimAddress,
                     funds_withdrawn: value.fundsWithdrawn,
                     claimed: value.claimed,
@@ -177,32 +176,21 @@ export class BlockConsumer {
                 };
             };
 
-            const txDocs = await Promise.all(block.block.txs.map(getFormattedTx));
+            // Save entities
+            const transactions = await Promise.all(block.block.txs.map(getFormattedTx));
+            await this._transactionService.saveBulk(transactions);
+            await this._blockService.save(blockDoc);
 
-            // Ingest block and transactions into elasticsearch
-            const bulkPayload: any[] = [
-                {
-                    index: {
-                        _index: ElasticIndexes.INDEX_BLOCKS,
-                        _id: blockDoc.height,
-                    },
-                },
-                blockDoc,
-            ];
-            for (const txDoc of txDocs) {
-                bulkPayload.push({ index: { _index: ElasticIndexes.INDEX_TRANSACTIONS, _id: txDoc.hash } });
-                bulkPayload.push(txDoc);
-
+            const beams: BeamEntity[] = [];
+            for (const txDoc of transactions) {
                 for (const message of txDoc.messages) {
-                    if (isBeam(message.typeUrl)) {
+                    if (isBeam(message.type_url)) {
                         const beamDoc = getFormattedBeam(message.value);
-
-                        bulkPayload.push({ index: { _index: ElasticIndexes.INDEX_BEAMS, _id: beamDoc.id } });
-                        bulkPayload.push(beamDoc);
+                        beams.push(beamDoc);
                     }
                 }
             }
-            await this._elasticService.bulkUpdate({ body: bulkPayload });
+            await this._beamService.saveBulk(beams);
 
             if (job.data.notify) {
                 // Dispatch notification on websockets for frontend
@@ -227,38 +215,10 @@ export class BlockConsumer {
         }
 
         this._logger.debug(`Verifying range from block ${job.data.fromBlock} to block ${job.data.toBlock} for chain with id ${job.data.chainId}`);
-        const res = await this._elasticService.client.count({
-            index: ElasticIndexes.INDEX_BLOCKS,
-            body: {
-                query: {
-                    bool: {
-                        must: [
-                            {
-                                match: {
-                                    chain_id: job.data.chainId,
-                                },
-                            },
-                            {
-                                term: {
-                                    doc_version: IngestionDocumentVersion,
-                                },
-                            },
-                            {
-                                range: {
-                                    height: {
-                                        gte: job.data.fromBlock,
-                                        lte: job.data.toBlock - 1,
-                                    },
-                                },
-                            },
-                        ],
-                    },
-                },
-            },
-        });
+        const res = await this._blockService.countInRange(job.data.fromBlock, job.data.toBlock - 1);
 
-        this._logger.debug(`Found ${res.body.count}/${job.data.toBlock - job.data.fromBlock} block synced`);
-        const missing = job.data.toBlock - job.data.fromBlock - res.body.count;
+        this._logger.debug(`Found ${res}/${job.data.toBlock - job.data.fromBlock} block synced`);
+        const missing = job.data.toBlock - job.data.fromBlock - res;
         if (missing > 0 && job.data.toBlock - job.data.fromBlock <= 1000) {
             // 1000 => block range resync if one block missing
             this._logger.debug(`Trigger block sync for all blocks within [${job.data.fromBlock}, ${job.data.toBlock}]`);
@@ -266,9 +226,9 @@ export class BlockConsumer {
             for (let i = job.data.fromBlock; i <= job.data.toBlock; i++) {
                 jobs.push({
                     name: QueueJobs.INGEST_BLOCK,
-                    data: { blockHeight: i },
+                    data: {blockHeight: i},
                     opts: {
-                        jobId: `${job.data.chainId}-block-${i}-v${IngestionDocumentVersion}`,
+                        jobId: `${job.data.chainId}-block-${i}`,
                         attempts: 5,
                         backoff: 60000,
                     },
@@ -289,7 +249,7 @@ export class BlockConsumer {
                 {
                     attempts: 5,
                     backoff: 60000,
-                    jobId: `${job.data.chainId}-check-block-range-${r1[0]}-${r1[1]}-v${IngestionDocumentVersion}`,
+                    jobId: `${job.data.chainId}-check-block-range-${r1[0]}-${r1[1]}`,
                 },
             );
             await this._queue.add(
@@ -302,7 +262,7 @@ export class BlockConsumer {
                 {
                     attempts: 5,
                     backoff: 60000,
-                    jobId: `${job.data.chainId}-check-block-range-${r2[0]}-${r2[1]}-v${IngestionDocumentVersion}`,
+                    jobId: `${job.data.chainId}-check-block-range-${r2[0]}-${r2[1]}`,
                 },
             );
         } else {

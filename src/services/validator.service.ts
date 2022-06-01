@@ -1,22 +1,50 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {Inject, Injectable, NotFoundException} from '@nestjs/common';
 
-import { plainToClass } from 'class-transformer';
+import {plainToClass} from 'class-transformer';
 
-import { LumUtils } from '@lum-network/sdk-javascript';
+import {LumUtils} from '@lum-network/sdk-javascript';
+import {Repository} from "typeorm";
 
-import { BlockResponse, ValidatorResponse } from '@app/http';
-import { convertValAddressToAccAddress, ElasticIndexes } from '@app/utils';
+import {ValidatorResponse} from '@app/http';
+import {convertValAddressToAccAddress} from '@app/utils';
 
-import { LumNetworkService } from '@app/services/lum-network.service';
-import { ElasticService } from '@app/services/elastic.service';
+import {LumNetworkService} from '@app/services/lum-network.service';
+import {ValidatorEntity} from "@app/database";
 
 @Injectable()
 export class ValidatorService {
-    constructor(private readonly _lumNetworkService: LumNetworkService, private readonly _elasticService: ElasticService) {}
+    constructor(
+        @Inject('VALIDATOR_REPOSITORY') private readonly _repository: Repository<ValidatorEntity>,
+        private readonly _lumNetworkService: LumNetworkService) {
+    }
+
+    getByOperatorAddress = async (operator_address: string): Promise<ValidatorEntity> => {
+        return this._repository.findOne({
+            where: {
+                operator_address
+            }
+        });
+    }
+
+    getByProposerAddress = async (proposer_address: string): Promise<ValidatorEntity> => {
+        return this._repository.findOne({
+            where: {
+                proposer_address
+            }
+        })
+    }
+
+    save = (entity: Partial<ValidatorEntity>): Promise<ValidatorEntity> => {
+        return this._repository.save(entity);
+    }
+
+    saveBulk = (entities: Partial<ValidatorEntity>[]): Promise<ValidatorEntity[]> => {
+        return this._repository.save(entities);
+    }
 
     fetch = async (): Promise<any[]> => {
         const lumClt = await this._lumNetworkService.getClient();
-        const { validators } = lumClt.queryClient.staking;
+        const {validators} = lumClt.queryClient.staking;
 
         // We acquire both bounded and unbonded (candidates) validators
         const [bonded, unbonding, unbonded, tmValidators] = await Promise.all([
@@ -42,10 +70,11 @@ export class ValidatorService {
 
         for (const tmValidator of tmValidators.validators) {
             try {
-                const validatorDoc = await this._elasticService.documentGet(ElasticIndexes.INDEX_VALIDATORS, LumUtils.toHex(tmValidator.address).toUpperCase());
+                const validatorDoc = await this.getByOperatorAddress(LumUtils.toHex(tmValidator.address).toUpperCase());
 
-                operatorAddresses.push(validatorDoc && validatorDoc.body && validatorDoc.body._source && validatorDoc.body._source.operator_address);
-            } catch (e) {}
+                operatorAddresses.push(validatorDoc && validatorDoc.operator_address);
+            } catch (e) {
+            }
         }
 
         for (const [key, validator] of Object.entries(mapResults)) {
@@ -60,7 +89,7 @@ export class ValidatorService {
     };
 
     get = async (address: string): Promise<any> => {
-        const blocksPromise = this._elasticService.documentSearch(ElasticIndexes.INDEX_BLOCKS, {
+        /*const blocksPromise = this._elasticService.documentSearch(ElasticIndexes.INDEX_BLOCKS, {
             size: 5,
             sort: { time: 'desc' },
             query: {
@@ -77,15 +106,17 @@ export class ValidatorService {
                     ],
                 },
             },
-        });
+        });*/
         const lumClt = await this._lumNetworkService.getClient();
 
-        const [validator, delegations, rewards, blocksResponse] = await Promise.all([
+        const [validator, delegations, rewards/*, blocksResponse*/] = await Promise.all([
             lumClt.queryClient.staking.validator(address).catch(() => null),
             lumClt.queryClient.staking.validatorDelegations(address).catch(() => null),
             lumClt.queryClient.distribution.validatorOutstandingRewards(address).catch(() => null),
-            blocksPromise.catch(() => null),
+            // blocksPromise.catch(() => null),
         ]);
+
+        console.log(validator);
 
         if (!validator) {
             throw new NotFoundException('validator_not_found');
@@ -111,11 +142,11 @@ export class ValidatorService {
             }
         }
 
-        let blocks = [];
+        const blocks = [];
 
-        if (blocksResponse && blocksResponse.body && blocksResponse.body.hits && blocksResponse.body.hits.hits) {
+        /*if (blocksResponse && blocksResponse.body && blocksResponse.body.hits && blocksResponse.body.hits.hits) {
             blocks = blocksResponse.body.hits.hits.map((hit) => plainToClass(BlockResponse, hit._source));
-        }
+        }*/
 
         // Merge
         return {

@@ -1,17 +1,17 @@
 import { Command, Console, createSpinner } from 'nestjs-console';
-import { ElasticService } from '@app/services';
 import { ElasticIndexes } from '@app/utils';
+import {BlockService} from "@app/services";
 
 @Console({ command: 'blocks', description: 'Blocks related commands' })
 export class BlocksCommands {
-    constructor(private readonly _elasticService: ElasticService) {}
+    constructor(private readonly _blockService: BlockService) {}
 
     @Command({ command: 'clear', description: 'Clear the stored blocks dataset' })
     async clear(): Promise<void> {
         const spin = createSpinner();
         spin.start('Clearing the blocks dataset...');
 
-        await this._elasticService.indexClear(ElasticIndexes.INDEX_BLOCKS);
+        // TODO: clear
 
         spin.succeed('Blocks dataset cleared');
         process.exit(0);

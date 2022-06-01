@@ -1,10 +1,10 @@
 import { CacheInterceptor, Controller, Get, Param, UseInterceptors } from '@nestjs/common';
-import { ElasticService, LumNetworkService } from '@app/services';
+import { LumNetworkService } from '@app/services';
 
 @Controller('beams')
 @UseInterceptors(CacheInterceptor)
 export class BeamsController {
-    constructor(private readonly _lumNetworkService: LumNetworkService, private readonly _elasticService: ElasticService) {}
+    constructor(private readonly _lumNetworkService: LumNetworkService) {}
 
     @Get('')
     async fetch() {

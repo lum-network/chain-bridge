@@ -11,8 +11,16 @@ import { Queue } from 'bull';
 
 import { BlockScheduler, ValidatorScheduler } from '@app/async';
 
-import { ElasticService, LumService, LumNetworkService, BlockService, TransactionService, ValidatorService } from '@app/services';
+import {
+    LumService,
+    LumNetworkService,
+    BlockService,
+    TransactionService,
+    ValidatorService,
+    BeamService
+} from '@app/services';
 import {Queues, QueueJobs, ConfigMap} from '@app/utils';
+import {databaseProviders} from "@app/database";
 
 @Module({
     imports: [
@@ -72,7 +80,7 @@ import {Queues, QueueJobs, ConfigMap} from '@app/utils';
         HttpModule,
     ],
     controllers: [],
-    providers: [BlockService, TransactionService, ValidatorService, BlockScheduler, ValidatorScheduler, ElasticService, LumNetworkService, LumService],
+    providers: [...databaseProviders, BeamService, BlockService, TransactionService, ValidatorService, BlockScheduler, ValidatorScheduler, LumNetworkService, LumService],
 })
 export class SyncSchedulerModule implements OnModuleInit, OnApplicationBootstrap {
     private readonly _logger: Logger = new Logger(SyncSchedulerModule.name);
@@ -80,7 +88,6 @@ export class SyncSchedulerModule implements OnModuleInit, OnApplicationBootstrap
     constructor(
         @InjectQueue(Queues.QUEUE_DEFAULT) private readonly _queue: Queue,
         private readonly _configService: ConfigService,
-        private readonly _elasticService: ElasticService,
         private readonly _lumNetworkService: LumNetworkService
     ) {}
 
@@ -103,7 +110,7 @@ export class SyncSchedulerModule implements OnModuleInit, OnApplicationBootstrap
         const lumClt = await this._lumNetworkService.getClient();
         const chainId = await lumClt.getChainId();
         const blockHeight = await lumClt.getBlockHeight();
-        await this._queue.add(
+        /*await this._queue.add(
             QueueJobs.TRIGGER_VERIFY_BLOCKS_BACKWARD,
             {
                 chainId: chainId,
@@ -113,6 +120,6 @@ export class SyncSchedulerModule implements OnModuleInit, OnApplicationBootstrap
             {
                 delay: 120000, // Delayed by 2 minutes to avoid some eventual concurrency issues
             },
-        );
+        );*/
     }
 }

@@ -1,6 +1,6 @@
 import {Inject, Injectable} from '@nestjs/common';
 
-import {Repository} from "typeorm";
+import {Between, Repository} from "typeorm";
 
 import {BlockEntity} from "@app/database";
 
@@ -16,6 +16,14 @@ export class BlockService {
         return query.getManyAndCount();
     };
 
+    countInRange = async(start: number, end: number): Promise<number> => {
+        return this._repository.count({
+            where: {
+                height: Between(start, end)
+            }
+        });
+    }
+
     getLatest = async (): Promise<BlockEntity> => {
         //TODO: fetch the transactions as well
         const query = this._repository.createQueryBuilder('blocks').orderBy('blocks.height', 'DESC').take(1);
@@ -30,4 +38,8 @@ export class BlockService {
             }
         });
     };
+
+    save = async (entity: BlockEntity): Promise<BlockEntity> => {
+        return this._repository.save(entity);
+    }
 }

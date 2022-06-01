@@ -1,35 +1,33 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { Cron, CronExpression } from '@nestjs/schedule';
-import { LumConstants, LumTypes, LumUtils, LumRegistry } from '@lum-network/sdk-javascript';
+import {Injectable, Logger} from '@nestjs/common';
+import {Cron, CronExpression} from '@nestjs/schedule';
 
-import { LumNetworkService, ElasticService } from '@app/services';
-import { ValidatorDocument } from '@app/utils/models';
-import { ElasticIndexes, IngestionDocumentVersion } from '@app/utils/constants';
+import {LumConstants, LumTypes, LumUtils, LumRegistry} from '@lum-network/sdk-javascript';
+
+import {LumNetworkService, ValidatorService} from '@app/services';
+import {ValidatorEntity} from "@app/database";
 
 @Injectable()
 export class ValidatorScheduler {
     private readonly _logger: Logger = new Logger(ValidatorScheduler.name);
 
-    constructor(private readonly _elasticService: ElasticService, private readonly _lumNetworkService: LumNetworkService) {}
+    constructor(private readonly _lumNetworkService: LumNetworkService, private readonly _validatorService: ValidatorService) {
+    }
 
-    @Cron(CronExpression.EVERY_30_SECONDS, { name: 'validators_live_ingest' })
+    @Cron(CronExpression.EVERY_30_SECONDS, {name: 'validators_live_ingest'})
     async liveIngest() {
         try {
             this._logger.debug(`Ingesting validators set`);
 
             // Acquire lum network client
             const clt = await this._lumNetworkService.getClient();
-            const chainId = await clt.getChainId();
 
             // Fetch tendermint validators
             const tmValidators = await clt.tmClient.validatorsAll();
 
             // Build validators list
-            const validators: ValidatorDocument[] = [];
+            const validators: ValidatorEntity[] = [];
             for (const val of tmValidators.validators) {
                 validators.push({
-                    doc_version: IngestionDocumentVersion,
-                    chain_id: chainId,
                     proposer_address: LumUtils.toHex(val.address).toUpperCase(),
                     consensus_address: LumUtils.Bech32.encode(LumConstants.LumBech32PrefixConsAddr, val.address),
                     consensus_pubkey: LumUtils.Bech32.encode(LumConstants.LumBech32PrefixConsPub, val.pubkey.data),
@@ -64,17 +62,8 @@ export class ValidatorScheduler {
             }
 
             // Save to elasticsearch
-            const bulkPayload = [];
-            for (const v of validators) {
-                bulkPayload.push({
-                    index: {
-                        _index: ElasticIndexes.INDEX_VALIDATORS,
-                        _id: v.proposer_address,
-                    },
-                });
-                bulkPayload.push(v);
-            }
-            await this._elasticService.bulkUpdate({ body: bulkPayload });
+            await this._validatorService.saveBulk(validators);
+            this._logger.log(`Ingested validator set ${validators.length}`);
         } catch (error) {
             this._logger.error(`Failed to ingest validators: ${error}`, error.stack);
         }
