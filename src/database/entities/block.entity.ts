@@ -1,4 +1,4 @@
-import {Column, Entity, PrimaryColumn} from "typeorm";
+import {Column, CreateDateColumn, Entity, PrimaryColumn, UpdateDateColumn, VersionColumn} from "typeorm";
 
 @Entity({name: "blocks"})
 export class BlockEntity {
@@ -25,6 +25,15 @@ export class BlockEntity {
 
     @Column({type: "json"})
     raw_block: string;
+
+    @CreateDateColumn({type: 'date', default: () => "CURRENT_DATE"})
+    created_at?: Date = new Date;
+
+    @UpdateDateColumn({type: 'date', default: null})
+    updated_at?: Date = null;
+
+    @VersionColumn({type: "integer", default: 0})
+    nonce?: number = 0;
 
     constructor(props?: Partial<BlockEntity>) {
         Object.assign(this, props);

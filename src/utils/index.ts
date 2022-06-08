@@ -4,6 +4,7 @@ export * from './constants';
 export * from './gov';
 export * from './http';
 export * from './indices';
+export * from './metadata';
 export * from './microservice';
 export * from './models';
 export * from './validators';

@@ -1,4 +1,4 @@
-import {Column, Entity, PrimaryColumn} from "typeorm";
+import {Column, CreateDateColumn, Entity, PrimaryColumn, UpdateDateColumn, VersionColumn} from "typeorm";
 
 import {AmountModel} from "@app/database/entities/amount.model";
 
@@ -42,4 +42,13 @@ export class BeamEntity {
 
     @Column({type: "json"})
     data: string;
+
+    @CreateDateColumn({type: 'date', default: () => "CURRENT_DATE"})
+    created_at?: Date = new Date;
+
+    @UpdateDateColumn({type: 'date', default: null})
+    updated_at?: Date = null;
+
+    @VersionColumn({type: "integer", default: 0})
+    nonce?: number = 0;
 }

@@ -3,7 +3,10 @@ import {CacheInterceptor, Controller, Get, NotFoundException, Param, Req, UseInt
 import {plainToClass} from 'class-transformer';
 
 import {BlockService} from '@app/services';
+
+import {DefaultTake} from "@app/http/decorators";
 import {BlockResponse} from '@app/http/responses';
+
 import {ExplorerRequest} from "@app/utils";
 
 @Controller('blocks')
@@ -12,6 +15,7 @@ export class BlocksController {
     constructor(private readonly _blockService: BlockService) {
     }
 
+    @DefaultTake(50)
     @Get('')
     async fetch(@Req() request: ExplorerRequest) {
         const [blocks, total] = await this._blockService.fetch(request.pagination.skip, request.pagination.limit);
