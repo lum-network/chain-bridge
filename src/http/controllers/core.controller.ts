@@ -4,6 +4,7 @@ import {
     Get,
     Logger,
 } from '@nestjs/common';
+import {ApiTags} from "@nestjs/swagger";
 import {ConfigService} from "@nestjs/config";
 import {MessagePattern, Payload} from '@nestjs/microservices';
 
@@ -13,6 +14,7 @@ import {LumService, LumNetworkService, BlockService, TransactionService} from '@
 import {LumResponse} from '@app/http/responses';
 import {GatewayWebsocket} from '@app/websocket';
 
+@ApiTags('core')
 @Controller('')
 export class CoreController {
     private readonly _logger: Logger = new Logger(CoreController.name);
@@ -27,23 +29,22 @@ export class CoreController {
     ) {
     }
 
-    @Get('lum')
-    async lum() {
-        const [lum, previousDayLum] = await Promise.all([this._lumService.getLum().catch(() => null), this._lumService.getPreviousDayLum().catch(() => null)]);
+    @Get('price')
+    async price() {
+        const lumPrice = await this._lumService.getLum();
+        const lumPreviousPrice = await this._lumService.getPreviousDayLum();
 
-        if (!lum || !lum.data || !lum.data.length || !previousDayLum || !previousDayLum.data || !previousDayLum.data.length || !previousDayLum.data[previousDayLum.data.length - 24]) {
+        if (!lumPrice || !lumPrice.data || !lumPrice.data.length || !lumPreviousPrice || !lumPreviousPrice.data || !lumPreviousPrice.data.length || !lumPreviousPrice.data[lumPreviousPrice.data.length - 24]) {
             throw new BadRequestException('data_not_found');
         }
 
         const res = {
-            ...lum.data[0],
-            previous_day_price: previousDayLum.data[previousDayLum.data.length - 24].close,
+            ...lumPrice.data[0],
+            previous_day_price: lumPreviousPrice.data[lumPreviousPrice.data.length - 24].close,
         };
 
         return plainToClass(LumResponse, res);
     }
-
-
 
     @MessagePattern('notifySocket')
     async notifySocket(@Payload() data: { channel: string; event: string; data: string }): Promise<void> {
