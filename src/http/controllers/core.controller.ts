@@ -20,7 +20,7 @@ import {LumConstants} from '@lum-network/sdk-javascript';
 
 import {LumService, LumNetworkService, BlockService, TransactionService} from '@app/services';
 import {QueueJobs, Queues} from '@app/utils';
-import {LumResponse, StatsResponse} from '@app/http/responses';
+import {LumResponse} from '@app/http/responses';
 import {GatewayWebsocket} from '@app/websocket';
 
 @Controller('')
@@ -59,16 +59,7 @@ export class CoreController {
         }
     }
 
-    @Get('stats')
-    async stats() {
-        const [inflation, totalSupply, chainId] = await Promise.all([
-            this._lumNetworkService.client.queryClient.mint.inflation().catch(() => null),
-            this._lumNetworkService.client.getAllSupplies().catch(() => null),
-            this._lumNetworkService.client.getChainId().catch(() => null),
-        ]);
 
-        return plainToClass(StatsResponse, {inflation: inflation || '0', totalSupply, chainId});
-    }
 
     @Get('lum')
     async lum() {
