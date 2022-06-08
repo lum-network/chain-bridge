@@ -9,7 +9,9 @@ export class HealthController {
 
     @Get()
     @HealthCheck()
-    check() {
-        return this._health.check([async () => this._lm.isHealthy()]);
+    async check() {
+        return {
+            result: await this._health.check([async () => this._lm.isHealthy()])
+        };
     }
 }

@@ -17,11 +17,11 @@ export class FaucetController {
     }
 
     @Get(':address')
-    async faucet(@Param('address') address: string) {
+    async faucet(@Param('address') address: string): Promise<void> {
         if (!this._configService.get<string>('FAUCET_MNEMONIC')) {
             throw new BadRequestException('faucet_not_available');
         }
 
-        return this._queue.add(QueueJobs.MINT_FAUCET_REQUEST, {address});
+        await this._queue.add(QueueJobs.MINT_FAUCET_REQUEST, {address});
     }
 }

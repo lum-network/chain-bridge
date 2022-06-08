@@ -43,7 +43,9 @@ export class CoreController {
             previous_day_price: lumPreviousPrice.data[lumPreviousPrice.data.length - 24].close,
         };
 
-        return plainToClass(LumResponse, res);
+        return {
+            result: plainToClass(LumResponse, res)
+        };
     }
 
     @MessagePattern('notifySocket')
