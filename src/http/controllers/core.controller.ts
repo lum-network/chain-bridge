@@ -3,18 +3,13 @@ import {
     Controller,
     Get,
     Logger,
-    Param,
 } from '@nestjs/common';
-import {InjectQueue} from '@nestjs/bull';
 import {ConfigService} from "@nestjs/config";
 import {MessagePattern, Payload} from '@nestjs/microservices';
 
 import {plainToClass} from 'class-transformer';
 
-import {Queue} from 'bull';
-
 import {LumService, LumNetworkService, BlockService, TransactionService} from '@app/services';
-import {QueueJobs, Queues} from '@app/utils';
 import {LumResponse} from '@app/http/responses';
 import {GatewayWebsocket} from '@app/websocket';
 
@@ -23,7 +18,6 @@ export class CoreController {
     private readonly _logger: Logger = new Logger(CoreController.name);
 
     constructor(
-        @InjectQueue(Queues.QUEUE_FAUCET) private readonly _queue: Queue,
         private readonly _blockService: BlockService,
         private readonly _configService: ConfigService,
         private readonly _lumNetworkService: LumNetworkService,
@@ -49,14 +43,7 @@ export class CoreController {
         return plainToClass(LumResponse, res);
     }
 
-    @Get('faucet/:address')
-    async faucet(@Param('address') address: string) {
-        if (!this._configService.get<string>('FAUCET_MNEMONIC')) {
-            throw new BadRequestException('faucet_not_available');
-        }
 
-        return this._queue.add(QueueJobs.MINT_FAUCET_REQUEST, {address});
-    }
 
     @MessagePattern('notifySocket')
     async notifySocket(@Payload() data: { channel: string; event: string; data: string }): Promise<void> {

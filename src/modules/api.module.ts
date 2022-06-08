@@ -15,7 +15,7 @@ import {
     AccountsController,
     BeamsController,
     BlocksController,
-    CoreController,
+    CoreController, FaucetController,
     GovernanceController,
     HealthController,
     HttpExceptionFilter,
@@ -82,7 +82,7 @@ import {databaseProviders} from "@app/database";
         TerminusModule,
         HttpModule,
     ],
-    controllers: [AccountsController, BeamsController, BlocksController, CoreController, GovernanceController, HealthController, SearchController, StatsController, TransactionsController, ValidatorsController],
+    controllers: [AccountsController, BeamsController, BlocksController, CoreController, FaucetController, GovernanceController, HealthController, SearchController, StatsController, TransactionsController, ValidatorsController],
     providers: [
         ...databaseProviders,
         BeamService,
