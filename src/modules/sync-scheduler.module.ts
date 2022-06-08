@@ -107,9 +107,8 @@ export class SyncSchedulerModule implements OnModuleInit, OnApplicationBootstrap
         }
 
         // Trigger block backward ingestion at startup
-        const lumClt = await this._lumNetworkService.getClient();
-        const chainId = await lumClt.getChainId();
-        const blockHeight = await lumClt.getBlockHeight();
+        const chainId = await this._lumNetworkService.client.getChainId();
+        const blockHeight = await this._lumNetworkService.client.getBlockHeight();
         /*await this._queue.add(
             QueueJobs.TRIGGER_VERIFY_BLOCKS_BACKWARD,
             {

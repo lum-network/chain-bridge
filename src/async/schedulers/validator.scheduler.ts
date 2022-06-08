@@ -18,11 +18,8 @@ export class ValidatorScheduler {
         try {
             this._logger.debug(`Ingesting validators set`);
 
-            // Acquire lum network client
-            const clt = await this._lumNetworkService.getClient();
-
             // Fetch tendermint validators
-            const tmValidators = await clt.tmClient.validatorsAll();
+            const tmValidators = await this._lumNetworkService.client.tmClient.validatorsAll();
 
             // Build validators list
             const validators: ValidatorEntity[] = [];
@@ -40,7 +37,7 @@ export class ValidatorScheduler {
             for (const s of statuses) {
                 page = undefined;
                 while (true) {
-                    const stakingValidators = await clt.queryClient.staking.validators(s as any, page);
+                    const stakingValidators = await this._lumNetworkService.client.queryClient.staking.validators(s as any, page);
                     for (const val of stakingValidators.validators) {
                         const pubKey = LumRegistry.decode(val.consensusPubkey) as LumTypes.PubKey;
                         const consensus_pubkey = LumUtils.Bech32.encode(LumConstants.LumBech32PrefixConsPub, pubKey.key);

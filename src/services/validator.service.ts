@@ -43,15 +43,14 @@ export class ValidatorService {
     }
 
     fetch = async (): Promise<any[]> => {
-        const lumClt = await this._lumNetworkService.getClient();
-        const {validators} = lumClt.queryClient.staking;
+        const {validators} = this._lumNetworkService.client.queryClient.staking;
 
         // We acquire both bounded and unbonded (candidates) validators
         const [bonded, unbonding, unbonded, tmValidators] = await Promise.all([
             validators('BOND_STATUS_BONDED'),
             validators('BOND_STATUS_UNBONDING'),
             validators('BOND_STATUS_UNBONDED'),
-            lumClt.tmClient.validatorsAll(1),
+            this._lumNetworkService.client.tmClient.validatorsAll(1),
         ]);
 
         let allBondedValidators = bonded.validators;
@@ -107,12 +106,10 @@ export class ValidatorService {
                 },
             },
         });*/
-        const lumClt = await this._lumNetworkService.getClient();
-
         const [validator, delegations, rewards/*, blocksResponse*/] = await Promise.all([
-            lumClt.queryClient.staking.validator(address).catch(() => null),
-            lumClt.queryClient.staking.validatorDelegations(address).catch(() => null),
-            lumClt.queryClient.distribution.validatorOutstandingRewards(address).catch(() => null),
+            this._lumNetworkService.client.queryClient.staking.validator(address).catch(() => null),
+            this._lumNetworkService.client.queryClient.staking.validatorDelegations(address).catch(() => null),
+            this._lumNetworkService.client.queryClient.distribution.validatorOutstandingRewards(address).catch(() => null),
             // blocksPromise.catch(() => null),
         ]);
 
@@ -132,7 +129,7 @@ export class ValidatorService {
 
         const accAddress = convertValAddressToAccAddress(validator.validator.operatorAddress);
 
-        const accountDelegations = await lumClt.queryClient.staking.delegatorDelegations(accAddress).catch(() => null);
+        const accountDelegations = await this._lumNetworkService.client.queryClient.staking.delegatorDelegations(accAddress).catch(() => null);
 
         let selfBonded = 0.0;
 

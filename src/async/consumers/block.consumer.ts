@@ -45,11 +45,8 @@ export class BlockConsumer {
 
             this._logger.debug(`Ingesting block ${job.data.blockHeight} (attempt ${job.attemptsMade})`);
 
-            // Get singleton lum client
-            const lumClt = await this._lumNetworkService.getClient();
-
             // Get block data
-            const block = await lumClt.getBlock(job.data.blockHeight);
+            const block = await this._lumNetworkService.client.getBlock(job.data.blockHeight);
 
             // Get the operator address
             const proposerAddress = LumUtils.toHex(block.block.header.proposerAddress).toUpperCase();
@@ -76,7 +73,7 @@ export class BlockConsumer {
             // Fetch and format transactions data
             const getFormattedTx = async (rawTx: Uint8Array): Promise<TransactionEntity> => {
                 // Acquire raw TX
-                const tx = await lumClt.getTx(LumUtils.sha256(rawTx));
+                const tx = await this._lumNetworkService.client.getTx(LumUtils.sha256(rawTx));
 
                 // Decode TX to human readable format
                 const txData = LumRegistry.decodeTx(tx.tx);

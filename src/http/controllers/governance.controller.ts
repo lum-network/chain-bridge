@@ -15,9 +15,7 @@ export class GovernanceController {
 
     @Get('proposals')
     async fetch() {
-        const lumClt = await this._lumNetworkService.getClient();
-
-        const results = await lumClt.queryClient.gov.proposals(
+        const results = await this._lumNetworkService.client.queryClient.gov.proposals(
             ProposalStatus.PROPOSAL_STATUS_UNSPECIFIED |
                 ProposalStatus.PROPOSAL_STATUS_DEPOSIT_PERIOD |
                 ProposalStatus.PROPOSAL_STATUS_VOTING_PERIOD |
@@ -34,9 +32,7 @@ export class GovernanceController {
 
     @Get('proposals/:id')
     async get(@Param('id') id: string) {
-        const lumClt = await this._lumNetworkService.getClient();
-
-        const result = await lumClt.queryClient.gov.proposal(id);
+        const result = await this._lumNetworkService.client.queryClient.gov.proposal(id);
 
         if (!result || !result.proposal) {
             throw new NotFoundException('proposal_not_found');
@@ -49,9 +45,7 @@ export class GovernanceController {
 
     @Get('proposals/:id/tally')
     async getTallyResults(@Param('id') id: string) {
-        const lumClt = await this._lumNetworkService.getClient();
-
-        const result = await lumClt.queryClient.gov.tally(id);
+        const result = await this._lumNetworkService.client.queryClient.gov.tally(id);
 
         if (!result || !result.tally) {
             throw new NotFoundException('tally_not_found');

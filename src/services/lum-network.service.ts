@@ -26,10 +26,7 @@ export class LumNetworkService {
         return this._client !== null;
     };
 
-    getClient = async (): Promise<LumClient> => {
-        if (!this._client) {
-            await this.initialise();
-        }
+    get client(): LumClient {
         return this._client;
-    };
+    }
 }

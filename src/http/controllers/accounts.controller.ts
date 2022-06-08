@@ -1,4 +1,5 @@
 import {CacheInterceptor, Controller, Get, NotFoundException, Param, UseInterceptors} from '@nestjs/common';
+import {ApiOkResponse, ApiTags} from "@nestjs/swagger";
 
 import {LumConstants, LumUtils} from '@lum-network/sdk-javascript';
 import {RedelegationResponse} from '@lum-network/sdk-javascript/build/codec/cosmos/staking/v1beta1/staking';
@@ -8,29 +9,28 @@ import {plainToClass} from 'class-transformer';
 import {LumNetworkService, TransactionService} from '@app/services';
 import {AccountResponse, TransactionResponse} from '@app/http/responses';
 
+@ApiTags('accounts')
 @Controller('accounts')
 @UseInterceptors(CacheInterceptor)
 export class AccountsController {
     constructor(private readonly _lumNetworkService: LumNetworkService, private readonly _transactionService: TransactionService) {
     }
 
+    @ApiOkResponse({status: 200, type: AccountResponse})
     @Get(':address')
     async show(@Param('address') address: string) {
-        const lumClt = await this._lumNetworkService.getClient();
-
-
         const txPromise = this._transactionService.fetchForAddress(address);
 
         const [account, balance, delegations, rewards, withdrawAddress, unbondings, redelegations, commissions, airdrop, transactions] = await Promise.all([
-            lumClt.getAccount(address).catch(() => null),
-            lumClt.getBalance(address, LumConstants.MicroLumDenom).catch(() => null),
-            lumClt.queryClient.staking.delegatorDelegations(address).catch(() => null),
-            lumClt.queryClient.distribution.delegationTotalRewards(address).catch(() => null),
-            lumClt.queryClient.distribution.delegatorWithdrawAddress(address).catch(() => null),
-            lumClt.queryClient.staking.delegatorUnbondingDelegations(address).catch(() => null),
-            lumClt.queryClient.staking.redelegations(address, '', '').catch(() => null),
-            lumClt.queryClient.distribution.validatorCommission(LumUtils.Bech32.encode(LumConstants.LumBech32PrefixValAddr, LumUtils.Bech32.decode(address).data)).catch(() => null),
-            lumClt.queryClient.airdrop.claimRecord(address).catch(() => null),
+            this._lumNetworkService.client.getAccount(address).catch(() => null),
+            this._lumNetworkService.client.getBalance(address, LumConstants.MicroLumDenom).catch(() => null),
+            this._lumNetworkService.client.queryClient.staking.delegatorDelegations(address).catch(() => null),
+            this._lumNetworkService.client.queryClient.distribution.delegationTotalRewards(address).catch(() => null),
+            this._lumNetworkService.client.queryClient.distribution.delegatorWithdrawAddress(address).catch(() => null),
+            this._lumNetworkService.client.queryClient.staking.delegatorUnbondingDelegations(address).catch(() => null),
+            this._lumNetworkService.client.queryClient.staking.redelegations(address, '', '').catch(() => null),
+            this._lumNetworkService.client.queryClient.distribution.validatorCommission(LumUtils.Bech32.encode(LumConstants.LumBech32PrefixValAddr, LumUtils.Bech32.decode(address).data)).catch(() => null),
+            this._lumNetworkService.client.queryClient.airdrop.claimRecord(address).catch(() => null),
             txPromise.catch(() => null),
         ]);
 
