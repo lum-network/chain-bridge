@@ -6,7 +6,7 @@ import {plainToClass} from 'class-transformer';
 import {BlockService} from '@app/services';
 
 import {DefaultTake} from "@app/http/decorators";
-import {BlockResponse} from '@app/http/responses';
+import {BlockResponse, DataResponse, DataResponseMetadata} from '@app/http/responses';
 
 import {ExplorerRequest} from "@app/utils";
 
@@ -17,15 +17,24 @@ export class BlocksController {
     constructor(private readonly _blockService: BlockService) {
     }
 
+    @ApiOkResponse({status: 200, type: DataResponse})
     @DefaultTake(50)
     @Get('')
-    async fetch(@Req() request: ExplorerRequest) {
+    async fetch(@Req() request: ExplorerRequest): Promise<DataResponse> {
         const [blocks, total] = await this._blockService.fetch(request.pagination.skip, request.pagination.limit);
         if (!blocks) {
             throw new NotFoundException('blocks_not_found');
         }
 
-        return blocks.map((block) => plainToClass(BlockResponse, block));
+        return plainToClass(DataResponse, {
+            result: blocks.map((block) => plainToClass(BlockResponse, block)),
+            metadata: new DataResponseMetadata({
+                page: request.pagination.page,
+                limit: request.pagination.limit,
+                items_count: blocks.length,
+                items_total: total,
+            })
+        });
     }
 
     @ApiOkResponse({type: BlockResponse})
@@ -36,7 +45,9 @@ export class BlocksController {
             throw new NotFoundException('latest_block_not_found');
         }
 
-        return plainToClass(BlockResponse, block);
+        return {
+            result: plainToClass(BlockResponse, block)
+        };
     }
 
     @ApiOkResponse({type: BlockResponse})
@@ -47,6 +58,8 @@ export class BlocksController {
             throw new NotFoundException('block_not_found');
         }
 
-        return plainToClass(BlockResponse, block);
+        return {
+            result: plainToClass(BlockResponse, block)
+        };
     }
 }

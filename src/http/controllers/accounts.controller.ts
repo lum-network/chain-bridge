@@ -88,6 +88,8 @@ export class AccountsController {
             account['transactions'] = [];
         }
 
-        return plainToClass(AccountResponse, account);
+        return {
+            result: plainToClass(AccountResponse, account)
+        };
     }
 }

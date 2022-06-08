@@ -1,4 +1,4 @@
-import {CacheInterceptor, Controller, Get, NotFoundException, Param, UseInterceptors} from '@nestjs/common';
+import {CacheInterceptor, Controller, Get, NotFoundException, Param, Req, UseInterceptors} from '@nestjs/common';
 import {ApiOkResponse, ApiTags} from "@nestjs/swagger";
 
 import {plainToClass} from 'class-transformer';
@@ -6,8 +6,8 @@ import {plainToClass} from 'class-transformer';
 import {ProposalStatus} from '@lum-network/sdk-javascript/build/codec/cosmos/gov/v1beta1/gov';
 
 import {LumNetworkService} from '@app/services';
-import {ProposalResponse, ResultResponse} from '@app/http/responses/';
-import {decodeContent} from '@app/utils';
+import {DataResponse, DataResponseMetadata, ProposalResponse, ResultResponse} from '@app/http/responses/';
+import {decodeContent, ExplorerRequest} from '@app/utils';
 
 @ApiTags('governance')
 @Controller('governance')
@@ -17,7 +17,7 @@ export class GovernanceController {
     }
 
     @Get('proposals')
-    async fetch() {
+    async fetch(@Req() request: ExplorerRequest) {
         const results = await this._lumNetworkService.client.queryClient.gov.proposals(
             ProposalStatus.PROPOSAL_STATUS_UNSPECIFIED |
             ProposalStatus.PROPOSAL_STATUS_DEPOSIT_PERIOD |
@@ -30,7 +30,15 @@ export class GovernanceController {
             '',
         );
 
-        return results.proposals.map((proposal) => plainToClass(ProposalResponse, decodeContent(proposal)));
+        return plainToClass(DataResponse, {
+            result: results.proposals.map((proposal) => plainToClass(ProposalResponse, decodeContent(proposal))),
+            metadata: new DataResponseMetadata({
+                page: request.pagination.page,
+                limit: request.pagination.limit,
+                items_count: results.proposals.length,
+                items_total: null,
+            })
+        })
     }
 
     @ApiOkResponse({status: 200, type: ProposalResponse})
@@ -42,9 +50,9 @@ export class GovernanceController {
             throw new NotFoundException('proposal_not_found');
         }
 
-        const proposal = decodeContent(result.proposal);
-
-        return plainToClass(ProposalResponse, proposal);
+        return {
+            result: plainToClass(ProposalResponse, decodeContent(result.proposal))
+        };
     }
 
     @ApiOkResponse({status: 200, type: ResultResponse})
@@ -56,6 +64,8 @@ export class GovernanceController {
             throw new NotFoundException('tally_not_found');
         }
 
-        return plainToClass(ResultResponse, result.tally);
+        return {
+            result: plainToClass(ResultResponse, result.tally)
+        };
     }
 }
