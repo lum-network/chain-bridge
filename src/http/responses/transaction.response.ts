@@ -24,7 +24,7 @@ import {
     TransferMessageResponse,
     UpdateClientMessageResponse,
     AcknowledgementMessageResponse,
-    RecvPacketMessageResponse,
+    RecvPacketMessageResponse, ExecMessageResponse, GrantMessageResponse,
 } from '@app/http/responses/message.response';
 
 @Exclude()
@@ -95,6 +95,8 @@ export class TransactionResponse {
                 { value: UpdateClientMessageResponse, name: LumMessages.MsgUpdateClientUrl },
                 { value: AcknowledgementMessageResponse, name: LumMessages.MsgAcknowledgementUrl },
                 { value: RecvPacketMessageResponse, name: LumMessages.MsgRecvPacketUrl },
+                { value: ExecMessageResponse, name: LumMessages.MsgExecUrl },
+                { value: GrantMessageResponse, name: LumMessages.MsgGrantUrl },
             ],
         },
         keepDiscriminatorProperty: true,

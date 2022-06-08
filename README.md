@@ -70,7 +70,7 @@ In order to have all parts started, you must run every single one in a separate 
 
 As soon as you start the service, it will start ingesting all new blocks every 10 seconds and emitting the associated push notifications. Those blocks will be almost instantly accessible from the provided API endpoints.
 
-The ingestion process for past blocks will only start after a couple minutes in order to let the live syncronization ingest its first data. Only missing blocks and some of their neighbors will be ingested, meaning that a simple restart of the service will not trigger a full re-sync but might trigger only a small re-sync for missing block ranges.
+The ingestion process for past blocks will only start after a couple of minutes in order to let the live synchronization ingest its first data. Only missing blocks and some of their neighbors will be ingested, meaning that a simple restart of the service will not trigger a full re-sync but might trigger only a small re-sync for missing block ranges.
 
 ```bash
 # development
