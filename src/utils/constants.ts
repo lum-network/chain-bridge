@@ -1,16 +1,4 @@
-/**
- * Document version to store during ingestion
- * This number should only be incremented in case one of the document model changes
- * Incrementing this number will force re-ingest all data ingested with a previous versioning
- */
-export const IngestionDocumentVersion = 1;
-
-export enum ElasticIndexes {
-    INDEX_BLOCKS = 'blocks',
-    INDEX_TRANSACTIONS = 'transactions',
-    INDEX_VALIDATORS = 'validators',
-    INDEX_BEAMS = 'beams',
-}
+export const POST_FORK_HEIGHT = 1960666;
 
 export enum Queues {
     QUEUE_DEFAULT = 'default',

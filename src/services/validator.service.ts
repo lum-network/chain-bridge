@@ -6,7 +6,7 @@ import {LumUtils} from '@lum-network/sdk-javascript';
 import {Repository} from "typeorm";
 
 import {ValidatorResponse} from '@app/http';
-import {convertValAddressToAccAddress} from '@app/utils';
+import {convertValAddressToAccAddress, POST_FORK_HEIGHT} from '@app/utils';
 
 import {LumNetworkService} from '@app/services/lum-network.service';
 import {ValidatorEntity} from "@app/database";
@@ -50,7 +50,7 @@ export class ValidatorService {
             validators('BOND_STATUS_BONDED'),
             validators('BOND_STATUS_UNBONDING'),
             validators('BOND_STATUS_UNBONDED'),
-            this._lumNetworkService.client.tmClient.validatorsAll(1),
+            this._lumNetworkService.client.tmClient.validatorsAll(POST_FORK_HEIGHT),
         ]);
 
         let allBondedValidators = bonded.validators;

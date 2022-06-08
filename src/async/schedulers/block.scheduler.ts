@@ -6,7 +6,7 @@ import {Cron, CronExpression} from '@nestjs/schedule';
 import {Queue} from 'bull';
 
 import {LumNetworkService} from '@app/services';
-import {QueueJobs, Queues, IngestionDocumentVersion} from '@app/utils';
+import {QueueJobs, Queues} from '@app/utils';
 
 @Injectable()
 export class BlockScheduler {
@@ -40,7 +40,7 @@ export class BlockScheduler {
                         notify: true,
                     },
                     {
-                        jobId: `${chainId}-block-${height}-v${IngestionDocumentVersion}`,
+                        jobId: `${chainId}-block-${height}`,
                         attempts: 5,
                         backoff: 60000,
                     },
