@@ -23,6 +23,8 @@ export class StatsController {
             this._lumNetworkService.client.getChainId().catch(() => null),
         ]);
 
-        return plainToClass(StatsResponse, {inflation: inflation || '0', totalSupply, chainId});
+        return {
+            result: plainToClass(StatsResponse, {inflation: inflation || '0', totalSupply, chainId})
+        };
     }
 }
