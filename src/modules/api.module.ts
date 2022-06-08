@@ -20,7 +20,7 @@ import {
     HealthController,
     HttpExceptionFilter,
     LumNetworkIndicator, PaginationInterceptor,
-    ResponseInterceptor, StatsController,
+    ResponseInterceptor, SearchController, StatsController,
     TransactionsController,
     ValidatorsController,
 } from '@app/http';
@@ -82,7 +82,7 @@ import {databaseProviders} from "@app/database";
         TerminusModule,
         HttpModule,
     ],
-    controllers: [AccountsController, BeamsController, BlocksController, CoreController, GovernanceController, HealthController, StatsController, TransactionsController, ValidatorsController],
+    controllers: [AccountsController, BeamsController, BlocksController, CoreController, GovernanceController, HealthController, SearchController, StatsController, TransactionsController, ValidatorsController],
     providers: [
         ...databaseProviders,
         BeamService,

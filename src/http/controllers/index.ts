@@ -4,6 +4,7 @@ export * from './blocks.controller';
 export * from './core.controller';
 export * from './governance.controller';
 export * from './health.controller';
+export * from './search.controller';
 export * from './stats.controller';
 export * from './transactions.controller';
 export * from './validators.controller';
