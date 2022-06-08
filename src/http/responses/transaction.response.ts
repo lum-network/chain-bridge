@@ -24,7 +24,9 @@ import {
     TransferMessageResponse,
     UpdateClientMessageResponse,
     AcknowledgementMessageResponse,
-    RecvPacketMessageResponse, ExecMessageResponse, GrantMessageResponse,
+    RecvPacketMessageResponse,
+    ExecMessageResponse,
+    GrantMessageResponse,
 } from '@app/http/responses/message.response';
 
 @Exclude()
