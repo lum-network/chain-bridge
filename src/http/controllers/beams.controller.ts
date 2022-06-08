@@ -19,7 +19,7 @@ export class BeamsController {
 
     @ApiOkResponse({type: BeamResponse})
     @Get(':id')
-    async get(@Param('id') id: string) {
+    async get(@Param('id') id: string): Promise<BeamResponse> {
         const beam = await this._lumNetworkService.client.queryClient.beam.get(id);
         return plainToClass(BeamResponse, beam);
     }

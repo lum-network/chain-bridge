@@ -1,61 +1,81 @@
-import { Expose, Exclude, Type } from 'class-transformer';
-import { ProposalStatus } from '@lum-network/sdk-javascript/build/codec/cosmos/gov/v1beta1/gov';
-import { BalanceResponse } from '@app/http';
+import {ApiProperty} from "@nestjs/swagger";
+
+import {Expose, Exclude, Type} from 'class-transformer';
+
 import Long from 'long';
+
+import {ProposalStatus} from '@lum-network/sdk-javascript/build/codec/cosmos/gov/v1beta1/gov';
+
+import {BalanceResponse} from '@app/http/responses/balance.response';
 
 @Exclude()
 export class ResultResponse {
+    @ApiProperty()
     @Expose()
     yes: number;
 
+    @ApiProperty()
     @Expose()
     no: number;
 
+    @ApiProperty()
     @Expose()
     abstain: number;
 
-    @Expose({ name: 'noWithVeto' })
+    @ApiProperty()
+    @Expose({name: 'noWithVeto'})
     no_with_veto: number;
 }
 
 @Exclude()
 class ContentResponse {
+    @ApiProperty()
     @Expose()
     title: string;
 
+    @ApiProperty()
     @Expose()
     description: string;
 }
 
 @Exclude()
 export class ProposalResponse {
-    @Expose({ name: 'proposalId' })
+    @ApiProperty()
+    @Expose({name: 'proposalId'})
     proposal_id: Long;
 
-    @Expose({ name: 'submitTime' })
+    @ApiProperty()
+    @Expose({name: 'submitTime'})
     submit_time: string;
 
-    @Expose({ name: 'depositEndTime' })
+    @ApiProperty()
+    @Expose({name: 'depositEndTime'})
     deposit_end_time: string;
 
-    @Expose({ name: 'votingStartTime' })
+    @ApiProperty()
+    @Expose({name: 'votingStartTime'})
     voting_start_time: string;
 
-    @Expose({ name: 'votingEndTime' })
+    @ApiProperty()
+    @Expose({name: 'votingEndTime'})
     voting_end_time: string;
 
+    @ApiProperty()
     @Expose()
     status: ProposalStatus;
 
+    @ApiProperty({type: () => ContentResponse})
     @Expose()
     @Type(() => ContentResponse)
     content: ContentResponse;
 
-    @Expose({ name: 'totalDeposit' })
+    @ApiProperty({type: () => [BalanceResponse]})
+    @Expose({name: 'totalDeposit'})
     @Type(() => BalanceResponse)
     total_deposit: BalanceResponse[];
 
-    @Expose({ name: 'finalTallyResult' })
+    @ApiProperty({type: () => ResultResponse})
+    @Expose({name: 'finalTallyResult'})
     @Type(() => ResultResponse)
     final_result: ResultResponse;
 

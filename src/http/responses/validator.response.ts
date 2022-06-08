@@ -1,21 +1,29 @@
-import { Exclude, Expose, Type } from 'class-transformer';
-import { BalanceResponse } from '@app/http/responses/balance.response';
-import { BlockResponse } from '@app/http/responses/block.response';
+import {ApiProperty} from "@nestjs/swagger";
+
+import {Exclude, Expose, Type} from 'class-transformer';
+
+import {BalanceResponse} from '@app/http/responses/balance.response';
+import {BlockResponse} from '@app/http/responses/block.response';
 
 @Exclude()
 export class ValidatorDescriptionResponse {
+    @ApiProperty()
     @Expose()
     moniker: string;
 
+    @ApiProperty()
     @Expose()
     identity: string;
 
+    @ApiProperty()
     @Expose()
     website: string;
 
-    @Expose({ name: 'securityContact' })
+    @ApiProperty()
+    @Expose({name: 'securityContact'})
     security_contact: string;
 
+    @ApiProperty()
     @Expose()
     details: string;
 
@@ -26,22 +34,27 @@ export class ValidatorDescriptionResponse {
 
 @Exclude()
 class ValidatorDelegationDetailsResponse {
-    @Expose({ name: 'delegatorAddress' })
+    @ApiProperty()
+    @Expose({name: 'delegatorAddress'})
     delegator_address: string;
 
-    @Expose({ name: 'validatorAddress' })
+    @ApiProperty()
+    @Expose({name: 'validatorAddress'})
     validator_address: string;
 
+    @ApiProperty()
     @Expose()
     shares: string;
 }
 
 @Exclude()
 export class ValidatorDelegationResponse {
+    @ApiProperty({type: () => ValidatorDelegationDetailsResponse})
     @Expose()
     @Type(() => ValidatorDelegationDetailsResponse)
     delegation: ValidatorDelegationDetailsResponse;
 
+    @ApiProperty({type: () => BalanceResponse})
     @Expose()
     @Type(() => BalanceResponse)
     balance: BalanceResponse;
@@ -49,71 +62,90 @@ export class ValidatorDelegationResponse {
 
 @Exclude()
 export class ValidatorCommissionRatesResponse {
+    @ApiProperty()
     @Expose()
     rate: number;
 
-    @Expose({ name: 'maxRate' })
+    @ApiProperty()
+    @Expose({name: 'maxRate'})
     max_rate: number;
 
-    @Expose({ name: 'maxChangeRate' })
+    @ApiProperty()
+    @Expose({name: 'maxChangeRate'})
     max_change_rate: number;
 }
 
 @Exclude()
 export class ValidatorCommissionResponse {
-    @Expose({ name: 'commissionRates' })
+    @ApiProperty({type: () => ValidatorCommissionRatesResponse})
+    @Expose({name: 'commissionRates'})
     @Type(() => ValidatorCommissionRatesResponse)
     commission_rates: ValidatorCommissionRatesResponse;
 
-    @Expose({ name: 'updateTime' })
+    @ApiProperty()
+    @Expose({name: 'updateTime'})
     update_time: Date;
 }
 
 @Exclude()
 export class ValidatorResponse {
-    @Expose({ name: 'operatorAddress' })
+    @ApiProperty()
+    @Expose({name: 'operatorAddress'})
     operator_address: string;
 
+    @ApiProperty()
     @Expose()
     address: string;
 
+    @ApiProperty()
     @Expose()
     genesis: boolean;
 
-    @Expose({ name: 'selfBonded' })
+    @ApiProperty()
+    @Expose({name: 'selfBonded'})
     self_bonded: number;
 
+    @ApiProperty()
     @Expose()
     jailed: boolean;
 
+    @ApiProperty()
     @Expose()
     status: number;
 
+    @ApiProperty()
     @Expose()
     tokens: string;
 
-    @Expose({ name: 'delegatorShares' })
+    @ApiProperty()
+    @Expose({name: 'delegatorShares'})
     delegator_shares: string;
 
+    @ApiProperty({type: () => ValidatorDescriptionResponse})
     @Expose()
     @Type(() => ValidatorDescriptionResponse)
     description: ValidatorDescriptionResponse;
 
+    @ApiProperty({type: () => [ValidatorDelegationResponse]})
     @Expose()
     @Type(() => ValidatorDelegationResponse)
     delegations: ValidatorDelegationResponse[];
 
-    @Expose({ name: 'delegationsNextKey' })
+    @ApiProperty()
+    @Expose({name: 'delegationsNextKey'})
     delegations_next_key: string;
 
+    @ApiProperty({type: () => [BalanceResponse]})
     @Expose()
     @Type(() => BalanceResponse)
     rewards: BalanceResponse[];
 
+    @ApiProperty({type: () => ValidatorCommissionResponse})
     @Expose()
     @Type(() => ValidatorCommissionResponse)
     commission: ValidatorCommissionResponse;
 
+    @ApiProperty({type: () => [BlockResponse]})
     @Expose()
     @Type(() => BlockResponse)
     blocks: BlockResponse[];

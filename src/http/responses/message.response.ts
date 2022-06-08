@@ -1,29 +1,38 @@
-import { Exclude, Expose, Type } from 'class-transformer';
-import { BalanceResponse } from '@app/http/responses/balance.response';
-import { CommissionResponse } from '@app/http/responses/commission.response';
-import { DescriptionResponse } from '@app/http/responses/description.response';
+import {ApiProperty} from "@nestjs/swagger";
+
+import {Exclude, Expose, Type} from 'class-transformer';
+
 import Long from 'long';
+
+import {BalanceResponse} from '@app/http/responses/balance.response';
+import {CommissionResponse} from '@app/http/responses/commission.response';
+import {DescriptionResponse} from '@app/http/responses/description.response';
 
 @Exclude()
 export abstract class MessageResponse {
-    @Expose({ name: 'typeUrl' })
+    @ApiProperty()
+    @Expose({name: 'typeUrl'})
     type_url: string;
 }
 
 @Exclude()
 class SendValueResponse {
-    @Expose({ name: 'fromAddress' })
+    @ApiProperty()
+    @Expose({name: 'fromAddress'})
     from_address: string;
 
-    @Expose({ name: 'toAddress' })
+    @ApiProperty()
+    @Expose({name: 'toAddress'})
     to_address: string;
 
+    @ApiProperty({type: () => [BalanceResponse]})
     @Expose()
     amount: BalanceResponse[];
 }
 
 @Exclude()
 export class SendMessageResponse extends MessageResponse {
+    @ApiProperty({type: () => SendValueResponse})
     @Expose()
     @Type(() => SendValueResponse)
     value: SendValueResponse;
@@ -31,24 +40,29 @@ export class SendMessageResponse extends MessageResponse {
 
 @Exclude()
 class MultiSendSingleMessage {
+    @ApiProperty()
     @Expose()
     address: string;
 
+    @ApiProperty({type: () => [BalanceResponse]})
     @Expose()
     coins: BalanceResponse[];
 }
 
 @Exclude()
 class MultiSendValueResponse {
+    @ApiProperty({type: () => [MultiSendSingleMessage]})
     @Expose()
     inputs: MultiSendSingleMessage[];
 
+    @ApiProperty({type: () => [MultiSendSingleMessage]})
     @Expose()
     outputs: MultiSendSingleMessage[];
 }
 
 @Exclude()
 export class MultiSendResponse extends MessageResponse {
+    @ApiProperty({type: () => MultiSendValueResponse})
     @Expose()
     @Type(() => MultiSendValueResponse)
     value: MultiSendValueResponse;
@@ -56,26 +70,33 @@ export class MultiSendResponse extends MessageResponse {
 
 @Exclude()
 class CreateValidatorValueResponse {
-    @Expose({ name: 'minSelfDelegation' })
+    @ApiProperty()
+    @Expose({name: 'minSelfDelegation'})
     min_self_delegation: string;
 
-    @Expose({ name: 'delegatorAddress' })
+    @ApiProperty()
+    @Expose({name: 'delegatorAddress'})
     delegator_address: string;
 
-    @Expose({ name: 'validatorAddress' })
+    @ApiProperty()
+    @Expose({name: 'validatorAddress'})
     validator_address: string;
 
-    @Expose({ name: 'pubKey' })
+    @ApiProperty()
+    @Expose({name: 'pubKey'})
     pub_key: any;
 
+    @ApiProperty({type: () => BalanceResponse})
     @Expose()
     @Type(() => BalanceResponse)
     value: BalanceResponse;
 
+    @ApiProperty({type: () => DescriptionResponse})
     @Expose()
     @Type(() => DescriptionResponse)
     description: DescriptionResponse;
 
+    @ApiProperty({type: () => CommissionResponse})
     @Expose()
     @Type(() => CommissionResponse)
     commission: string;
@@ -83,22 +104,27 @@ class CreateValidatorValueResponse {
 
 @Exclude()
 class EditValidatorValueResponse {
+    @ApiProperty({type: () => DescriptionResponse})
     @Expose()
     @Type(() => DescriptionResponse)
     description: DescriptionResponse;
 
-    @Expose({ name: 'validatorAddress' })
+    @ApiProperty()
+    @Expose({name: 'validatorAddress'})
     validator_address: string;
 
-    @Expose({ name: 'commissionRate' })
+    @ApiProperty()
+    @Expose({name: 'commissionRate'})
     commission_rate: string;
 
-    @Expose({ name: 'minSelfDelegation' })
+    @ApiProperty()
+    @Expose({name: 'minSelfDelegation'})
     min_self_delegation: string;
 }
 
 @Exclude()
 export class EditValidatorMessageResponse extends MessageResponse {
+    @ApiProperty({type: () => EditValidatorValueResponse})
     @Expose()
     @Type(() => EditValidatorValueResponse)
     value: EditValidatorValueResponse;
@@ -106,6 +132,7 @@ export class EditValidatorMessageResponse extends MessageResponse {
 
 @Exclude()
 export class CreateValidatorMessageResponse extends MessageResponse {
+    @ApiProperty({type: () => CreateValidatorValueResponse})
     @Expose()
     @Type(() => CreateValidatorValueResponse)
     value: CreateValidatorValueResponse;
@@ -113,12 +140,15 @@ export class CreateValidatorMessageResponse extends MessageResponse {
 
 @Exclude()
 class DelegateValueResponse {
-    @Expose({ name: 'delegatorAddress' })
+    @ApiProperty()
+    @Expose({name: 'delegatorAddress'})
     delegator_address: string;
 
-    @Expose({ name: 'validatorAddress' })
+    @ApiProperty()
+    @Expose({name: 'validatorAddress'})
     validator_address: string;
 
+    @ApiProperty({type: () => BalanceResponse})
     @Expose()
     @Type(() => BalanceResponse)
     amount: BalanceResponse;
@@ -126,6 +156,7 @@ class DelegateValueResponse {
 
 @Exclude()
 export class DelegateMessageResponse extends MessageResponse {
+    @ApiProperty({type: () => DelegateValueResponse})
     @Expose()
     @Type(() => DelegateValueResponse)
     value: DelegateValueResponse;
@@ -133,12 +164,15 @@ export class DelegateMessageResponse extends MessageResponse {
 
 @Exclude()
 class UndelegateValueResponse {
-    @Expose({ name: 'delegatorAddress' })
+    @ApiProperty()
+    @Expose({name: 'delegatorAddress'})
     delegator_address: string;
 
-    @Expose({ name: 'validatorAddress' })
+    @ApiProperty()
+    @Expose({name: 'validatorAddress'})
     validator_address: string;
 
+    @ApiProperty({type: () => BalanceResponse})
     @Expose()
     @Type(() => BalanceResponse)
     amount: BalanceResponse;
@@ -146,6 +180,7 @@ class UndelegateValueResponse {
 
 @Exclude()
 export class UndelegateMessageResponse extends MessageResponse {
+    @ApiProperty({type: () => UndelegateValueResponse})
     @Expose()
     @Type(() => UndelegateValueResponse)
     value: UndelegateValueResponse;
@@ -153,15 +188,18 @@ export class UndelegateMessageResponse extends MessageResponse {
 
 @Exclude()
 class GetRewardValueResponse {
-    @Expose({ name: 'delegatorAddress' })
+    @ApiProperty()
+    @Expose({name: 'delegatorAddress'})
     delegator_address: string;
 
-    @Expose({ name: 'validatorAddress' })
+    @ApiProperty()
+    @Expose({name: 'validatorAddress'})
     validator_address: string;
 }
 
 @Exclude()
 export class GetRewardMessageResponse extends MessageResponse {
+    @ApiProperty({type: () => GetRewardValueResponse})
     @Expose()
     @Type(() => GetRewardValueResponse)
     value: GetRewardValueResponse;
@@ -169,15 +207,19 @@ export class GetRewardMessageResponse extends MessageResponse {
 
 @Exclude()
 class OpenBeamValueResponse {
+    @ApiProperty()
     @Expose()
     id: string;
 
+    @ApiProperty()
     @Expose()
     creator: string;
 
+    @ApiProperty({type: () => BalanceResponse})
     @Expose()
     amount: BalanceResponse;
 
+    @ApiProperty()
     @Expose()
     secret: string;
 
@@ -186,6 +228,7 @@ class OpenBeamValueResponse {
 
 @Exclude()
 export class OpenBeamMessageResponse extends MessageResponse {
+    @ApiProperty({type: () => OpenBeamValueResponse})
     @Expose()
     @Type(() => OpenBeamValueResponse)
     value: OpenBeamValueResponse;
@@ -193,18 +236,22 @@ export class OpenBeamMessageResponse extends MessageResponse {
 
 @Exclude()
 class UpdateBeamValueResponse {
+    @ApiProperty()
     @Expose()
     updater: string;
 
+    @ApiProperty()
     @Expose()
     id: string;
 
+    @ApiProperty({type: () => BalanceResponse})
     @Expose()
     amount: BalanceResponse;
 }
 
 @Exclude()
 export class UpdateBeamMessageResponse extends MessageResponse {
+    @ApiProperty({type: () => UpdateBeamValueResponse})
     @Expose()
     @Type(() => UpdateBeamValueResponse)
     value: UpdateBeamValueResponse;
@@ -212,18 +259,22 @@ export class UpdateBeamMessageResponse extends MessageResponse {
 
 @Exclude()
 class ClaimBeamValueResponse {
+    @ApiProperty()
     @Expose()
     claimer: string;
 
+    @ApiProperty()
     @Expose()
     id: string;
 
+    @ApiProperty()
     @Expose()
     secret: string;
 }
 
 @Exclude()
 export class ClaimBeamMessageResponse extends MessageResponse {
+    @ApiProperty({type: () => ClaimBeamValueResponse})
     @Expose()
     @Type(() => ClaimBeamValueResponse)
     value: ClaimBeamValueResponse;
@@ -231,15 +282,18 @@ export class ClaimBeamMessageResponse extends MessageResponse {
 
 @Exclude()
 class SubmitProposalValueResponse {
-    @Expose({ name: 'proposer' })
+    @ApiProperty()
+    @Expose({name: 'proposer'})
     proposer_address: string;
 
-    @Expose({ name: 'initialDeposit' })
+    @ApiProperty({type: () => [BalanceResponse]})
+    @Expose({name: 'initialDeposit'})
     initial_deposit: BalanceResponse[];
 }
 
 @Exclude()
 export class SubmitProposalMessageResponse extends MessageResponse {
+    @ApiProperty({type: () => SubmitProposalValueResponse})
     @Expose()
     @Type(() => SubmitProposalValueResponse)
     value: SubmitProposalValueResponse;
@@ -247,18 +301,22 @@ export class SubmitProposalMessageResponse extends MessageResponse {
 
 @Exclude()
 class DepositValueResponse {
-    @Expose({ name: 'proposalId' })
+    @ApiProperty()
+    @Expose({name: 'proposalId'})
     proposal_id: any;
 
-    @Expose({ name: 'depositor' })
+    @ApiProperty()
+    @Expose({name: 'depositor'})
     depositor_address: string;
 
-    @Expose({ name: 'amount' })
+    @ApiProperty({type: () => [BalanceResponse]})
+    @Expose({name: 'amount'})
     amount: BalanceResponse[];
 }
 
 @Exclude()
 export class DepositMessageResponse extends MessageResponse {
+    @ApiProperty({type: () => DepositValueResponse})
     @Expose()
     @Type(() => DepositValueResponse)
     value: DepositValueResponse;
@@ -266,18 +324,22 @@ export class DepositMessageResponse extends MessageResponse {
 
 @Exclude()
 class VoteValueResponse {
-    @Expose({ name: 'proposalId' })
+    @ApiProperty()
+    @Expose({name: 'proposalId'})
     proposal_id: Long;
 
-    @Expose({ name: 'voter' })
+    @ApiProperty()
+    @Expose({name: 'voter'})
     voter_address: string;
 
-    @Expose({ name: 'option' })
+    @ApiProperty()
+    @Expose({name: 'option'})
     option: number;
 }
 
 @Exclude()
 export class VoteMessageResponse extends MessageResponse {
+    @ApiProperty({type: () => VoteValueResponse})
     @Expose()
     @Type(() => VoteValueResponse)
     value: VoteValueResponse;
@@ -285,24 +347,30 @@ export class VoteMessageResponse extends MessageResponse {
 
 @Exclude()
 class CreateVestingAccountValueResponse {
-    @Expose({ name: 'fromAddress' })
+    @ApiProperty()
+    @Expose({name: 'fromAddress'})
     from_address: string;
 
-    @Expose({ name: 'toAddress' })
+    @ApiProperty()
+    @Expose({name: 'toAddress'})
     to_address: string;
 
-    @Expose({ name: 'endTime' })
+    @ApiProperty()
+    @Expose({name: 'endTime'})
     end_time: Long;
 
+    @ApiProperty()
     @Expose()
     delayed: boolean;
 
+    @ApiProperty({type: () => [BalanceResponse]})
     @Expose()
     amount: BalanceResponse[];
 }
 
 @Exclude()
 export class CreateVestingAccountResponse extends MessageResponse {
+    @ApiProperty({type: () => CreateVestingAccountValueResponse})
     @Expose()
     @Type(() => CreateVestingAccountValueResponse)
     value: CreateVestingAccountValueResponse;
@@ -310,21 +378,26 @@ export class CreateVestingAccountResponse extends MessageResponse {
 
 @Exclude()
 class BeginRedelegateValueResponse {
-    @Expose({ name: 'delegatorAddress' })
+    @ApiProperty()
+    @Expose({name: 'delegatorAddress'})
     delegator_address: string;
 
-    @Expose({ name: 'validatorSrcAddress' })
+    @ApiProperty()
+    @Expose({name: 'validatorSrcAddress'})
     validator_src_address: string;
 
-    @Expose({ name: 'validatorDstAddress' })
+    @ApiProperty()
+    @Expose({name: 'validatorDstAddress'})
     validator_dst_address: string;
 
+    @ApiProperty({type: () => BalanceResponse})
     @Expose()
     amount: BalanceResponse;
 }
 
 @Exclude()
 export class BeginRedelegateMessageResponse extends MessageResponse {
+    @ApiProperty({type: () => BeginRedelegateValueResponse})
     @Expose()
     @Type(() => BeginRedelegateValueResponse)
     value: BeginRedelegateValueResponse;
@@ -332,12 +405,14 @@ export class BeginRedelegateMessageResponse extends MessageResponse {
 
 @Exclude()
 class WithdrawValidatorCommissionValueResponse {
-    @Expose({ name: 'validatorAddress' })
+    @ApiProperty()
+    @Expose({name: 'validatorAddress'})
     validator_address: string;
 }
 
 @Exclude()
 export class WithdrawValidatorCommissionMessageResponse extends MessageResponse {
+    @ApiProperty({type: () => WithdrawValidatorCommissionValueResponse})
     @Expose()
     @Type(() => WithdrawValidatorCommissionValueResponse)
     value: WithdrawValidatorCommissionValueResponse;
@@ -345,57 +420,69 @@ export class WithdrawValidatorCommissionMessageResponse extends MessageResponse 
 
 @Exclude()
 class UnjailValueResponse {
-    @Expose({ name: 'validatorAddr' })
+    @ApiProperty()
+    @Expose({name: 'validatorAddr'})
     validator_address: string;
 }
 
 @Exclude()
 export class UnjailMessageResponse extends MessageResponse {
+    @ApiProperty({type: () => UnjailValueResponse})
     @Expose()
     @Type(() => UnjailValueResponse)
     value: UnjailValueResponse;
 }
 
-class TimeoutValueResponse {}
+class TimeoutValueResponse {
+}
 
 @Exclude()
 export class TimeoutMessageResponse extends MessageResponse {
+    @ApiProperty({type: () => TimeoutValueResponse})
     @Expose()
     @Type(() => TimeoutValueResponse)
     value: TimeoutValueResponse;
 }
 
-class TransferValueResponse {}
+class TransferValueResponse {
+}
 
 @Exclude()
 export class TransferMessageResponse extends MessageResponse {
+    @ApiProperty({type: () => TransferValueResponse})
     @Expose()
     @Type(() => TransferValueResponse)
     value: TransferValueResponse;
 }
 
-class UpdateClientValueResponse {}
+class UpdateClientValueResponse {
+}
 
 @Exclude()
 export class UpdateClientMessageResponse extends MessageResponse {
+    @ApiProperty({type: () => UpdateClientValueResponse})
     @Expose()
     @Type(() => UpdateClientValueResponse)
     value: UpdateClientValueResponse;
 }
 
-class AcknowledgementValueResponse {}
+class AcknowledgementValueResponse {
+}
 
 @Exclude()
 export class AcknowledgementMessageResponse extends MessageResponse {
+    @ApiProperty({type: () => AcknowledgementValueResponse})
     @Expose()
     @Type(() => AcknowledgementValueResponse)
     value: AcknowledgementValueResponse;
 }
 
-class RecvPacketValueResponse {}
+class RecvPacketValueResponse {
+}
 
 @Exclude()
 export class RecvPacketMessageResponse extends MessageResponse {
+    @ApiProperty({type: () => RecvPacketValueResponse})
     @Expose()
     @Type(() => RecvPacketValueResponse)
     value: RecvPacketValueResponse;

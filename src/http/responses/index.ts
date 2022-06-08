@@ -3,6 +3,7 @@ export * from './balance.response';
 export * from './beam.response';
 export * from './block.response';
 export * from './commission.response';
+export * from './data.response';
 export * from './delegation.response';
 export * from './description.response';
 export * from './message.response';

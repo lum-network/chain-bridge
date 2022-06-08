@@ -1,4 +1,5 @@
 import {CacheInterceptor, Controller, Get, NotFoundException, Param, Req, UseInterceptors} from '@nestjs/common';
+import {ApiOkResponse, ApiTags} from "@nestjs/swagger";
 
 import {plainToClass} from 'class-transformer';
 
@@ -9,6 +10,7 @@ import {BlockResponse} from '@app/http/responses';
 
 import {ExplorerRequest} from "@app/utils";
 
+@ApiTags('blocks')
 @Controller('blocks')
 @UseInterceptors(CacheInterceptor)
 export class BlocksController {
@@ -26,6 +28,7 @@ export class BlocksController {
         return blocks.map((block) => plainToClass(BlockResponse, block));
     }
 
+    @ApiOkResponse({type: BlockResponse})
     @Get('latest')
     async latest() {
         const block = await this._blockService.getLatest();
@@ -36,6 +39,7 @@ export class BlocksController {
         return plainToClass(BlockResponse, block);
     }
 
+    @ApiOkResponse({type: BlockResponse})
     @Get(':height')
     async show(@Param('height') height: number) {
         const block = await this._blockService.get(height);
