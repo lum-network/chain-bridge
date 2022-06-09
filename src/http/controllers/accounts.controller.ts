@@ -19,9 +19,9 @@ export class AccountsController {
     @ApiOkResponse({status: 200, type: AccountResponse})
     @Get(':address')
     async show(@Param('address') address: string): Promise<DataResponse> {
-        const txPromise = this._transactionService.fetchForAddress(address);
+        const [transactions, totalTransactions] = await this._transactionService.fetchForAddress(address);
 
-        const [account, balance, delegations, rewards, withdrawAddress, unbondings, redelegations, commissions, airdrop, transactions] = await Promise.all([
+        const [account, balance, delegations, rewards, withdrawAddress, unbondings, redelegations, commissions, airdrop] = await Promise.all([
             this._lumNetworkService.client.getAccount(address).catch(() => null),
             this._lumNetworkService.client.getBalance(address, LumConstants.MicroLumDenom).catch(() => null),
             this._lumNetworkService.client.queryClient.staking.delegatorDelegations(address).catch(() => null),
@@ -31,7 +31,6 @@ export class AccountsController {
             this._lumNetworkService.client.queryClient.staking.redelegations(address, '', '').catch(() => null),
             this._lumNetworkService.client.queryClient.distribution.validatorCommission(LumUtils.Bech32.encode(LumConstants.LumBech32PrefixValAddr, LumUtils.Bech32.decode(address).data)).catch(() => null),
             this._lumNetworkService.client.queryClient.airdrop.claimRecord(address).catch(() => null),
-            txPromise.catch(() => null),
         ]);
 
         if (!account) {
@@ -82,8 +81,8 @@ export class AccountsController {
         account['commissions'] = !!commissions && !!commissions.commission ? commissions.commission.commission : null;
 
         // Inject transactions
-        if (transactions && transactions.body && transactions.body.hits && transactions.body.hits.hits) {
-            account['transactions'] = transactions.body.hits.hits.map((hit) => plainToInstance(TransactionResponse, hit._source));
+        if (transactions && transactions.length > 0) {
+            account['transactions'] = transactions.map((hit) => plainToInstance(TransactionResponse, hit));
         } else {
             account['transactions'] = [];
         }
