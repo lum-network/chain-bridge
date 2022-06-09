@@ -5,5 +5,4 @@ export * from './gov';
 export * from './http';
 export * from './metadata';
 export * from './microservice';
-export * from './models';
 export * from './validators';
