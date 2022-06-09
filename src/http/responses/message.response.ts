@@ -487,3 +487,21 @@ export class RecvPacketMessageResponse extends MessageResponse {
     @Type(() => RecvPacketValueResponse)
     value: RecvPacketValueResponse;
 }
+
+class ExecValueResponse {}
+
+@Exclude()
+export class ExecMessageResponse extends MessageResponse {
+    @Expose()
+    @Type(() => ExecValueResponse)
+    value: ExecValueResponse;
+}
+
+class GrantValueResponse {}
+
+@Exclude()
+export class GrantMessageResponse extends MessageResponse {
+    @Expose()
+    @Type(() => GrantValueResponse)
+    value: GrantValueResponse;
+}

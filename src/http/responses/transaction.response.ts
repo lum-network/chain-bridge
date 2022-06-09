@@ -28,7 +28,7 @@ import {
     TransferMessageResponse,
     UpdateClientMessageResponse,
     AcknowledgementMessageResponse,
-    RecvPacketMessageResponse,
+    RecvPacketMessageResponse, GrantMessageResponse, ExecMessageResponse,
 } from '@app/http/responses/message.response';
 
 @Exclude()
@@ -92,7 +92,7 @@ export class TransactionResponse {
     @Expose()
     @Type(() => MessageResponse, {
         discriminator: {
-            property: 'typeUrl',
+            property: 'type_url',
             subTypes: [
                 {value: SendMessageResponse, name: LumMessages.MsgSendUrl},
                 {value: MultiSendResponse, name: LumMessages.MsgMultiSendUrl},
@@ -119,6 +119,8 @@ export class TransactionResponse {
                 {value: UpdateClientMessageResponse, name: LumMessages.MsgUpdateClientUrl},
                 {value: AcknowledgementMessageResponse, name: LumMessages.MsgAcknowledgementUrl},
                 {value: RecvPacketMessageResponse, name: LumMessages.MsgRecvPacketUrl},
+                {value: ExecMessageResponse, name: LumMessages.MsgExecUrl},
+                {value: GrantMessageResponse, name: LumMessages.MsgGrantUrl},
             ],
         },
         keepDiscriminatorProperty: true,
