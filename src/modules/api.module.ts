@@ -26,7 +26,6 @@ import {
 } from '@app/http';
 
 import {
-    LumService,
     LumNetworkService,
     BlockService,
     TransactionService,
@@ -92,7 +91,6 @@ import {databaseProviders} from "@app/database";
         LumNetworkIndicator,
         GatewayWebsocket,
         LumNetworkService,
-        LumService,
         BlocksCommands,
         TransactionsCommands,
         ValidatorsCommands,

@@ -10,7 +10,7 @@ import {MessagePattern, Payload} from '@nestjs/microservices';
 
 import {plainToInstance} from 'class-transformer';
 
-import {LumService, LumNetworkService, BlockService, TransactionService} from '@app/services';
+import {LumNetworkService, BlockService, TransactionService} from '@app/services';
 import {DataResponse, LumResponse} from '@app/http/responses';
 import {GatewayWebsocket} from '@app/websocket';
 
@@ -23,7 +23,6 @@ export class CoreController {
         private readonly _blockService: BlockService,
         private readonly _configService: ConfigService,
         private readonly _lumNetworkService: LumNetworkService,
-        private readonly _lumService: LumService,
         private readonly _messageGateway: GatewayWebsocket,
         private readonly _transactionService: TransactionService
     ) {
@@ -31,8 +30,8 @@ export class CoreController {
 
     @Get('price')
     async price(): Promise<DataResponse> {
-        const lumPrice = await this._lumService.getLum();
-        const lumPreviousPrice = await this._lumService.getPreviousDayLum();
+        const lumPrice = await this._lumNetworkService.getPrice();
+        const lumPreviousPrice = await this._lumNetworkService.getPreviousDayPrice();
 
         if (!lumPrice || !lumPrice.data || !lumPrice.data.length || !lumPreviousPrice || !lumPreviousPrice.data || !lumPreviousPrice.data.length || !lumPreviousPrice.data[lumPreviousPrice.data.length - 24]) {
             throw new BadRequestException('data_not_found');
