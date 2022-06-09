@@ -34,17 +34,17 @@ export class DataResponseMetadata {
 
 export class DataResponse {
     @ApiProperty()
-    readonly code: number;
+    readonly code?: number;
 
     @ApiProperty()
-    readonly message: string;
+    readonly message?: string;
 
     @ApiProperty()
     readonly result: any;
 
     @ApiProperty({ type: () => DataResponseMetadata })
     @Type(() => DataResponseMetadata)
-    readonly metadata: Partial<DataResponseMetadata>;
+    readonly metadata?: Partial<DataResponseMetadata>;
 
     constructor(data: Partial<DataResponse>) {
         Object.assign(this, data);

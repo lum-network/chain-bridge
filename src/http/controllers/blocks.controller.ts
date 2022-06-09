@@ -1,7 +1,7 @@
 import {CacheInterceptor, Controller, Get, NotFoundException, Param, Req, UseInterceptors} from '@nestjs/common';
 import {ApiOkResponse, ApiTags} from "@nestjs/swagger";
 
-import {plainToClass} from 'class-transformer';
+import {plainToInstance} from 'class-transformer';
 
 import {BlockService} from '@app/services';
 
@@ -17,7 +17,7 @@ export class BlocksController {
     constructor(private readonly _blockService: BlockService) {
     }
 
-    @ApiOkResponse({status: 200, type: DataResponse})
+    @ApiOkResponse({status: 200, type: [BlockResponse]})
     @DefaultTake(50)
     @Get('')
     async fetch(@Req() request: ExplorerRequest): Promise<DataResponse> {
@@ -26,8 +26,8 @@ export class BlocksController {
             throw new NotFoundException('blocks_not_found');
         }
 
-        return plainToClass(DataResponse, {
-            result: blocks.map((block) => plainToClass(BlockResponse, block)),
+        return new DataResponse({
+            result: blocks.map((block) => plainToInstance(BlockResponse, block)),
             metadata: new DataResponseMetadata({
                 page: request.pagination.page,
                 limit: request.pagination.limit,
@@ -39,27 +39,27 @@ export class BlocksController {
 
     @ApiOkResponse({type: BlockResponse})
     @Get('latest')
-    async latest() {
+    async latest(): Promise<DataResponse> {
         const block = await this._blockService.getLatest();
         if (!block) {
             throw new NotFoundException('latest_block_not_found');
         }
 
         return {
-            result: plainToClass(BlockResponse, block)
+            result: plainToInstance(BlockResponse, block)
         };
     }
 
     @ApiOkResponse({type: BlockResponse})
     @Get(':height')
-    async show(@Param('height') height: number) {
+    async show(@Param('height') height: number): Promise<DataResponse> {
         const block = await this._blockService.get(height);
         if (!block) {
             throw new NotFoundException('block_not_found');
         }
 
         return {
-            result: plainToClass(BlockResponse, block)
+            result: plainToInstance(BlockResponse, block)
         };
     }
 }

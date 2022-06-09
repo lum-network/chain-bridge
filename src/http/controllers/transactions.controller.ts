@@ -1,7 +1,7 @@
 import {CacheInterceptor, Controller, Get, NotFoundException, Param, Req, UseInterceptors} from '@nestjs/common';
 import {ApiOkResponse, ApiTags} from "@nestjs/swagger";
 
-import {plainToClass} from 'class-transformer';
+import {plainToInstance} from 'class-transformer';
 
 import {TransactionService} from '@app/services';
 import {DataResponse, DataResponseMetadata, TransactionResponse} from '@app/http/responses';
@@ -14,16 +14,16 @@ export class TransactionsController {
     constructor(private readonly _transactionService: TransactionService) {
     }
 
-    @ApiOkResponse({status: 200, type: DataResponse})
+    @ApiOkResponse({status: 200, type: [TransactionResponse]})
     @Get('')
-    async fetch(@Req() request: ExplorerRequest) {
+    async fetch(@Req() request: ExplorerRequest): Promise<DataResponse> {
         const [transactions, total] = await this._transactionService.fetch(request.pagination.skip, request.pagination.limit);
         if (!transactions) {
             throw new NotFoundException('transactions_not_found');
         }
 
-        return plainToClass(DataResponse, {
-            result: transactions.map((tx) => plainToClass(TransactionResponse, tx)),
+        return new DataResponse({
+            result: transactions.map((tx) => plainToInstance(TransactionResponse, tx)),
             metadata: new DataResponseMetadata({
                 page: request.pagination.page,
                 limit: request.pagination.limit,
@@ -35,14 +35,14 @@ export class TransactionsController {
 
     @ApiOkResponse({status: 200, type: TransactionResponse})
     @Get(':hash')
-    async show(@Param('hash') hash: string) {
+    async show(@Param('hash') hash: string): Promise<DataResponse> {
         const tx = await this._transactionService.get(hash);
         if (!tx) {
             throw new NotFoundException('transaction_not_found');
         }
 
         return {
-            result: plainToClass(TransactionResponse, tx)
+            result: plainToInstance(TransactionResponse, tx)
         };
     }
 }

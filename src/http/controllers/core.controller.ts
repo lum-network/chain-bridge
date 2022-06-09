@@ -8,10 +8,10 @@ import {ApiTags} from "@nestjs/swagger";
 import {ConfigService} from "@nestjs/config";
 import {MessagePattern, Payload} from '@nestjs/microservices';
 
-import {plainToClass} from 'class-transformer';
+import {plainToInstance} from 'class-transformer';
 
 import {LumService, LumNetworkService, BlockService, TransactionService} from '@app/services';
-import {LumResponse} from '@app/http/responses';
+import {DataResponse, LumResponse} from '@app/http/responses';
 import {GatewayWebsocket} from '@app/websocket';
 
 @ApiTags('core')
@@ -30,7 +30,7 @@ export class CoreController {
     }
 
     @Get('price')
-    async price() {
+    async price(): Promise<DataResponse> {
         const lumPrice = await this._lumService.getLum();
         const lumPreviousPrice = await this._lumService.getPreviousDayLum();
 
@@ -44,7 +44,7 @@ export class CoreController {
         };
 
         return {
-            result: plainToClass(LumResponse, res)
+            result: plainToInstance(LumResponse, res)
         };
     }
 

@@ -1,11 +1,8 @@
 import {Inject, Injectable, NotFoundException} from '@nestjs/common';
 
-import {plainToClass} from 'class-transformer';
-
 import {LumUtils} from '@lum-network/sdk-javascript';
 import {Repository} from "typeorm";
 
-import {ValidatorResponse} from '@app/http';
 import {convertValAddressToAccAddress, POST_FORK_HEIGHT} from '@app/utils';
 
 import {LumNetworkService} from '@app/services/lum-network.service';
@@ -62,8 +59,6 @@ export class ValidatorService {
 
         const results = [...allBondedValidators, ...unbonding.validators, ...unbonded.validators];
 
-        const mapResults = results.map((validator) => plainToClass(ValidatorResponse, validator));
-
         // Get the operator addresses
         const operatorAddresses: string[] = [];
 
@@ -76,15 +71,14 @@ export class ValidatorService {
             }
         }
 
-        for (const [key, validator] of Object.entries(mapResults)) {
-            const genesis = operatorAddresses.find((value) => value === validator.operator_address);
+        for (const [key, validator] of Object.entries(results)) {
+            const genesis = operatorAddresses.find((value) => value === (validator as any).operator_address);
 
             if (genesis) {
-                mapResults[key].genesis = true;
+                results[key].genesis = true;
             }
         }
-
-        return mapResults;
+        return results;
     };
 
     get = async (address: string): Promise<any> => {
@@ -142,7 +136,7 @@ export class ValidatorService {
         const blocks = [];
 
         /*if (blocksResponse && blocksResponse.body && blocksResponse.body.hits && blocksResponse.body.hits.hits) {
-            blocks = blocksResponse.body.hits.hits.map((hit) => plainToClass(BlockResponse, hit._source));
+            blocks = blocksResponse.body.hits.hits.map((hit) => plainToInstance(BlockResponse, hit._source));
         }*/
 
         // Merge

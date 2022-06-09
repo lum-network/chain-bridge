@@ -26,10 +26,6 @@ export class ValidatorDescriptionResponse {
     @ApiProperty()
     @Expose()
     details: string;
-
-    constructor(data: Partial<ValidatorDescriptionResponse>) {
-        Object.assign(this, data);
-    }
 }
 
 @Exclude()
@@ -126,6 +122,11 @@ export class ValidatorResponse {
     @Type(() => ValidatorDescriptionResponse)
     description: ValidatorDescriptionResponse;
 
+    @ApiProperty({type: () => ValidatorCommissionResponse})
+    @Expose()
+    @Type(() => ValidatorCommissionResponse)
+    commission: ValidatorCommissionResponse;
+
     @ApiProperty({type: () => [ValidatorDelegationResponse]})
     @Expose()
     @Type(() => ValidatorDelegationResponse)
@@ -139,11 +140,6 @@ export class ValidatorResponse {
     @Expose()
     @Type(() => BalanceResponse)
     rewards: BalanceResponse[];
-
-    @ApiProperty({type: () => ValidatorCommissionResponse})
-    @Expose()
-    @Type(() => ValidatorCommissionResponse)
-    commission: ValidatorCommissionResponse;
 
     @ApiProperty({type: () => [BlockResponse]})
     @Expose()

@@ -37,7 +37,7 @@ export class BlockResponse {
     @ApiProperty({type: () => [TransactionResponse]})
     @Expose()
     @Type(() => TransactionResponse)
-    transactions: Partial<TransactionResponse>[];
+    transactions: Partial<TransactionResponse>[] = [];
 
     constructor(data: Partial<BlockResponse>) {
         Object.assign(this, data);

@@ -1,7 +1,7 @@
 import {CacheInterceptor, Controller, Get, Param, Req, UseInterceptors} from '@nestjs/common';
 import {ApiOkResponse, ApiTags} from "@nestjs/swagger";
 
-import { plainToClass } from 'class-transformer';
+import {plainToInstance} from 'class-transformer';
 
 import { ValidatorService } from '@app/services';
 import {DataResponse, DataResponseMetadata, ValidatorResponse} from '@app/http/responses';
@@ -14,10 +14,10 @@ export class ValidatorsController {
     constructor(private readonly _validatorService: ValidatorService) {}
 
     @Get('')
-    async fetch(@Req() request: ExplorerRequest) {
+    async fetch(@Req() request: ExplorerRequest): Promise<DataResponse> {
         const validators = await this._validatorService.fetch();
-        return plainToClass(DataResponse, {
-            result: validators,
+        return new DataResponse({
+            result: validators.map((validator) => plainToInstance(ValidatorResponse, validator)),
             metadata: new DataResponseMetadata({
                 page: request.pagination.page,
                 limit: request.pagination.limit,
@@ -29,10 +29,10 @@ export class ValidatorsController {
 
     @ApiOkResponse({status: 200, type: ValidatorResponse})
     @Get(':address')
-    async show(@Param('address') address: string) {
+    async show(@Param('address') address: string): Promise<DataResponse> {
         const result = await this._validatorService.get(address);
         return {
-            result: plainToClass(ValidatorResponse, result)
+            result: plainToInstance(ValidatorResponse, result)
         };
     }
 }

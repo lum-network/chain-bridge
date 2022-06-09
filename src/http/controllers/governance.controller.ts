@@ -1,7 +1,7 @@
 import {CacheInterceptor, Controller, Get, NotFoundException, Param, Req, UseInterceptors} from '@nestjs/common';
 import {ApiOkResponse, ApiTags} from "@nestjs/swagger";
 
-import {plainToClass} from 'class-transformer';
+import {plainToInstance} from 'class-transformer';
 
 import {ProposalStatus} from '@lum-network/sdk-javascript/build/codec/cosmos/gov/v1beta1/gov';
 
@@ -16,8 +16,9 @@ export class GovernanceController {
     constructor(private readonly _lumNetworkService: LumNetworkService) {
     }
 
+    @ApiOkResponse({status: 200, type: [ProposalResponse]})
     @Get('proposals')
-    async fetch(@Req() request: ExplorerRequest) {
+    async fetch(@Req() request: ExplorerRequest): Promise<DataResponse> {
         const results = await this._lumNetworkService.client.queryClient.gov.proposals(
             ProposalStatus.PROPOSAL_STATUS_UNSPECIFIED |
             ProposalStatus.PROPOSAL_STATUS_DEPOSIT_PERIOD |
@@ -30,8 +31,8 @@ export class GovernanceController {
             '',
         );
 
-        return plainToClass(DataResponse, {
-            result: results.proposals.map((proposal) => plainToClass(ProposalResponse, decodeContent(proposal))),
+        return new DataResponse({
+            result: results.proposals.map((proposal) => plainToInstance(ProposalResponse, decodeContent(proposal))),
             metadata: new DataResponseMetadata({
                 page: request.pagination.page,
                 limit: request.pagination.limit,
@@ -43,7 +44,7 @@ export class GovernanceController {
 
     @ApiOkResponse({status: 200, type: ProposalResponse})
     @Get('proposals/:id')
-    async get(@Param('id') id: string) {
+    async get(@Param('id') id: string): Promise<DataResponse> {
         const result = await this._lumNetworkService.client.queryClient.gov.proposal(id);
 
         if (!result || !result.proposal) {
@@ -51,13 +52,13 @@ export class GovernanceController {
         }
 
         return {
-            result: plainToClass(ProposalResponse, decodeContent(result.proposal))
+            result: plainToInstance(ProposalResponse, decodeContent(result.proposal))
         };
     }
 
     @ApiOkResponse({status: 200, type: ResultResponse})
     @Get('proposals/:id/tally')
-    async getTallyResults(@Param('id') id: string) {
+    async getTallyResults(@Param('id') id: string): Promise<DataResponse> {
         const result = await this._lumNetworkService.client.queryClient.gov.tally(id);
 
         if (!result || !result.tally) {
@@ -65,7 +66,7 @@ export class GovernanceController {
         }
 
         return {
-            result: plainToClass(ResultResponse, result.tally)
+            result: plainToInstance(ResultResponse, result.tally)
         };
     }
 }

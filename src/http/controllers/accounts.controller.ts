@@ -4,10 +4,10 @@ import {ApiOkResponse, ApiTags} from "@nestjs/swagger";
 import {LumConstants, LumUtils} from '@lum-network/sdk-javascript';
 import {RedelegationResponse} from '@lum-network/sdk-javascript/build/codec/cosmos/staking/v1beta1/staking';
 
-import {plainToClass} from 'class-transformer';
+import {plainToInstance} from 'class-transformer';
 
 import {LumNetworkService, TransactionService} from '@app/services';
-import {AccountResponse, TransactionResponse} from '@app/http/responses';
+import {AccountResponse, DataResponse, TransactionResponse} from '@app/http/responses';
 
 @ApiTags('accounts')
 @Controller('accounts')
@@ -18,7 +18,7 @@ export class AccountsController {
 
     @ApiOkResponse({status: 200, type: AccountResponse})
     @Get(':address')
-    async show(@Param('address') address: string) {
+    async show(@Param('address') address: string): Promise<DataResponse> {
         const txPromise = this._transactionService.fetchForAddress(address);
 
         const [account, balance, delegations, rewards, withdrawAddress, unbondings, redelegations, commissions, airdrop, transactions] = await Promise.all([
@@ -83,13 +83,13 @@ export class AccountsController {
 
         // Inject transactions
         if (transactions && transactions.body && transactions.body.hits && transactions.body.hits.hits) {
-            account['transactions'] = transactions.body.hits.hits.map((hit) => plainToClass(TransactionResponse, hit._source));
+            account['transactions'] = transactions.body.hits.hits.map((hit) => plainToInstance(TransactionResponse, hit._source));
         } else {
             account['transactions'] = [];
         }
 
         return {
-            result: plainToClass(AccountResponse, account)
+            result: plainToInstance(AccountResponse, account)
         };
     }
 }
