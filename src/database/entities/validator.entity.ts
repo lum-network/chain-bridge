@@ -17,6 +17,40 @@ export class ValidatorEntity {
     @Column({type: "varchar", length: 256, nullable: true})
     account_address?: string;
 
+    @Column("varchar", {length: 128, nullable: true})
+    displayed_name: string;
+
+    @Column("jsonb")
+    description: {
+        moniker: string;
+        identity: string;
+        website: string;
+        security_contact: string;
+        details: string;
+    };
+
+    @Column("boolean")
+    jailed: boolean;
+
+    @Column("integer")
+    status: number;
+
+    @Column("bigint")
+    tokens: number;
+
+    @Column("varchar", {length: 64})
+    delegator_shares: string;
+
+    @Column("jsonb")
+    commission: {
+        rates: {
+            current_rate: string;
+            max_rate: string;
+            max_change_rate: string;
+        },
+        last_updated_at: Date;
+    };
+
     @CreateDateColumn({type: 'date', default: () => "CURRENT_DATE"})
     created_at?: Date = new Date;
 

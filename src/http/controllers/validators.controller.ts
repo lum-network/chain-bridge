@@ -4,6 +4,7 @@ import {ApiOkResponse, ApiTags} from "@nestjs/swagger";
 import {plainToInstance} from 'class-transformer';
 
 import { ValidatorService } from '@app/services';
+import {DefaultTake} from "@app/http/decorators";
 import {DataResponse, DataResponseMetadata, ValidatorResponse} from '@app/http/responses';
 import {ExplorerRequest} from "@app/utils";
 
@@ -14,16 +15,17 @@ export class ValidatorsController {
     constructor(private readonly _validatorService: ValidatorService) {}
 
     @ApiOkResponse({status: 200, type: [ValidatorResponse]})
+    @DefaultTake(100)
     @Get('')
     async fetch(@Req() request: ExplorerRequest): Promise<DataResponse> {
-        const validators = await this._validatorService.fetch();
+        const [validators, total] = await this._validatorService.fetch(request.pagination.skip, request.pagination.limit);
         return new DataResponse({
             result: validators.map((validator) => plainToInstance(ValidatorResponse, validator)),
             metadata: new DataResponseMetadata({
                 page: request.pagination.page,
                 limit: request.pagination.limit,
                 items_count: validators.length,
-                items_total: null,
+                items_total: total,
             })
         })
     }

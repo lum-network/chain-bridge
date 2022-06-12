@@ -13,16 +13,14 @@ export class ValidatorScheduler {
     constructor(private readonly _lumNetworkService: LumNetworkService, private readonly _validatorService: ValidatorService) {
     }
 
-    @Cron(CronExpression.EVERY_30_SECONDS, {name: 'validators_live_ingest'})
+    @Cron(CronExpression.EVERY_10_SECONDS, {name: 'validators_live_ingest'})
     async liveIngest() {
         try {
-            this._logger.debug(`Ingesting validators set`);
-
             // Fetch tendermint validators
             const tmValidators = await this._lumNetworkService.client.tmClient.validatorsAll();
 
             // Build validators list
-            const validators: ValidatorEntity[] = [];
+            const validators: Partial<ValidatorEntity>[] = [];
             for (const val of tmValidators.validators) {
                 validators.push({
                     proposer_address: LumUtils.toHex(val.address).toUpperCase(),
@@ -46,6 +44,26 @@ export class ValidatorScheduler {
                             if (validators[v].consensus_pubkey === consensus_pubkey) {
                                 validators[v].operator_address = val.operatorAddress;
                                 validators[v].account_address = LumUtils.Bech32.encode(LumConstants.LumBech32PrefixAccAddr, LumUtils.Bech32.decode(val.operatorAddress).data);
+                                validators[v].description = {
+                                    moniker: val.description.moniker,
+                                    identity: val.description.identity,
+                                    website: val.description.website,
+                                    security_contact: val.description.securityContact,
+                                    details: val.description.details
+                                };
+                                validators[v].displayed_name = val.description.moniker || val.description.identity || val.operatorAddress;
+                                validators[v].jailed = val.jailed;
+                                validators[v].status = val.status;
+                                validators[v].tokens = parseInt(val.tokens, 10);
+                                validators[v].delegator_shares = val.delegatorShares;
+                                validators[v].commission = {
+                                    rates: {
+                                        current_rate: val.commission.commissionRates.rate,
+                                        max_rate: val.commission.commissionRates.maxRate,
+                                        max_change_rate: val.commission.commissionRates.maxChangeRate
+                                    },
+                                    last_updated_at: val.commission.updateTime
+                                };
                                 break;
                             }
                         }

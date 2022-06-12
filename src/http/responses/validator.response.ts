@@ -20,7 +20,7 @@ export class ValidatorDescriptionResponse {
     website: string;
 
     @ApiProperty()
-    @Expose({name: 'securityContact'})
+    @Expose()
     security_contact: string;
 
     @ApiProperty()
@@ -31,11 +31,11 @@ export class ValidatorDescriptionResponse {
 @Exclude()
 class ValidatorDelegationDetailsResponse {
     @ApiProperty()
-    @Expose({name: 'delegatorAddress'})
+    @Expose()
     delegator_address: string;
 
     @ApiProperty()
-    @Expose({name: 'validatorAddress'})
+    @Expose()
     validator_address: string;
 
     @ApiProperty()
@@ -60,34 +60,38 @@ export class ValidatorDelegationResponse {
 export class ValidatorCommissionRatesResponse {
     @ApiProperty()
     @Expose()
-    rate: number;
+    current_rate: number;
 
     @ApiProperty()
-    @Expose({name: 'maxRate'})
+    @Expose()
     max_rate: number;
 
     @ApiProperty()
-    @Expose({name: 'maxChangeRate'})
+    @Expose()
     max_change_rate: number;
 }
 
 @Exclude()
 export class ValidatorCommissionResponse {
     @ApiProperty({type: () => ValidatorCommissionRatesResponse})
-    @Expose({name: 'commissionRates'})
+    @Expose()
     @Type(() => ValidatorCommissionRatesResponse)
-    commission_rates: ValidatorCommissionRatesResponse;
+    rates: ValidatorCommissionRatesResponse;
 
     @ApiProperty()
-    @Expose({name: 'updateTime'})
-    update_time: Date;
+    @Expose()
+    last_updated_at: Date;
 }
 
 @Exclude()
 export class ValidatorResponse {
     @ApiProperty()
-    @Expose({name: 'operatorAddress'})
+    @Expose()
     operator_address: string;
+
+    @ApiProperty()
+    @Expose()
+    account_address: string;
 
     @ApiProperty()
     @Expose()
@@ -98,7 +102,7 @@ export class ValidatorResponse {
     genesis: boolean;
 
     @ApiProperty()
-    @Expose({name: 'selfBonded'})
+    @Expose()
     self_bonded: number;
 
     @ApiProperty()
@@ -111,11 +115,15 @@ export class ValidatorResponse {
 
     @ApiProperty()
     @Expose()
-    tokens: string;
+    tokens: number;
 
     @ApiProperty()
-    @Expose({name: 'delegatorShares'})
+    @Expose()
     delegator_shares: string;
+
+    @ApiProperty()
+    @Expose()
+    displayed_name: string;
 
     @ApiProperty({type: () => ValidatorDescriptionResponse})
     @Expose()
