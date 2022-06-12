@@ -1,7 +1,7 @@
 import {BadRequestException, Controller, Get, Param} from "@nestjs/common";
 import {ConfigService} from "@nestjs/config";
 import {InjectQueue} from "@nestjs/bull";
-import {ApiTags} from "@nestjs/swagger";
+import {ApiOkResponse, ApiTags} from "@nestjs/swagger";
 
 import {Queue} from "bull";
 
@@ -16,6 +16,7 @@ export class FaucetController {
     ) {
     }
 
+    @ApiOkResponse({status: 200, description: "Request received, processing is intended in background"})
     @Get(':address')
     async faucet(@Param('address') address: string): Promise<void> {
         if (!this._configService.get<string>('FAUCET_MNEMONIC')) {

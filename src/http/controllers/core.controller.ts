@@ -4,7 +4,7 @@ import {
     Get,
     Logger,
 } from '@nestjs/common';
-import {ApiTags} from "@nestjs/swagger";
+import {ApiOkResponse, ApiTags} from "@nestjs/swagger";
 import {ConfigService} from "@nestjs/config";
 import {MessagePattern, Payload} from '@nestjs/microservices';
 
@@ -28,6 +28,7 @@ export class CoreController {
     ) {
     }
 
+    @ApiOkResponse({status: 200, type: LumResponse})
     @Get('price')
     async price(): Promise<DataResponse> {
         const lumPrice = await this._lumNetworkService.getPrice();
