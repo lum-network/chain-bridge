@@ -13,6 +13,7 @@ import {ExplorerRequest} from "@app/utils";
 export class ValidatorsController {
     constructor(private readonly _validatorService: ValidatorService) {}
 
+    @ApiOkResponse({status: 200, type: [ValidatorResponse]})
     @Get('')
     async fetch(@Req() request: ExplorerRequest): Promise<DataResponse> {
         const validators = await this._validatorService.fetch();
