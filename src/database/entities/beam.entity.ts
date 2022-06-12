@@ -10,7 +10,7 @@ export class BeamEntity {
     @Column({type: "varchar", length: 64})
     creator_address: string;
 
-    @Column({type: "integer"})
+    @Column({type: "integer", nullable: true})
     status: number;
 
     @Column({type: "varchar", length: 64})

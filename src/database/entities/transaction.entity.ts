@@ -45,7 +45,7 @@ export class TransactionEntity {
     @Column({type: "json", nullable: true})
     auto_claim_reward?: AmountModel;
 
-    @Column({type: "json", default: () => "'[]'"})
+    @Column({type: "varchar", array: true, nullable: true})
     addresses: string[];
 
     @Column({type: "varchar", length: 256, nullable: true})
