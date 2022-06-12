@@ -52,8 +52,6 @@ export class ValidatorService {
             // blocksPromise.catch(() => null),
         ]);
 
-        console.log(validator);
-
         if (!validator) {
             throw new NotFoundException('validator_not_found');
         }
