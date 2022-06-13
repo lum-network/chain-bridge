@@ -1,5 +1,7 @@
 import { CacheInterceptor, Controller, Get, Param, UseInterceptors } from '@nestjs/common';
 import { ElasticService, LumNetworkService } from '@app/services';
+import { plainToClass } from 'class-transformer';
+import { BeamResponse } from '@app/http/responses/beam.response';
 
 @Controller('beams')
 @UseInterceptors(CacheInterceptor)
@@ -9,12 +11,18 @@ export class BeamsController {
     @Get('')
     async fetch() {
         const lumClt = await this._lumNetworkService.getClient();
-        return await lumClt.queryClient.beam.fetch();
+
+        const beams = await lumClt.queryClient.beam.fetch();
+
+        return beams.map((beam) => plainToClass(BeamResponse, beam));
     }
 
     @Get(':id')
     async get(@Param('id') id: string) {
         const lumClt = await this._lumNetworkService.getClient();
-        return await lumClt.queryClient.beam.get(id);
+
+        const beam = await lumClt.queryClient.beam.get(id);
+
+        return plainToClass(BeamResponse, beam);
     }
 }
