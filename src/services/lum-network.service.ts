@@ -4,9 +4,6 @@ import {ConfigService} from "@nestjs/config";
 
 import {LumClient} from '@lum-network/sdk-javascript';
 
-import {OSMOSIS_API_URL} from "@app/utils";
-
-
 @Injectable()
 export class LumNetworkService {
     private _client: LumClient = null;
@@ -34,10 +31,6 @@ export class LumNetworkService {
     }
 
     getPrice = (): Promise<any> => {
-        return this._httpService.get(`${OSMOSIS_API_URL}/tokens/v2/LUM`).toPromise();
-    }
-
-    getPreviousDayPrice = (): Promise<any> => {
-        return this._httpService.get(`${OSMOSIS_API_URL}/tokens/v2/historical/LUM/chart?tf=60`).toPromise();
+        return this._httpService.get(`https://api.coingecko.com/api/v3/coins/lum-network`).toPromise();
     }
 }

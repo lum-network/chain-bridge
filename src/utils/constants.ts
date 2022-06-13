@@ -21,5 +21,3 @@ export enum NotificationEvents {
     EVENT_NEW_BLOCK = 'new-block',
     EVENT_NEW_TRANSACTION = 'new-transaction',
 }
-
-export const OSMOSIS_API_URL = 'https://api-osmosis.imperator.co';
