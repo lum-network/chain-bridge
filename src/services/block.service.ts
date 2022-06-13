@@ -25,21 +25,24 @@ export class BlockService {
     }
 
     getLatest = async (): Promise<BlockEntity> => {
-        //TODO: fetch the transactions as well
-        const query = this._repository.createQueryBuilder('blocks').orderBy('blocks.height', 'DESC').take(1);
-        return query.getOne();
-    };
-
-    get = async (height: number): Promise<BlockEntity> => {
-        //TODO: fetch the transactions as well
         return this._repository.findOne({
-            where: {
-                height
-            }
+            order: {
+                height: 'DESC'
+            },
+            relations: ['transactions']
         });
     };
 
-    save = async (entity: BlockEntity): Promise<BlockEntity> => {
+    get = async (height: number): Promise<BlockEntity> => {
+        return this._repository.findOne({
+            where: {
+                height
+            },
+            relations: ['transactions']
+        });
+    };
+
+    save = async (entity: Partial<BlockEntity>): Promise<BlockEntity> => {
         return this._repository.save(entity);
     }
 }

@@ -59,7 +59,7 @@ export class BlockConsumer {
             }
 
             // Format block data
-            const blockDoc: BlockEntity = {
+            const blockDoc: Partial<BlockEntity> = {
                 hash: LumUtils.toHex(block.blockId.hash).toUpperCase(),
                 height: block.block.header.height,
                 time: moment(block.block.header.time as Date).toDate(),
@@ -71,7 +71,7 @@ export class BlockConsumer {
             };
 
             // Fetch and format transactions data
-            const getFormattedTx = async (rawTx: Uint8Array): Promise<TransactionEntity> => {
+            const getFormattedTx = async (rawTx: Uint8Array): Promise<Partial<TransactionEntity>> => {
                 // Acquire raw TX
                 const tx = await this._lumNetworkService.client.getTx(LumUtils.sha256(rawTx));
 
@@ -82,7 +82,7 @@ export class BlockConsumer {
                 const logs = LumUtils.parseRawLogs(tx.result.log);
 
                 // Build the transaction document from information
-                const res: TransactionEntity = {
+                const res: Partial<TransactionEntity> = {
                     hash: LumUtils.toHex(tx.hash).toUpperCase(),
                     height: tx.height,
                     time: blockDoc.time,

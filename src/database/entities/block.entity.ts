@@ -1,4 +1,14 @@
-import {Column, CreateDateColumn, Entity, PrimaryColumn, UpdateDateColumn, VersionColumn} from "typeorm";
+import {
+    Column,
+    CreateDateColumn,
+    Entity,
+    OneToMany,
+    PrimaryColumn,
+    UpdateDateColumn,
+    VersionColumn
+} from "typeorm";
+
+import {TransactionEntity} from "@app/database/entities/transaction.entity";
 
 @Entity({name: "blocks"})
 export class BlockEntity {
@@ -34,6 +44,9 @@ export class BlockEntity {
 
     @VersionColumn({type: "integer", default: 0})
     nonce?: number = 0;
+
+    @OneToMany(() => TransactionEntity, (tx) => tx.block)
+    transactions: TransactionEntity[];
 
     constructor(props?: Partial<BlockEntity>) {
         Object.assign(this, props);
