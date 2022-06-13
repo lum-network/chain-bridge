@@ -86,8 +86,6 @@ export class BlockConsumer {
                     hash: LumUtils.toHex(tx.hash).toUpperCase(),
                     height: tx.height,
                     time: blockDoc.time,
-                    block_height: blockDoc.height,
-                    block_hash: blockDoc.hash,
                     proposer_address: blockDoc.proposer_address,
                     operator_address: blockDoc.operator_address,
                     success: tx.result.code === 0,
@@ -174,9 +172,9 @@ export class BlockConsumer {
             };
 
             // Save entities
+            await this._blockService.save(blockDoc);
             const transactions = await Promise.all(block.block.txs.map(getFormattedTx));
             await this._transactionService.saveBulk(transactions);
-            await this._blockService.save(blockDoc);
 
             const beams: BeamEntity[] = [];
             for (const txDoc of transactions) {

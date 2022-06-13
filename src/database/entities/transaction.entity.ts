@@ -29,12 +29,6 @@ export class TransactionEntity {
     @Column({type: "varchar", length: 128})
     operator_address: string;
 
-    @Column({type: "integer"})
-    block_height: number;
-
-    @Column({type: "varchar", length: 128})
-    block_hash: string;
-
     @Column({type: "boolean"})
     success: boolean;
 
