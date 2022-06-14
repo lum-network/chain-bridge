@@ -8,8 +8,7 @@ import moment from 'moment';
 
 import {LumUtils, LumRegistry, LumMessages, LumConstants} from '@lum-network/sdk-javascript';
 
-import {isBeam} from '@app/utils';
-import {NotificationChannels, NotificationEvents, QueueJobs, Queues} from '@app/utils/constants';
+import {isBeam, NotificationChannels, NotificationEvents, QueueJobs, Queues} from '@app/utils';
 
 import {BlockService, LumNetworkService, TransactionService, ValidatorService} from '@app/services';
 import {BlockEntity, TransactionEntity} from "@app/database";
