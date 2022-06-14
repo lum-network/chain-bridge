@@ -51,7 +51,7 @@ export class CoreController {
             price: price,
             denom: lumPrice.data.platforms.cosmos,
             symbol: lumPrice.data.symbol.toUpperCase(),
-            liquidity: 0.0, //TODO: add
+            liquidity: 0.0,
             volume_24h: lumPrice.data.market_data.total_volume.usd,
             name: lumPrice.data.name,
             previous_day_price: previousPrice

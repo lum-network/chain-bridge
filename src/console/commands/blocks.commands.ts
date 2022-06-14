@@ -11,7 +11,7 @@ export class BlocksCommands {
         const spin = createSpinner();
         spin.start('Clearing the blocks dataset...');
 
-        // TODO: clear
+        await this._blockService.repository.clear();
 
         spin.succeed('Blocks dataset cleared');
         process.exit(0);

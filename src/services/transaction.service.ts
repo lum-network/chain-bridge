@@ -11,6 +11,10 @@ export class TransactionService {
     ) {
     }
 
+    get repository(): Repository<TransactionEntity> {
+        return this._repository;
+    }
+
     fetch = async (skip: number, take: number): Promise<[TransactionEntity[], number]> => {
         const query = this._repository.createQueryBuilder('transactions').orderBy('transactions.time', 'DESC').skip(skip).take(take);
         return query.getManyAndCount();

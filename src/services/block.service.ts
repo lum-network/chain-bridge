@@ -11,6 +11,10 @@ export class BlockService {
     ) {
     }
 
+    get repository(): Repository<BlockEntity> {
+        return this._repository;
+    }
+
     fetch = async (skip: number, take: number): Promise<[BlockEntity[], number]> => {
         const query = this._repository.createQueryBuilder('blocks').orderBy('blocks.height', 'DESC').skip(skip).take(take);
         return query.getManyAndCount();

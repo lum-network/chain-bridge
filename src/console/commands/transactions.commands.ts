@@ -12,7 +12,7 @@ export class TransactionsCommands {
         const spin = createSpinner();
         spin.start('Clearing the transactions dataset...');
 
-        // TODO: clear
+        await this._transactionService.repository.clear();
 
         spin.succeed('Transactions dataset cleared');
         process.exit(0);

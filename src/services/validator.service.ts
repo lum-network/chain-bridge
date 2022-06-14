@@ -15,6 +15,10 @@ export class ValidatorService {
         private readonly _lumNetworkService: LumNetworkService) {
     }
 
+    get repository(): Repository<ValidatorEntity> {
+        return this._repository;
+    }
+
     getByOperatorAddress = async (operator_address: string): Promise<ValidatorEntity> => {
         return this._repository.findOne({
             where: {

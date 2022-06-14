@@ -12,7 +12,7 @@ export class ValidatorsCommands {
         const spin = createSpinner();
         spin.start('Clearing the validators dataset...');
 
-        // TODO: clear
+        await this._validatorService.repository.clear();
 
         spin.succeed('Validators dataset cleared');
         process.exit(0);
