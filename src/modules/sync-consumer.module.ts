@@ -1,14 +1,14 @@
-import { HttpModule } from '@nestjs/axios';
-import { Module, OnApplicationBootstrap, OnModuleInit } from '@nestjs/common';
-import { BullModule, InjectQueue } from '@nestjs/bull';
-import { ClientsModule, Transport } from '@nestjs/microservices';
+import {HttpModule} from '@nestjs/axios';
+import {Module, OnApplicationBootstrap, OnModuleInit} from '@nestjs/common';
+import {BullModule, InjectQueue} from '@nestjs/bull';
+import {ClientsModule, Transport} from '@nestjs/microservices';
 import {ConfigModule, ConfigService} from "@nestjs/config";
 
 import * as Joi from "joi";
 
-import { Queue } from 'bull';
+import {Queue} from 'bull';
 
-import { BlockConsumer, CoreConsumer, NotificationConsumer } from '@app/async';
+import {BeamConsumer, BlockConsumer, CoreConsumer, NotificationConsumer} from '@app/async';
 
 import {
     BeamService,
@@ -41,7 +41,7 @@ import {databaseProviders} from "@app/database";
                     removeOnFail: true,
                 },
             })
-        },{
+        }, {
             name: Queues.QUEUE_FAUCET,
             imports: [ConfigModule],
             inject: [ConfigService],
@@ -77,10 +77,11 @@ import {databaseProviders} from "@app/database";
         HttpModule,
     ],
     controllers: [],
-    providers: [...databaseProviders, BeamService, BlockService, TransactionService, ValidatorService, BlockConsumer, CoreConsumer, NotificationConsumer, LumNetworkService],
+    providers: [...databaseProviders, BeamService, BlockService, TransactionService, ValidatorService, BeamConsumer, BlockConsumer, CoreConsumer, NotificationConsumer, LumNetworkService],
 })
 export class SyncConsumerModule implements OnModuleInit, OnApplicationBootstrap {
-    constructor(private readonly _lumNetworkService: LumNetworkService, @InjectQueue(Queues.QUEUE_DEFAULT) private readonly _queue: Queue) {}
+    constructor(private readonly _lumNetworkService: LumNetworkService, @InjectQueue(Queues.QUEUE_DEFAULT) private readonly _queue: Queue) {
+    }
 
     async onModuleInit() {
         // Make sure to initialize the lum network service

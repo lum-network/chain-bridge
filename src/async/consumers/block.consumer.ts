@@ -11,8 +11,8 @@ import {LumUtils, LumRegistry, LumMessages, LumConstants} from '@lum-network/sdk
 import {isBeam} from '@app/utils';
 import {NotificationChannels, NotificationEvents, QueueJobs, Queues} from '@app/utils/constants';
 
-import {BeamService, BlockService, LumNetworkService, TransactionService, ValidatorService} from '@app/services';
-import {BeamEntity, BlockEntity, TransactionEntity} from "@app/database";
+import {BlockService, LumNetworkService, TransactionService, ValidatorService} from '@app/services';
+import {BlockEntity, TransactionEntity} from "@app/database";
 
 
 @Processor(Queues.QUEUE_DEFAULT)
@@ -21,7 +21,6 @@ export class BlockConsumer {
 
     constructor(
         @InjectQueue(Queues.QUEUE_DEFAULT) private readonly _queue: Queue,
-        private readonly _beamService: BeamService,
         private readonly _blockService: BlockService,
         private readonly _configService: ConfigService,
         private readonly _lumNetworkService: LumNetworkService,
@@ -150,40 +149,23 @@ export class BlockConsumer {
                 return res;
             };
 
-            const getFormattedBeam = (value: any): BeamEntity => {
-                return {
-                    creator_address: value.creatorAddress,
-                    id: value.id,
-                    status: value.status,
-                    claim_address: value.claimAddress,
-                    funds_withdrawn: value.fundsWithdrawn,
-                    claimed: value.claimed,
-                    cancel_reason: value.cancelReason,
-                    hide_content: value.hideContent,
-                    schema: value.schema,
-                    claim_expires_at_block: value.claimExpiresAtBlock,
-                    closes_at_block: value.closesAtBlock,
-                    amount: value.amount,
-                    data: JSON.stringify(value.data),
-                };
-            };
-
             // Save entities
             await this._blockService.save(blockDoc);
             const transactions = await Promise.all(block.block.txs.map(getFormattedTx));
             await this._transactionService.saveBulk(transactions);
 
-            // Save beams
-            const beams: BeamEntity[] = [];
+            // Dispatch beams for ingest
             for (const txDoc of transactions) {
                 for (const message of txDoc.messages) {
                     if (isBeam(message.type_url)) {
-                        const beamDoc = getFormattedBeam(message.value);
-                        beams.push(beamDoc);
+                        await this._queue.add(QueueJobs.INGEST_BEAM, {id: message.value.id}, {
+                            jobId: `beam-${message.value.id}`,
+                            attempts: 5,
+                            backoff: 60000,
+                        });
                     }
                 }
             }
-            await this._beamService.saveBulk(beams);
 
             // If it's intended to notify frontend of incpming block
             if (job.data.notify) {

@@ -51,4 +51,8 @@ export class BeamEntity {
 
     @VersionColumn({type: "integer", default: 0})
     nonce?: number = 0;
+
+    constructor(data: Partial<BeamEntity>) {
+        Object.assign(this, data);
+    }
 }

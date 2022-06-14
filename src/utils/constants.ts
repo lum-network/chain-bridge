@@ -6,6 +6,7 @@ export enum Queues {
 }
 
 export enum QueueJobs {
+    INGEST_BEAM = 'ingest_beam',
     INGEST_BLOCK = 'ingest_block',
     TRIGGER_VERIFY_BLOCKS_BACKWARD = 'trigger_verify_blocks_backward',
     NOTIFICATION_SOCKET = 'push_notification',
