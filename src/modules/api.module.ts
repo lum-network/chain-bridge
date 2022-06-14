@@ -37,7 +37,7 @@ import {
 } from '@app/utils';
 
 import {GatewayWebsocket} from '@app/websocket';
-import {BlocksCommands, TransactionsCommands, ValidatorsCommands} from '@app/console/commands';
+import {BlocksCommands, RedisCommands, TransactionsCommands, ValidatorsCommands} from '@app/console/commands';
 import {databaseProviders} from "@app/database";
 
 @Module({
@@ -92,6 +92,7 @@ import {databaseProviders} from "@app/database";
         GatewayWebsocket,
         LumNetworkService,
         BlocksCommands,
+        RedisCommands,
         TransactionsCommands,
         ValidatorsCommands,
         {provide: APP_FILTER, useClass: HttpExceptionFilter},
