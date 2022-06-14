@@ -18,7 +18,7 @@ import {
     ValidatorService,
     BeamService
 } from '@app/services';
-import {Queues, ConfigMap} from '@app/utils';
+import {Queues, ConfigMap, QueueJobs} from '@app/utils';
 import {databaseProviders} from "@app/database";
 
 @Module({
@@ -108,7 +108,7 @@ export class SyncSchedulerModule implements OnModuleInit, OnApplicationBootstrap
         // Trigger block backward ingestion at startup
         const chainId = await this._lumNetworkService.client.getChainId();
         const blockHeight = await this._lumNetworkService.client.getBlockHeight();
-        /*await this._queue.add(
+        await this._queue.add(
             QueueJobs.TRIGGER_VERIFY_BLOCKS_BACKWARD,
             {
                 chainId: chainId,
@@ -118,6 +118,6 @@ export class SyncSchedulerModule implements OnModuleInit, OnApplicationBootstrap
             {
                 delay: 120000, // Delayed by 2 minutes to avoid some eventual concurrency issues
             },
-        );*/
+        );
     }
 }

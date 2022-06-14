@@ -19,6 +19,7 @@ export class AccountsController {
     @ApiOkResponse({status: 200, type: AccountResponse})
     @Get(':address')
     async show(@Param('address') address: string): Promise<DataResponse> {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const [transactions, totalTransactions] = await this._transactionService.fetchForAddress(address);
 
         const [account, balance, delegations, rewards, withdrawAddress, unbondings, redelegations, commissions, airdrop] = await Promise.all([
