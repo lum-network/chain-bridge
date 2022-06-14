@@ -37,8 +37,8 @@ export class BeamEntity {
     @Column({type: "integer", default: 0})
     closes_at_block: number;
 
-    @Column({type: "json"})
-    amount: AmountModel;
+    @Column({type: "json", nullable: true})
+    amount?: AmountModel;
 
     @Column({type: "json"})
     data: string;
