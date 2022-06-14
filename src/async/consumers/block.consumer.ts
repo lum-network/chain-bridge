@@ -173,6 +173,7 @@ export class BlockConsumer {
             const transactions = await Promise.all(block.block.txs.map(getFormattedTx));
             await this._transactionService.saveBulk(transactions);
 
+            // Save beams
             const beams: BeamEntity[] = [];
             for (const txDoc of transactions) {
                 for (const message of txDoc.messages) {
@@ -184,6 +185,7 @@ export class BlockConsumer {
             }
             await this._beamService.saveBulk(beams);
 
+            // If it's intended to notify frontend of incpming block
             if (job.data.notify) {
                 // Dispatch notification on websockets for frontend
                 await this._queue.add(QueueJobs.NOTIFICATION_SOCKET, {
@@ -194,7 +196,6 @@ export class BlockConsumer {
             }
         } catch (error) {
             this._logger.error(`Failed to ingest block ${job.data.blockHeight}: ${error}`, error.stack);
-            // Throw error to enforce retry strategy
             throw error;
         }
     }

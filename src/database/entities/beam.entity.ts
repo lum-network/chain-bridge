@@ -7,14 +7,14 @@ export class BeamEntity {
     @PrimaryColumn()
     id: string;
 
-    @Column({type: "varchar", length: 64})
-    creator_address: string;
+    @Column({type: "varchar", length: 64, nullable: true})
+    creator_address?: string;
 
     @Column({type: "integer", nullable: true})
     status: number;
 
-    @Column({type: "varchar", length: 64})
-    claim_address: string;
+    @Column({type: "varchar", length: 64, nullable: true})
+    claim_address?: string;
 
     @Column({type: "boolean", default: false})
     funds_withdrawn: boolean;

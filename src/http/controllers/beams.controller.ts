@@ -3,7 +3,7 @@ import {ApiOkResponse, ApiTags} from "@nestjs/swagger";
 
 import {plainToInstance} from "class-transformer";
 
-import { LumNetworkService } from '@app/services';
+import {BeamService} from '@app/services';
 import {BeamResponse, DataResponse, DataResponseMetadata} from "@app/http/responses";
 import {ExplorerRequest} from "@app/utils";
 
@@ -11,19 +11,19 @@ import {ExplorerRequest} from "@app/utils";
 @Controller('beams')
 @UseInterceptors(CacheInterceptor)
 export class BeamsController {
-    constructor(private readonly _lumNetworkService: LumNetworkService) {}
+    constructor(private readonly _beamService: BeamService) {}
 
     @ApiOkResponse({status: 200, type: [BeamResponse]})
     @Get('')
     async fetch(@Req() request: ExplorerRequest): Promise<DataResponse> {
-        const beams = await this._lumNetworkService.client.queryClient.beam.fetch();
+        const [beams, totalBeams] = await this._beamService.fetch(request.pagination.skip, request.pagination.limit);
         return new DataResponse({
             result: beams.map(beam => plainToInstance(BeamResponse, beam)),
             metadata: new DataResponseMetadata({
                 page: request.pagination.page,
                 limit: request.pagination.limit,
                 items_count: beams.length,
-                items_total: null,
+                items_total: totalBeams,
             })
         })
     }
@@ -31,7 +31,7 @@ export class BeamsController {
     @ApiOkResponse({type: BeamResponse})
     @Get(':id')
     async get(@Param('id') id: string): Promise<DataResponse> {
-        const beam = await this._lumNetworkService.client.queryClient.beam.get(id);
+        const beam = await this._beamService.get(id);
         return {
             result: plainToInstance(BeamResponse, beam)
         };
