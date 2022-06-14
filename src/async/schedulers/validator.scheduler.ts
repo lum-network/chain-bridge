@@ -5,6 +5,7 @@ import {LumConstants, LumTypes, LumUtils, LumRegistry} from '@lum-network/sdk-ja
 
 import {LumNetworkService, ValidatorService} from '@app/services';
 import {ValidatorEntity} from "@app/database";
+import {POST_FORK_HEIGHT} from "@app/utils";
 
 @Injectable()
 export class ValidatorScheduler {
@@ -17,7 +18,7 @@ export class ValidatorScheduler {
     async liveIngest() {
         try {
             // Fetch tendermint validators
-            const tmValidators = await this._lumNetworkService.client.tmClient.validatorsAll();
+            const tmValidators = await this._lumNetworkService.client.tmClient.validatorsAll(POST_FORK_HEIGHT);
 
             // Build validators list
             const validators: Partial<ValidatorEntity>[] = [];
