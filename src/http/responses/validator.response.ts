@@ -3,7 +3,6 @@ import {ApiProperty} from "@nestjs/swagger";
 import {Exclude, Expose, Type} from 'class-transformer';
 
 import {BalanceResponse} from '@app/http/responses/balance.response';
-import {BlockResponse} from '@app/http/responses/block.response';
 
 @Exclude()
 export class ValidatorDescriptionResponse {
