@@ -1,8 +1,6 @@
 version: '3.8'
 services:
   lm-bridge-redis:
-    networks:
-      - elastic
     image: redis:5
     command: [ sh, -c, "rm -f /data/dump.rdb && redis-server" ]  # disable persistence
     ports:
@@ -13,17 +11,6 @@ services:
       - "5432:5432"
     environment:
       POSTGRES_PASSWORD: emulator
-  lm-bridge-elasticsearch:
-    logging:
-      driver: none
-    networks:
-      - elastic
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.11.2
-    ports:
-      - "9200:9200"
-    environment:
-      - discovery.type=single-node
-      - xpack.security.enabled=false
   lm-node:
     logging:
       driver: none
@@ -50,6 +37,3 @@ services:
         lumd start --rpc.laddr tcp://0.0.0.0:26657
     ports:
       - "26657:26657"
-networks:
-  elastic:
-    name: elastic
