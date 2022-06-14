@@ -4,6 +4,8 @@ import {ApiOkResponse, ApiTags} from "@nestjs/swagger";
 import {plainToInstance} from 'class-transformer';
 
 import {TransactionService} from '@app/services';
+
+import {DefaultTake} from "@app/http/decorators";
 import {DataResponse, DataResponseMetadata, TransactionResponse} from '@app/http/responses';
 import {ExplorerRequest} from "@app/utils";
 
@@ -15,6 +17,7 @@ export class TransactionsController {
     }
 
     @ApiOkResponse({status: 200, type: [TransactionResponse]})
+    @DefaultTake(50)
     @Get('')
     async fetch(@Req() request: ExplorerRequest): Promise<DataResponse> {
         const [transactions, total] = await this._transactionService.fetch(request.pagination.skip, request.pagination.limit);
