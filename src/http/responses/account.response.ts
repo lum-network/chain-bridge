@@ -29,22 +29,27 @@ class VestingResponse {
 
     @ApiProperty({type: () => BalanceResponse})
     @Expose({ name: 'totalCoins' })
+    @Type(() => BalanceResponse)
     total_coins: BalanceResponse;
 
     @ApiProperty({type: () => BalanceResponse})
     @Expose({ name: 'unlockedCoins' })
+    @Type(() => BalanceResponse)
     unlocked_coins: BalanceResponse;
 
     @ApiProperty({type: () => BalanceResponse})
     @Expose({ name: 'lockedCoins' })
+    @Type(() => BalanceResponse)
     locked_coins: BalanceResponse;
 
     @ApiProperty({type: () => BalanceResponse})
     @Expose({ name: 'lockedDelegatedCoins' })
+    @Type(() => BalanceResponse)
     locked_delegated_coins: BalanceResponse;
 
     @ApiProperty({type: () => BalanceResponse})
     @Expose({ name: 'lockedBankCoins' })
+    @Type(() => BalanceResponse)
     locked_bank_coins: BalanceResponse;
 }
 
@@ -60,6 +65,7 @@ class AirdropResponse {
 
     @ApiProperty({type: () => [BalanceResponse]})
     @Expose({ name: 'initialClaimableAmount' })
+    @Type(() => BalanceResponse)
     initial_claimable_amount: BalanceResponse[];
 }
 
@@ -150,6 +156,7 @@ export class AccountResponse {
     @ApiProperty()
     @Expose()
     @ApiProperty({type: () => BalanceResponse})
+    @Type(() => BalanceResponse)
     balance: BalanceResponse;
 
     @ApiProperty()

@@ -77,7 +77,7 @@ export class ValidatorScheduler {
                 }
             }
 
-            // Save to elasticsearch
+            // Persist to database
             await this._validatorService.saveBulk(validators);
             this._logger.log(`Ingested validator set ${validators.length}`);
         } catch (error) {
