@@ -18,7 +18,7 @@ import {
     ValidatorService,
     BeamService
 } from '@app/services';
-import {Queues, ConfigMap, QueueJobs} from '@app/utils';
+import {Queues, ConfigMap, QueueJobs, POST_FORK_HEIGHT} from '@app/utils';
 import {databaseProviders} from "@app/database";
 
 @Module({
@@ -112,12 +112,13 @@ export class SyncSchedulerModule implements OnModuleInit, OnApplicationBootstrap
             QueueJobs.TRIGGER_VERIFY_BLOCKS_BACKWARD,
             {
                 chainId: chainId,
-                fromBlock: 1,
+                fromBlock: POST_FORK_HEIGHT,
                 toBlock: blockHeight,
             },
             {
                 delay: 120000, // Delayed by 2 minutes to avoid some eventual concurrency issues
             },
         );
+        this._logger.log(`Dispatched the backward blocks ingest`);
     }
 }
