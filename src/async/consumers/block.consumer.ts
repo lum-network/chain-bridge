@@ -50,12 +50,9 @@ export class BlockConsumer {
 
             // Get the operator address
             const proposerAddress = LumUtils.toHex(block.block.header.proposerAddress).toUpperCase();
-            let operatorAddress: string | undefined = undefined;
-            try {
-                const validatorDoc = await this._validatorService.getByProposerAddress(proposerAddress);
-                operatorAddress = validatorDoc && validatorDoc.operator_address;
-            } catch (error) {
-                throw new Error(`Failed to find validator address for ${proposerAddress}, exiting for retry (${error})`);
+            const validator = await this._validatorService.getByProposerAddress(proposerAddress);
+            if(!validator){
+                throw new Error(`Failed to find validator for ${proposerAddress}, exiting for retry`);
             }
 
             // Format block data
@@ -66,7 +63,7 @@ export class BlockConsumer {
                 tx_count: block.block.txs.length,
                 tx_hashes: block.block.txs.map((tx) => LumUtils.toHex(LumUtils.sha256(tx)).toUpperCase()),
                 proposer_address: proposerAddress,
-                operator_address: operatorAddress,
+                operator_address: validator.operator_address,
                 raw_block: LumUtils.toJSON(block) as string,
             };
 
