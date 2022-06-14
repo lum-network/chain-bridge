@@ -20,7 +20,12 @@ export class BlockService {
         return query.getManyAndCount();
     };
 
-    countInRange = async(start: number, end: number): Promise<number> => {
+    fetchByOperatorAddress = async (address: string, skip: number, take: number): Promise<[BlockEntity[], number]> => {
+        const query = this._repository.createQueryBuilder('blocks').where('operator_address = :address', {address}).orderBy('blocks.height', 'DESC').skip(skip).take(take);
+        return query.getManyAndCount();
+    }
+
+    countInRange = async (start: number, end: number): Promise<number> => {
         return this._repository.count({
             where: {
                 height: Between(start, end)

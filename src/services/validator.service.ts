@@ -1,18 +1,14 @@
-import {Inject, Injectable, NotFoundException} from '@nestjs/common';
+import {Inject, Injectable} from '@nestjs/common';
 
-import {LumUtils} from '@lum-network/sdk-javascript';
 import {Repository} from "typeorm";
 
-import {convertValAddressToAccAddress} from '@app/utils';
-
-import {LumNetworkService} from '@app/services/lum-network.service';
 import {ValidatorEntity} from "@app/database";
 
 @Injectable()
 export class ValidatorService {
     constructor(
         @Inject('VALIDATOR_REPOSITORY') private readonly _repository: Repository<ValidatorEntity>,
-        private readonly _lumNetworkService: LumNetworkService) {
+        ) {
     }
 
     get repository(): Repository<ValidatorEntity> {
@@ -48,12 +44,10 @@ export class ValidatorService {
         return query.getManyAndCount();
     };
 
-    get = async (address: string): Promise<any> => {
-        const [validator, delegations, rewards/*, blocksResponse*/] = await Promise.all([
+    getUNSAFE = async (address: string): Promise<any> => {
+        /*const [validator, delegations] = await Promise.all([
             this._lumNetworkService.client.queryClient.staking.validator(address).catch(() => null),
             this._lumNetworkService.client.queryClient.staking.validatorDelegations(address).catch(() => null),
-            this._lumNetworkService.client.queryClient.distribution.validatorOutstandingRewards(address).catch(() => null),
-            // blocksPromise.catch(() => null),
         ]);
 
         if (!validator) {
@@ -62,10 +56,6 @@ export class ValidatorService {
 
         if (!delegations) {
             throw new NotFoundException('validator_delegations_not_found');
-        }
-
-        if (!rewards) {
-            throw new NotFoundException('validator_rewards_not_found');
         }
 
         const accAddress = convertValAddressToAccAddress(validator.validator.operatorAddress);
@@ -80,12 +70,6 @@ export class ValidatorService {
             }
         }
 
-        const blocks = [];
-
-        /*if (blocksResponse && blocksResponse.body && blocksResponse.body.hits && blocksResponse.body.hits.hits) {
-            blocks = blocksResponse.body.hits.hits.map((hit) => plainToInstance(BlockResponse, hit._source));
-        }*/
-
         // Merge
         return {
             ...validator.validator,
@@ -93,8 +77,7 @@ export class ValidatorService {
             selfBonded,
             delegations: delegations.delegationResponses,
             delegationsNextKey: delegations.pagination.nextKey.toString(),
-            rewards,
-            blocks,
-        };
+        };*/
+        return null;
     };
 }

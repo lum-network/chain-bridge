@@ -144,16 +144,6 @@ export class ValidatorResponse {
     @Expose({name: 'delegationsNextKey'})
     delegations_next_key: string;
 
-    @ApiProperty({type: () => [BalanceResponse]})
-    @Expose()
-    @Type(() => BalanceResponse)
-    rewards: BalanceResponse[];
-
-    @ApiProperty({type: () => [BlockResponse]})
-    @Expose()
-    @Type(() => BlockResponse)
-    blocks: BlockResponse[];
-
     constructor(data: Partial<ValidatorResponse>) {
         Object.assign(this, data);
     }
