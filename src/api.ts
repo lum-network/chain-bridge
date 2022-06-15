@@ -1,22 +1,13 @@
-import { NestFactory } from '@nestjs/core';
-import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import {NestFactory} from '@nestjs/core';
+import {ConfigService} from "@nestjs/config";
+import {DocumentBuilder, SwaggerModule} from "@nestjs/swagger";
+import {MicroserviceOptions, Transport} from '@nestjs/microservices';
 
 import * as Sentry from '@sentry/node';
 
-import { ApiModule } from '@app/modules';
-
-import { config } from '@app/utils';
+import {ApiModule} from '@app/modules';
 
 async function bootstrap() {
-    // Sentry DSN
-    const sentryDsn = config.getSentryDsn();
-    if (sentryDsn) {
-        Sentry.init({
-            dsn: sentryDsn,
-            tracesSampleRate: 1.0,
-        });
-    }
-
     try {
         // API module setup
         const app = await NestFactory.create(ApiModule);
@@ -27,16 +18,33 @@ async function bootstrap() {
             {
                 transport: Transport.REDIS,
                 options: {
-                    url: config.getRedisURL(),
+                    url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
                 },
             },
-            { inheritAppConfig: true },
+            {inheritAppConfig: true},
         );
 
+        const config = app.get(ConfigService);
+
+        // Sentry DSN
+        const sentryDsn = config.get<string>('SENTRY_DSN');
+        if (sentryDsn) {
+            Sentry.init({
+                dsn: sentryDsn,
+                tracesSampleRate: 1.0,
+            });
+        }
+
+        // Swagger
+        const swagger = new DocumentBuilder().setTitle('Chain Bridge').setDescription('Opinionated blockchain bridge').setVersion('1.0').build();
+        const document = SwaggerModule.createDocument(app, swagger);
+        SwaggerModule.setup('docs', app, document);
+
         await app.startAllMicroservices();
-        await app.listen(config.getApiPort());
+        await app.listen(config.get<string>('API_PORT'));
     } catch (e) {
         Sentry.captureException(e);
     }
 }
+
 bootstrap();

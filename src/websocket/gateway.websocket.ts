@@ -13,7 +13,13 @@ import {Server, Socket} from 'socket.io';
 
 import {NotificationChannels} from '@app/utils';
 
-@WebSocketGateway({cors: true})
+@WebSocketGateway({
+    serveClient: false,
+    cors: {
+        preflightContinue: true,
+        origin: '*'
+    }
+})
 export class GatewayWebsocket implements OnGatewayInit, OnGatewayConnection {
     private _logger: Logger = new Logger(GatewayWebsocket.name);
 

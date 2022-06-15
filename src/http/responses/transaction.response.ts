@@ -1,6 +1,10 @@
-import { Exclude, Expose, Type } from 'class-transformer';
-import { LumMessages, LumTypes } from '@lum-network/sdk-javascript';
-import { BalanceResponse } from '@app/http/responses/balance.response';
+import {ApiProperty} from "@nestjs/swagger";
+
+import {Exclude, Expose, Type} from 'class-transformer';
+
+import {LumMessages, LumTypes} from '@lum-network/sdk-javascript';
+
+import {BalanceResponse} from '@app/http/responses/balance.response';
 import {
     ClaimBeamMessageResponse,
     CreateValidatorMessageResponse,
@@ -31,49 +35,66 @@ import {
 
 @Exclude()
 export class TransactionResponse {
+    @ApiProperty()
     @Expose()
     height: number;
 
+    @ApiProperty()
     @Expose()
     hash: string;
 
+    @ApiProperty()
     @Expose()
     block_hash: string;
 
+    @ApiProperty()
     @Expose()
     action: string;
 
+    @ApiProperty({type: () => BalanceResponse})
     @Expose()
+    @Type(() => BalanceResponse)
     amount: BalanceResponse;
 
+    @ApiProperty({type: () => BalanceResponse})
     @Expose()
+    @Type(() => BalanceResponse)
     auto_claim_reward: BalanceResponse;
 
+    @ApiProperty()
     @Expose()
     success: boolean;
 
+    @ApiProperty()
     @Expose()
     gas_wanted: number;
 
+    @ApiProperty()
     @Expose()
     gas_used: number;
 
+    @ApiProperty({type: () => [BalanceResponse]})
     @Expose()
+    @Type(() => BalanceResponse)
     fees: BalanceResponse[];
 
+    @ApiProperty({isArray: true})
     @Expose()
     addresses: string[];
 
+    @ApiProperty()
     @Expose()
     memo: string;
 
+    @ApiProperty()
     @Expose()
     time: Date;
 
+    @ApiProperty({type: () => [MessageResponse]})
     @Expose()
     @Type(() => MessageResponse, {
         discriminator: {
-            property: 'typeUrl',
+            property: 'type_url',
             subTypes: [
                 { value: SendMessageResponse, name: LumMessages.MsgSendUrl },
                 { value: MultiSendResponse, name: LumMessages.MsgMultiSendUrl },
@@ -105,12 +126,15 @@ export class TransactionResponse {
     })
     messages: MessageResponse[];
 
+    @ApiProperty()
     @Expose()
     message_type: string | null;
 
+    @ApiProperty()
     @Expose()
     messages_count: number;
 
+    @ApiProperty()
     @Expose()
     raw_logs: LumTypes.Log[];
 

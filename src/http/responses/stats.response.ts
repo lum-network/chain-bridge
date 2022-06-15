@@ -1,14 +1,19 @@
-import { Exclude, Expose } from 'class-transformer';
+import {ApiProperty} from "@nestjs/swagger";
+
+import {Exclude, Expose} from 'class-transformer';
 
 @Exclude()
 export class StatsResponse {
+    @ApiProperty()
     @Expose()
     inflation: string;
 
-    @Expose({ name: 'chainId' })
+    @ApiProperty()
+    @Expose({name: 'chainId'})
     chain_id: string;
 
-    @Expose({ name: 'totalSupply' })
+    @ApiProperty()
+    @Expose({name: 'totalSupply'})
     total_supply: string;
 
     constructor(data: Partial<StatsResponse>) {

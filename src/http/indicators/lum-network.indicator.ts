@@ -10,8 +10,7 @@ export class LumNetworkIndicator extends HealthIndicator {
 
     async isHealthy(): Promise<HealthIndicatorResult> {
         try {
-            const clt = await this._lumNetworkService.getClient();
-            const chainId = await clt.getChainId();
+            const chainId = await this._lumNetworkService.client.getChainId();
             return this.getStatus('lumnetwork', chainId === 'lumnetwork');
         } catch (error) {
             throw new HealthCheckError('Lum network ping failed', error);

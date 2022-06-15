@@ -1,0 +1,59 @@
+import {Column, CreateDateColumn, Entity, PrimaryColumn, UpdateDateColumn, VersionColumn} from "typeorm";
+
+import {AmountModel} from "@app/database/entities/amount.model";
+import {BeamData} from "@lum-network/sdk-javascript/build/codec/beam/beam";
+
+@Entity({name: "beams"})
+export class BeamEntity {
+    @PrimaryColumn()
+    id: string;
+
+    @Column({type: "varchar", length: 64, nullable: true})
+    creator_address?: string;
+
+    @Column({type: "integer", nullable: true})
+    status: number;
+
+    @Column({type: "varchar", length: 64, nullable: true})
+    claim_address?: string;
+
+    @Column({type: "boolean", default: false})
+    funds_withdrawn: boolean;
+
+    @Column({type: "boolean", default: false})
+    claimed?: boolean;
+
+    @Column({type: "varchar", length: 128, nullable: true})
+    cancel_reason?: string;
+
+    @Column({type: "boolean", default: false})
+    hide_content?: boolean;
+
+    @Column({type: "varchar", length: 32})
+    schema: string;
+
+    @Column({type: "integer", default: 0})
+    claim_expires_at_block: number;
+
+    @Column({type: "integer", default: 0})
+    closes_at_block: number;
+
+    @Column({type: "json", nullable: true})
+    amount?: AmountModel;
+
+    @Column({type: "json"})
+    data: BeamData;
+
+    @CreateDateColumn({type: 'date', default: () => "CURRENT_DATE"})
+    created_at?: Date = new Date;
+
+    @UpdateDateColumn({type: 'date', default: null})
+    updated_at?: Date = null;
+
+    @VersionColumn({type: "integer", default: 0})
+    nonce?: number = 0;
+
+    constructor(data: Partial<BeamEntity>) {
+        Object.assign(this, data);
+    }
+}

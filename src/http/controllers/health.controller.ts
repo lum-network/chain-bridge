@@ -1,15 +1,17 @@
 import { Controller, Get } from '@nestjs/common';
 import { HealthCheck, HealthCheckService } from '@nestjs/terminus';
 
-import { ElasticsearchIndicator, LumNetworkIndicator } from '@app/http/indicators';
+import { LumNetworkIndicator } from '@app/http/indicators';
 
 @Controller('health')
 export class HealthController {
-    constructor(private readonly _health: HealthCheckService, private readonly _es: ElasticsearchIndicator, private readonly _lm: LumNetworkIndicator) {}
+    constructor(private readonly _health: HealthCheckService, private readonly _lm: LumNetworkIndicator) {}
 
     @Get()
     @HealthCheck()
-    check() {
-        return this._health.check([async () => this._es.isHealthy(), async () => this._lm.isHealthy()]);
+    async check() {
+        return {
+            result: await this._health.check([async () => this._lm.isHealthy()])
+        };
     }
 }

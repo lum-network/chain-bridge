@@ -4,35 +4,54 @@ import { BullModule, InjectQueue } from '@nestjs/bull';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 
+import {ConfigModule, ConfigService} from "@nestjs/config";
+import * as Joi from "joi";
+
 import { Queue } from 'bull';
 
 import { BlockScheduler, ValidatorScheduler } from '@app/async';
 
-import { ElasticService, LumService, LumNetworkService, BlockService, TransactionService, ValidatorService } from '@app/services';
-import { Queues, QueueJobs, config } from '@app/utils';
+import {
+    LumNetworkService,
+    BlockService,
+    TransactionService,
+    ValidatorService,
+    BeamService, ValidatorDelegationService
+} from '@app/services';
+import {Queues, ConfigMap, QueueJobs, POST_FORK_HEIGHT} from '@app/utils';
+import {databaseProviders} from "@app/database";
 
 @Module({
     imports: [
-        BullModule.registerQueue(
-            {
-                name: Queues.QUEUE_DEFAULT,
+        ConfigModule.forRoot({
+            isGlobal: true,
+            validationSchema: Joi.object(ConfigMap),
+        }),
+        BullModule.registerQueueAsync({
+            name: Queues.QUEUE_DEFAULT,
+            imports: [ConfigModule],
+            inject: [ConfigService],
+            useFactory: (configService: ConfigService) => ({
                 redis: {
-                    host: config.getRedisHost(),
-                    port: config.getRedisPort(),
+                    host: configService.get<string>('REDIS_HOST'),
+                    port: configService.get<number>('REDIS_PORT')
                 },
-                prefix: config.getRedisPrefix(),
+                prefix: configService.get<string>('REDIS_PREFIX'),
                 defaultJobOptions: {
                     removeOnComplete: true,
                     removeOnFail: true,
                 },
-            },
-            {
-                name: Queues.QUEUE_FAUCET,
+            })
+        },{
+            name: Queues.QUEUE_FAUCET,
+            imports: [ConfigModule],
+            inject: [ConfigService],
+            useFactory: (configService: ConfigService) => ({
                 redis: {
-                    host: config.getRedisHost(),
-                    port: config.getRedisPort(),
+                    host: configService.get<string>('REDIS_HOST'),
+                    port: configService.get<number>('REDIS_PORT')
                 },
-                prefix: config.getRedisPrefix(),
+                prefix: configService.get<string>('REDIS_PREFIX'),
                 limiter: {
                     max: 1,
                     duration: 30,
@@ -41,31 +60,39 @@ import { Queues, QueueJobs, config } from '@app/utils';
                     removeOnComplete: true,
                     removeOnFail: true,
                 },
-            },
-        ),
-        ClientsModule.register([
+            })
+        }),
+        ClientsModule.registerAsync([
             {
                 name: 'API',
-                transport: Transport.REDIS,
-                options: {
-                    url: config.getRedisURL(),
-                },
-            },
+                imports: [ConfigModule],
+                inject: [ConfigService],
+                useFactory: (configService: ConfigService) => ({
+                    transport: Transport.REDIS,
+                    options: {
+                        url: `redis://${configService.get<string>('REDIS_HOST')}:${configService.get<number>('REDIS_PORT')}`,
+                    },
+                })
+            }
         ]),
         ScheduleModule.forRoot(),
         HttpModule,
     ],
     controllers: [],
-    providers: [BlockService, TransactionService, ValidatorService, BlockScheduler, ValidatorScheduler, ElasticService, LumNetworkService, LumService],
+    providers: [...databaseProviders, BeamService, BlockService, TransactionService, ValidatorService, ValidatorDelegationService, BlockScheduler, ValidatorScheduler, LumNetworkService],
 })
 export class SyncSchedulerModule implements OnModuleInit, OnApplicationBootstrap {
     private readonly _logger: Logger = new Logger(SyncSchedulerModule.name);
 
-    constructor(private readonly _elasticService: ElasticService, private readonly _lumNetworkService: LumNetworkService, @InjectQueue(Queues.QUEUE_DEFAULT) private readonly _queue: Queue) {}
+    constructor(
+        @InjectQueue(Queues.QUEUE_DEFAULT) private readonly _queue: Queue,
+        private readonly _configService: ConfigService,
+        private readonly _lumNetworkService: LumNetworkService
+    ) {}
 
     async onModuleInit() {
         // Log out
-        const ingestEnabled = config.isIngestEnabled() ? 'enabled' : 'disabled';
+        const ingestEnabled = this._configService.get<boolean>('INGEST_ENABLED') ? 'enabled' : 'disabled';
         this._logger.log(`AppModule ingestion: ${ingestEnabled}`);
 
         // Make sure to initialize the lum network service
@@ -79,19 +106,19 @@ export class SyncSchedulerModule implements OnModuleInit, OnApplicationBootstrap
         }
 
         // Trigger block backward ingestion at startup
-        const lumClt = await this._lumNetworkService.getClient();
-        const chainId = await lumClt.getChainId();
-        const blockHeight = await lumClt.getBlockHeight();
+        const chainId = await this._lumNetworkService.client.getChainId();
+        const blockHeight = await this._lumNetworkService.client.getBlockHeight();
         await this._queue.add(
             QueueJobs.TRIGGER_VERIFY_BLOCKS_BACKWARD,
             {
                 chainId: chainId,
-                fromBlock: 1,
+                fromBlock: POST_FORK_HEIGHT,
                 toBlock: blockHeight,
             },
             {
                 delay: 120000, // Delayed by 2 minutes to avoid some eventual concurrency issues
             },
         );
+        this._logger.log(`Dispatched the backward blocks ingest`);
     }
 }

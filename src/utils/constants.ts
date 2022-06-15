@@ -1,16 +1,5 @@
-/**
- * Document version to store during ingestion
- * This number should only be incremented in case one of the document model changes
- * Incrementing this number will force re-ingest all data ingested with a previous versioning
- */
-export const IngestionDocumentVersion = 1;
-
-export enum ElasticIndexes {
-    INDEX_BLOCKS = 'blocks',
-    INDEX_TRANSACTIONS = 'transactions',
-    INDEX_VALIDATORS = 'validators',
-    INDEX_BEAMS = 'beams',
-}
+export const POST_FORK_HEIGHT = 1960666;
+export const SIGNED_BLOCK_WINDOW = 10000;
 
 export enum Queues {
     QUEUE_DEFAULT = 'default',
@@ -18,6 +7,7 @@ export enum Queues {
 }
 
 export enum QueueJobs {
+    INGEST_BEAM = 'ingest_beam',
     INGEST_BLOCK = 'ingest_block',
     TRIGGER_VERIFY_BLOCKS_BACKWARD = 'trigger_verify_blocks_backward',
     NOTIFICATION_SOCKET = 'push_notification',
@@ -33,5 +23,3 @@ export enum NotificationEvents {
     EVENT_NEW_BLOCK = 'new-block',
     EVENT_NEW_TRANSACTION = 'new-transaction',
 }
-
-export const OSMOSIS_API_URL = 'https://api-osmosis.imperator.co';

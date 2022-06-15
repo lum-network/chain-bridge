@@ -1,87 +1,138 @@
-import { BadRequestException, CacheInterceptor, Controller, Get, Logger, NotFoundException, Param, UseInterceptors } from '@nestjs/common';
-import { InjectQueue } from '@nestjs/bull';
-import { MessagePattern, Payload } from '@nestjs/microservices';
+import {
+    BadRequestException,
+    Controller,
+    Get,
+    Logger,
+} from '@nestjs/common';
+import {ApiOkResponse, ApiTags} from "@nestjs/swagger";
+import {ConfigService} from "@nestjs/config";
+import {MessagePattern, Payload} from '@nestjs/microservices';
 
-import { plainToClass } from 'class-transformer';
+import {plainToInstance} from 'class-transformer';
 
-import { Queue } from 'bull';
+import {LumNetworkService, BlockService, TransactionService} from '@app/services';
+import {BalanceResponse, DataResponse, LumResponse} from '@app/http/responses';
+import {GatewayWebsocket} from '@app/websocket';
+import {keyToHex} from "@lum-network/sdk-javascript/build/utils";
 
-import { LumConstants } from '@lum-network/sdk-javascript';
-
-import { ElasticService, LumService, LumNetworkService } from '@app/services';
-import { ElasticIndexes, QueueJobs, Queues, config } from '@app/utils';
-import { LumResponse, StatsResponse } from '@app/http/responses';
-import { GatewayWebsocket } from '@app/websocket';
-
+@ApiTags('core')
 @Controller('')
 export class CoreController {
     private readonly _logger: Logger = new Logger(CoreController.name);
 
     constructor(
-        @InjectQueue(Queues.QUEUE_FAUCET) private readonly _queue: Queue,
-        private readonly _elasticService: ElasticService,
+        private readonly _blockService: BlockService,
+        private readonly _configService: ConfigService,
         private readonly _lumNetworkService: LumNetworkService,
-        private readonly _lumService: LumService,
         private readonly _messageGateway: GatewayWebsocket,
-    ) {}
-
-    @Get('search/:data')
-    @UseInterceptors(CacheInterceptor)
-    async search(@Param('data') data: string) {
-        // We check the different combinations
-        if (/^\d+$/.test(data)) {
-            return { type: 'block', data };
-        } else if (String(data).startsWith(LumConstants.LumBech32PrefixValAddr)) {
-            return { type: 'validator', data };
-        } else if (String(data).startsWith(LumConstants.LumBech32PrefixAccAddr)) {
-            return { type: 'account', data };
-        } else {
-            if (await this._elasticService.documentExists(ElasticIndexes.INDEX_BLOCKS, data)) {
-                return { type: 'block', data };
-            } else if (await this._elasticService.documentExists(ElasticIndexes.INDEX_TRANSACTIONS, data)) {
-                return { type: 'transaction', data };
-            } else {
-                throw new NotFoundException('data_not_found');
-            }
-        }
+        private readonly _transactionService: TransactionService
+    ) {
     }
 
-    @Get('stats')
-    async stats() {
-        const lumClt = await this._lumNetworkService.getClient();
+    @ApiOkResponse({status: 200, type: LumResponse})
+    @Get('price')
+    async price(): Promise<DataResponse> {
+        const lumPrice = await this._lumNetworkService.getPrice();
 
-        const [inflation, totalSupply, chainId] = await Promise.all([
-            lumClt.queryClient.mint.inflation().catch(() => null),
-            lumClt.getAllSupplies().catch(() => null),
-            lumClt.getChainId().catch(() => null),
-        ]);
-
-        return plainToClass(StatsResponse, { inflation: inflation || '0', totalSupply, chainId });
-    }
-
-    @Get('lum')
-    async lum() {
-        const [lum, previousDayLum] = await Promise.all([this._lumService.getLum().catch(() => null), this._lumService.getPreviousDayLum().catch(() => null)]);
-
-        if (!lum || !lum.data || !lum.data.length || !previousDayLum || !previousDayLum.data || !previousDayLum.data.length || !previousDayLum.data[previousDayLum.data.length - 24]) {
+        if (!lumPrice || !lumPrice.data || !lumPrice.data) {
             throw new BadRequestException('data_not_found');
         }
 
-        const res = {
-            ...lum.data[0],
-            previous_day_price: previousDayLum.data[previousDayLum.data.length - 24].close,
-        };
-
-        return plainToClass(LumResponse, res);
-    }
-
-    @Get('faucet/:address')
-    async faucet(@Param('address') address: string) {
-        if (!config.getFaucetMnemonic()) {
-            throw new BadRequestException('faucet_not_available');
+        // Compute the previous price
+        const price = lumPrice.data.market_data.current_price.usd;
+        let previousPrice = 0.0;
+        const priceChange = String(lumPrice.data.market_data.price_change_24h);
+        if (priceChange[0] === '-') {
+            previousPrice = price + parseFloat(priceChange.split('-')[1]);
+        } else {
+            previousPrice = price - parseFloat(priceChange);
         }
 
-        return this._queue.add(QueueJobs.MINT_FAUCET_REQUEST, { address });
+        const res = {
+            price: price,
+            denom: lumPrice.data.platforms.cosmos,
+            symbol: lumPrice.data.symbol.toUpperCase(),
+            liquidity: 0.0,
+            volume_24h: lumPrice.data.market_data.total_volume.usd,
+            name: lumPrice.data.name,
+            previous_day_price: previousPrice
+        };
+
+        return {
+            result: plainToInstance(LumResponse, res)
+        };
+    }
+
+    @ApiOkResponse({status: 200, type: [BalanceResponse]})
+    @Get('assets')
+    async assets(): Promise<DataResponse> {
+        const assets = await this._lumNetworkService.client.queryClient.bank.totalSupply();
+        return {
+            result: assets
+        }
+    }
+
+    @Get('params')
+    async params(): Promise<DataResponse> {
+        const [mintingParams, stakingParams, govDepositParams, govVoteParams, govTallyParams, distributionParams, slashingParams, communityPoolParams] = await Promise.all([
+            this._lumNetworkService.client.queryClient.mint.params(),
+            this._lumNetworkService.client.queryClient.staking.params(),
+            this._lumNetworkService.client.queryClient.gov.params("deposit"),
+            this._lumNetworkService.client.queryClient.gov.params("voting"),
+            this._lumNetworkService.client.queryClient.gov.params('tallying'),
+            this._lumNetworkService.client.queryClient.distribution.params(),
+            this._lumNetworkService.client.queryClient.slashing.params(),
+            this._lumNetworkService.client.queryClient.distribution.communityPool()
+        ]);
+        return {
+            result: {
+                mint: {
+                    denom: mintingParams.mintDenom,
+                    inflation: {
+                        rate_change: mintingParams.inflationRateChange,
+                        max: mintingParams.inflationMax,
+                        min: mintingParams.inflationMin
+                    },
+                    goal_bonded: mintingParams.goalBonded,
+                    blocks_per_year: mintingParams.blocksPerYear.low
+                },
+                staking: {
+                    max_validators: stakingParams.params.maxValidators,
+                    max_entries: stakingParams.params.maxEntries,
+                    historical_entries: stakingParams.params.historicalEntries,
+                    denom: stakingParams.params.bondDenom,
+                    unbonding_time: stakingParams.params.unbondingTime.seconds.low
+                },
+                gov: {
+                    vote: {
+                        period: govVoteParams.votingParams.votingPeriod.seconds.low
+                    },
+                    deposit: {
+                        minimum: govDepositParams.depositParams.minDeposit,
+                        period: govDepositParams.depositParams.maxDepositPeriod.seconds.low
+                    },
+                    tally: {
+                        quorum: keyToHex(govTallyParams.tallyParams.quorum).toString(),
+                        threshold: keyToHex(govTallyParams.tallyParams.threshold).toString(),
+                        veto_threshold: keyToHex(govTallyParams.tallyParams.vetoThreshold).toString()
+                    }
+                },
+                distribution: {
+                    community_tax: distributionParams.params.communityTax,
+                    base_proposer_reward: distributionParams.params.baseProposerReward,
+                    bonus_proposer_reward: distributionParams.params.bonusProposerReward,
+                    withdraw_address_enabled: distributionParams.params.withdrawAddrEnabled,
+                    community_pool: communityPoolParams.pool
+                },
+                slashing: {
+                    signed_blocks_window: slashingParams.params.signedBlocksWindow.low,
+                    min_signed_per_window: keyToHex(slashingParams.params.minSignedPerWindow),
+                    slash_fraction_double_sign: keyToHex(slashingParams.params.slashFractionDoubleSign).toString(),
+                    slash_fraction_downtime: keyToHex(slashingParams.params.slashFractionDowntime).toString(),
+                    downtime_jail_duration: slashingParams.params.downtimeJailDuration.seconds.low
+                }
+            }
+        };
     }
 
     @MessagePattern('notifySocket')

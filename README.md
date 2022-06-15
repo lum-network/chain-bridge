@@ -30,8 +30,11 @@ You should have a .env file at the root level with the following entries (and th
 ```bash
 LUM_NETWORK_ENDPOINT=http://127.0.0.1:26657
 
-ELASTICSEARCH_HOST=127.0.0.1
-ELASTICSEARCH_PORT=9200
+DATABASE_HOST=127.0.0.1
+DATABASE_PORT=5432
+DATABASE_USER=postgres
+DATABASE_PASSWORD=emulator
+DATABASE_NAME=postgres
 
 REDIS_HOST=127.0.0.1
 REDIS_PORT=6379

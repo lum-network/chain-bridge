@@ -1,35 +1,63 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { Cron, CronExpression } from '@nestjs/schedule';
-import { LumConstants, LumTypes, LumUtils, LumRegistry } from '@lum-network/sdk-javascript';
+import {Injectable, Logger} from '@nestjs/common';
+import {Cron, CronExpression} from '@nestjs/schedule';
 
-import { LumNetworkService, ElasticService } from '@app/services';
-import { ValidatorDocument } from '@app/utils/models';
-import { ElasticIndexes, IngestionDocumentVersion } from '@app/utils/constants';
+import {LumConstants, LumTypes, LumUtils, LumRegistry} from '@lum-network/sdk-javascript';
+
+import {LumNetworkService, ValidatorDelegationService, ValidatorService} from '@app/services';
+import {ValidatorEntity} from "@app/database";
+import {POST_FORK_HEIGHT, SIGNED_BLOCK_WINDOW} from "@app/utils";
 
 @Injectable()
 export class ValidatorScheduler {
     private readonly _logger: Logger = new Logger(ValidatorScheduler.name);
 
-    constructor(private readonly _elasticService: ElasticService, private readonly _lumNetworkService: LumNetworkService) {}
+    constructor(
+        private readonly _lumNetworkService: LumNetworkService,
+        private readonly _validatorService: ValidatorService,
+        private readonly _validatorDelegationService: ValidatorDelegationService) {
+    }
 
-    @Cron(CronExpression.EVERY_30_SECONDS, { name: 'validators_live_ingest' })
-    async liveIngest() {
+    @Cron(CronExpression.EVERY_5_MINUTES)
+    async delegationSync() {
+        this._logger.log(`Syncing validator delegations from chain...`);
+        const validators = await this._validatorService.fetchAll();
+        this._logger.log(`Found ${validators.length} validators to sync`);
+
+        // For each stored validator, we query chain and ask for delegations
+        for (const validator of validators) {
+            let page: Uint8Array | undefined = undefined;
+            while (true) {
+                const delegations = await this._lumNetworkService.client.queryClient.staking.validatorDelegations(validator.operator_address, page);
+                this._logger.log(`Found ${delegations.delegationResponses.length} delegations to sync for validator ${validator.operator_address}`);
+
+                // For each delegation, we create or update the matching entry in our database
+                for (const delegation of delegations.delegationResponses) {
+                    await this._validatorDelegationService.createOrUpdate(delegation.delegation.delegatorAddress, delegation.delegation.validatorAddress, delegation.delegation.shares, {
+                        denom: delegation.balance.denom,
+                        amount: parseFloat(delegation.balance.amount)
+                    });
+                }
+
+                // If we have pagination key, we just patch it and it will process in the next loop
+                if (delegations.pagination && delegations.pagination.nextKey && delegations.pagination.nextKey.length) {
+                    page = delegations.pagination.nextKey;
+                } else {
+                    break;
+                }
+            }
+        }
+    }
+
+    @Cron(CronExpression.EVERY_10_SECONDS, {name: 'validators_live_ingest'})
+    async basicSync() {
         try {
-            this._logger.debug(`Ingesting validators set`);
-
-            // Acquire lum network client
-            const clt = await this._lumNetworkService.getClient();
-            const chainId = await clt.getChainId();
-
             // Fetch tendermint validators
-            const tmValidators = await clt.tmClient.validatorsAll();
+            const tmValidators = await this._lumNetworkService.client.tmClient.validatorsAll(POST_FORK_HEIGHT);
 
             // Build validators list
-            const validators: ValidatorDocument[] = [];
+            const validators: Partial<ValidatorEntity>[] = [];
             for (const val of tmValidators.validators) {
                 validators.push({
-                    doc_version: IngestionDocumentVersion,
-                    chain_id: chainId,
                     proposer_address: LumUtils.toHex(val.address).toUpperCase(),
                     consensus_address: LumUtils.Bech32.encode(LumConstants.LumBech32PrefixConsAddr, val.address),
                     consensus_pubkey: LumUtils.Bech32.encode(LumConstants.LumBech32PrefixConsPub, val.pubkey.data),
@@ -42,15 +70,43 @@ export class ValidatorScheduler {
             for (const s of statuses) {
                 page = undefined;
                 while (true) {
-                    const stakingValidators = await clt.queryClient.staking.validators(s as any, page);
+                    const stakingValidators = await this._lumNetworkService.client.queryClient.staking.validators(s as any, page);
                     for (const val of stakingValidators.validators) {
                         const pubKey = LumRegistry.decode(val.consensusPubkey) as LumTypes.PubKey;
                         const consensus_pubkey = LumUtils.Bech32.encode(LumConstants.LumBech32PrefixConsPub, pubKey.key);
+
                         // Find the tendermint validator and add the operator address to it
                         for (let v = 0; v < validators.length; v++) {
                             if (validators[v].consensus_pubkey === consensus_pubkey) {
+                                // Fetch the signing infos
+                                const signingInfos = await this._lumNetworkService.client.queryClient.slashing.signing_info(validators[v].consensus_address);
+
+                                // Set the required informations
                                 validators[v].operator_address = val.operatorAddress;
                                 validators[v].account_address = LumUtils.Bech32.encode(LumConstants.LumBech32PrefixAccAddr, LumUtils.Bech32.decode(val.operatorAddress).data);
+                                validators[v].description = {
+                                    moniker: val.description.moniker,
+                                    identity: val.description.identity,
+                                    website: val.description.website,
+                                    security_contact: val.description.securityContact,
+                                    details: val.description.details
+                                };
+                                validators[v].displayed_name = val.description.moniker || val.description.identity || val.operatorAddress;
+                                validators[v].jailed = val.jailed;
+                                validators[v].status = val.status;
+                                validators[v].tokens = parseInt(val.tokens, 10);
+                                validators[v].delegator_shares = val.delegatorShares;
+                                validators[v].commission = {
+                                    rates: {
+                                        current_rate: val.commission.commissionRates.rate,
+                                        max_rate: val.commission.commissionRates.maxRate,
+                                        max_change_rate: val.commission.commissionRates.maxChangeRate
+                                    },
+                                    last_updated_at: val.commission.updateTime
+                                };
+                                validators[v].bonded_height = signingInfos.valSigningInfo.startHeight.low;
+                                validators[v].tombstoned = signingInfos.valSigningInfo.tombstoned;
+                                validators[v].uptime = (SIGNED_BLOCK_WINDOW - signingInfos.valSigningInfo.missedBlocksCounter.low) / SIGNED_BLOCK_WINDOW * 100;
                                 break;
                             }
                         }
@@ -63,18 +119,9 @@ export class ValidatorScheduler {
                 }
             }
 
-            // Save to elasticsearch
-            const bulkPayload = [];
-            for (const v of validators) {
-                bulkPayload.push({
-                    index: {
-                        _index: ElasticIndexes.INDEX_VALIDATORS,
-                        _id: v.proposer_address,
-                    },
-                });
-                bulkPayload.push(v);
-            }
-            await this._elasticService.bulkUpdate({ body: bulkPayload });
+            // Persist to database
+            await this._validatorService.saveBulk(validators);
+            this._logger.log(`Ingested validator set ${validators.length}`);
         } catch (error) {
             this._logger.error(`Failed to ingest validators: ${error}`, error.stack);
         }

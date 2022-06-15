@@ -1,52 +1,77 @@
-import { CacheInterceptor, Controller, Get, NotFoundException, Param, UseInterceptors } from '@nestjs/common';
+import {CacheInterceptor, Controller, Get, NotFoundException, Param, Req, UseInterceptors} from '@nestjs/common';
+import {ApiOkResponse, ApiTags} from "@nestjs/swagger";
 
-import { LumConstants, LumUtils } from '@lum-network/sdk-javascript';
-import { RedelegationResponse } from '@lum-network/sdk-javascript/build/codec/cosmos/staking/v1beta1/staking';
+import {LumConstants, LumUtils} from '@lum-network/sdk-javascript';
+import {RedelegationResponse} from '@lum-network/sdk-javascript/build/codec/cosmos/staking/v1beta1/staking';
 
-import { plainToClass } from 'class-transformer';
+import {plainToInstance} from 'class-transformer';
 
-import { ElasticService, LumNetworkService } from '@app/services';
-import { ElasticIndexes } from '@app/utils/constants';
-import { AccountResponse, TransactionResponse } from '@app/http/responses';
+import {LumNetworkService, TransactionService, ValidatorDelegationService} from '@app/services';
+import {
+    AccountResponse,
+    DataResponse,
+    DataResponseMetadata,
+    DelegationResponse,
+    TransactionResponse
+} from '@app/http/responses';
+import {DefaultTake} from "@app/http/decorators";
+import {ExplorerRequest} from "@app/utils";
 
+@ApiTags('accounts')
 @Controller('accounts')
 @UseInterceptors(CacheInterceptor)
 export class AccountsController {
-    constructor(private readonly _elasticService: ElasticService, private readonly _lumNetworkService: LumNetworkService) {}
+    constructor(
+        private readonly _lumNetworkService: LumNetworkService,
+        private readonly _transactionService: TransactionService,
+        private readonly _validatorDelegationService: ValidatorDelegationService
+    ) {
+    }
 
+    @ApiOkResponse({status: 200, type: [DelegationResponse]})
+    @DefaultTake(25)
+    @Get(':address/delegations')
+    async showDelegations(@Req() request: ExplorerRequest, @Param('address') address: string): Promise<DataResponse> {
+        const [delegations, total] = await this._validatorDelegationService.fetchByDelegatorAddress(address, request.pagination.skip, request.pagination.limit);
+        return new DataResponse({
+            result: delegations.map(del => plainToInstance(DelegationResponse, del)),
+            metadata: new DataResponseMetadata({
+                page: request.pagination.page,
+                limit: request.pagination.limit,
+                items_count: delegations.length,
+                items_total: total,
+            })
+        })
+    }
+
+    @ApiOkResponse({status: 200, type: [TransactionResponse]})
+    @DefaultTake(50)
+    @Get(':address/transactions')
+    async showTransactions(@Req() request: ExplorerRequest, @Param('address') address: string): Promise<DataResponse> {
+        const [transactions, total] = await this._transactionService.fetchForAddress(address, request.pagination.skip, request.pagination.limit);
+        return new DataResponse({
+            result: transactions.map(tx => plainToInstance(TransactionResponse, tx)),
+            metadata: new DataResponseMetadata({
+                page: request.pagination.page,
+                limit: request.pagination.limit,
+                items_count: transactions.length,
+                items_total: total,
+            })
+        })
+    }
+
+    @ApiOkResponse({status: 200, type: AccountResponse})
     @Get(':address')
-    async show(@Param('address') address: string) {
-        const lumClt = await this._lumNetworkService.getClient();
-
-        const txPromise = this._elasticService.documentSearch(ElasticIndexes.INDEX_TRANSACTIONS, {
-            sort: { time: 'desc' },
-            query: {
-                bool: {
-                    should: [
-                        {
-                            multi_match: {
-                                query: address,
-                                fields: ['addresses'],
-                                type: 'cross_fields',
-                                operator: 'OR',
-                            },
-                        },
-                    ],
-                },
-            },
-        });
-
-        const [account, balance, delegations, rewards, withdrawAddress, unbondings, redelegations, commissions, airdrop, transactions] = await Promise.all([
-            lumClt.getAccount(address).catch(() => null),
-            lumClt.getBalance(address, LumConstants.MicroLumDenom).catch(() => null),
-            lumClt.queryClient.staking.delegatorDelegations(address).catch(() => null),
-            lumClt.queryClient.distribution.delegationTotalRewards(address).catch(() => null),
-            lumClt.queryClient.distribution.delegatorWithdrawAddress(address).catch(() => null),
-            lumClt.queryClient.staking.delegatorUnbondingDelegations(address).catch(() => null),
-            lumClt.queryClient.staking.redelegations(address, '', '').catch(() => null),
-            lumClt.queryClient.distribution.validatorCommission(LumUtils.Bech32.encode(LumConstants.LumBech32PrefixValAddr, LumUtils.Bech32.decode(address).data)).catch(() => null),
-            lumClt.queryClient.airdrop.claimRecord(address).catch(() => null),
-            txPromise.catch(() => null),
+    async show(@Param('address') address: string): Promise<DataResponse> {
+        const [account, balance, rewards, withdrawAddress, unbondings, redelegations, commissions, airdrop] = await Promise.all([
+            this._lumNetworkService.client.getAccount(address).catch(() => null),
+            this._lumNetworkService.client.getBalance(address, LumConstants.MicroLumDenom).catch(() => null),
+            this._lumNetworkService.client.queryClient.distribution.delegationTotalRewards(address).catch(() => null),
+            this._lumNetworkService.client.queryClient.distribution.delegatorWithdrawAddress(address).catch(() => null),
+            this._lumNetworkService.client.queryClient.staking.delegatorUnbondingDelegations(address).catch(() => null),
+            this._lumNetworkService.client.queryClient.staking.redelegations(address, '', '').catch(() => null),
+            this._lumNetworkService.client.queryClient.distribution.validatorCommission(LumUtils.Bech32.encode(LumConstants.LumBech32PrefixValAddr, LumUtils.Bech32.decode(address).data)).catch(() => null),
+            this._lumNetworkService.client.queryClient.airdrop.claimRecord(address).catch(() => null),
         ]);
 
         if (!account) {
@@ -69,40 +94,18 @@ export class AccountsController {
             }
         }
 
-        // Inject balance
-        account['balance'] = !!balance ? balance : null;
-
-        // Inject vesting
-        account['vesting'] = vesting;
-
-        // Inject airdrop
-        account['airdrop'] = airdrop.claimRecord;
-
-        // Inject delegations
-        account['delegations'] = !!delegations ? delegations.delegationResponses : [];
-
-        // Inject rewards
-        account['all_rewards'] = !!rewards ? rewards : [];
-
-        // Inject withdraw address
-        account['withdraw_address'] = !!withdrawAddress ? withdrawAddress.withdrawAddress : address;
-
-        // Add unbondings
-        account['unbondings'] = !!unbondings ? unbondings.unbondingResponses : null;
-
-        // Inject redelegations
-        account['redelegations'] = redelegationsResponse;
-
-        // Add commissions
-        account['commissions'] = !!commissions && !!commissions.commission ? commissions.commission.commission : null;
-
-        // Inject transactions
-        if (transactions && transactions.body && transactions.body.hits && transactions.body.hits.hits) {
-            account['transactions'] = transactions.body.hits.hits.map((hit) => plainToClass(TransactionResponse, hit._source));
-        } else {
-            account['transactions'] = [];
-        }
-
-        return plainToClass(AccountResponse, account);
+        return {
+            result: plainToInstance(AccountResponse, {
+                ...account,
+                all_rewards: !!rewards ? rewards : [],
+                airdrop: airdrop.claimRecord,
+                balance: !!balance ? balance : null,
+                commissions: !!commissions && !!commissions.commission ? commissions.commission.commission : null,
+                redelegations: redelegationsResponse,
+                unbondings: !!unbondings ? unbondings.unbondingResponses : null,
+                vesting: vesting,
+                withdraw_address: !!withdrawAddress ? withdrawAddress.withdrawAddress : address
+            })
+        };
     }
 }
