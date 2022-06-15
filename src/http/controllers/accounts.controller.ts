@@ -44,12 +44,25 @@ export class AccountsController {
         })
     }
 
+    @ApiOkResponse({status: 200, type: [TransactionResponse]})
+    @DefaultTake(50)
+    @Get(':address/transactions')
+    async showTransactions(@Req() request: ExplorerRequest, @Param('address') address: string): Promise<DataResponse> {
+        const [transactions, total] = await this._transactionService.fetchForAddress(address, request.pagination.skip, request.pagination.limit);
+        return new DataResponse({
+            result: transactions.map(tx => plainToInstance(TransactionResponse, tx)),
+            metadata: new DataResponseMetadata({
+                page: request.pagination.page,
+                limit: request.pagination.limit,
+                items_count: transactions.length,
+                items_total: total,
+            })
+        })
+    }
+
     @ApiOkResponse({status: 200, type: AccountResponse})
     @Get(':address')
     async show(@Param('address') address: string): Promise<DataResponse> {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const [transactions, totalTransactions] = await this._transactionService.fetchForAddress(address);
-
         const [account, balance, rewards, withdrawAddress, unbondings, redelegations, commissions, airdrop] = await Promise.all([
             this._lumNetworkService.client.getAccount(address).catch(() => null),
             this._lumNetworkService.client.getBalance(address, LumConstants.MicroLumDenom).catch(() => null),
@@ -104,13 +117,6 @@ export class AccountsController {
 
         // Add commissions
         account['commissions'] = !!commissions && !!commissions.commission ? commissions.commission.commission : null;
-
-        // Inject transactions
-        if (transactions && transactions.length > 0) {
-            account['transactions'] = transactions.map((hit) => plainToInstance(TransactionResponse, hit));
-        } else {
-            account['transactions'] = [];
-        }
 
         return {
             result: plainToInstance(AccountResponse, account)
