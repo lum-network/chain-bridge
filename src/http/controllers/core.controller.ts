@@ -11,7 +11,7 @@ import {MessagePattern, Payload} from '@nestjs/microservices';
 import {plainToInstance} from 'class-transformer';
 
 import {LumNetworkService, BlockService, TransactionService} from '@app/services';
-import {DataResponse, LumResponse} from '@app/http/responses';
+import {BalanceResponse, DataResponse, LumResponse} from '@app/http/responses';
 import {GatewayWebsocket} from '@app/websocket';
 import {keyToHex} from "@lum-network/sdk-javascript/build/utils";
 
@@ -63,16 +63,26 @@ export class CoreController {
         };
     }
 
+    @ApiOkResponse({status: 200, type: [BalanceResponse]})
+    @Get('assets')
+    async assets(): Promise<DataResponse> {
+        const assets = await this._lumNetworkService.client.queryClient.bank.totalSupply();
+        return {
+            result: assets
+        }
+    }
+
     @Get('params')
     async params(): Promise<DataResponse> {
-        const [mintingParams, stakingParams, govDepositParams, govVoteParams, govTallyParams, distributionParams, slashingParams] = await Promise.all([
+        const [mintingParams, stakingParams, govDepositParams, govVoteParams, govTallyParams, distributionParams, slashingParams, communityPoolParams] = await Promise.all([
             this._lumNetworkService.client.queryClient.mint.params(),
             this._lumNetworkService.client.queryClient.staking.params(),
             this._lumNetworkService.client.queryClient.gov.params("deposit"),
             this._lumNetworkService.client.queryClient.gov.params("voting"),
             this._lumNetworkService.client.queryClient.gov.params('tallying'),
             this._lumNetworkService.client.queryClient.distribution.params(),
-            this._lumNetworkService.client.queryClient.slashing.params()
+            this._lumNetworkService.client.queryClient.slashing.params(),
+            this._lumNetworkService.client.queryClient.distribution.communityPool()
         ]);
         return {
             result: {
@@ -111,7 +121,8 @@ export class CoreController {
                     community_tax: distributionParams.params.communityTax,
                     base_proposer_reward: distributionParams.params.baseProposerReward,
                     bonus_proposer_reward: distributionParams.params.bonusProposerReward,
-                    withdraw_address_enabled: distributionParams.params.withdrawAddrEnabled
+                    withdraw_address_enabled: distributionParams.params.withdrawAddrEnabled,
+                    community_pool: communityPoolParams.pool
                 },
                 slashing: {
                     signed_blocks_window: slashingParams.params.signedBlocksWindow.low,
