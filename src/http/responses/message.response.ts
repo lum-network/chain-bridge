@@ -11,7 +11,7 @@ import {DescriptionResponse} from '@app/http/responses/description.response';
 @Exclude()
 export abstract class MessageResponse {
     @ApiProperty()
-    @Expose({name: 'typeUrl'})
+    @Expose()
     type_url: string;
 }
 
