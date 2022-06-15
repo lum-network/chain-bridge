@@ -94,32 +94,18 @@ export class AccountsController {
             }
         }
 
-        // Inject balance
-        account['balance'] = !!balance ? balance : null;
-
-        // Inject vesting
-        account['vesting'] = vesting;
-
-        // Inject airdrop
-        account['airdrop'] = airdrop.claimRecord;
-
-        // Inject rewards
-        account['all_rewards'] = !!rewards ? rewards : [];
-
-        // Inject withdraw address
-        account['withdraw_address'] = !!withdrawAddress ? withdrawAddress.withdrawAddress : address;
-
-        // Add unbondings
-        account['unbondings'] = !!unbondings ? unbondings.unbondingResponses : null;
-
-        // Inject redelegations
-        account['redelegations'] = redelegationsResponse;
-
-        // Add commissions
-        account['commissions'] = !!commissions && !!commissions.commission ? commissions.commission.commission : null;
-
         return {
-            result: plainToInstance(AccountResponse, account)
+            result: plainToInstance(AccountResponse, {
+                ...account,
+                all_rewards: !!rewards ? rewards : [],
+                airdrop: airdrop.claimRecord,
+                balance: !!balance ? balance : null,
+                commissions: !!commissions && !!commissions.commission ? commissions.commission.commission : null,
+                redelegations: redelegationsResponse,
+                unbondings: !!unbondings ? unbondings.unbondingResponses : null,
+                vesting: vesting,
+                withdraw_address: !!withdrawAddress ? withdrawAddress.withdrawAddress : address
+            })
         };
     }
 }
