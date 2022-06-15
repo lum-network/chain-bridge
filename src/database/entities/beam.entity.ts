@@ -1,6 +1,7 @@
 import {Column, CreateDateColumn, Entity, PrimaryColumn, UpdateDateColumn, VersionColumn} from "typeorm";
 
 import {AmountModel} from "@app/database/entities/amount.model";
+import {BeamData} from "@lum-network/sdk-javascript/build/codec/beam/beam";
 
 @Entity({name: "beams"})
 export class BeamEntity {
@@ -41,7 +42,7 @@ export class BeamEntity {
     amount?: AmountModel;
 
     @Column({type: "json"})
-    data: string;
+    data: BeamData;
 
     @CreateDateColumn({type: 'date', default: () => "CURRENT_DATE"})
     created_at?: Date = new Date;

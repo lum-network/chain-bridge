@@ -29,7 +29,7 @@ export class BeamConsumer {
         const entity = new BeamEntity({
             creator_address: beam.creatorAddress,
             id: beam.id,
-            status: beam.status,
+            status: beam.status as number,
             claim_address: beam.claimAddress,
             funds_withdrawn: beam.fundsWithdrawn,
             claimed: beam.claimed,
@@ -42,7 +42,7 @@ export class BeamConsumer {
                 amount: parseFloat(beam.amount.amount),
                 denom: beam.amount.denom
             },
-            data: JSON.stringify(beam.data),
+            data: beam.data,
         });
 
         await this._beamService.save(entity);
