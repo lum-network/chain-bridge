@@ -51,6 +51,15 @@ export class ValidatorEntity {
         last_updated_at: Date;
     };
 
+    @Column("integer", {default: 0})
+    bonded_height: number;
+
+    @Column("boolean", {default: false})
+    tombstoned: boolean;
+
+    @Column("float", {default: 100.0})
+    uptime: number;
+
     @CreateDateColumn({type: 'date', default: () => "CURRENT_DATE"})
     created_at?: Date = new Date;
 

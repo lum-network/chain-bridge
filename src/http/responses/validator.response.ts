@@ -124,6 +124,18 @@ export class ValidatorResponse {
     @Expose()
     displayed_name: string;
 
+    @ApiProperty()
+    @Expose()
+    tombstoned: boolean;
+
+    @ApiProperty()
+    @Expose()
+    bonded_height: number;
+
+    @ApiProperty()
+    @Expose()
+    uptime: number;
+
     @ApiProperty({type: () => ValidatorDescriptionResponse})
     @Expose()
     @Type(() => ValidatorDescriptionResponse)

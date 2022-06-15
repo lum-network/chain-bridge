@@ -5,7 +5,7 @@ import {LumConstants, LumTypes, LumUtils, LumRegistry} from '@lum-network/sdk-ja
 
 import {LumNetworkService, ValidatorDelegationService, ValidatorService} from '@app/services';
 import {ValidatorEntity} from "@app/database";
-import {POST_FORK_HEIGHT} from "@app/utils";
+import {POST_FORK_HEIGHT, SIGNED_BLOCK_WINDOW} from "@app/utils";
 
 @Injectable()
 export class ValidatorScheduler {
@@ -74,9 +74,14 @@ export class ValidatorScheduler {
                     for (const val of stakingValidators.validators) {
                         const pubKey = LumRegistry.decode(val.consensusPubkey) as LumTypes.PubKey;
                         const consensus_pubkey = LumUtils.Bech32.encode(LumConstants.LumBech32PrefixConsPub, pubKey.key);
+
                         // Find the tendermint validator and add the operator address to it
                         for (let v = 0; v < validators.length; v++) {
                             if (validators[v].consensus_pubkey === consensus_pubkey) {
+                                // Fetch the signing infos
+                                const signingInfos = await this._lumNetworkService.client.queryClient.slashing.signing_info(validators[v].consensus_address);
+
+                                // Set the required informations
                                 validators[v].operator_address = val.operatorAddress;
                                 validators[v].account_address = LumUtils.Bech32.encode(LumConstants.LumBech32PrefixAccAddr, LumUtils.Bech32.decode(val.operatorAddress).data);
                                 validators[v].description = {
@@ -99,6 +104,9 @@ export class ValidatorScheduler {
                                     },
                                     last_updated_at: val.commission.updateTime
                                 };
+                                validators[v].bonded_height = signingInfos.valSigningInfo.startHeight.low;
+                                validators[v].tombstoned = signingInfos.valSigningInfo.tombstoned;
+                                validators[v].uptime = (SIGNED_BLOCK_WINDOW - signingInfos.valSigningInfo.missedBlocksCounter.low) / SIGNED_BLOCK_WINDOW * 100;
                                 break;
                             }
                         }
