@@ -8,7 +8,7 @@ import {ValidatorEntity} from "@app/database";
 export class ValidatorService {
     constructor(
         @Inject('VALIDATOR_REPOSITORY') private readonly _repository: Repository<ValidatorEntity>,
-        ) {
+    ) {
     }
 
     get repository(): Repository<ValidatorEntity> {
@@ -43,6 +43,10 @@ export class ValidatorService {
         const query = this._repository.createQueryBuilder('validators').orderBy('validators.tokens', 'DESC').skip(skip).take(take);
         return query.getManyAndCount();
     };
+
+    fetchAll = async (): Promise<ValidatorEntity[]> => {
+        return this._repository.find();
+    }
 
     getUNSAFE = async (address: string): Promise<any> => {
         /*const [validator, delegations] = await Promise.all([

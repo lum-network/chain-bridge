@@ -2,7 +2,13 @@ import {ConfigModule, ConfigService} from "@nestjs/config";
 
 import {Connection, createConnection} from "typeorm";
 
-import {BeamEntity, BlockEntity, TransactionEntity, ValidatorEntity} from "@app/database/entities";
+import {
+    BeamEntity,
+    BlockEntity,
+    TransactionEntity,
+    ValidatorDelegationEntity,
+    ValidatorEntity
+} from "@app/database/entities";
 
 export const databaseProviders = [
     {
@@ -40,6 +46,11 @@ export const databaseProviders = [
     {
         provide: 'VALIDATOR_REPOSITORY',
         useFactory: (connection: Connection) => connection.getRepository(ValidatorEntity),
+        inject: ['DATABASE_CONNECTION']
+    },
+    {
+        provide: 'VALIDATOR_DELEGATION_REPOSITORY',
+        useFactory: (connection: Connection) => connection.getRepository(ValidatorDelegationEntity),
         inject: ['DATABASE_CONNECTION']
     }
 ];

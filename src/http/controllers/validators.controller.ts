@@ -3,7 +3,7 @@ import {ApiOkResponse, ApiTags} from "@nestjs/swagger";
 
 import {plainToInstance} from 'class-transformer';
 
-import {BlockService, LumNetworkService, ValidatorService} from '@app/services';
+import {BlockService, LumNetworkService, ValidatorDelegationService, ValidatorService} from '@app/services';
 import {DefaultTake} from "@app/http/decorators";
 import {
     BalanceResponse,
@@ -22,7 +22,8 @@ export class ValidatorsController {
     constructor(
         private readonly _blockService: BlockService,
         private readonly _lumNetworkService: LumNetworkService,
-        private readonly _validatorService: ValidatorService
+        private readonly _validatorService: ValidatorService,
+        private readonly _validatorDelegationService: ValidatorDelegationService
     ) {
     }
 
@@ -71,8 +72,16 @@ export class ValidatorsController {
     @DefaultTake(50)
     @Get(':address/delegations')
     async showDelegations(@Req() request: ExplorerRequest, @Param('address') address: string): Promise<DataResponse> {
-        // TODO: implement with primary data source
-        return new DataResponse({});
+        const [delegations, total] = await this._validatorDelegationService.fetchByValidatorAddress(address, request.pagination.skip, request.pagination.limit);
+        return new DataResponse({
+            result: delegations.map(del => plainToInstance(DelegationResponse, del)),
+            metadata: new DataResponseMetadata({
+                page: request.pagination.page,
+                limit: request.pagination.limit,
+                items_count: delegations.length,
+                items_total: total,
+            })
+        });
     }
 
     @ApiOkResponse({status: 200, type: [BalanceResponse]})

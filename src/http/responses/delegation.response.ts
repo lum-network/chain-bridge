@@ -1,22 +1,7 @@
 import {ApiProperty} from "@nestjs/swagger";
 
-import { Exclude, Expose, Type } from 'class-transformer';
-import { BalanceResponse } from '@app/http/responses/balance.response';
-
-@Exclude()
-class SubDelegationResponse {
-    @ApiProperty()
-    @Expose({ name: 'delegatorAddress' })
-    delegator_address: string;
-
-    @ApiProperty()
-    @Expose({ name: 'validatorAddress' })
-    validator_address: string;
-
-    @ApiProperty()
-    @Expose()
-    shares: string;
-}
+import {Exclude, Expose} from 'class-transformer';
+import {BalanceResponse} from '@app/http/responses/balance.response';
 
 @Exclude()
 export class DelegationResponse {
@@ -24,8 +9,15 @@ export class DelegationResponse {
     @Expose()
     balance: BalanceResponse;
 
-    @ApiProperty({type: () => SubDelegationResponse})
+    @ApiProperty()
     @Expose()
-    @Type(() => SubDelegationResponse)
-    delegation: SubDelegationResponse;
+    delegator_address: string;
+
+    @ApiProperty()
+    @Expose()
+    validator_address: string;
+
+    @ApiProperty()
+    @Expose()
+    shares: string;
 }

@@ -14,7 +14,7 @@ import {
     BeamService,
     BlockService,
     LumNetworkService,
-    TransactionService,
+    TransactionService, ValidatorDelegationService,
     ValidatorService
 } from '@app/services';
 import {ConfigMap, Queues} from '@app/utils';
@@ -77,7 +77,7 @@ import {databaseProviders} from "@app/database";
         HttpModule,
     ],
     controllers: [],
-    providers: [...databaseProviders, BeamService, BlockService, TransactionService, ValidatorService, BeamConsumer, BlockConsumer, CoreConsumer, NotificationConsumer, LumNetworkService],
+    providers: [...databaseProviders, BeamService, BlockService, TransactionService, ValidatorService, ValidatorDelegationService, BeamConsumer, BlockConsumer, CoreConsumer, NotificationConsumer, LumNetworkService],
 })
 export class SyncConsumerModule implements OnModuleInit, OnApplicationBootstrap {
     constructor(private readonly _lumNetworkService: LumNetworkService, @InjectQueue(Queues.QUEUE_DEFAULT) private readonly _queue: Queue) {

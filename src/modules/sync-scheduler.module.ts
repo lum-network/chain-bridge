@@ -16,7 +16,7 @@ import {
     BlockService,
     TransactionService,
     ValidatorService,
-    BeamService
+    BeamService, ValidatorDelegationService
 } from '@app/services';
 import {Queues, ConfigMap, QueueJobs, POST_FORK_HEIGHT} from '@app/utils';
 import {databaseProviders} from "@app/database";
@@ -79,7 +79,7 @@ import {databaseProviders} from "@app/database";
         HttpModule,
     ],
     controllers: [],
-    providers: [...databaseProviders, BeamService, BlockService, TransactionService, ValidatorService, BlockScheduler, ValidatorScheduler, LumNetworkService],
+    providers: [...databaseProviders, BeamService, BlockService, TransactionService, ValidatorService, ValidatorDelegationService, BlockScheduler, ValidatorScheduler, LumNetworkService],
 })
 export class SyncSchedulerModule implements OnModuleInit, OnApplicationBootstrap {
     private readonly _logger: Logger = new Logger(SyncSchedulerModule.name);

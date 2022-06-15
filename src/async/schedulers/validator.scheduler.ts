@@ -3,7 +3,7 @@ import {Cron, CronExpression} from '@nestjs/schedule';
 
 import {LumConstants, LumTypes, LumUtils, LumRegistry} from '@lum-network/sdk-javascript';
 
-import {LumNetworkService, ValidatorService} from '@app/services';
+import {LumNetworkService, ValidatorDelegationService, ValidatorService} from '@app/services';
 import {ValidatorEntity} from "@app/database";
 import {POST_FORK_HEIGHT} from "@app/utils";
 
@@ -11,11 +11,45 @@ import {POST_FORK_HEIGHT} from "@app/utils";
 export class ValidatorScheduler {
     private readonly _logger: Logger = new Logger(ValidatorScheduler.name);
 
-    constructor(private readonly _lumNetworkService: LumNetworkService, private readonly _validatorService: ValidatorService) {
+    constructor(
+        private readonly _lumNetworkService: LumNetworkService,
+        private readonly _validatorService: ValidatorService,
+        private readonly _validatorDelegationService: ValidatorDelegationService) {
+    }
+
+    @Cron(CronExpression.EVERY_5_MINUTES)
+    async delegationSync() {
+        this._logger.log(`Syncing validator delegations from chain...`);
+        const validators = await this._validatorService.fetchAll();
+        this._logger.log(`Found ${validators.length} validators to sync`);
+
+        // For each stored validator, we query chain and ask for delegations
+        for (const validator of validators) {
+            let page: Uint8Array | undefined = undefined;
+            while (true) {
+                const delegations = await this._lumNetworkService.client.queryClient.staking.validatorDelegations(validator.operator_address, page);
+                this._logger.log(`Found ${delegations.delegationResponses.length} delegations to sync for validator ${validator.operator_address}`);
+
+                // For each delegation, we create or update the matching entry in our database
+                for (const delegation of delegations.delegationResponses) {
+                    await this._validatorDelegationService.createOrUpdate(delegation.delegation.delegatorAddress, delegation.delegation.validatorAddress, delegation.delegation.shares, {
+                        denom: delegation.balance.denom,
+                        amount: parseFloat(delegation.balance.amount)
+                    });
+                }
+
+                // If we have pagination key, we just patch it and it will process in the next loop
+                if (delegations.pagination && delegations.pagination.nextKey && delegations.pagination.nextKey.length) {
+                    page = delegations.pagination.nextKey;
+                } else {
+                    break;
+                }
+            }
+        }
     }
 
     @Cron(CronExpression.EVERY_10_SECONDS, {name: 'validators_live_ingest'})
-    async liveIngest() {
+    async basicSync() {
         try {
             // Fetch tendermint validators
             const tmValidators = await this._lumNetworkService.client.tmClient.validatorsAll(POST_FORK_HEIGHT);
