@@ -1,17 +1,19 @@
 import {Injectable, Logger} from '@nestjs/common';
 import {Cron, CronExpression} from '@nestjs/schedule';
+import {ConfigService} from "@nestjs/config";
 
 import {LumConstants, LumTypes, LumUtils, LumRegistry} from '@lum-network/sdk-javascript';
 
 import {LumNetworkService, ValidatorDelegationService, ValidatorService} from '@app/services';
 import {ValidatorEntity} from "@app/database";
-import {POST_FORK_HEIGHT, SIGNED_BLOCK_WINDOW} from "@app/utils";
+import {SIGNED_BLOCK_WINDOW} from "@app/utils";
 
 @Injectable()
 export class ValidatorScheduler {
     private readonly _logger: Logger = new Logger(ValidatorScheduler.name);
 
     constructor(
+        private readonly _configService: ConfigService,
         private readonly _lumNetworkService: LumNetworkService,
         private readonly _validatorService: ValidatorService,
         private readonly _validatorDelegationService: ValidatorDelegationService) {
@@ -52,7 +54,7 @@ export class ValidatorScheduler {
     async basicSync() {
         try {
             // Fetch tendermint validators
-            const tmValidators = await this._lumNetworkService.client.tmClient.validatorsAll(POST_FORK_HEIGHT);
+            const tmValidators = await this._lumNetworkService.client.tmClient.validatorsAll(this._configService.get<number>('STARTING_HEIGHT'));
 
             // Build validators list
             const validators: Partial<ValidatorEntity>[] = [];

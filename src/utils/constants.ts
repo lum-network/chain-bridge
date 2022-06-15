@@ -1,4 +1,3 @@
-export const POST_FORK_HEIGHT = 1960666;
 export const SIGNED_BLOCK_WINDOW = 10000;
 
 export enum Queues {
