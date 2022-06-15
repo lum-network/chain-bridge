@@ -1,4 +1,4 @@
-import {CacheInterceptor, Controller, Get, NotFoundException, Param, UseInterceptors} from '@nestjs/common';
+import {CacheInterceptor, Controller, Get, NotFoundException, Param, Req, UseInterceptors} from '@nestjs/common';
 import {ApiOkResponse, ApiTags} from "@nestjs/swagger";
 
 import {LumConstants, LumUtils} from '@lum-network/sdk-javascript';
@@ -6,14 +6,42 @@ import {RedelegationResponse} from '@lum-network/sdk-javascript/build/codec/cosm
 
 import {plainToInstance} from 'class-transformer';
 
-import {LumNetworkService, TransactionService} from '@app/services';
-import {AccountResponse, DataResponse, TransactionResponse} from '@app/http/responses';
+import {LumNetworkService, TransactionService, ValidatorDelegationService} from '@app/services';
+import {
+    AccountResponse,
+    DataResponse,
+    DataResponseMetadata,
+    DelegationResponse,
+    TransactionResponse
+} from '@app/http/responses';
+import {DefaultTake} from "@app/http/decorators";
+import {ExplorerRequest} from "@app/utils";
 
 @ApiTags('accounts')
 @Controller('accounts')
 @UseInterceptors(CacheInterceptor)
 export class AccountsController {
-    constructor(private readonly _lumNetworkService: LumNetworkService, private readonly _transactionService: TransactionService) {
+    constructor(
+        private readonly _lumNetworkService: LumNetworkService,
+        private readonly _transactionService: TransactionService,
+        private readonly _validatorDelegationService: ValidatorDelegationService
+    ) {
+    }
+
+    @ApiOkResponse({status: 200, type: [DelegationResponse]})
+    @DefaultTake(25)
+    @Get(':address/delegations')
+    async showDelegations(@Req() request: ExplorerRequest, @Param('address') address: string): Promise<DataResponse> {
+        const [delegations, total] = await this._validatorDelegationService.fetchByDelegatorAddress(address, request.pagination.skip, request.pagination.limit);
+        return new DataResponse({
+            result: delegations.map(del => plainToInstance(DelegationResponse, del)),
+            metadata: new DataResponseMetadata({
+                page: request.pagination.page,
+                limit: request.pagination.limit,
+                items_count: delegations.length,
+                items_total: total,
+            })
+        })
     }
 
     @ApiOkResponse({status: 200, type: AccountResponse})
@@ -22,10 +50,9 @@ export class AccountsController {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const [transactions, totalTransactions] = await this._transactionService.fetchForAddress(address);
 
-        const [account, balance, delegations, rewards, withdrawAddress, unbondings, redelegations, commissions, airdrop] = await Promise.all([
+        const [account, balance, rewards, withdrawAddress, unbondings, redelegations, commissions, airdrop] = await Promise.all([
             this._lumNetworkService.client.getAccount(address).catch(() => null),
             this._lumNetworkService.client.getBalance(address, LumConstants.MicroLumDenom).catch(() => null),
-            this._lumNetworkService.client.queryClient.staking.delegatorDelegations(address).catch(() => null),
             this._lumNetworkService.client.queryClient.distribution.delegationTotalRewards(address).catch(() => null),
             this._lumNetworkService.client.queryClient.distribution.delegatorWithdrawAddress(address).catch(() => null),
             this._lumNetworkService.client.queryClient.staking.delegatorUnbondingDelegations(address).catch(() => null),
@@ -62,9 +89,6 @@ export class AccountsController {
 
         // Inject airdrop
         account['airdrop'] = airdrop.claimRecord;
-
-        // Inject delegations
-        account['delegations'] = !!delegations ? delegations.delegationResponses : [];
 
         // Inject rewards
         account['all_rewards'] = !!rewards ? rewards : [];
