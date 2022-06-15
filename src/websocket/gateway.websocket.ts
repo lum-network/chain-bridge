@@ -1,6 +1,6 @@
 import {Logger} from '@nestjs/common';
 import {
-    ConnectedSocket,
+    ConnectedSocket, GatewayMetadata,
     MessageBody,
     OnGatewayConnection,
     OnGatewayInit,
@@ -13,12 +13,14 @@ import {Server, Socket} from 'socket.io';
 
 import {NotificationChannels} from '@app/utils';
 
-@WebSocketGateway({
+@WebSocketGateway<GatewayMetadata>({
+    allowEIO3: true,
     serveClient: false,
     cors: {
         preflightContinue: true,
-        origin: '*'
-    }
+        credentials: true,
+        origin: ['https://explorer.testnet.lum.network', 'https://explorer.lum.network', 'http://localhost:3001']
+    },
 })
 export class GatewayWebsocket implements OnGatewayInit, OnGatewayConnection {
     private _logger: Logger = new Logger(GatewayWebsocket.name);
