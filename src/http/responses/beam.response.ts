@@ -191,7 +191,7 @@ class DataResponse {
 @Exclude()
 export class BeamResponse {
     @ApiProperty()
-    @Expose({name: 'creatorAddress'})
+    @Expose()
     creator_address: string;
 
     @ApiProperty()
@@ -207,11 +207,11 @@ export class BeamResponse {
     secret: string;
 
     @ApiProperty()
-    @Expose({name: 'claimAddress'})
+    @Expose()
     claim_address: string;
 
     @ApiProperty()
-    @Expose({name: 'fundsWithdrawn'})
+    @Expose()
     funds_withdrawn: boolean;
 
     @ApiProperty()
@@ -219,11 +219,11 @@ export class BeamResponse {
     claimed: boolean;
 
     @ApiProperty()
-    @Expose({name: 'cancelReason'})
+    @Expose()
     cancel_reason: string;
 
     @ApiProperty()
-    @Expose({name: 'hideContent'})
+    @Expose()
     hide_content: boolean;
 
     @ApiProperty()
@@ -231,11 +231,11 @@ export class BeamResponse {
     schema: string;
 
     @ApiProperty()
-    @Expose({name: 'claimExpiresAtBlock'})
+    @Expose()
     claim_expires_at_block: number;
 
     @ApiProperty()
-    @Expose({name: 'closesAtBlock'})
+    @Expose()
     closes_at_block: number;
 
     @ApiProperty({type: () => BalanceResponse})
@@ -249,10 +249,10 @@ export class BeamResponse {
     data: DataResponse;
 
     @ApiProperty()
-    @Expose({name: 'createdAt'})
+    @Expose()
     created_at: Date;
 
     @ApiProperty()
-    @Expose({name: 'closed_at'})
+    @Expose()
     closed_at: Date;
 }
