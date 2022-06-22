@@ -38,8 +38,8 @@ export class ValidatorEntity {
     @Column("bigint")
     tokens: number;
 
-    @Column("varchar", {length: 64})
-    delegator_shares: string;
+    @Column("float", {nullable: true})
+    delegator_shares: number;
 
     @Column("jsonb")
     commission: {

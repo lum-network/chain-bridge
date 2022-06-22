@@ -1,7 +1,7 @@
 import {Column} from "typeorm";
 
 export class AmountModel {
-    @Column({type: "integer"})
+    @Column({type: "float"})
     amount: number;
 
     @Column({type: "varchar", length: 32})

@@ -9,8 +9,8 @@ export class ValidatorDelegationEntity {
     @PrimaryColumn({type: 'varchar', length: 128})
     validator_address: string;
 
-    @Column("varchar", {length: 64})
-    shares: string;
+    @Column("float", {nullable: true})
+    shares: number;
 
     @Column({type: 'json'})
     balance: AmountModel;
