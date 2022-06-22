@@ -10,10 +10,12 @@ import {MessagePattern, Payload} from '@nestjs/microservices';
 
 import {plainToInstance} from 'class-transformer';
 
+import {keyToHex} from "@lum-network/sdk-javascript/build/utils";
+
 import {LumNetworkService, BlockService, TransactionService} from '@app/services';
 import {BalanceResponse, DataResponse, LumResponse} from '@app/http/responses';
 import {GatewayWebsocket} from '@app/websocket';
-import {keyToHex} from "@lum-network/sdk-javascript/build/utils";
+import {CLIENT_PRECISION} from "@app/utils";
 
 @ApiTags('core')
 @Controller('')
@@ -68,7 +70,12 @@ export class CoreController {
     async assets(): Promise<DataResponse> {
         const assets = await this._lumNetworkService.client.queryClient.bank.totalSupply();
         return {
-            result: assets
+            result: assets.map(asset => {
+                return {
+                    denom: asset.denom,
+                    amount: parseInt(asset.amount, 10)
+                };
+            })
         }
     }
 
@@ -89,11 +96,11 @@ export class CoreController {
                 mint: {
                     denom: mintingParams.mintDenom,
                     inflation: {
-                        rate_change: mintingParams.inflationRateChange,
-                        max: mintingParams.inflationMax,
-                        min: mintingParams.inflationMin
+                        rate_change: parseInt(mintingParams.inflationRateChange, 10) / CLIENT_PRECISION,
+                        max: parseInt(mintingParams.inflationMax, 10) / CLIENT_PRECISION,
+                        min: parseInt(mintingParams.inflationMin, 10) / CLIENT_PRECISION
                     },
-                    goal_bonded: mintingParams.goalBonded,
+                    goal_bonded: parseInt(mintingParams.goalBonded, 10) / CLIENT_PRECISION,
                     blocks_per_year: mintingParams.blocksPerYear.low
                 },
                 staking: {
@@ -108,7 +115,12 @@ export class CoreController {
                         period: govVoteParams.votingParams.votingPeriod.seconds.low
                     },
                     deposit: {
-                        minimum: govDepositParams.depositParams.minDeposit,
+                        minimum: govDepositParams.depositParams.minDeposit.map(bal => {
+                            return {
+                                denom: bal.denom,
+                                amount: parseInt(bal.amount, 10)
+                            }
+                        }),
                         period: govDepositParams.depositParams.maxDepositPeriod.seconds.low
                     },
                     tally: {
@@ -118,11 +130,16 @@ export class CoreController {
                     }
                 },
                 distribution: {
-                    community_tax: distributionParams.params.communityTax,
-                    base_proposer_reward: distributionParams.params.baseProposerReward,
-                    bonus_proposer_reward: distributionParams.params.bonusProposerReward,
+                    community_tax: parseInt(distributionParams.params.communityTax, 10) / CLIENT_PRECISION,
+                    base_proposer_reward: parseInt(distributionParams.params.baseProposerReward, 10) / CLIENT_PRECISION,
+                    bonus_proposer_reward: parseInt(distributionParams.params.bonusProposerReward, 10) / CLIENT_PRECISION,
                     withdraw_address_enabled: distributionParams.params.withdrawAddrEnabled,
-                    community_pool: communityPoolParams.pool
+                    community_pool: communityPoolParams.pool.map(p => {
+                        return {
+                            denom: p.denom,
+                            amount: parseInt(p.amount, 10) / CLIENT_PRECISION
+                        }
+                    })
                 },
                 slashing: {
                     signed_blocks_window: slashingParams.params.signedBlocksWindow.low,
