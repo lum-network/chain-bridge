@@ -1,7 +1,6 @@
 import {ApiProperty} from "@nestjs/swagger";
 
 import { Exclude, Expose, Type } from 'class-transformer';
-import Long from 'long';
 
 import { AllRewardResponse, BalanceResponse, DelegationResponse, TransactionResponse } from '@app/http';
 
@@ -70,80 +69,6 @@ class AirdropResponse {
 }
 
 @Exclude()
-class UnbondingEntriesResponse {
-    @ApiProperty()
-    @Expose()
-    balance: string;
-
-    @ApiProperty()
-    @Expose({ name: 'completionTime' })
-    completion_time: string;
-
-    @ApiProperty()
-    @Expose({ name: 'creationHeight' })
-    height: Long;
-}
-
-@Exclude()
-class UnbondingResponse {
-    @ApiProperty({type: () => [UnbondingEntriesResponse]})
-    @Expose()
-    @Type(() => UnbondingEntriesResponse)
-    entries: UnbondingEntriesResponse[] = [];
-
-    @ApiProperty()
-    @Expose({ name: 'validatorAddress' })
-    validator_address: string;
-}
-
-@Exclude()
-class RedelegationEntry {
-    @ApiProperty()
-    @Expose({ name: 'completionTime' })
-    completion_time: string;
-}
-
-@Exclude()
-class RedelegationEntries {
-    @ApiProperty()
-    @Expose()
-    balance: string;
-
-    @ApiProperty({type: () => RedelegationEntry})
-    @Expose({ name: 'redelegationEntry' })
-    @Type(() => RedelegationEntry)
-    redelegation_entry: RedelegationEntry;
-}
-
-@Exclude()
-class RedelegationDetails {
-    @ApiProperty()
-    @Expose({ name: 'delegatorAddress' })
-    delegator_address: string;
-
-    @ApiProperty()
-    @Expose({ name: 'validatorSrcAddress' })
-    validator_src_address: string;
-
-    @ApiProperty()
-    @Expose({ name: 'validatorDstAddress' })
-    validator_dst_address: string;
-}
-
-@Exclude()
-class RedelegationResponse {
-    @ApiProperty({type: () => RedelegationDetails})
-    @Expose()
-    @Type(() => RedelegationDetails)
-    redelegation: RedelegationDetails;
-
-    @ApiProperty({type: () => [RedelegationEntries]})
-    @Expose()
-    @Type(() => RedelegationEntries)
-    entries: RedelegationEntries[];
-}
-
-@Exclude()
 export class AccountResponse {
     @ApiProperty({})
     @Expose()
@@ -186,16 +111,6 @@ export class AccountResponse {
     @ApiProperty()
     @Expose()
     sequence: number;
-
-    @ApiProperty({type: () => UnbondingResponse})
-    @Expose()
-    @Type(() => UnbondingResponse)
-    unbondings: UnbondingResponse[] = [];
-
-    @ApiProperty({type: () => [RedelegationResponse]})
-    @Expose()
-    @Type(() => RedelegationResponse)
-    redelegations: RedelegationResponse[] = [];
 
     @ApiProperty({type: () => [BalanceResponse]})
     @Expose()

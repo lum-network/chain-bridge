@@ -2,7 +2,6 @@ import {CacheInterceptor, Controller, Get, NotFoundException, Param, Req, UseInt
 import {ApiOkResponse, ApiTags} from "@nestjs/swagger";
 
 import {LumConstants, LumUtils} from '@lum-network/sdk-javascript';
-import {RedelegationResponse} from '@lum-network/sdk-javascript/build/codec/cosmos/staking/v1beta1/staking';
 
 import {plainToInstance} from 'class-transformer';
 
@@ -12,7 +11,8 @@ import {
     DataResponse,
     DataResponseMetadata,
     DelegationResponse,
-    TransactionResponse
+    RedelegationResponse,
+    TransactionResponse, UnbondingResponse
 } from '@app/http/responses';
 import {DefaultTake} from "@app/http/decorators";
 import {ExplorerRequest} from "@app/utils";
@@ -60,16 +60,44 @@ export class AccountsController {
         })
     }
 
+    @ApiOkResponse({status: 200, type: [RedelegationResponse]})
+    @Get(':address/redelegations')
+    async showRedelegations(@Req() request: ExplorerRequest, @Param('address') address: string): Promise<DataResponse> {
+        const redelegations = await this._lumNetworkService.client.queryClient.staking.redelegations(address, '', '');
+        return new DataResponse({
+            result: redelegations.redelegationResponses.map(redelegation => plainToInstance(RedelegationResponse, redelegation)),
+            metadata: new DataResponseMetadata({
+                page: request.pagination.page,
+                limit: request.pagination.limit,
+                items_count: redelegations.redelegationResponses.length,
+                items_total: null,
+            })
+        })
+    }
+
+    @ApiOkResponse({status: 200, type: [UnbondingResponse]})
+    @Get(':address/unbondings')
+    async showUnbondings(@Req() request: ExplorerRequest, @Param('address') address: string): Promise<DataResponse> {
+        const unbondings = await this._lumNetworkService.client.queryClient.staking.delegatorUnbondingDelegations(address);
+        return new DataResponse({
+            result: unbondings.unbondingResponses.map(unbonding => plainToInstance(UnbondingResponse, unbonding)),
+            metadata: new DataResponseMetadata({
+                page: request.pagination.page,
+                limit: request.pagination.limit,
+                items_count: unbondings.unbondingResponses.length,
+                items_total: null,
+            })
+        })
+    }
+
     @ApiOkResponse({status: 200, type: AccountResponse})
     @Get(':address')
     async show(@Param('address') address: string): Promise<DataResponse> {
-        const [account, balance, rewards, withdrawAddress, unbondings, redelegations, commissions, airdrop] = await Promise.all([
+        const [account, balance, rewards, withdrawAddress, commissions, airdrop] = await Promise.all([
             this._lumNetworkService.client.getAccount(address).catch(() => null),
             this._lumNetworkService.client.getBalance(address, LumConstants.MicroLumDenom).catch(() => null),
             this._lumNetworkService.client.queryClient.distribution.delegationTotalRewards(address).catch(() => null),
             this._lumNetworkService.client.queryClient.distribution.delegatorWithdrawAddress(address).catch(() => null),
-            this._lumNetworkService.client.queryClient.staking.delegatorUnbondingDelegations(address).catch(() => null),
-            this._lumNetworkService.client.queryClient.staking.redelegations(address, '', '').catch(() => null),
             this._lumNetworkService.client.queryClient.distribution.validatorCommission(LumUtils.Bech32.encode(LumConstants.LumBech32PrefixValAddr, LumUtils.Bech32.decode(address).data)).catch(() => null),
             this._lumNetworkService.client.queryClient.airdrop.claimRecord(address).catch(() => null),
         ]);
@@ -86,14 +114,6 @@ export class AccountsController {
             vesting = null;
         }
 
-        const redelegationsResponse: RedelegationResponse[] = [];
-
-        if (redelegations) {
-            for (const [, redelegation] of redelegations.redelegationResponses.entries()) {
-                redelegationsResponse.push(redelegation);
-            }
-        }
-
         return {
             result: plainToInstance(AccountResponse, {
                 ...account,
@@ -101,8 +121,6 @@ export class AccountsController {
                 airdrop: airdrop.claimRecord,
                 balance: !!balance ? balance : null,
                 commissions: !!commissions && !!commissions.commission ? commissions.commission.commission : null,
-                redelegations: redelegationsResponse,
-                unbondings: !!unbondings ? unbondings.unbondingResponses : null,
                 vesting: vesting,
                 withdraw_address: !!withdrawAddress ? withdrawAddress.withdrawAddress : address
             })
