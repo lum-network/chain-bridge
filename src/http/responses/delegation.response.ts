@@ -19,5 +19,5 @@ export class DelegationResponse {
 
     @ApiProperty()
     @Expose()
-    shares: string;
+    shares: number;
 }

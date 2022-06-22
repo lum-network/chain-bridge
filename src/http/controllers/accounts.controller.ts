@@ -33,8 +33,12 @@ export class AccountsController {
     @Get(':address/delegations')
     async showDelegations(@Req() request: ExplorerRequest, @Param('address') address: string): Promise<DataResponse> {
         const [delegations, total] = await this._validatorDelegationService.fetchByDelegatorAddress(address, request.pagination.skip, request.pagination.limit);
+        const sum = await this._validatorDelegationService.sumTotalSharesForDelegator(address);
         return new DataResponse({
-            result: delegations.map(del => plainToInstance(DelegationResponse, del)),
+            result: {
+                total_shares: (sum as any).total_shares,
+                delegations: delegations.map(delegation => plainToInstance(DelegationResponse, delegation))
+            },
             metadata: new DataResponseMetadata({
                 page: request.pagination.page,
                 limit: request.pagination.limit,
