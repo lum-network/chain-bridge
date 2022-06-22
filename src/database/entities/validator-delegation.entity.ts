@@ -9,7 +9,7 @@ export class ValidatorDelegationEntity {
     @PrimaryColumn({type: 'varchar', length: 128})
     validator_address: string;
 
-    @Column("float", {nullable: true})
+    @Column("bigint", {nullable: true})
     shares: number;
 
     @Column({type: 'json'})
