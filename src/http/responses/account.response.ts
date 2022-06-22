@@ -108,9 +108,12 @@ export class AccountResponse {
     transactions: TransactionResponse[] = [];
 
     @ApiProperty()
-    @ApiProperty()
     @Expose()
     sequence: number;
+
+    @ApiProperty()
+    @Expose()
+    total_shares: number;
 
     @ApiProperty({type: () => [BalanceResponse]})
     @Expose()

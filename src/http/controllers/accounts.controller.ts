@@ -33,12 +33,8 @@ export class AccountsController {
     @Get(':address/delegations')
     async showDelegations(@Req() request: ExplorerRequest, @Param('address') address: string): Promise<DataResponse> {
         const [delegations, total] = await this._validatorDelegationService.fetchByDelegatorAddress(address, request.pagination.skip, request.pagination.limit);
-        const sum = await this._validatorDelegationService.sumTotalSharesForDelegator(address);
         return new DataResponse({
-            result: {
-                total_shares: (sum as any).total_shares,
-                delegations: delegations.map(delegation => plainToInstance(DelegationResponse, delegation))
-            },
+            result: delegations.map(delegation => plainToInstance(DelegationResponse, delegation)),
             metadata: new DataResponseMetadata({
                 page: request.pagination.page,
                 limit: request.pagination.limit,
@@ -97,13 +93,14 @@ export class AccountsController {
     @ApiOkResponse({status: 200, type: AccountResponse})
     @Get(':address')
     async show(@Param('address') address: string): Promise<DataResponse> {
-        const [account, balance, rewards, withdrawAddress, commissions, airdrop] = await Promise.all([
+        const [account, balance, rewards, withdrawAddress, commissions, airdrop, totalShares] = await Promise.all([
             this._lumNetworkService.client.getAccount(address).catch(() => null),
             this._lumNetworkService.client.getBalance(address, LumConstants.MicroLumDenom).catch(() => null),
             this._lumNetworkService.client.queryClient.distribution.delegationTotalRewards(address).catch(() => null),
             this._lumNetworkService.client.queryClient.distribution.delegatorWithdrawAddress(address).catch(() => null),
             this._lumNetworkService.client.queryClient.distribution.validatorCommission(LumUtils.Bech32.encode(LumConstants.LumBech32PrefixValAddr, LumUtils.Bech32.decode(address).data)).catch(() => null),
             this._lumNetworkService.client.queryClient.airdrop.claimRecord(address).catch(() => null),
+            this._validatorDelegationService.sumTotalSharesForDelegator(address).catch(() => null)
         ]);
 
         if (!account) {
@@ -126,7 +123,8 @@ export class AccountsController {
                 balance: !!balance ? balance : null,
                 commissions: !!commissions && !!commissions.commission ? commissions.commission.commission : null,
                 vesting: vesting,
-                withdraw_address: !!withdrawAddress ? withdrawAddress.withdrawAddress : address
+                withdraw_address: !!withdrawAddress ? withdrawAddress.withdrawAddress : address,
+                total_shares: totalShares.total_shares
             })
         };
     }
