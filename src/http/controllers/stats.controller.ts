@@ -6,6 +6,7 @@ import {plainToInstance} from "class-transformer";
 import {DataResponse, StatsResponse} from "@app/http/responses";
 
 import {LumNetworkService} from "@app/services";
+import {CLIENT_PRECISION} from "@app/utils";
 
 @ApiTags('stats')
 @Controller('stats')
@@ -25,7 +26,16 @@ export class StatsController {
         ]);
 
         return {
-            result: plainToInstance(StatsResponse, {inflation: inflation || '0', totalSupply, chainId})
+            result: plainToInstance(StatsResponse, {
+                inflation: parseInt(inflation, 10) / CLIENT_PRECISION || 0,
+                totalSupply: totalSupply.map(supply => {
+                    return {
+                        denom: supply.denom,
+                        amount: parseInt(supply.amount, 10)
+                    };
+                }),
+                chainId
+            })
         };
     }
 }
