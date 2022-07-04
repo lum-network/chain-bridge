@@ -1,15 +1,15 @@
-import { HttpModule } from '@nestjs/axios';
-import { Logger, Module, OnModuleInit, OnApplicationBootstrap } from '@nestjs/common';
-import { BullModule, InjectQueue } from '@nestjs/bull';
-import { ScheduleModule } from '@nestjs/schedule';
-import { ClientsModule, Transport } from '@nestjs/microservices';
+import {HttpModule} from '@nestjs/axios';
+import {Logger, Module, OnModuleInit, OnApplicationBootstrap} from '@nestjs/common';
+import {BullModule, InjectQueue} from '@nestjs/bull';
+import {ScheduleModule} from '@nestjs/schedule';
+import {ClientsModule, Transport} from '@nestjs/microservices';
 
 import {ConfigModule, ConfigService} from "@nestjs/config";
 import * as Joi from "joi";
 
-import { Queue } from 'bull';
+import {Queue} from 'bull';
 
-import { BlockScheduler, ValidatorScheduler } from '@app/async';
+import {BlockScheduler, ValidatorScheduler} from '@app/async';
 
 import {
     LumNetworkService,
@@ -28,40 +28,57 @@ import {databaseProviders} from "@app/database";
             validationSchema: Joi.object(ConfigMap),
         }),
         BullModule.registerQueueAsync({
-            name: Queues.QUEUE_DEFAULT,
-            imports: [ConfigModule],
-            inject: [ConfigService],
-            useFactory: (configService: ConfigService) => ({
-                redis: {
-                    host: configService.get<string>('REDIS_HOST'),
-                    port: configService.get<number>('REDIS_PORT')
-                },
-                prefix: configService.get<string>('REDIS_PREFIX'),
-                defaultJobOptions: {
-                    removeOnComplete: true,
-                    removeOnFail: true,
-                },
-            })
-        },{
-            name: Queues.QUEUE_FAUCET,
-            imports: [ConfigModule],
-            inject: [ConfigService],
-            useFactory: (configService: ConfigService) => ({
-                redis: {
-                    host: configService.get<string>('REDIS_HOST'),
-                    port: configService.get<number>('REDIS_PORT')
-                },
-                prefix: configService.get<string>('REDIS_PREFIX'),
-                limiter: {
-                    max: 1,
-                    duration: 30,
-                },
-                defaultJobOptions: {
-                    removeOnComplete: true,
-                    removeOnFail: true,
-                },
-            })
-        }),
+                name: Queues.QUEUE_BLOCKS,
+                imports: [ConfigModule],
+                inject: [ConfigService],
+                useFactory: (configService: ConfigService) => ({
+                    redis: {
+                        host: configService.get<string>('REDIS_HOST'),
+                        port: configService.get<number>('REDIS_PORT')
+                    },
+                    prefix: configService.get<string>('REDIS_PREFIX'),
+                    defaultJobOptions: {
+                        removeOnComplete: true,
+                        removeOnFail: true,
+                    },
+                })
+            },
+            {
+                name: Queues.QUEUE_BEAMS,
+                imports: [ConfigModule],
+                inject: [ConfigService],
+                useFactory: (configService: ConfigService) => ({
+                    redis: {
+                        host: configService.get<string>('REDIS_HOST'),
+                        port: configService.get<number>('REDIS_PORT')
+                    },
+                    prefix: configService.get<string>('REDIS_PREFIX'),
+                    defaultJobOptions: {
+                        removeOnComplete: true,
+                        removeOnFail: true,
+                    },
+                })
+            },
+            {
+                name: Queues.QUEUE_FAUCET,
+                imports: [ConfigModule],
+                inject: [ConfigService],
+                useFactory: (configService: ConfigService) => ({
+                    redis: {
+                        host: configService.get<string>('REDIS_HOST'),
+                        port: configService.get<number>('REDIS_PORT')
+                    },
+                    prefix: configService.get<string>('REDIS_PREFIX'),
+                    limiter: {
+                        max: 1,
+                        duration: 30,
+                    },
+                    defaultJobOptions: {
+                        removeOnComplete: true,
+                        removeOnFail: true,
+                    },
+                })
+            }),
         ClientsModule.registerAsync([
             {
                 name: 'API',
@@ -85,10 +102,11 @@ export class SyncSchedulerModule implements OnModuleInit, OnApplicationBootstrap
     private readonly _logger: Logger = new Logger(SyncSchedulerModule.name);
 
     constructor(
-        @InjectQueue(Queues.QUEUE_DEFAULT) private readonly _queue: Queue,
+        @InjectQueue(Queues.QUEUE_BLOCKS) private readonly _queue: Queue,
         private readonly _configService: ConfigService,
         private readonly _lumNetworkService: LumNetworkService
-    ) {}
+    ) {
+    }
 
     async onModuleInit() {
         // Log out

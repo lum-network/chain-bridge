@@ -47,25 +47,45 @@ import {databaseProviders} from "@app/database";
             validationSchema: Joi.object(ConfigMap),
         }),
         BullModule.registerQueueAsync({
-            name: Queues.QUEUE_FAUCET,
-            imports: [ConfigModule],
-            useFactory: (configService: ConfigService) => ({
-                redis: {
-                    host: configService.get<string>('REDIS_HOST'),
-                    port: configService.get<number>('REDIS_PORT')
-                },
-                prefix: configService.get<string>('REDIS_PREFIX'),
-                limiter: {
-                    max: 1,
-                    duration: 30,
-                },
-                defaultJobOptions: {
-                    removeOnComplete: true,
-                    removeOnFail: true,
-                },
+                name: Queues.QUEUE_FAUCET,
+                imports: [ConfigModule],
+                useFactory: (configService: ConfigService) => ({
+                    redis: {
+                        host: configService.get<string>('REDIS_HOST'),
+                        port: configService.get<number>('REDIS_PORT')
+                    },
+                    prefix: configService.get<string>('REDIS_PREFIX'),
+                    limiter: {
+                        max: 1,
+                        duration: 30,
+                    },
+                    defaultJobOptions: {
+                        removeOnComplete: true,
+                        removeOnFail: true,
+                    },
+                }),
+                inject: [ConfigService]
+            },
+            {
+                name: Queues.QUEUE_NOTIFICATIONS,
+                imports: [ConfigModule],
+                inject: [ConfigService],
+                useFactory: (configService: ConfigService) => ({
+                    redis: {
+                        host: configService.get<string>('REDIS_HOST'),
+                        port: configService.get<number>('REDIS_PORT')
+                    },
+                    prefix: configService.get<string>('REDIS_PREFIX'),
+                    limiter: {
+                        max: 1,
+                        duration: 30,
+                    },
+                    defaultJobOptions: {
+                        removeOnComplete: true,
+                        removeOnFail: true,
+                    },
+                })
             }),
-            inject: [ConfigService]
-        }),
         CacheModule.registerAsync({
             imports: [ConfigModule],
             useFactory: (configService: ConfigService) => ({

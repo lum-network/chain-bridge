@@ -2,8 +2,10 @@ export const CLIENT_PRECISION = 1_000_000_000_000_000_000;
 export const SIGNED_BLOCK_WINDOW = 10000;
 
 export enum Queues {
-    QUEUE_DEFAULT = 'default',
+    QUEUE_BEAMS = 'beams',
+    QUEUE_BLOCKS = 'blocks',
     QUEUE_FAUCET = 'faucet',
+    QUEUE_NOTIFICATIONS = 'notifications'
 }
 
 export enum QueueJobs {
