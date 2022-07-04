@@ -16,8 +16,16 @@ export class StatService {
             this._beamService.countByStatus(BeamStatus.CLOSED),
             this._beamService.countByStatus(BeamStatus.CANCELED)
         ]);
-        const todayKpi = await this._beamService.acquireTodayKpi();
-        const globalKpi = await this._beamService.acquireGlobalKpi();
+        const [globalTotal, globalAverage, globalMax] = await Promise.all([
+            this._beamService.sumTotalAmount(),
+            this._beamService.averageTotalAmount(),
+            this._beamService.maxTotalAmount()
+        ])
+        const [,, todayMax] = await Promise.all([
+            this._beamService.sumTotalAmount(new Date()),
+            this._beamService.averageTotalAmount(new Date()),
+            this._beamService.maxTotalAmount(new Date())
+        ]);
         const merchants = await this._beamService.countDifferentCreatorAddresses();
         return {
             beams: {
@@ -27,10 +35,10 @@ export class StatService {
                 canceled: canceled
             },
             rewards: {
-                total: globalKpi.sum,
-                average: globalKpi.avg,
-                best_ath: globalKpi.max,
-                best_today: todayKpi.max
+                total: globalTotal,
+                average: globalAverage,
+                best_ath: globalMax,
+                best_today: todayMax
             },
             medias: {
                 total: 0 //TODO: implement

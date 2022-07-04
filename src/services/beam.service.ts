@@ -30,21 +30,28 @@ export class BeamService {
         return (await queryBuilder.getRawMany() as any).length;
     }
 
-    acquireGlobalKpi = async (): Promise<any> => {
-        const queryBuilder = this._repository.createQueryBuilder("beams");
-        queryBuilder.select("SUM((amount->'amount')::bigint)", 'sum');
-        queryBuilder.select("AVG((amount->'amount')::bigint)", 'avg');
-        queryBuilder.select("MAX((amount->'amount')::bigint)", 'max')
-        return queryBuilder.getRawOne();
+    sumTotalAmount = async (date: Date = null): Promise<number> => {
+        const queryBuilder = this._repository.createQueryBuilder("beams").select("SUM((amount->'amount')::bigint)", 'sum');
+        if (date) {
+            queryBuilder.where('created_at >= :date', {date: date});
+        }
+        return (await queryBuilder.getRawOne() as any).sum;
     }
 
-    acquireTodayKpi = async (): Promise<any> => {
-        //TODO: add date to query
-        const queryBuilder = this._repository.createQueryBuilder("beams");
-        queryBuilder.select("SUM((amount->'amount')::bigint)", 'sum');
-        queryBuilder.select("AVG((amount->'amount')::bigint)", 'avg');
-        queryBuilder.select("MAX((amount->'amount')::bigint)", 'max')
-        return queryBuilder.getRawOne();
+    averageTotalAmount = async (date: Date = null): Promise<number> => {
+        const queryBuilder = this._repository.createQueryBuilder("beams").select("AVG((amount->'amount')::bigint)", 'avg');
+        if (date) {
+            queryBuilder.where('created_at >= :date', {date: date});
+        }
+        return (await queryBuilder.getRawOne() as any).avg;
+    }
+
+    maxTotalAmount = async (date: Date = null): Promise<number> => {
+        const queryBuilder = this._repository.createQueryBuilder("beams").select("MAX((amount->'amount')::bigint)", 'max');
+        if (date) {
+            queryBuilder.where('created_at >= :date', {date: date});
+        }
+        return (await queryBuilder.getRawOne() as any).max;
     }
 
     fetch = async (skip: number, take: number): Promise<[BeamEntity[], number]> => {
