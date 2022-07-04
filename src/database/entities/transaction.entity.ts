@@ -47,7 +47,7 @@ export class TransactionEntity {
     @Column({type: "json", nullable: true})
     amount?: AmountModel;
 
-    @Column({type: "json", nullable: true})
+    @Column({type: "jsonb", nullable: true})
     auto_claim_reward?: AmountModel;
 
     @Column({type: "varchar", array: true, nullable: true})
@@ -56,7 +56,7 @@ export class TransactionEntity {
     @Column({type: "varchar", length: 256, nullable: true})
     memo?: string;
 
-    @Column({type: "json"})
+    @Column({type: "jsonb"})
     messages: { type_url: string; value: any }[];
 
     @Column({type: "varchar", length: 64})

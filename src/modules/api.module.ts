@@ -29,7 +29,7 @@ import {
     LumNetworkService,
     BlockService,
     TransactionService,
-    ValidatorService, BeamService, ValidatorDelegationService
+    ValidatorService, BeamService, ValidatorDelegationService, StatService
 } from '@app/services';
 import {
     Queues,
@@ -106,6 +106,7 @@ import {databaseProviders} from "@app/database";
         ...databaseProviders,
         BeamService,
         BlockService,
+        StatService,
         TransactionService,
         ValidatorService,
         ValidatorDelegationService,

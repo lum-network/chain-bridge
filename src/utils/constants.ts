@@ -1,6 +1,13 @@
 export const CLIENT_PRECISION = 1_000_000_000_000_000_000;
 export const SIGNED_BLOCK_WINDOW = 10000;
 
+export enum BeamStatus {
+    UNSPECIFIED,
+    OPEN,
+    CANCELED,
+    CLOSED
+}
+
 export enum Queues {
     QUEUE_BEAMS = 'beams',
     QUEUE_BLOCKS = 'blocks',

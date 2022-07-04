@@ -12,7 +12,7 @@ export class ValidatorDelegationEntity {
     @Column("bigint", {nullable: true})
     shares: number;
 
-    @Column({type: 'json'})
+    @Column({type: 'jsonb'})
     balance: AmountModel;
 
     constructor(data: Partial<ValidatorDelegationEntity>) {

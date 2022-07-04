@@ -24,7 +24,7 @@ export const databaseProviders = [
             entities: [
                 __dirname + "/entities/**/*.entity{.ts,.js}"
             ],
-            synchronize: true
+            synchronize: true,
         }),
         inject: [ConfigService]
     },

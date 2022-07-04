@@ -1,7 +1,9 @@
 import {Column, CreateDateColumn, Entity, PrimaryColumn, UpdateDateColumn, VersionColumn} from "typeorm";
 
-import {AmountModel} from "@app/database/entities/amount.model";
 import {BeamData} from "@lum-network/sdk-javascript/build/codec/beam/beam";
+
+import {AmountModel} from "@app/database/entities/amount.model";
+import {BeamStatus} from "@app/utils";
 
 @Entity({name: "beams"})
 export class BeamEntity {
@@ -12,7 +14,7 @@ export class BeamEntity {
     creator_address?: string;
 
     @Column({type: "integer", nullable: true})
-    status: number;
+    status: BeamStatus;
 
     @Column({type: "varchar", length: 64, nullable: true})
     claim_address?: string;
@@ -38,10 +40,10 @@ export class BeamEntity {
     @Column({type: "integer", default: 0})
     closes_at_block: number;
 
-    @Column({type: "json", nullable: true})
+    @Column({type: "jsonb", nullable: true})
     amount?: AmountModel;
 
-    @Column({type: "json"})
+    @Column({type: "jsonb"})
     data: BeamData;
 
     @CreateDateColumn({type: 'date', default: () => "CURRENT_DATE"})
