@@ -28,9 +28,9 @@ jobs:
       - name: Build, tag and push the built image
         run: |
           docker login $REGISTRY_ADDRESS -u nologin -p $REGISTRY_TOKEN
-          docker build -t $REGISTRY_ADDRESS/$REGISTRY_ADDRESS_PROJECT-api:"${{ github.event.inputs.ref }}" -f tools/API.Dockerfile .
-          docker build -t $REGISTRY_ADDRESS/$REGISTRY_ADDRESS_PROJECT-sync-consumer:"${{ github.event.inputs.ref }}" -f tools/SyncConsumer.Dockerfile .
-          docker build -t $REGISTRY_ADDRESS/$REGISTRY_ADDRESS_PROJECT-sync-scheduler:"${{ github.event.inputs.ref }}" -f tools/SyncScheduler.Dockerfile .
-          docker push $REGISTRY_ADDRESS/$REGISTRY_ADDRESS_PROJECT-api:${{ github.event.inputs.ref }}
-          docker push $REGISTRY_ADDRESS/$REGISTRY_ADDRESS_PROJECT-sync-consumer:${{ github.event.inputs.ref }}
-          docker push $REGISTRY_ADDRESS/$REGISTRY_ADDRESS_PROJECT-sync-scheduler:${{ github.event.inputs.ref }}
+          docker build -t $REGISTRY_ADDRESS/$REGISTRY_ADDRESS_PROJECT-api:"${{ github.event.inputs.version }}" -f tools/API.Dockerfile .
+          docker build -t $REGISTRY_ADDRESS/$REGISTRY_ADDRESS_PROJECT-sync-consumer:"${{ github.event.inputs.version }}" -f tools/SyncConsumer.Dockerfile .
+          docker build -t $REGISTRY_ADDRESS/$REGISTRY_ADDRESS_PROJECT-sync-scheduler:"${{ github.event.inputs.version }}" -f tools/SyncScheduler.Dockerfile .
+          docker push $REGISTRY_ADDRESS/$REGISTRY_ADDRESS_PROJECT-api:${{ github.event.inputs.version }}
+          docker push $REGISTRY_ADDRESS/$REGISTRY_ADDRESS_PROJECT-sync-consumer:${{ github.event.inputs.version }}
+          docker push $REGISTRY_ADDRESS/$REGISTRY_ADDRESS_PROJECT-sync-scheduler:${{ github.event.inputs.version }}
