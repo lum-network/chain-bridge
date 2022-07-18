@@ -28,23 +28,25 @@ export class StatService {
         ]);
         const merchants = await this._beamService.countDifferentCreatorAddresses();
         return {
-            beams: {
-                total: await this._beamService.countTotal(),
-                pending: pending,
-                validated: validated,
-                canceled: canceled
-            },
-            rewards: {
-                total: globalTotal,
-                average: globalAverage,
-                best_ath: globalMax,
-                best_today: todayMax
-            },
-            medias: {
-                total: 0 //TODO: implement
-            },
-            merchants: {
-                total: merchants
+            result: {
+                beams: {
+                    total: await this._beamService.countTotal(),
+                    pending: pending,
+                    validated: validated,
+                    canceled: canceled
+                },
+                rewards: {
+                    total: globalTotal,
+                    average: globalAverage,
+                    best_ath: globalMax,
+                    best_today: todayMax
+                },
+                medias: {
+                    total: 0 //TODO: implement
+                },
+                merchants: {
+                    total: merchants
+                }
             }
         }
     }
