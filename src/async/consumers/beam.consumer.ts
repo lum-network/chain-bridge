@@ -7,7 +7,7 @@ import {QueueJobs, Queues} from "@app/utils";
 import {BeamService, LumNetworkService} from "@app/services";
 import {BeamEntity} from "@app/database";
 
-@Processor(Queues.QUEUE_DEFAULT)
+@Processor(Queues.QUEUE_BEAMS)
 export class BeamConsumer {
     private readonly _logger: Logger = new Logger(BeamConsumer.name);
 
@@ -23,7 +23,7 @@ export class BeamConsumer {
             return;
         }
 
-        this._logger.log(`Ingesting beam ${job.data.id}`);
+        this._logger.debug(`Ingesting beam ${job.data.id}`);
 
         const beam = await this._lumNetworkService.client.queryClient.beam.get(job.data.id);
         const entity = new BeamEntity({

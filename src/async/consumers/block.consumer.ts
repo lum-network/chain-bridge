@@ -14,12 +14,14 @@ import {BlockService, LumNetworkService, TransactionService, ValidatorService} f
 import {BlockEntity, TransactionEntity} from "@app/database";
 
 
-@Processor(Queues.QUEUE_DEFAULT)
+@Processor(Queues.QUEUE_BLOCKS)
 export class BlockConsumer {
     private readonly _logger: Logger = new Logger(BlockConsumer.name);
 
     constructor(
-        @InjectQueue(Queues.QUEUE_DEFAULT) private readonly _queue: Queue,
+        @InjectQueue(Queues.QUEUE_BLOCKS) private readonly _blockQueue: Queue,
+        @InjectQueue(Queues.QUEUE_BEAMS) private readonly _beamQueue: Queue,
+        @InjectQueue(Queues.QUEUE_NOTIFICATIONS) private readonly _notificationQueue: Queue,
         private readonly _blockService: BlockService,
         private readonly _configService: ConfigService,
         private readonly _lumNetworkService: LumNetworkService,
@@ -49,7 +51,7 @@ export class BlockConsumer {
             // Get the operator address
             const proposerAddress = LumUtils.toHex(block.block.header.proposerAddress).toUpperCase();
             const validator = await this._validatorService.getByProposerAddress(proposerAddress);
-            if(!validator){
+            if (!validator) {
                 throw new Error(`Failed to find validator for ${proposerAddress}, exiting for retry`);
             }
 
@@ -157,7 +159,7 @@ export class BlockConsumer {
             for (const txDoc of transactions) {
                 for (const message of txDoc.messages) {
                     if (isBeam(message.type_url)) {
-                        await this._queue.add(QueueJobs.INGEST_BEAM, {id: message.value.id}, {
+                        await this._beamQueue.add(QueueJobs.INGEST_BEAM, {id: message.value.id}, {
                             jobId: `beam-${message.value.id}`,
                             attempts: 5,
                             backoff: 60000,
@@ -169,7 +171,7 @@ export class BlockConsumer {
             // If it's intended to notify frontend of incpming block
             if (job.data.notify) {
                 // Dispatch notification on websockets for frontend
-                await this._queue.add(QueueJobs.NOTIFICATION_SOCKET, {
+                await this._notificationQueue.add(QueueJobs.NOTIFICATION_SOCKET, {
                     channel: NotificationChannels.CHANNEL_BLOCKS,
                     event: NotificationEvents.EVENT_NEW_BLOCK,
                     data: blockDoc,
@@ -208,12 +210,12 @@ export class BlockConsumer {
                     },
                 });
             }
-            await this._queue.addBulk(jobs);
+            await this._blockQueue.addBulk(jobs);
         } else if (missing > 0) {
             const r1 = [job.data.fromBlock, job.data.fromBlock + Math.floor((job.data.toBlock - job.data.fromBlock) / 2)];
             const r2 = [r1[1] + 1, job.data.toBlock];
             this._logger.debug(`Trigger block backward check for ranges [${r1[0]}, ${r1[1]}], [${r2[0]}, ${r2[1]}]`);
-            await this._queue.add(
+            await this._blockQueue.add(
                 QueueJobs.TRIGGER_VERIFY_BLOCKS_BACKWARD,
                 {
                     chainId: job.data.chainId,
@@ -226,7 +228,7 @@ export class BlockConsumer {
                     jobId: `${job.data.chainId}-check-block-range-${r1[0]}-${r1[1]}`,
                 },
             );
-            await this._queue.add(
+            await this._blockQueue.add(
                 QueueJobs.TRIGGER_VERIFY_BLOCKS_BACKWARD,
                 {
                     chainId: job.data.chainId,

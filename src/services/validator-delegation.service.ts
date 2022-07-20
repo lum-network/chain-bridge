@@ -31,7 +31,12 @@ export class ValidatorDelegationService {
         return query.getManyAndCount();
     }
 
-    createOrUpdate = async (delegatorAddress: string, validatorAddress: string, shares: string, balance: AmountModel): Promise<ValidatorDelegationEntity> => {
+    sumTotalSharesForDelegator = async (delegatorAddress: string): Promise<AmountModel> => {
+        const query = this._repository.createQueryBuilder('validator_delegations').select('SUM(shares)', 'total_shares').where('delegator_address = :address', {address: delegatorAddress});
+        return query.getRawOne();
+    }
+
+    createOrUpdate = async (delegatorAddress: string, validatorAddress: string, shares: number, balance: AmountModel): Promise<ValidatorDelegationEntity> => {
         let entity = await this.getById(delegatorAddress, validatorAddress);
 
         // If entity does not exists, we create with the values

@@ -1,7 +1,7 @@
 import {NestFactory} from '@nestjs/core';
 import {ConfigService} from "@nestjs/config";
 import {DocumentBuilder, SwaggerModule} from "@nestjs/swagger";
-import {MicroserviceOptions, Transport} from '@nestjs/microservices';
+import {RedisOptions, Transport} from '@nestjs/microservices';
 
 import * as Sentry from '@sentry/node';
 
@@ -14,12 +14,13 @@ async function bootstrap() {
         app.enableCors();
 
         // Microservice module setup
-        app.connectMicroservice<MicroserviceOptions>(
+        app.connectMicroservice<RedisOptions>(
             {
                 transport: Transport.REDIS,
                 options: {
-                    url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
-                },
+                    host: process.env.REDIS_HOST,
+                    port: parseInt(process.env.REDIS_PORT, 10),
+                }
             },
             {inheritAppConfig: true},
         );

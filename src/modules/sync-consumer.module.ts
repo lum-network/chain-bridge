@@ -1,12 +1,10 @@
 import {HttpModule} from '@nestjs/axios';
 import {Module, OnApplicationBootstrap, OnModuleInit} from '@nestjs/common';
-import {BullModule, InjectQueue} from '@nestjs/bull';
+import {BullModule} from '@nestjs/bull';
 import {ClientsModule, Transport} from '@nestjs/microservices';
 import {ConfigModule, ConfigService} from "@nestjs/config";
 
 import * as Joi from "joi";
-
-import {Queue} from 'bull';
 
 import {BeamConsumer, BlockConsumer, CoreConsumer, NotificationConsumer} from '@app/async';
 
@@ -27,40 +25,75 @@ import {databaseProviders} from "@app/database";
             validationSchema: Joi.object(ConfigMap),
         }),
         BullModule.registerQueueAsync({
-            name: Queues.QUEUE_DEFAULT,
-            imports: [ConfigModule],
-            inject: [ConfigService],
-            useFactory: (configService: ConfigService) => ({
-                redis: {
-                    host: configService.get<string>('REDIS_HOST'),
-                    port: configService.get<number>('REDIS_PORT')
-                },
-                prefix: configService.get<string>('REDIS_PREFIX'),
-                defaultJobOptions: {
-                    removeOnComplete: true,
-                    removeOnFail: true,
-                },
-            })
-        }, {
-            name: Queues.QUEUE_FAUCET,
-            imports: [ConfigModule],
-            inject: [ConfigService],
-            useFactory: (configService: ConfigService) => ({
-                redis: {
-                    host: configService.get<string>('REDIS_HOST'),
-                    port: configService.get<number>('REDIS_PORT')
-                },
-                prefix: configService.get<string>('REDIS_PREFIX'),
-                limiter: {
-                    max: 1,
-                    duration: 30,
-                },
-                defaultJobOptions: {
-                    removeOnComplete: true,
-                    removeOnFail: true,
-                },
-            })
-        }),
+                name: Queues.QUEUE_BLOCKS,
+                imports: [ConfigModule],
+                inject: [ConfigService],
+                useFactory: (configService: ConfigService) => ({
+                    redis: {
+                        host: configService.get<string>('REDIS_HOST'),
+                        port: configService.get<number>('REDIS_PORT')
+                    },
+                    prefix: configService.get<string>('REDIS_PREFIX'),
+                    defaultJobOptions: {
+                        removeOnComplete: true,
+                        removeOnFail: true,
+                    },
+                })
+            }, {
+                name: Queues.QUEUE_BEAMS,
+                imports: [ConfigModule],
+                inject: [ConfigService],
+                useFactory: (configService: ConfigService) => ({
+                    redis: {
+                        host: configService.get<string>('REDIS_HOST'),
+                        port: configService.get<number>('REDIS_PORT')
+                    },
+                    prefix: configService.get<string>('REDIS_PREFIX'),
+                    defaultJobOptions: {
+                        removeOnComplete: true,
+                        removeOnFail: true,
+                    },
+                })
+            }, {
+                name: Queues.QUEUE_FAUCET,
+                imports: [ConfigModule],
+                inject: [ConfigService],
+                useFactory: (configService: ConfigService) => ({
+                    redis: {
+                        host: configService.get<string>('REDIS_HOST'),
+                        port: configService.get<number>('REDIS_PORT')
+                    },
+                    prefix: configService.get<string>('REDIS_PREFIX'),
+                    limiter: {
+                        max: 1,
+                        duration: 30,
+                    },
+                    defaultJobOptions: {
+                        removeOnComplete: true,
+                        removeOnFail: true,
+                    },
+                })
+            },
+            {
+                name: Queues.QUEUE_NOTIFICATIONS,
+                imports: [ConfigModule],
+                inject: [ConfigService],
+                useFactory: (configService: ConfigService) => ({
+                    redis: {
+                        host: configService.get<string>('REDIS_HOST'),
+                        port: configService.get<number>('REDIS_PORT')
+                    },
+                    prefix: configService.get<string>('REDIS_PREFIX'),
+                    limiter: {
+                        max: 1,
+                        duration: 30,
+                    },
+                    defaultJobOptions: {
+                        removeOnComplete: true,
+                        removeOnFail: true,
+                    },
+                })
+            }),
         ClientsModule.registerAsync([
             {
                 name: 'API',
@@ -69,7 +102,8 @@ import {databaseProviders} from "@app/database";
                 useFactory: (configService: ConfigService) => ({
                     transport: Transport.REDIS,
                     options: {
-                        url: `redis://${configService.get<string>('REDIS_HOST')}:${configService.get<number>('REDIS_PORT')}`,
+                        host: configService.get<string>('REDIS_HOST'),
+                        port: configService.get<number>('REDIS_PORT')
                     },
                 })
             }
@@ -80,7 +114,7 @@ import {databaseProviders} from "@app/database";
     providers: [...databaseProviders, BeamService, BlockService, TransactionService, ValidatorService, ValidatorDelegationService, BeamConsumer, BlockConsumer, CoreConsumer, NotificationConsumer, LumNetworkService],
 })
 export class SyncConsumerModule implements OnModuleInit, OnApplicationBootstrap {
-    constructor(private readonly _lumNetworkService: LumNetworkService, @InjectQueue(Queues.QUEUE_DEFAULT) private readonly _queue: Queue) {
+    constructor(private readonly _lumNetworkService: LumNetworkService) {
     }
 
     async onModuleInit() {

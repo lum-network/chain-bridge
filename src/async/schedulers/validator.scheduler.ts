@@ -6,7 +6,7 @@ import {LumConstants, LumTypes, LumUtils, LumRegistry} from '@lum-network/sdk-ja
 
 import {LumNetworkService, ValidatorDelegationService, ValidatorService} from '@app/services';
 import {ValidatorEntity} from "@app/database";
-import {SIGNED_BLOCK_WINDOW} from "@app/utils";
+import {CLIENT_PRECISION, SIGNED_BLOCK_WINDOW} from "@app/utils";
 
 @Injectable()
 export class ValidatorScheduler {
@@ -34,9 +34,10 @@ export class ValidatorScheduler {
 
                 // For each delegation, we create or update the matching entry in our database
                 for (const delegation of delegations.delegationResponses) {
-                    await this._validatorDelegationService.createOrUpdate(delegation.delegation.delegatorAddress, delegation.delegation.validatorAddress, delegation.delegation.shares, {
+                    const shares = Number((parseInt(delegation.delegation.shares, 10) / CLIENT_PRECISION).toFixed())
+                    await this._validatorDelegationService.createOrUpdate(delegation.delegation.delegatorAddress, delegation.delegation.validatorAddress, shares, {
                         denom: delegation.balance.denom,
-                        amount: parseFloat(delegation.balance.amount)
+                        amount: parseInt(delegation.balance.amount, 10)
                     });
                 }
 
@@ -97,12 +98,12 @@ export class ValidatorScheduler {
                                 validators[v].jailed = val.jailed;
                                 validators[v].status = val.status;
                                 validators[v].tokens = parseInt(val.tokens, 10);
-                                validators[v].delegator_shares = val.delegatorShares;
+                                validators[v].delegator_shares = Number((Number(val.delegatorShares) / CLIENT_PRECISION).toFixed());
                                 validators[v].commission = {
                                     rates: {
-                                        current_rate: val.commission.commissionRates.rate,
-                                        max_rate: val.commission.commissionRates.maxRate,
-                                        max_change_rate: val.commission.commissionRates.maxChangeRate
+                                        current_rate: parseInt(val.commission.commissionRates.rate, 10) / CLIENT_PRECISION,
+                                        max_rate: parseInt(val.commission.commissionRates.maxRate, 10) / CLIENT_PRECISION,
+                                        max_change_rate: parseInt(val.commission.commissionRates.maxChangeRate, 10) / CLIENT_PRECISION,
                                     },
                                     last_updated_at: val.commission.updateTime
                                 };

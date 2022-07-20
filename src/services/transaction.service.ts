@@ -15,6 +15,10 @@ export class TransactionService {
         return this._repository;
     }
 
+    countTotal = async (): Promise<number> => {
+        return this._repository.count();
+    }
+
     fetch = async (skip: number, take: number): Promise<[TransactionEntity[], number]> => {
         const query = this._repository.createQueryBuilder('transactions').orderBy('transactions.time', 'DESC').skip(skip).take(take);
         return query.getManyAndCount();

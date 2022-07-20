@@ -12,7 +12,7 @@ import {QueueJobs, Queues} from '@app/utils';
 export class BlockScheduler {
     private _logger: Logger = new Logger(BlockScheduler.name);
 
-    constructor(@InjectQueue(Queues.QUEUE_DEFAULT) private readonly _queue: Queue, private readonly _configService: ConfigService, private readonly _lumNetworkService: LumNetworkService) {
+    constructor(@InjectQueue(Queues.QUEUE_BLOCKS) private readonly _queue: Queue, private readonly _configService: ConfigService, private readonly _lumNetworkService: LumNetworkService) {
     }
 
     @Cron(CronExpression.EVERY_10_SECONDS, {name: 'blocks_live_ingest'})
@@ -58,7 +58,7 @@ export class BlockScheduler {
         const blockHeight = await this._lumNetworkService.client.getBlockHeight();
         await this._queue.add(QueueJobs.TRIGGER_VERIFY_BLOCKS_BACKWARD, {
             chainId: chainId,
-            fromBlock: 1,
+            fromBlock: this._configService.get<number>('STARTING_HEIGHT'),
             toBlock: blockHeight,
         });
     }
