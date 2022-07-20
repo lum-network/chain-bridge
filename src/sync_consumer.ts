@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import {ConfigService} from "@nestjs/config";
-import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import {RedisOptions, Transport} from '@nestjs/microservices';
 
 import * as Sentry from '@sentry/node';
 
@@ -8,11 +8,12 @@ import { SyncConsumerModule } from '@app/modules';
 
 async function bootstrap() {
     try {
-        const app = await NestFactory.createMicroservice<MicroserviceOptions>(SyncConsumerModule, {
+        const app = await NestFactory.createMicroservice<RedisOptions>(SyncConsumerModule, {
             transport: Transport.REDIS,
             options: {
-                url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
-            },
+                host: process.env.REDIS_HOST,
+                port: parseInt(process.env.REDIS_PORT, 10),
+            }
         });
 
         const config = app.get(ConfigService);

@@ -1,5 +1,5 @@
 import {HttpModule} from '@nestjs/axios';
-import {Logger, Module, OnModuleInit, OnApplicationBootstrap} from '@nestjs/common';
+import {Logger, Module, OnApplicationBootstrap, OnModuleInit} from '@nestjs/common';
 import {BullModule, InjectQueue} from '@nestjs/bull';
 import {ScheduleModule} from '@nestjs/schedule';
 import {ClientsModule, Transport} from '@nestjs/microservices';
@@ -12,13 +12,14 @@ import {Queue} from 'bull';
 import {BlockScheduler, ValidatorScheduler} from '@app/async';
 
 import {
-    LumNetworkService,
+    BeamService,
     BlockService,
+    LumNetworkService,
     TransactionService,
-    ValidatorService,
-    BeamService, ValidatorDelegationService
+    ValidatorDelegationService,
+    ValidatorService
 } from '@app/services';
-import {Queues, ConfigMap, QueueJobs} from '@app/utils';
+import {ConfigMap, QueueJobs, Queues} from '@app/utils';
 import {databaseProviders} from "@app/database";
 
 @Module({
@@ -87,7 +88,8 @@ import {databaseProviders} from "@app/database";
                 useFactory: (configService: ConfigService) => ({
                     transport: Transport.REDIS,
                     options: {
-                        url: `redis://${configService.get<string>('REDIS_HOST')}:${configService.get<number>('REDIS_PORT')}`,
+                        host: configService.get<string>('REDIS_HOST'),
+                        url: configService.get<number>('REDIS_PORT')
                     },
                 })
             }

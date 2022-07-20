@@ -102,7 +102,8 @@ import {databaseProviders} from "@app/database";
                 useFactory: (configService: ConfigService) => ({
                     transport: Transport.REDIS,
                     options: {
-                        url: `redis://${configService.get<string>('REDIS_HOST')}:${configService.get<number>('REDIS_PORT')}`,
+                        host: configService.get<string>('REDIS_HOST'),
+                        port: configService.get<number>('REDIS_PORT')
                     },
                 })
             }
