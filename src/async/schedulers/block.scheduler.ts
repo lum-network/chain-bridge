@@ -58,7 +58,7 @@ export class BlockScheduler {
         const blockHeight = await this._lumNetworkService.client.getBlockHeight();
         await this._queue.add(QueueJobs.TRIGGER_VERIFY_BLOCKS_BACKWARD, {
             chainId: chainId,
-            fromBlock: 1,
+            fromBlock: this._configService.get<number>('STARTING_HEIGHT'),
             toBlock: blockHeight,
         });
     }
