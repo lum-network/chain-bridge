@@ -6,7 +6,7 @@ import {BalanceResponse} from '@app/http/responses/balance.response';
 @Exclude()
 class RewardResponse {
     @ApiProperty()
-    @Expose({name: 'validatorAddress'})
+    @Expose()
     validator_address: string;
 
     @ApiProperty({type: () => [BalanceResponse]})

@@ -15,7 +15,7 @@ import {
     TransactionResponse, UnbondingResponse
 } from '@app/http/responses';
 import {DefaultTake} from "@app/http/decorators";
-import {ExplorerRequest} from "@app/utils";
+import {CLIENT_PRECISION, ExplorerRequest} from "@app/utils";
 
 @ApiTags('accounts')
 @Controller('accounts')
@@ -118,7 +118,26 @@ export class AccountsController {
         return {
             result: plainToInstance(AccountResponse, {
                 ...account,
-                all_rewards: !!rewards ? rewards : [],
+                all_rewards_old: !!rewards ? rewards : [],
+                all_rewards: {
+                    total: rewards.total.map(rwd => {
+                        return {
+                            denom: rwd.denom,
+                            amount: parseInt(rwd.amount, 10) / CLIENT_PRECISION
+                        }
+                    }),
+                    rewards: rewards.rewards.map(rwd => {
+                        return {
+                            validator_address: rwd.validatorAddress,
+                            reward: rwd.reward.map(rwd2 => {
+                                return {
+                                    denom: rwd2.denom,
+                                    amount: parseInt(rwd2.amount, 10) / CLIENT_PRECISION
+                                }
+                            })
+                        }
+                    })
+                },
                 airdrop: airdrop.claimRecord,
                 balance: !!balance ? balance : null,
                 commissions: !!commissions && !!commissions.commission ? commissions.commission.commission : null,
