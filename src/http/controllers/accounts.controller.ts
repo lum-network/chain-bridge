@@ -138,31 +138,39 @@ export class AccountsController {
                     })
                 },
                 airdrop: airdrop.claimRecord,
-                balance: !!balance ? balance : null,
-                commissions: !!commissions && !!commissions.commission ? commissions.commission.commission : null,
-                vesting: {
+                balance: {
+                    denom: balance.denom,
+                    amount: parseInt(balance.amount, 10)
+                },
+                commissions: commissions.commission.commission.map((com) => {
+                    return {
+                        denom: com.denom,
+                        amount: parseInt(com.amount, 10) / CLIENT_PRECISION
+                    }
+                }),
+                vesting: vesting ? {
                     ...vesting,
-                    total_coins: {
+                    total_coins: vesting.totalCoins ? {
                         denom: vesting.totalCoins.denom,
                         amount: parseInt(vesting.totalCoins.amount, 10)
-                    },
-                    unlocked_coins: {
+                    } : null,
+                    unlocked_coins: vesting.unlockedCoins ? {
                         denom: vesting.unlockedCoins.denom,
                         amount: parseInt(vesting.unlockedCoins.amount, 10)
-                    },
-                    locked_coins: {
+                    } : null,
+                    locked_coins: vesting.lockedCoins ? {
                         denom: vesting.lockedCoins.denom,
                         amount: parseInt(vesting.lockedCoins.amount, 10)
-                    },
-                    locked_delegated_coins: {
+                    } : null,
+                    locked_delegated_coins: vesting.lockedDelegatedCoins ? {
                         denom: vesting.lockedDelegatedCoins.denom,
                         amount: parseInt(vesting.lockedDelegatedCoins.amount, 10)
-                    },
-                    locked_bank_coins: {
+                    } : null,
+                    locked_bank_coins: vesting.lockedBankCoins ? {
                         denom: vesting.lockedBankCoins.denom,
                         amount: parseInt(vesting.lockedBankCoins.amount, 10)
-                    }
-                },
+                    } : null
+                } : null,
                 withdraw_address: !!withdrawAddress ? withdrawAddress.withdrawAddress : address,
                 total_shares: totalShares.total_shares
             })
