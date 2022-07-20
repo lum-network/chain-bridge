@@ -1,12 +1,17 @@
 import {Injectable} from "@nestjs/common";
 
 import {BeamService} from "@app/services/beam.service";
+import {BlockService} from "@app/services/block.service";
+import {TransactionService} from "@app/services/transaction.service";
+
 import {BeamStatus} from "@app/utils";
 
 @Injectable()
 export class StatService {
     constructor(
-        private readonly _beamService: BeamService
+        private readonly _blockService: BlockService,
+        private readonly _beamService: BeamService,
+        private readonly _transactionService: TransactionService
     ) {
     }
 
@@ -29,11 +34,20 @@ export class StatService {
         const merchants = await this._beamService.countDifferentCreatorAddresses();
         return {
             result: {
+                blocks: {
+                    total: await this._blockService.countTotal()
+                },
                 beams: {
                     total: await this._beamService.countTotal(),
                     pending: pending,
                     validated: validated,
                     canceled: canceled
+                },
+                medias: {
+                    total: 0 //TODO: implement
+                },
+                merchants: {
+                    total: merchants
                 },
                 rewards: {
                     total: globalTotal,
@@ -41,11 +55,8 @@ export class StatService {
                     best_ath: globalMax,
                     best_today: todayMax
                 },
-                medias: {
-                    total: 0 //TODO: implement
-                },
-                merchants: {
-                    total: merchants
+                transactions: {
+                    total: await this._transactionService.countTotal()
                 }
             }
         }
