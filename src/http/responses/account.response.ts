@@ -27,27 +27,27 @@ class VestingResponse {
     locked_percentage: number;
 
     @ApiProperty({type: () => BalanceResponse})
-    @Expose({ name: 'totalCoins' })
+    @Expose()
     @Type(() => BalanceResponse)
     total_coins: BalanceResponse;
 
     @ApiProperty({type: () => BalanceResponse})
-    @Expose({ name: 'unlockedCoins' })
+    @Expose()
     @Type(() => BalanceResponse)
     unlocked_coins: BalanceResponse;
 
     @ApiProperty({type: () => BalanceResponse})
-    @Expose({ name: 'lockedCoins' })
+    @Expose()
     @Type(() => BalanceResponse)
     locked_coins: BalanceResponse;
 
     @ApiProperty({type: () => BalanceResponse})
-    @Expose({ name: 'lockedDelegatedCoins' })
+    @Expose()
     @Type(() => BalanceResponse)
     locked_delegated_coins: BalanceResponse;
 
     @ApiProperty({type: () => BalanceResponse})
-    @Expose({ name: 'lockedBankCoins' })
+    @Expose()
     @Type(() => BalanceResponse)
     locked_bank_coins: BalanceResponse;
 }

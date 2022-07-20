@@ -118,7 +118,6 @@ export class AccountsController {
         return {
             result: plainToInstance(AccountResponse, {
                 ...account,
-                all_rewards_old: !!rewards ? rewards : [],
                 all_rewards: {
                     total: rewards.total.map(rwd => {
                         return {
@@ -141,7 +140,29 @@ export class AccountsController {
                 airdrop: airdrop.claimRecord,
                 balance: !!balance ? balance : null,
                 commissions: !!commissions && !!commissions.commission ? commissions.commission.commission : null,
-                vesting: vesting,
+                vesting: {
+                    ...vesting,
+                    total_coins: {
+                        denom: vesting.totalCoins.denom,
+                        amount: parseInt(vesting.totalCoins.amount, 10)
+                    },
+                    unlocked_coins: {
+                        denom: vesting.unlockedCoins.denom,
+                        amount: parseInt(vesting.unlockedCoins.amount, 10)
+                    },
+                    locked_coins: {
+                        denom: vesting.lockedCoins.denom,
+                        amount: parseInt(vesting.lockedCoins.amount, 10)
+                    },
+                    locked_delegated_coins: {
+                        denom: vesting.lockedDelegatedCoins.denom,
+                        amount: parseInt(vesting.lockedDelegatedCoins.amount, 10)
+                    },
+                    locked_bank_coins: {
+                        denom: vesting.lockedBankCoins.denom,
+                        amount: parseInt(vesting.lockedBankCoins.amount, 10)
+                    }
+                },
                 withdraw_address: !!withdrawAddress ? withdrawAddress.withdrawAddress : address,
                 total_shares: totalShares.total_shares
             })
