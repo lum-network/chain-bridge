@@ -72,24 +72,19 @@ export class StatService {
                 const startAtTimestamp = moment(startAt).unix();
                 const endAtTimestamp = moment(endAt).unix();
 
-                const prices = await this._lumService.getPriceHistory(startAtTimestamp, endAtTimestamp);
-                return prices;
+                return await this._lumService.getPriceHistory(startAtTimestamp, endAtTimestamp);
 
             case ChartTypes.REVIEWS_SUM:
-                const reviewsByDay = await this._beamService.countInRange(startAt, endAt);
-                return reviewsByDay;
+                return await this._beamService.countInRange(startAt, endAt);
 
             case ChartTypes.REWARDS_SUM:
-                const rewardsByDay = await this._beamService.sumTotalAmountInRange(startAt, endAt);
-                return rewardsByDay;
+                return await this._beamService.sumTotalAmountInRange(startAt, endAt);
 
             case ChartTypes.REWARDS_AVG:
-                const rewardsAvgByDay = await this._beamService.averageTotalAmountInRange(startAt, endAt);
-                return rewardsAvgByDay;
-                break;
+                return await this._beamService.averageTotalAmountInRange(startAt, endAt);
 
             case ChartTypes.REWARDS_LAST:
-                break;
+                return await this._beamService.fetchLastClaimed();
 
             case ChartTypes.MERCHANTS_LAST:
                 break;
