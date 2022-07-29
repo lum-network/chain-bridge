@@ -8,11 +8,21 @@ export enum BeamStatus {
     CLOSED
 }
 
+export enum ChartTypes {
+    ASSET_VALUE = 'asset_value',
+    REVIEWS_SUM = 'reviews_sum',
+    REWARDS_SUM = 'rewards_sum',
+    REWARDS_AVG = 'rewards_avg',
+    REWARDS_LAST = 'rewards_last',
+    MERCHANTS_LAST = 'merchants_last',
+    WALLETS_TOP = 'wallets_top',
+}
+
 export enum Queues {
     QUEUE_BEAMS = 'beams',
     QUEUE_BLOCKS = 'blocks',
     QUEUE_FAUCET = 'faucet',
-    QUEUE_NOTIFICATIONS = 'notifications'
+    QUEUE_NOTIFICATIONS = 'notifications',
 }
 
 export enum QueueJobs {

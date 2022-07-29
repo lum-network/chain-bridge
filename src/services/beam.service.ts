@@ -33,15 +33,72 @@ export class BeamService {
     sumTotalAmount = async (date: Date = null): Promise<number> => {
         const queryBuilder = this._repository.createQueryBuilder("beams").select("SUM((amount->'amount')::bigint)", 'sum');
         if (date) {
-            queryBuilder.where('created_at >= :date', {date: date});
+            queryBuilder.where('dispatched_at >= :date', {date: date});
         }
-        return (await queryBuilder.getRawOne() as any).sum;
+        return ((await queryBuilder.getRawOne()) as any).sum;
+    }
+
+    sumTotalAmountInRange = async (startAt: Date, endAt: Date): Promise<number> => {
+        const query = await this._repository.query(`
+            with dates as (
+                select generate_series(
+                   (date '${startAt}')::timestamp,
+                   (date '${endAt}')::timestamp,
+                   interval '1 hour'
+                 ) as dt
+            )
+            SELECT d.dt::date::text as day, to_char(d.dt::time,'HH24:MM:SS') as hour, COALESCE(SUM((amount->'amount')::bigint), 0) as sum FROM dates d LEFT JOIN beams b ON b.dispatched_at >= d.dt AND b.dispatched_at < d.dt + interval '1 hour' GROUP BY d.dt ORDER BY d.dt;
+        `);
+        return query.map((i) => {
+            return {
+                key: i.day + ' ' + i.hour,
+                value: i.sum,
+            };
+        });
+    }
+
+    countInRange = async(startAt: Date, endAt: Date): Promise<number> => {
+        const query = await this._repository.query(`
+            with dates as (
+                select generate_series(
+                   (date '${startAt}')::timestamp,
+                   (date '${endAt}')::timestamp,
+                   interval '1 hour'
+                 ) as dt
+            )
+            SELECT d.dt::date::text as day, to_char(d.dt::time,'HH24:MM:SS') as hour, COUNT(id) as count FROM dates d LEFT JOIN beams b ON b.dispatched_at >= d.dt AND b.dispatched_at < d.dt + interval '1 hour' GROUP BY d.dt ORDER BY d.dt;
+        `);
+        return query.map((i) => {
+            return {
+                key: i.day + ' ' + i.hour,
+                value: i.count,
+            };
+        });
+    }
+
+    averageTotalAmountInRange = async(startAt: Date, endAt: Date): Promise<number> => {
+        const query = await this._repository.query(`
+            with dates as (
+                select generate_series(
+                   (date '${startAt}')::timestamp,
+                   (date '${endAt}')::timestamp,
+                   interval '1 hour'
+                 ) as dt
+            )
+            SELECT d.dt::date::text as day, to_char(d.dt::time,'HH24:MM:SS') as hour, AVG((amount->'amount')::bigint) as average FROM dates d LEFT JOIN beams b ON b.dispatched_at >= d.dt AND b.dispatched_at < d.dt + interval '1 hour' GROUP BY d.dt ORDER BY d.dt;
+        `);
+        return query.map((i) => {
+            return {
+                key: i.day + ' ' + i.hour,
+                value: i.average || 0,
+            };
+        });
     }
 
     averageTotalAmount = async (date: Date = null): Promise<number> => {
         const queryBuilder = this._repository.createQueryBuilder("beams").select("AVG((amount->'amount')::bigint)", 'avg');
         if (date) {
-            queryBuilder.where('created_at >= :date', {date: date});
+            queryBuilder.where('dispatched_at >= :date', {date: date});
         }
         return (await queryBuilder.getRawOne() as any).avg;
     }
@@ -49,7 +106,7 @@ export class BeamService {
     maxTotalAmount = async (date: Date = null): Promise<number> => {
         const queryBuilder = this._repository.createQueryBuilder("beams").select("MAX((amount->'amount')::bigint)", 'max');
         if (date) {
-            queryBuilder.where('created_at >= :date', {date: date});
+            queryBuilder.where('dispatched_at >= :date', {date: date});
         }
         return (await queryBuilder.getRawOne() as any).max;
     }

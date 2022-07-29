@@ -1,8 +1,8 @@
 import {HttpModule} from '@nestjs/axios';
-import {Logger, Module, OnModuleInit, CacheModule, OnApplicationBootstrap} from '@nestjs/common';
+import {Logger, Module, OnModuleInit, CacheModule, OnApplicationBootstrap, ValidationPipe} from '@nestjs/common';
 import {ConfigModule, ConfigService} from "@nestjs/config";
 import {BullModule} from '@nestjs/bull';
-import {APP_FILTER, APP_INTERCEPTOR} from '@nestjs/core';
+import {APP_FILTER, APP_INTERCEPTOR, APP_PIPE} from '@nestjs/core';
 import {TerminusModule} from '@nestjs/terminus';
 
 import {ConsoleModule} from 'nestjs-console';
@@ -33,7 +33,7 @@ import {
 } from '@app/services';
 import {
     Queues,
-    ConfigMap
+    ConfigMap, PayloadValidationOptions
 } from '@app/utils';
 
 import {GatewayWebsocket} from '@app/websocket';
@@ -120,6 +120,7 @@ import {databaseProviders} from "@app/database";
         {provide: APP_FILTER, useClass: HttpExceptionFilter},
         {provide: APP_INTERCEPTOR, useClass: PaginationInterceptor},
         {provide: APP_INTERCEPTOR, useClass: ResponseInterceptor},
+        {provide: APP_PIPE, useFactory: () => new ValidationPipe(PayloadValidationOptions)}
     ],
 })
 export class ApiModule implements OnModuleInit, OnApplicationBootstrap {

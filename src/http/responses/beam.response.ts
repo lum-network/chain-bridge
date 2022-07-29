@@ -255,4 +255,8 @@ export class BeamResponse {
     @ApiProperty()
     @Expose()
     closed_at: Date;
+
+    @ApiProperty()
+    @Expose()
+    dispatched_at: Date;
 }

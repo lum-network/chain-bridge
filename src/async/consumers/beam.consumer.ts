@@ -43,6 +43,8 @@ export class BeamConsumer {
                 denom: beam.amount.denom
             },
             data: beam.data,
+            dispatched_at: beam.createdAt,
+            closed_at: beam.closedAt,
         });
 
         await this._beamService.save(entity);

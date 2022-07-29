@@ -46,10 +46,16 @@ export class BeamEntity {
     @Column({type: "jsonb"})
     data: BeamData;
 
-    @CreateDateColumn({type: 'date', default: () => "CURRENT_DATE"})
+    @Column({type: 'timestamp', nullable: true})
+    dispatched_at: Date;
+
+    @Column({type: 'timestamp', nullable: true})
+    closed_at: Date = null;
+
+    @CreateDateColumn({type: 'timestamp', default: () => "CURRENT_DATE"})
     created_at?: Date = new Date;
 
-    @UpdateDateColumn({type: 'date', default: null})
+    @UpdateDateColumn({type: 'timestamp', default: null})
     updated_at?: Date = null;
 
     @VersionColumn({type: "integer", default: 0})
