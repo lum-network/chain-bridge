@@ -51,8 +51,8 @@ export class BeamService {
         `);
         return query.map((i) => {
             return {
-                key: i.day + ' ' + i.hour,
-                value: i.sum,
+                key: String(i.day + ' ' + i.hour),
+                value: Number(i.sum),
             };
         });
     }
@@ -70,8 +70,8 @@ export class BeamService {
         `);
         return query.map((i) => {
             return {
-                key: i.day + ' ' + i.hour,
-                value: i.count,
+                key: String(i.day + ' ' + i.hour),
+                value: Number(i.count),
             };
         });
     }
@@ -89,8 +89,8 @@ export class BeamService {
         `);
         return query.map((i) => {
             return {
-                key: i.day + ' ' + i.hour,
-                value: i.average || 0,
+                key: String(i.day + ' ' + i.hour),
+                value: Number(i.average || 0),
             };
         });
     };
@@ -116,8 +116,8 @@ export class BeamService {
         });
         return res.map((i) => {
             return {
-                key: i.claim_address,
-                value: i.amount.amount,
+                key: String(i.claim_address),
+                value: Number(i.amount.amount),
             };
         });
     };

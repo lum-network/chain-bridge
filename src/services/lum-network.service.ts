@@ -39,8 +39,8 @@ export class LumNetworkService {
             const res = await this._httpService.get(`https://api.coingecko.com/api/v3/coins/lum-network/market_chart/range?vs_currency=usd&from=${startAt}&to=${endAt}`).toPromise();
             return res.data.prices.map((price) => {
                 return {
-                    key: price[0],
-                    value: price[1],
+                    key: String(price[0]),
+                    value: Number(price[1]),
                 };
             });
         } catch (e) {
