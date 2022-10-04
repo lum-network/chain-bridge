@@ -38,7 +38,7 @@ export class BeamService {
         return ((await queryBuilder.getRawOne()) as any).sum;
     }
 
-    sumTotalAmountInRange = async (startAt: Date, endAt: Date, monthly: boolean = false): Promise<number> => {
+    sumTotalAmountInRange = async (startAt: Date, endAt: Date, monthly: boolean = false): Promise<{key: string, value: number}[]> => {
         const query = await this._repository.query(`
             with dates as (
                 select generate_series(
@@ -57,7 +57,7 @@ export class BeamService {
         });
     }
 
-    countInRange = async (startAt: Date, endAt: Date, monthly: boolean = false): Promise<number> => {
+    countInRange = async (startAt: Date, endAt: Date, monthly: boolean = false): Promise<{key: string, value: number}[]> => {
         const query = await this._repository.query(`
             with dates as (
                 select generate_series(
@@ -76,7 +76,7 @@ export class BeamService {
         });
     }
 
-    averageTotalAmountInRange = async (startAt: Date, endAt: Date, monthly: boolean = false): Promise<number> => {
+    averageTotalAmountInRange = async (startAt: Date, endAt: Date, monthly: boolean = false): Promise<{key: string, value: number}[]> => {
         const query = await this._repository.query(`
             with dates as (
                 select generate_series(
@@ -103,7 +103,7 @@ export class BeamService {
         return ((await queryBuilder.getRawOne()) as any).avg;
     };
 
-    fetchLastClaimed = async (): Promise<any[]> => {
+    fetchLastClaimed = async (): Promise<{key: string, value: number}[]> => {
         const res = await this._repository.find({
             where: {
                 status: BeamStatus.CLOSED,
