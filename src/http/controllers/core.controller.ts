@@ -10,7 +10,7 @@ import {MessagePattern, Payload} from '@nestjs/microservices';
 
 import {plainToInstance} from 'class-transformer';
 
-import {keyToHex} from "@lum-network/sdk-javascript/build/utils";
+import {fromUtf8, keyToHex} from "@lum-network/sdk-javascript/build/utils";
 
 import {LumNetworkService, BlockService, TransactionService} from '@app/services';
 import {BalanceResponse, DataResponse, LumResponse} from '@app/http/responses';
@@ -81,7 +81,9 @@ export class CoreController {
 
     @Get('params')
     async params(): Promise<DataResponse> {
-        const [mintingParams, stakingParams, govDepositParams, govVoteParams, govTallyParams, distributionParams, slashingParams, communityPoolParams] = await Promise.all([
+        const [chainId, mintingInflation, mintingParams, stakingParams, govDepositParams, govVoteParams, govTallyParams, distributionParams, slashingParams, communityPoolParams] = await Promise.all([
+            this._lumNetworkService.client.getChainId(),
+            this._lumNetworkService.client.queryClient.mint.inflation(),
             this._lumNetworkService.client.queryClient.mint.params(),
             this._lumNetworkService.client.queryClient.staking.params(),
             this._lumNetworkService.client.queryClient.gov.params("deposit"),
@@ -93,12 +95,14 @@ export class CoreController {
         ]);
         return {
             result: {
+                chain_id: chainId,
                 mint: {
                     denom: mintingParams.mintDenom,
                     inflation: {
                         rate_change: parseInt(mintingParams.inflationRateChange, 10) / CLIENT_PRECISION,
                         max: parseInt(mintingParams.inflationMax, 10) / CLIENT_PRECISION,
-                        min: parseInt(mintingParams.inflationMin, 10) / CLIENT_PRECISION
+                        min: parseInt(mintingParams.inflationMin, 10) / CLIENT_PRECISION,
+                        current: parseInt(mintingInflation, 10) / CLIENT_PRECISION
                     },
                     goal_bonded: parseInt(mintingParams.goalBonded, 10) / CLIENT_PRECISION,
                     blocks_per_year: mintingParams.blocksPerYear.low
@@ -143,9 +147,9 @@ export class CoreController {
                 },
                 slashing: {
                     signed_blocks_window: slashingParams.params.signedBlocksWindow.low,
-                    min_signed_per_window: keyToHex(slashingParams.params.minSignedPerWindow),
-                    slash_fraction_double_sign: keyToHex(slashingParams.params.slashFractionDoubleSign).toString(),
-                    slash_fraction_downtime: keyToHex(slashingParams.params.slashFractionDowntime).toString(),
+                    min_signed_per_window: (parseInt(fromUtf8(slashingParams.params.minSignedPerWindow), 10) / CLIENT_PRECISION),
+                    slash_fraction_double_sign: (parseInt(fromUtf8(slashingParams.params.slashFractionDoubleSign), 10) / CLIENT_PRECISION),
+                    slash_fraction_downtime: (parseInt(fromUtf8(slashingParams.params.slashFractionDowntime), 10) / CLIENT_PRECISION),
                     downtime_jail_duration: slashingParams.params.downtimeJailDuration.seconds.low
                 }
             }
