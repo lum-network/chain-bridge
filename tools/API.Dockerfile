@@ -1,4 +1,4 @@
-FROM node:12
+FROM node:14.15.0
 
 RUN apt-get update
 RUN apt-get upgrade -y
