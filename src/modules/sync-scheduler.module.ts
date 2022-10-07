@@ -3,8 +3,9 @@ import {Logger, Module, OnApplicationBootstrap, OnModuleInit} from '@nestjs/comm
 import {BullModule, InjectQueue} from '@nestjs/bull';
 import {ScheduleModule} from '@nestjs/schedule';
 import {ClientsModule, Transport} from '@nestjs/microservices';
-
+import {TypeOrmModule} from "@nestjs/typeorm";
 import {ConfigModule, ConfigService} from "@nestjs/config";
+
 import * as Joi from "joi";
 
 import {Queue} from 'bull';
@@ -20,7 +21,7 @@ import {
     ValidatorService
 } from '@app/services';
 import {ConfigMap, QueueJobs, Queues} from '@app/utils';
-import {databaseProviders} from "@app/database";
+import {DatabaseConfig, DatabaseFeatures} from "@app/database";
 
 @Module({
     imports: [
@@ -96,9 +97,11 @@ import {databaseProviders} from "@app/database";
         ]),
         ScheduleModule.forRoot(),
         HttpModule,
+        TypeOrmModule.forRootAsync(DatabaseConfig),
+        TypeOrmModule.forFeature(DatabaseFeatures)
     ],
     controllers: [],
-    providers: [...databaseProviders, BeamService, BlockService, TransactionService, ValidatorService, ValidatorDelegationService, BlockScheduler, ValidatorScheduler, LumNetworkService],
+    providers: [BeamService, BlockService, TransactionService, ValidatorService, ValidatorDelegationService, BlockScheduler, ValidatorScheduler, LumNetworkService],
 })
 export class SyncSchedulerModule implements OnModuleInit, OnApplicationBootstrap {
     private readonly _logger: Logger = new Logger(SyncSchedulerModule.name);

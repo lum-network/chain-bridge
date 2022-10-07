@@ -4,6 +4,7 @@ import {ConfigModule, ConfigService} from "@nestjs/config";
 import {BullModule} from '@nestjs/bull';
 import {APP_FILTER, APP_INTERCEPTOR, APP_PIPE} from '@nestjs/core';
 import {TerminusModule} from '@nestjs/terminus';
+import {TypeOrmModule} from "@nestjs/typeorm";
 
 import {ConsoleModule} from 'nestjs-console';
 
@@ -38,7 +39,7 @@ import {
 
 import {GatewayWebsocket} from '@app/websocket';
 import {BlocksCommands, RedisCommands, TransactionsCommands, ValidatorsCommands} from '@app/console/commands';
-import {databaseProviders} from "@app/database";
+import {DatabaseConfig, DatabaseFeatures} from "@app/database";
 
 @Module({
     imports: [
@@ -100,10 +101,11 @@ import {databaseProviders} from "@app/database";
         ConsoleModule,
         TerminusModule,
         HttpModule,
+        TypeOrmModule.forRootAsync(DatabaseConfig),
+        TypeOrmModule.forFeature(DatabaseFeatures)
     ],
     controllers: [AccountsController, BeamsController, BlocksController, CoreController, FaucetController, GovernanceController, HealthController, SearchController, StatsController, TransactionsController, ValidatorsController],
     providers: [
-        ...databaseProviders,
         BeamService,
         BlockService,
         StatService,

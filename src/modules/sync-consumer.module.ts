@@ -3,6 +3,7 @@ import {Module, OnApplicationBootstrap, OnModuleInit} from '@nestjs/common';
 import {BullModule} from '@nestjs/bull';
 import {ClientsModule, Transport} from '@nestjs/microservices';
 import {ConfigModule, ConfigService} from "@nestjs/config";
+import {TypeOrmModule} from "@nestjs/typeorm";
 
 import * as Joi from "joi";
 
@@ -16,7 +17,7 @@ import {
     ValidatorService
 } from '@app/services';
 import {ConfigMap, Queues} from '@app/utils';
-import {databaseProviders} from "@app/database";
+import {DatabaseConfig, DatabaseFeatures} from "@app/database";
 
 @Module({
     imports: [
@@ -109,9 +110,11 @@ import {databaseProviders} from "@app/database";
             }
         ]),
         HttpModule,
+        TypeOrmModule.forRootAsync(DatabaseConfig),
+        TypeOrmModule.forFeature(DatabaseFeatures)
     ],
     controllers: [],
-    providers: [...databaseProviders, BeamService, BlockService, TransactionService, ValidatorService, ValidatorDelegationService, BeamConsumer, BlockConsumer, CoreConsumer, NotificationConsumer, LumNetworkService],
+    providers: [BeamService, BlockService, TransactionService, ValidatorService, ValidatorDelegationService, BeamConsumer, BlockConsumer, CoreConsumer, NotificationConsumer, LumNetworkService],
 })
 export class SyncConsumerModule implements OnModuleInit, OnApplicationBootstrap {
     constructor(private readonly _lumNetworkService: LumNetworkService) {

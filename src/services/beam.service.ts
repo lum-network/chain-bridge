@@ -1,4 +1,5 @@
-import {Inject, Injectable} from "@nestjs/common";
+import {Injectable} from "@nestjs/common";
+import {InjectRepository} from "@nestjs/typeorm";
 
 import {Repository} from "typeorm";
 
@@ -8,7 +9,7 @@ import {BeamStatus} from "@app/utils";
 @Injectable()
 export class BeamService {
     constructor(
-        @Inject('BEAM_REPOSITORY') private readonly _repository: Repository<BeamEntity>
+        @InjectRepository(BeamEntity) private readonly _repository: Repository<BeamEntity>
     ) {
     }
 
@@ -38,7 +39,7 @@ export class BeamService {
         return ((await queryBuilder.getRawOne()) as any).sum;
     }
 
-    sumTotalAmountInRange = async (startAt: Date, endAt: Date, monthly: boolean = false): Promise<{key: string, value: number}[]> => {
+    sumTotalAmountInRange = async (startAt: Date, endAt: Date, monthly: boolean = false): Promise<{ key: string, value: number }[]> => {
         const query = await this._repository.query(`
             with dates as (
                 select generate_series(
@@ -57,7 +58,7 @@ export class BeamService {
         });
     }
 
-    countInRange = async (startAt: Date, endAt: Date, monthly: boolean = false): Promise<{key: string, value: number}[]> => {
+    countInRange = async (startAt: Date, endAt: Date, monthly: boolean = false): Promise<{ key: string, value: number }[]> => {
         const query = await this._repository.query(`
             with dates as (
                 select generate_series(
@@ -76,7 +77,7 @@ export class BeamService {
         });
     }
 
-    averageTotalAmountInRange = async (startAt: Date, endAt: Date, monthly: boolean = false): Promise<{key: string, value: number}[]> => {
+    averageTotalAmountInRange = async (startAt: Date, endAt: Date, monthly: boolean = false): Promise<{ key: string, value: number }[]> => {
         const query = await this._repository.query(`
             with dates as (
                 select generate_series(
@@ -103,7 +104,7 @@ export class BeamService {
         return ((await queryBuilder.getRawOne()) as any).avg;
     };
 
-    fetchLastClaimed = async (): Promise<{key: string, value: number}[]> => {
+    fetchLastClaimed = async (): Promise<{ key: string, value: number }[]> => {
         const res = await this._repository.find({
             where: {
                 status: BeamStatus.CLOSED,
