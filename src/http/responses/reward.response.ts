@@ -1,7 +1,7 @@
-import {ApiProperty} from "@nestjs/swagger";
+import { ApiProperty } from '@nestjs/swagger';
 
-import {Exclude, Expose, Type} from 'class-transformer';
-import {BalanceResponse} from '@app/http/responses/balance.response';
+import { Exclude, Expose, Type } from 'class-transformer';
+import { BalanceResponse } from '@app/http/responses/balance.response';
 
 @Exclude()
 class RewardResponse {
@@ -9,7 +9,7 @@ class RewardResponse {
     @Expose()
     validator_address: string;
 
-    @ApiProperty({type: () => [BalanceResponse]})
+    @ApiProperty({ type: () => [BalanceResponse] })
     @Expose()
     @Type(() => BalanceResponse)
     reward: BalanceResponse[];
@@ -17,12 +17,12 @@ class RewardResponse {
 
 @Exclude()
 export class AllRewardResponse {
-    @ApiProperty({type: () => [BalanceResponse]})
+    @ApiProperty({ type: () => [BalanceResponse] })
     @Expose()
     @Type(() => BalanceResponse)
     total: BalanceResponse[];
 
-    @ApiProperty({type: () => [RewardResponse]})
+    @ApiProperty({ type: () => [RewardResponse] })
     @Expose()
     @Type(() => RewardResponse)
     rewards: RewardResponse[];

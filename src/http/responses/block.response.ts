@@ -1,8 +1,8 @@
-import {Exclude, Expose, Type} from 'class-transformer';
+import { Exclude, Expose, Type } from 'class-transformer';
 
-import {ApiProperty} from "@nestjs/swagger";
+import { ApiProperty } from '@nestjs/swagger';
 
-import {TransactionResponse} from '@app/http/responses/transaction.response';
+import { TransactionResponse } from '@app/http/responses/transaction.response';
 
 @Exclude()
 export class BlockResponse {
@@ -34,7 +34,7 @@ export class BlockResponse {
     @Expose()
     operator_address: string;
 
-    @ApiProperty({type: () => [TransactionResponse]})
+    @ApiProperty({ type: () => [TransactionResponse] })
     @Expose()
     @Type(() => TransactionResponse)
     transactions: Partial<TransactionResponse>[] = [];

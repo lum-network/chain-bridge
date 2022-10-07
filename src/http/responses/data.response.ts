@@ -1,6 +1,6 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty } from '@nestjs/swagger';
 
-import { Type } from "class-transformer";
+import { Type } from 'class-transformer';
 
 export class DataResponseMetadata {
     @ApiProperty()
@@ -28,7 +28,7 @@ export class DataResponseMetadata {
         Object.assign(this, data);
         this.pages_total = Math.ceil(this.items_total / this.limit);
         this.has_previous_page = this.page > 0;
-        this.has_next_page = this.page < (this.pages_total - 1);
+        this.has_next_page = this.page < this.pages_total - 1;
     }
 }
 

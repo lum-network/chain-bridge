@@ -1,21 +1,17 @@
-import {Process, Processor} from "@nestjs/bull";
-import {Logger} from "@nestjs/common";
+import { Process, Processor } from '@nestjs/bull';
+import { Logger } from '@nestjs/common';
 
-import {Job} from "bull";
+import { Job } from 'bull';
 
-import {QueueJobs, Queues} from "@app/utils";
-import {BeamService, LumNetworkService} from "@app/services";
-import {BeamEntity} from "@app/database";
+import { QueueJobs, Queues } from '@app/utils';
+import { BeamService, LumNetworkService } from '@app/services';
+import { BeamEntity } from '@app/database';
 
 @Processor(Queues.QUEUE_BEAMS)
 export class BeamConsumer {
     private readonly _logger: Logger = new Logger(BeamConsumer.name);
 
-    constructor(
-        private readonly _beamService: BeamService,
-        private readonly _lumNetworkService: LumNetworkService
-    ) {
-    }
+    constructor(private readonly _beamService: BeamService, private readonly _lumNetworkService: LumNetworkService) {}
 
     @Process(QueueJobs.INGEST_BEAM)
     async ingestBeam(job: Job<{ id: string }>) {
@@ -40,7 +36,7 @@ export class BeamConsumer {
             closes_at_block: beam.closesAtBlock,
             amount: {
                 amount: parseFloat(beam.amount.amount),
-                denom: beam.amount.denom
+                denom: beam.amount.denom,
             },
             data: beam.data,
             dispatched_at: beam.createdAt,

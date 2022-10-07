@@ -1,32 +1,31 @@
-import {CacheInterceptor, Controller, Get, NotFoundException, Param, Req, UseInterceptors} from '@nestjs/common';
-import {ApiOkResponse, ApiTags} from "@nestjs/swagger";
+import { CacheInterceptor, Controller, Get, NotFoundException, Param, Req, UseInterceptors } from '@nestjs/common';
+import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 
-import {plainToInstance} from 'class-transformer';
+import { plainToInstance } from 'class-transformer';
 
-import {ProposalStatus} from '@lum-network/sdk-javascript/build/codec/cosmos/gov/v1beta1/gov';
+import { ProposalStatus } from '@lum-network/sdk-javascript/build/codec/cosmos/gov/v1beta1/gov';
 
-import {LumNetworkService} from '@app/services';
-import {DataResponse, DataResponseMetadata, ProposalResponse, ResultResponse} from '@app/http/responses/';
-import {decodeContent, ExplorerRequest} from '@app/utils';
+import { LumNetworkService } from '@app/services';
+import { DataResponse, DataResponseMetadata, ProposalResponse, ResultResponse } from '@app/http/responses/';
+import { decodeContent, ExplorerRequest } from '@app/utils';
 
 @ApiTags('governance')
 @Controller('governance')
 @UseInterceptors(CacheInterceptor)
 export class GovernanceController {
-    constructor(private readonly _lumNetworkService: LumNetworkService) {
-    }
+    constructor(private readonly _lumNetworkService: LumNetworkService) {}
 
-    @ApiOkResponse({status: 200, type: [ProposalResponse]})
+    @ApiOkResponse({ status: 200, type: [ProposalResponse] })
     @Get('proposals')
     async fetch(@Req() request: ExplorerRequest): Promise<DataResponse> {
         const results = await this._lumNetworkService.client.queryClient.gov.proposals(
             ProposalStatus.PROPOSAL_STATUS_UNSPECIFIED |
-            ProposalStatus.PROPOSAL_STATUS_DEPOSIT_PERIOD |
-            ProposalStatus.PROPOSAL_STATUS_VOTING_PERIOD |
-            ProposalStatus.PROPOSAL_STATUS_PASSED |
-            ProposalStatus.PROPOSAL_STATUS_REJECTED |
-            ProposalStatus.PROPOSAL_STATUS_FAILED |
-            ProposalStatus.UNRECOGNIZED,
+                ProposalStatus.PROPOSAL_STATUS_DEPOSIT_PERIOD |
+                ProposalStatus.PROPOSAL_STATUS_VOTING_PERIOD |
+                ProposalStatus.PROPOSAL_STATUS_PASSED |
+                ProposalStatus.PROPOSAL_STATUS_REJECTED |
+                ProposalStatus.PROPOSAL_STATUS_FAILED |
+                ProposalStatus.UNRECOGNIZED,
             '',
             '',
         );
@@ -38,11 +37,11 @@ export class GovernanceController {
                 limit: request.pagination.limit,
                 items_count: results.proposals.length,
                 items_total: null,
-            })
-        })
+            }),
+        });
     }
 
-    @ApiOkResponse({status: 200, type: ProposalResponse})
+    @ApiOkResponse({ status: 200, type: ProposalResponse })
     @Get('proposals/:id')
     async get(@Param('id') id: string): Promise<DataResponse> {
         const result = await this._lumNetworkService.client.queryClient.gov.proposal(id);
@@ -52,11 +51,11 @@ export class GovernanceController {
         }
 
         return {
-            result: plainToInstance(ProposalResponse, decodeContent(result.proposal))
+            result: plainToInstance(ProposalResponse, decodeContent(result.proposal)),
         };
     }
 
-    @ApiOkResponse({status: 200, type: ResultResponse})
+    @ApiOkResponse({ status: 200, type: ResultResponse })
     @Get('proposals/:id/tally')
     async getTallyResults(@Param('id') id: string): Promise<DataResponse> {
         const result = await this._lumNetworkService.client.queryClient.gov.tally(id);
@@ -66,7 +65,7 @@ export class GovernanceController {
         }
 
         return {
-            result: plainToInstance(ResultResponse, result.tally)
+            result: plainToInstance(ResultResponse, result.tally),
         };
     }
 }

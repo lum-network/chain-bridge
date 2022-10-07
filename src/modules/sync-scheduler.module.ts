@@ -1,26 +1,19 @@
-import {HttpModule} from '@nestjs/axios';
-import {Logger, Module, OnApplicationBootstrap, OnModuleInit} from '@nestjs/common';
-import {BullModule, InjectQueue} from '@nestjs/bull';
-import {ScheduleModule} from '@nestjs/schedule';
-import {ClientsModule, Transport} from '@nestjs/microservices';
+import { HttpModule } from '@nestjs/axios';
+import { Logger, Module, OnApplicationBootstrap, OnModuleInit } from '@nestjs/common';
+import { BullModule, InjectQueue } from '@nestjs/bull';
+import { ScheduleModule } from '@nestjs/schedule';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 
-import {ConfigModule, ConfigService} from "@nestjs/config";
-import * as Joi from "joi";
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import * as Joi from 'joi';
 
-import {Queue} from 'bull';
+import { Queue } from 'bull';
 
-import {BlockScheduler, ValidatorScheduler} from '@app/async';
+import { BlockScheduler, ValidatorScheduler } from '@app/async';
 
-import {
-    BeamService,
-    BlockService,
-    LumNetworkService,
-    TransactionService,
-    ValidatorDelegationService,
-    ValidatorService
-} from '@app/services';
-import {ConfigMap, QueueJobs, Queues} from '@app/utils';
-import {databaseProviders} from "@app/database";
+import { BeamService, BlockService, LumNetworkService, TransactionService, ValidatorDelegationService, ValidatorService } from '@app/services';
+import { ConfigMap, QueueJobs, Queues } from '@app/utils';
+import { databaseProviders } from '@app/database';
 
 @Module({
     imports: [
@@ -28,21 +21,22 @@ import {databaseProviders} from "@app/database";
             isGlobal: true,
             validationSchema: Joi.object(ConfigMap),
         }),
-        BullModule.registerQueueAsync({
+        BullModule.registerQueueAsync(
+            {
                 name: Queues.QUEUE_BLOCKS,
                 imports: [ConfigModule],
                 inject: [ConfigService],
                 useFactory: (configService: ConfigService) => ({
                     redis: {
                         host: configService.get<string>('REDIS_HOST'),
-                        port: configService.get<number>('REDIS_PORT')
+                        port: configService.get<number>('REDIS_PORT'),
                     },
                     prefix: configService.get<string>('REDIS_PREFIX'),
                     defaultJobOptions: {
                         removeOnComplete: true,
                         removeOnFail: true,
                     },
-                })
+                }),
             },
             {
                 name: Queues.QUEUE_BEAMS,
@@ -51,14 +45,14 @@ import {databaseProviders} from "@app/database";
                 useFactory: (configService: ConfigService) => ({
                     redis: {
                         host: configService.get<string>('REDIS_HOST'),
-                        port: configService.get<number>('REDIS_PORT')
+                        port: configService.get<number>('REDIS_PORT'),
                     },
                     prefix: configService.get<string>('REDIS_PREFIX'),
                     defaultJobOptions: {
                         removeOnComplete: true,
                         removeOnFail: true,
                     },
-                })
+                }),
             },
             {
                 name: Queues.QUEUE_FAUCET,
@@ -67,7 +61,7 @@ import {databaseProviders} from "@app/database";
                 useFactory: (configService: ConfigService) => ({
                     redis: {
                         host: configService.get<string>('REDIS_HOST'),
-                        port: configService.get<number>('REDIS_PORT')
+                        port: configService.get<number>('REDIS_PORT'),
                     },
                     prefix: configService.get<string>('REDIS_PREFIX'),
                     limiter: {
@@ -78,8 +72,9 @@ import {databaseProviders} from "@app/database";
                         removeOnComplete: true,
                         removeOnFail: true,
                     },
-                })
-            }),
+                }),
+            },
+        ),
         ClientsModule.registerAsync([
             {
                 name: 'API',
@@ -89,10 +84,10 @@ import {databaseProviders} from "@app/database";
                     transport: Transport.REDIS,
                     options: {
                         host: configService.get<string>('REDIS_HOST'),
-                        url: configService.get<number>('REDIS_PORT')
+                        url: configService.get<number>('REDIS_PORT'),
                     },
-                })
-            }
+                }),
+            },
         ]),
         ScheduleModule.forRoot(),
         HttpModule,
@@ -103,12 +98,7 @@ import {databaseProviders} from "@app/database";
 export class SyncSchedulerModule implements OnModuleInit, OnApplicationBootstrap {
     private readonly _logger: Logger = new Logger(SyncSchedulerModule.name);
 
-    constructor(
-        @InjectQueue(Queues.QUEUE_BLOCKS) private readonly _queue: Queue,
-        private readonly _configService: ConfigService,
-        private readonly _lumNetworkService: LumNetworkService
-    ) {
-    }
+    constructor(@InjectQueue(Queues.QUEUE_BLOCKS) private readonly _queue: Queue, private readonly _configService: ConfigService, private readonly _lumNetworkService: LumNetworkService) {}
 
     async onModuleInit() {
         // Log out

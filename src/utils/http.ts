@@ -8,4 +8,4 @@ export interface ExplorerRequestPagination {
 
 export interface ExplorerRequest extends Request {
     pagination: ExplorerRequestPagination;
-};
+}

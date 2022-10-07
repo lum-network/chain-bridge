@@ -1,7 +1,7 @@
-import {ApiProperty} from "@nestjs/swagger";
+import { ApiProperty } from '@nestjs/swagger';
 
-import {Exclude, Expose, Type} from "class-transformer";
-import {BalanceResponse} from "@app/http/responses/balance.response";
+import { Exclude, Expose, Type } from 'class-transformer';
+import { BalanceResponse } from '@app/http/responses/balance.response';
 
 @Exclude()
 class ProductsReviewsContentResponse {
@@ -238,7 +238,7 @@ export class BeamResponse {
     @Expose()
     closes_at_block: number;
 
-    @ApiProperty({type: () => BalanceResponse})
+    @ApiProperty({ type: () => BalanceResponse })
     @Expose()
     @Type(() => BalanceResponse)
     amount: BalanceResponse;

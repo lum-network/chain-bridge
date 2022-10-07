@@ -1,11 +1,11 @@
-import {NestFactory} from '@nestjs/core';
-import {ConfigService} from "@nestjs/config";
-import {DocumentBuilder, SwaggerModule} from "@nestjs/swagger";
-import {RedisOptions, Transport} from '@nestjs/microservices';
+import { NestFactory } from '@nestjs/core';
+import { ConfigService } from '@nestjs/config';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { RedisOptions, Transport } from '@nestjs/microservices';
 
 import * as Sentry from '@sentry/node';
 
-import {ApiModule} from '@app/modules';
+import { ApiModule } from '@app/modules';
 
 async function bootstrap() {
     try {
@@ -20,9 +20,9 @@ async function bootstrap() {
                 options: {
                     host: process.env.REDIS_HOST,
                     port: parseInt(process.env.REDIS_PORT, 10),
-                }
+                },
             },
-            {inheritAppConfig: true},
+            { inheritAppConfig: true },
         );
 
         const config = app.get(ConfigService);

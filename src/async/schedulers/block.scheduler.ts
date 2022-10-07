@@ -1,21 +1,20 @@
-import {Injectable, Logger} from '@nestjs/common';
-import {InjectQueue} from '@nestjs/bull';
-import {ConfigService} from "@nestjs/config";
-import {Cron, CronExpression} from '@nestjs/schedule';
+import { Injectable, Logger } from '@nestjs/common';
+import { InjectQueue } from '@nestjs/bull';
+import { ConfigService } from '@nestjs/config';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
-import {Queue} from 'bull';
+import { Queue } from 'bull';
 
-import {LumNetworkService} from '@app/services';
-import {QueueJobs, Queues} from '@app/utils';
+import { LumNetworkService } from '@app/services';
+import { QueueJobs, Queues } from '@app/utils';
 
 @Injectable()
 export class BlockScheduler {
     private _logger: Logger = new Logger(BlockScheduler.name);
 
-    constructor(@InjectQueue(Queues.QUEUE_BLOCKS) private readonly _queue: Queue, private readonly _configService: ConfigService, private readonly _lumNetworkService: LumNetworkService) {
-    }
+    constructor(@InjectQueue(Queues.QUEUE_BLOCKS) private readonly _queue: Queue, private readonly _configService: ConfigService, private readonly _lumNetworkService: LumNetworkService) {}
 
-    @Cron(CronExpression.EVERY_10_SECONDS, {name: 'blocks_live_ingest'})
+    @Cron(CronExpression.EVERY_10_SECONDS, { name: 'blocks_live_ingest' })
     async liveIngest() {
         // Only ingest if allowed by the configuration
         if (this._configService.get<boolean>('INGEST_ENABLED') === false) {
@@ -51,7 +50,7 @@ export class BlockScheduler {
         }
     }
 
-    @Cron(CronExpression.EVERY_DAY_AT_4AM, {name: 'blocks_backward_ingest'})
+    @Cron(CronExpression.EVERY_DAY_AT_4AM, { name: 'blocks_backward_ingest' })
     async backwardIngest() {
         // Daily check that we did not miss a block sync somehow
         const chainId = await this._lumNetworkService.client.getChainId();

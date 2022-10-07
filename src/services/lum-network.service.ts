@@ -1,16 +1,15 @@
-import {HttpService} from "@nestjs/axios";
-import {Injectable, Logger} from '@nestjs/common';
-import {ConfigService} from "@nestjs/config";
+import { HttpService } from '@nestjs/axios';
+import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
-import {LumClient} from '@lum-network/sdk-javascript';
+import { LumClient } from '@lum-network/sdk-javascript';
 
 @Injectable()
 export class LumNetworkService {
     private _client: LumClient = null;
     private readonly _logger: Logger = new Logger(LumNetworkService.name);
 
-    constructor(private readonly _configService: ConfigService, private readonly _httpService: HttpService) {
-    }
+    constructor(private readonly _configService: ConfigService, private readonly _httpService: HttpService) {}
 
     initialise = async () => {
         try {

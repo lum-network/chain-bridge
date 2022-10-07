@@ -1,48 +1,40 @@
-import {
-    Column,
-    CreateDateColumn,
-    Entity,
-    OneToMany,
-    PrimaryColumn,
-    UpdateDateColumn,
-    VersionColumn
-} from "typeorm";
+import { Column, CreateDateColumn, Entity, OneToMany, PrimaryColumn, UpdateDateColumn, VersionColumn } from 'typeorm';
 
-import {TransactionEntity} from "@app/database/entities/transaction.entity";
+import { TransactionEntity } from '@app/database/entities/transaction.entity';
 
-@Entity({name: "blocks"})
+@Entity({ name: 'blocks' })
 export class BlockEntity {
-    @PrimaryColumn({type: "integer"})
+    @PrimaryColumn({ type: 'integer' })
     height: number;
 
-    @Column({type: "varchar", length: 256})
+    @Column({ type: 'varchar', length: 256 })
     hash: string;
 
-    @Column({type: "timestamp"})
+    @Column({ type: 'timestamp' })
     time: Date;
 
-    @Column({type: "integer", default: 0})
-    tx_count: number = 0;
+    @Column({ type: 'integer', default: 0 })
+    tx_count = 0;
 
-    @Column({type: "jsonb", default: () => "'[]'", array: false})
+    @Column({ type: 'jsonb', default: () => "'[]'", array: false })
     tx_hashes: string[] = [];
 
-    @Column({type: "varchar", length: 128})
+    @Column({ type: 'varchar', length: 128 })
     proposer_address: string;
 
-    @Column({type: "varchar", length: 128})
+    @Column({ type: 'varchar', length: 128 })
     operator_address: string;
 
-    @Column({type: "json"})
+    @Column({ type: 'json' })
     raw_block: string;
 
-    @CreateDateColumn({type: 'date', default: () => "CURRENT_DATE"})
-    created_at?: Date = new Date;
+    @CreateDateColumn({ type: 'date', default: () => 'CURRENT_DATE' })
+    created_at?: Date = new Date();
 
-    @UpdateDateColumn({type: 'date', default: null})
+    @UpdateDateColumn({ type: 'date', default: null })
     updated_at?: Date = null;
 
-    @VersionColumn({type: "integer", default: 0})
+    @VersionColumn({ type: 'integer', default: 0 })
     nonce?: number = 0;
 
     @OneToMany(() => TransactionEntity, (tx) => tx.block)

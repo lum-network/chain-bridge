@@ -5,7 +5,7 @@ export enum BeamStatus {
     UNSPECIFIED,
     OPEN,
     CANCELED,
-    CLOSED
+    CLOSED,
 }
 
 export enum ChartTypes {

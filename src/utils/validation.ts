@@ -1,4 +1,4 @@
-import {ValidationError} from "class-validator";
+import { ValidationError } from 'class-validator';
 
 export const PayloadValidationOptions = {
     whitelist: true,

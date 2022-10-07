@@ -1,21 +1,20 @@
-import {Logger} from '@nestjs/common';
-import {ConfigService} from "@nestjs/config";
-import {Process, Processor} from '@nestjs/bull';
+import { Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { Process, Processor } from '@nestjs/bull';
 
-import {Job} from 'bull';
+import { Job } from 'bull';
 
-import {LumConstants, LumMessages, LumTypes, LumWalletFactory} from '@lum-network/sdk-javascript';
+import { LumConstants, LumMessages, LumTypes, LumWalletFactory } from '@lum-network/sdk-javascript';
 
-import {QueueJobs, Queues} from '@app/utils/constants';
+import { QueueJobs, Queues } from '@app/utils/constants';
 
-import {LumNetworkService} from '@app/services';
+import { LumNetworkService } from '@app/services';
 
 @Processor(Queues.QUEUE_FAUCET)
 export class CoreConsumer {
     private readonly _logger: Logger = new Logger(CoreConsumer.name);
 
-    constructor(private readonly _configService: ConfigService, private readonly _lumNetworkService: LumNetworkService) {
-    }
+    constructor(private readonly _configService: ConfigService, private readonly _lumNetworkService: LumNetworkService) {}
 
     @Process(QueueJobs.MINT_FAUCET_REQUEST)
     async mintFaucetRequest(job: Job<{ address: string }>) {
@@ -31,7 +30,7 @@ export class CoreConsumer {
             },
         ]);
         const fee = {
-            amount: [{denom: LumConstants.MicroLumDenom, amount: '1000'}],
+            amount: [{ denom: LumConstants.MicroLumDenom, amount: '1000' }],
             gas: '100000',
         };
         const account = await this._lumNetworkService.client.getAccount(wallet.getAddress());
