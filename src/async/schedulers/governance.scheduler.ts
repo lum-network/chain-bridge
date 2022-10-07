@@ -12,7 +12,7 @@ export class GovernanceScheduler {
 
     constructor(private readonly _lumNetworkService: LumNetworkService) {}
 
-    @Cron(CronExpression.EVERY_5_SECONDS)
+    @Cron(CronExpression.EVERY_10_SECONDS)
     async voteSync() {
         try {
             this._logger.log(`Syncing proposals from chain...`);
@@ -35,15 +35,13 @@ export class GovernanceScheduler {
 
             // We get the votes of the proposal
             for (const id of getProposalId) {
-                while (true) {
-                    const getVotesById = await this._lumNetworkService.client.queryClient.gov.votes(id);
-                    // Todo: save in DB
-                    this._logger.log(`Found getVotesById`, getVotesById);
+                const getVotesById = await this._lumNetworkService.client.queryClient.gov.votes(id);
+                // Todo: save in DB
+                this._logger.log(`Found getVotesById`, getVotesById);
 
-                    // Todo: Index
+                // Todo: Index
 
-                    // If we have pagination key, we just patch it and it will process in the next loop
-                }
+                // If we have pagination key, we just patch it and it will process in the next loop
             }
         } catch (error) {
             this._logger.error(`Failed to fetch proposals from chain`, error);
