@@ -9,7 +9,7 @@ import * as Joi from 'joi';
 
 import { Queue } from 'bull';
 
-import { BlockScheduler, ValidatorScheduler } from '@app/async';
+import { BlockScheduler, ValidatorScheduler, GovernanceScheduler } from '@app/async';
 
 import { BeamService, BlockService, LumNetworkService, TransactionService, ValidatorDelegationService, ValidatorService } from '@app/services';
 import { ConfigMap, QueueJobs, Queues } from '@app/utils';
@@ -93,7 +93,18 @@ import { databaseProviders } from '@app/database';
         HttpModule,
     ],
     controllers: [],
-    providers: [...databaseProviders, BeamService, BlockService, TransactionService, ValidatorService, ValidatorDelegationService, BlockScheduler, ValidatorScheduler, LumNetworkService],
+    providers: [
+        ...databaseProviders,
+        BeamService,
+        BlockService,
+        TransactionService,
+        ValidatorService,
+        ValidatorDelegationService,
+        BlockScheduler,
+        ValidatorScheduler,
+        LumNetworkService,
+        GovernanceScheduler,
+    ],
 })
 export class SyncSchedulerModule implements OnModuleInit, OnApplicationBootstrap {
     private readonly _logger: Logger = new Logger(SyncSchedulerModule.name);
