@@ -64,7 +64,7 @@ export class MigrationCommands {
 
         for await (const bl of this.scrollSearch(params)) {
             const block = bl._source.raw_block as LumTypes.BlockResponse;
-            await this._queue.add(QueueJobs.INGEST_BLOCK, {
+            await this._queue.add(QueueJobs.INGEST, {
                 block,
                 notify: false,
                 ingestTx: false,

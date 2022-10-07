@@ -34,7 +34,7 @@ export class BlockScheduler {
             for (const meta of lastBlocks.blockMetas) {
                 const height = meta.header.height;
                 await this._queue.add(
-                    QueueJobs.INGEST_BLOCK,
+                    QueueJobs.INGEST,
                     {
                         blockHeight: height,
                         notify: true,

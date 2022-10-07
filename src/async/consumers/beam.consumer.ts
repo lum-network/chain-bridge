@@ -17,7 +17,7 @@ export class BeamConsumer {
     ) {
     }
 
-    @Process(QueueJobs.INGEST_BEAM)
+    @Process(QueueJobs.INGEST)
     async ingestBeam(job: Job<{ id: string }>) {
         if (await this._beamService.get(job.data.id)) {
             return;

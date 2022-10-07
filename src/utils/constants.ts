@@ -26,8 +26,7 @@ export enum Queues {
 }
 
 export enum QueueJobs {
-    INGEST_BEAM = 'ingest_beam',
-    INGEST_BLOCK = 'ingest_block',
+    INGEST = 'ingest',
     TRIGGER_VERIFY_BLOCKS_BACKWARD = 'trigger_verify_blocks_backward',
     NOTIFICATION_SOCKET = 'push_notification',
     MINT_FAUCET_REQUEST = 'mint_faucet_request',
