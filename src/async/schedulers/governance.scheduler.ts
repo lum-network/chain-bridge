@@ -34,6 +34,7 @@ export class GovernanceScheduler {
             const getProposalId = resultsProposals?.proposals.map((proposal) => proposal.proposalId).map((longInt) => longInt.low);
 
             this._logger.log(`Found ${getProposalId.length} proposalId - ${getProposalId}`);
+
             // return the getProposalId
             return getProposalId;
         } catch (error) {
@@ -58,7 +59,7 @@ export class GovernanceScheduler {
                 const getVotes = await this._lumNetworkService.client.queryClient.gov.votes(id);
                 // Map the votes to get the voters
                 const getVoter = getVotes.votes.map((voterHash) => voterHash.voter);
-                this._logger.log(`Found ${getVoter.length}`);
+                this._logger.log(`Found ${getVoter.length} - voters`);
 
                 // Create or update the DB if we have new voters based on the proposalId
                 for (const voter of getVoter) {

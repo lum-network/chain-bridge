@@ -5,15 +5,16 @@ import { plainToInstance } from 'class-transformer';
 
 import { ProposalStatus } from '@lum-network/sdk-javascript/build/codec/cosmos/gov/v1beta1/gov';
 
-import { LumNetworkService } from '@app/services';
-import { DataResponse, DataResponseMetadata, ProposalResponse, ResultResponse } from '@app/http/responses/';
+import { GovernanceProposalsVotesService, LumNetworkService } from '@app/services';
+import { DataResponse, DataResponseMetadata, ProposalResponse, ProposalVotersResponse, ResultResponse } from '@app/http/responses/';
 import { decodeContent, ExplorerRequest } from '@app/utils';
+import { DefaultTake } from '@app/http/decorators';
 
 @ApiTags('governance')
 @Controller('governance')
 @UseInterceptors(CacheInterceptor)
 export class GovernanceController {
-    constructor(private readonly _lumNetworkService: LumNetworkService) {}
+    constructor(private readonly _lumNetworkService: LumNetworkService, private readonly _governanceProposalsVotesService: GovernanceProposalsVotesService) {}
 
     @ApiOkResponse({ status: 200, type: [ProposalResponse] })
     @Get('proposals')
@@ -67,5 +68,21 @@ export class GovernanceController {
         return {
             result: plainToInstance(ResultResponse, result.tally),
         };
+    }
+
+    @ApiOkResponse({ status: 200, type: ProposalVotersResponse })
+    @DefaultTake(100)
+    @Get('proposals/:id/voters')
+    async getVoters(@Req() request: ExplorerRequest, @Param('id') id: string): Promise<DataResponse> {
+        const [voters, total] = await this._governanceProposalsVotesService.fetchByProposalId(id, request.pagination.skip, request.pagination.limit);
+        return new DataResponse({
+            result: voters,
+            metadata: new DataResponseMetadata({
+                page: request.pagination.page,
+                limit: request.pagination.limit,
+                items_count: voters.length,
+                items_total: total,
+            }),
+        });
     }
 }

@@ -34,4 +34,9 @@ export class GovernanceProposalsVotesService {
         await this._repository.save(entity);
         return entity;
     };
+
+    fetchByProposalId = async (proposalId: string, skip: number, take: number): Promise<[GovernanceProposalsVotesEntity[], number]> => {
+        const query = this._repository.createQueryBuilder('governance_proposals_votes').where('proposal_id = :id', { id: proposalId }).skip(skip).take(take);
+        return query.getManyAndCount();
+    };
 }
