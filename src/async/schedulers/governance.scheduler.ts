@@ -2,9 +2,8 @@ import { Injectable, Logger } from '@nestjs/common';
 
 import { Cron, CronExpression } from '@nestjs/schedule';
 
-import { GovernanceProposalsVotesService, GovernanceProposalsDepositsService, LumNetworkService } from '@app/services';
-
-import { ProposalStatus } from '@lum-network/sdk-javascript/build/codec/cosmos/gov/v1beta1/gov';
+import { ProposalsVotesService, ProposalsDepositsService, LumNetworkService } from '@app/services';
+import { ProposalsSync } from '@app/utils';
 
 @Injectable()
 export class GovernanceScheduler {
@@ -12,39 +11,9 @@ export class GovernanceScheduler {
 
     constructor(
         private readonly _lumNetworkService: LumNetworkService,
-        private readonly _governanceProposalsVotesService: GovernanceProposalsVotesService,
-        private readonly _governanceProposalsDepositsService: GovernanceProposalsDepositsService,
+        private readonly _governanceProposalsVotesService: ProposalsVotesService,
+        private readonly _governanceProposalsDepositsService: ProposalsDepositsService,
     ) {}
-
-    @Cron(CronExpression.EVERY_10_SECONDS)
-    async proposalsIdSync(): Promise<number[]> {
-        try {
-            this._logger.log(`Syncing proposals from chain...`);
-
-            // We want to sync all proposals and get the proposal_id
-            const resultsProposals = await this._lumNetworkService.client.queryClient.gov.proposals(
-                ProposalStatus.PROPOSAL_STATUS_UNSPECIFIED |
-                    ProposalStatus.PROPOSAL_STATUS_DEPOSIT_PERIOD |
-                    ProposalStatus.PROPOSAL_STATUS_VOTING_PERIOD |
-                    ProposalStatus.PROPOSAL_STATUS_PASSED |
-                    ProposalStatus.PROPOSAL_STATUS_REJECTED |
-                    ProposalStatus.PROPOSAL_STATUS_FAILED |
-                    ProposalStatus.UNRECOGNIZED,
-                '',
-                '',
-            );
-
-            // Map the results proposal to get the low int from Long
-            const getProposalId = resultsProposals?.proposals.map((proposal) => proposal.proposalId).map((longInt) => longInt.low);
-
-            this._logger.log(`Found ${getProposalId.length} proposalId - ${getProposalId}`);
-
-            // return the getProposalId
-            return getProposalId;
-        } catch (error) {
-            this._logger.error(`Failed to sync proposals from chain...`, error);
-        }
-    }
 
     @Cron(CronExpression.EVERY_10_SECONDS)
     async voteSync() {
@@ -52,11 +21,11 @@ export class GovernanceScheduler {
             this._logger.log(`Syncing votes from chain...`);
 
             // We need to get the proposalsId in order to fetch the voters
-            const getVotersByProposalId = await this.proposalsIdSync();
+            const getProposalId = await new ProposalsSync(this._lumNetworkService).getProposalsId();
 
             // Verify if any new proposalId where minted on chain
 
-            for (const id of getVotersByProposalId) {
+            for (const id of getProposalId) {
                 let page: Uint8Array | undefined = undefined;
 
                 // Fetch the votes based on the proposalId
@@ -88,9 +57,9 @@ export class GovernanceScheduler {
             this._logger.log(`Syncing deposits from chain...`);
 
             // We need to get the proposalsId in order to fetch the deposits
-            const getDepositsByProposalId = await this.proposalsIdSync();
+            const getProposalId = await new ProposalsSync(this._lumNetworkService).getProposalsId();
 
-            for (const id of getDepositsByProposalId) {
+            for (const id of getProposalId) {
                 let page: Uint8Array | undefined = undefined;
                 // Fetch the deposits based on the proposalId
                 const getDeposits = await this._lumNetworkService.client.queryClient.gov.deposits(id);
@@ -104,7 +73,7 @@ export class GovernanceScheduler {
                     this._logger.log(`Depositor - ${depositor} - got updated`);
                 }
 
-                this._logger.log(`Found ${getDepositor.length} - Depositors - ${getDepositor}`);
+                this._logger.log(`Found ${getDepositor.length} - Depositors`);
 
                 // If we get a pagination key, we just patch it and it will process in the next loop
                 if (getDeposits.pagination && getDeposits.pagination.nextKey && getDeposits.pagination.nextKey.length) {

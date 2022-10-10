@@ -3,11 +3,9 @@ import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 
 import { plainToInstance } from 'class-transformer';
 
-import { ProposalStatus } from '@lum-network/sdk-javascript/build/codec/cosmos/gov/v1beta1/gov';
-
-import { GovernanceProposalsDepositsService, GovernanceProposalsVotesService, LumNetworkService } from '@app/services';
+import { ProposalsDepositsService, ProposalsVotesService, LumNetworkService } from '@app/services';
 import { DataResponse, DataResponseMetadata, ProposalDepositorsResponse, ProposalResponse, ProposalVotersResponse, ResultResponse } from '@app/http/responses/';
-import { decodeContent, ExplorerRequest } from '@app/utils';
+import { decodeContent, ExplorerRequest, ProposalsSync } from '@app/utils';
 import { DefaultTake } from '@app/http/decorators';
 
 @ApiTags('governance')
@@ -16,24 +14,14 @@ import { DefaultTake } from '@app/http/decorators';
 export class GovernanceController {
     constructor(
         private readonly _lumNetworkService: LumNetworkService,
-        private readonly _governanceProposalsVotesService: GovernanceProposalsVotesService,
-        private readonly _governanceProposalsDepositsService: GovernanceProposalsDepositsService,
+        private readonly _governanceProposalsVotesService: ProposalsVotesService,
+        private readonly _governanceProposalsDepositsService: ProposalsDepositsService,
     ) {}
 
     @ApiOkResponse({ status: 200, type: [ProposalResponse] })
     @Get('proposals')
     async fetch(@Req() request: ExplorerRequest): Promise<DataResponse> {
-        const results = await this._lumNetworkService.client.queryClient.gov.proposals(
-            ProposalStatus.PROPOSAL_STATUS_UNSPECIFIED |
-                ProposalStatus.PROPOSAL_STATUS_DEPOSIT_PERIOD |
-                ProposalStatus.PROPOSAL_STATUS_VOTING_PERIOD |
-                ProposalStatus.PROPOSAL_STATUS_PASSED |
-                ProposalStatus.PROPOSAL_STATUS_REJECTED |
-                ProposalStatus.PROPOSAL_STATUS_FAILED |
-                ProposalStatus.UNRECOGNIZED,
-            '',
-            '',
-        );
+        const results = await new ProposalsSync(this._lumNetworkService).getProposals();
 
         return new DataResponse({
             result: results.proposals.map((proposal) => plainToInstance(ProposalResponse, decodeContent(proposal))),
@@ -79,6 +67,11 @@ export class GovernanceController {
     @Get('proposals/:id/voters')
     async getVoters(@Req() request: ExplorerRequest, @Param('id') id: string): Promise<DataResponse> {
         const [voters, total] = await this._governanceProposalsVotesService.fetchVotersByProposalId(id, request.pagination.skip, request.pagination.limit);
+
+        if (!voters) {
+            throw new NotFoundException('no voters');
+        }
+
         return new DataResponse({
             result: voters,
             metadata: new DataResponseMetadata({
@@ -95,6 +88,11 @@ export class GovernanceController {
     @Get('proposals/:id/depositors')
     async getDepositors(@Req() request: ExplorerRequest, @Param('id') id: string): Promise<DataResponse> {
         const [depositors, total] = await this._governanceProposalsDepositsService.fetchDepositorsByProposalId(id, request.pagination.skip, request.pagination.limit);
+
+        if (!depositors) {
+            throw new NotFoundException('no voters');
+        }
+
         return new DataResponse({
             result: depositors,
             metadata: new DataResponseMetadata({
