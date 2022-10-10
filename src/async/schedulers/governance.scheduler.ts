@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 
 import { Cron, CronExpression } from '@nestjs/schedule';
 
-import { LumNetworkService } from '@app/services';
+import { GovernanceProposalsVotesService, LumNetworkService } from '@app/services';
 
 import { ProposalStatus } from '@lum-network/sdk-javascript/build/codec/cosmos/gov/v1beta1/gov';
 
@@ -10,7 +10,7 @@ import { ProposalStatus } from '@lum-network/sdk-javascript/build/codec/cosmos/g
 export class GovernanceScheduler {
     private _logger: Logger = new Logger(GovernanceScheduler.name);
 
-    constructor(private readonly _lumNetworkService: LumNetworkService) {}
+    constructor(private readonly _lumNetworkService: LumNetworkService, private readonly _governanceProposalsVotesService: GovernanceProposalsVotesService) {}
 
     @Cron(CronExpression.EVERY_10_SECONDS)
     async proposalsIdSync(): Promise<number[]> {
@@ -49,12 +49,28 @@ export class GovernanceScheduler {
             // We need to get the proposalsId in order to fetch the voters
             const getVotersByProposalId = await this.proposalsIdSync();
 
+            // Verify if any new proposalId where minted on chain
+
             for (const id of getVotersByProposalId) {
+                let page: Uint8Array | undefined = undefined;
+
                 // Fetch the votes based on the proposalId
                 const getVotes = await this._lumNetworkService.client.queryClient.gov.votes(id);
                 // Map the votes to get the voters
                 const getVoter = getVotes.votes.map((voterHash) => voterHash.voter);
-                this._logger.log(`Found ${getVoter.length} - Voters - ${getVoter}`);
+                this._logger.log(`Found ${getVoter.length}`);
+
+                // Create or update the DB if we have new voters based on the proposalId
+                for (const voter of getVoter) {
+                    this._governanceProposalsVotesService.createOrUpdate(voter, id);
+                    this._logger.log(`Voter - ${voter} - got updated`);
+                }
+
+                // If we get a pagination key, we just patch it and it will process in the next loop
+                if (getVotes.pagination && getVotes.pagination.nextKey && getVotes.pagination.nextKey.length) {
+                    page = getVotes.pagination.nextKey;
+                    this._logger.log(`Found Page - ${page}`);
+                }
             }
         } catch (error) {
             this._logger.error(`Failed to sync votes from chain...`, error);

@@ -1,12 +1,15 @@
-import { Column, Entity, PrimaryColumn } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity({ name: 'governance_proposals_votes' })
 export class GovernanceProposalsVotesEntity {
-    @PrimaryColumn()
+    @PrimaryGeneratedColumn()
     id: number;
 
     @Column({ type: 'varchar', length: 42 })
     voters: string;
+
+    @Column({ type: 'int' })
+    proposal_id: number;
 
     constructor(data: Partial<GovernanceProposalsVotesEntity>) {
         Object.assign(this, data);

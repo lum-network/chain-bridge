@@ -5,3 +5,4 @@ export * from './stat.service';
 export * from './transaction.service';
 export * from './validator.service';
 export * from './validator-delegation.service';
+export * from './governance-proposals-votes.service';

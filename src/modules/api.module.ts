@@ -119,6 +119,7 @@ import { databaseProviders } from '@app/database';
         StatService,
         TransactionService,
         ValidatorService,
+
         ValidatorDelegationService,
         LumNetworkIndicator,
         GatewayWebsocket,
