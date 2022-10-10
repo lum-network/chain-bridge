@@ -5,8 +5,8 @@ import { plainToInstance } from 'class-transformer';
 
 import { ProposalStatus } from '@lum-network/sdk-javascript/build/codec/cosmos/gov/v1beta1/gov';
 
-import { GovernanceProposalsVotesService, LumNetworkService } from '@app/services';
-import { DataResponse, DataResponseMetadata, ProposalResponse, ProposalVotersResponse, ResultResponse } from '@app/http/responses/';
+import { GovernanceProposalsDepositsService, GovernanceProposalsVotesService, LumNetworkService } from '@app/services';
+import { DataResponse, DataResponseMetadata, ProposalDepositorsResponse, ProposalResponse, ProposalVotersResponse, ResultResponse } from '@app/http/responses/';
 import { decodeContent, ExplorerRequest } from '@app/utils';
 import { DefaultTake } from '@app/http/decorators';
 
@@ -14,7 +14,11 @@ import { DefaultTake } from '@app/http/decorators';
 @Controller('governance')
 @UseInterceptors(CacheInterceptor)
 export class GovernanceController {
-    constructor(private readonly _lumNetworkService: LumNetworkService, private readonly _governanceProposalsVotesService: GovernanceProposalsVotesService) {}
+    constructor(
+        private readonly _lumNetworkService: LumNetworkService,
+        private readonly _governanceProposalsVotesService: GovernanceProposalsVotesService,
+        private readonly _governanceProposalsDepositsService: GovernanceProposalsDepositsService,
+    ) {}
 
     @ApiOkResponse({ status: 200, type: [ProposalResponse] })
     @Get('proposals')
@@ -81,6 +85,22 @@ export class GovernanceController {
                 page: request.pagination.page,
                 limit: request.pagination.limit,
                 items_count: voters.length,
+                items_total: total,
+            }),
+        });
+    }
+
+    @ApiOkResponse({ status: 200, type: ProposalDepositorsResponse })
+    @DefaultTake(100)
+    @Get('proposals/:id/depositors')
+    async getDepositors(@Req() request: ExplorerRequest, @Param('id') id: string): Promise<DataResponse> {
+        const [depositors, total] = await this._governanceProposalsDepositsService.fetchDepositorsByProposalId(id, request.pagination.skip, request.pagination.limit);
+        return new DataResponse({
+            result: depositors,
+            metadata: new DataResponseMetadata({
+                page: request.pagination.page,
+                limit: request.pagination.limit,
+                items_count: depositors.length,
                 items_total: total,
             }),
         });

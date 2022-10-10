@@ -89,8 +89,21 @@ export class ProposalVotersResponse {
     @Expose({ name: 'proposalId' })
     proposal_id: string;
 
-    @Expose({ name: 'voters' })
-    voters: string;
+    @Expose({ name: 'voter' })
+    voter: string;
+
+    constructor(data: Partial<ProposalVotersResponse>) {
+        Object.assign(this, data);
+    }
+}
+
+export class ProposalDepositorsResponse {
+    @ApiProperty()
+    @Expose({ name: 'proposalId' })
+    proposal_id: string;
+
+    @Expose({ name: 'depositor' })
+    depositor: string;
 
     constructor(data: Partial<ProposalVotersResponse>) {
         Object.assign(this, data);
