@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 
 import { Cron, CronExpression } from '@nestjs/schedule';
 
-import { GovernanceProposalsVotesService, LumNetworkService } from '@app/services';
+import { GovernanceProposalsVotesService, GovernanceProposalsDepositsService, LumNetworkService } from '@app/services';
 
 import { ProposalStatus } from '@lum-network/sdk-javascript/build/codec/cosmos/gov/v1beta1/gov';
 
@@ -10,7 +10,11 @@ import { ProposalStatus } from '@lum-network/sdk-javascript/build/codec/cosmos/g
 export class GovernanceScheduler {
     private _logger: Logger = new Logger(GovernanceScheduler.name);
 
-    constructor(private readonly _lumNetworkService: LumNetworkService, private readonly _governanceProposalsVotesService: GovernanceProposalsVotesService) {}
+    constructor(
+        private readonly _lumNetworkService: LumNetworkService,
+        private readonly _governanceProposalsVotesService: GovernanceProposalsVotesService,
+        private readonly _governanceProposalsDepositsService: GovernanceProposalsDepositsService,
+    ) {}
 
     @Cron(CronExpression.EVERY_10_SECONDS)
     async proposalsIdSync(): Promise<number[]> {
@@ -61,16 +65,16 @@ export class GovernanceScheduler {
                 const getVoter = getVotes.votes.map((voterHash) => voterHash.voter);
                 this._logger.log(`Found ${getVoter.length} - voters`);
 
-                // Create or update the DB if we have new voters based on the proposalId
+                // Create or update to DB if we have new voters based on the proposalId
                 for (const voter of getVoter) {
-                    this._governanceProposalsVotesService.createOrUpdate(voter, id);
+                    this._governanceProposalsVotesService.createOrUpdateVoters(voter, id);
                     this._logger.log(`Voter - ${voter} - got updated`);
                 }
 
                 // If we get a pagination key, we just patch it and it will process in the next loop
                 if (getVotes.pagination && getVotes.pagination.nextKey && getVotes.pagination.nextKey.length) {
                     page = getVotes.pagination.nextKey;
-                    this._logger.log(`Found Page - ${page}`);
+                    this._logger.log(`Found Voters Page - ${page}`);
                 }
             }
         } catch (error) {
@@ -87,13 +91,26 @@ export class GovernanceScheduler {
             const getDepositsByProposalId = await this.proposalsIdSync();
 
             for (const id of getDepositsByProposalId) {
+                let page: Uint8Array | undefined = undefined;
                 // Fetch the deposits based on the proposalId
                 const getDeposits = await this._lumNetworkService.client.queryClient.gov.deposits(id);
 
                 // Map the deposits to get the depositors
                 const getDepositor = getDeposits.deposits.map((depositorHash) => depositorHash.depositor);
 
+                // Create or update to DB if we have new depositors based on the proposalId
+                for (const depositor of getDepositor) {
+                    this._governanceProposalsDepositsService.createOrUpdateDepositors(depositor, id);
+                    this._logger.log(`Depositor - ${depositor} - got updated`);
+                }
+
                 this._logger.log(`Found ${getDepositor.length} - Depositors - ${getDepositor}`);
+
+                // If we get a pagination key, we just patch it and it will process in the next loop
+                if (getDeposits.pagination && getDeposits.pagination.nextKey && getDeposits.pagination.nextKey.length) {
+                    page = getDeposits.pagination.nextKey;
+                    this._logger.log(`Found Depositors Page - ${page}`);
+                }
             }
         } catch (error) {
             this._logger.error(`Failed to sync deposits from chain...`, error);

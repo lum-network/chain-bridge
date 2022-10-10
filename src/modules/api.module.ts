@@ -29,7 +29,17 @@ import {
     ValidatorsController,
 } from '@app/http';
 
-import { LumNetworkService, BlockService, TransactionService, ValidatorService, BeamService, ValidatorDelegationService, StatService, GovernanceProposalsVotesService } from '@app/services';
+import {
+    LumNetworkService,
+    BlockService,
+    TransactionService,
+    ValidatorService,
+    BeamService,
+    ValidatorDelegationService,
+    StatService,
+    GovernanceProposalsVotesService,
+    GovernanceProposalsDepositsService,
+} from '@app/services';
 import { Queues, ConfigMap, PayloadValidationOptions } from '@app/utils';
 
 import { GatewayWebsocket } from '@app/websocket';
@@ -120,6 +130,7 @@ import { databaseProviders } from '@app/database';
         TransactionService,
         ValidatorService,
         GovernanceProposalsVotesService,
+        GovernanceProposalsDepositsService,
         ValidatorDelegationService,
         LumNetworkIndicator,
         GatewayWebsocket,

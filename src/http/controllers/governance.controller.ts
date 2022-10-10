@@ -74,7 +74,7 @@ export class GovernanceController {
     @DefaultTake(100)
     @Get('proposals/:id/voters')
     async getVoters(@Req() request: ExplorerRequest, @Param('id') id: string): Promise<DataResponse> {
-        const [voters, total] = await this._governanceProposalsVotesService.fetchByProposalId(id, request.pagination.skip, request.pagination.limit);
+        const [voters, total] = await this._governanceProposalsVotesService.fetchVotersByProposalId(id, request.pagination.skip, request.pagination.limit);
         return new DataResponse({
             result: voters,
             metadata: new DataResponseMetadata({
