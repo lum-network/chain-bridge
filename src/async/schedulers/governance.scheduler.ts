@@ -4,7 +4,6 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 
 import { ProposalsVotesService, ProposalsDepositsService, LumNetworkService } from '@app/services';
 import { ProposalsSync } from '@app/utils';
-import { LumBech32PrefixValPub } from '@lum-network/sdk-javascript/build/constants';
 
 @Injectable()
 export class GovernanceScheduler {
@@ -37,8 +36,7 @@ export class GovernanceScheduler {
 
                 // Create or update to DB if we have new voters based on the proposalId
                 for (const voter of getVoter) {
-                    const getByOperatorAddress = (voter: string) => (voter.startsWith(LumBech32PrefixValPub) ? voter : null);
-                    this._governanceProposalsVotesService.createOrUpdateVoters(id, voter, getByOperatorAddress(voter));
+                    this._governanceProposalsVotesService.createOrUpdateVoters(id, voter);
                     this._logger.log(`Voter - ${voter} - got updated`);
                 }
 
