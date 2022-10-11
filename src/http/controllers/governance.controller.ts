@@ -22,6 +22,9 @@ export class GovernanceController {
     @Get('proposals')
     async fetch(@Req() request: ExplorerRequest): Promise<DataResponse> {
         const results = await new ProposalsSync(this._lumNetworkService).getProposals();
+        const getVotes = await this._lumNetworkService.client.queryClient.gov.vote(21, 'lum14a3kmsuu75njmfe3xj9wt5sld5gw88vdfrn9kv');
+        /*         const getDeposits = await this._lumNetworkService.client.queryClient.gov.deposits(21); */
+        console.log('====getVotes===', getVotes);
 
         return new DataResponse({
             result: results.proposals.map((proposal) => plainToInstance(ProposalResponse, decodeContent(proposal))),
@@ -88,6 +91,9 @@ export class GovernanceController {
     @Get('proposals/:id/depositors')
     async getDepositors(@Req() request: ExplorerRequest, @Param('id') id: string): Promise<DataResponse> {
         const [depositors, total] = await this._governanceProposalsDepositsService.fetchDepositorsByProposalId(id, request.pagination.skip, request.pagination.limit);
+        const getVotes = await this._lumNetworkService.client.queryClient.gov.votes(21);
+
+        console.log(getVotes);
 
         if (!depositors) {
             throw new NotFoundException('no voters');

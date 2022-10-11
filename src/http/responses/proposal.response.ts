@@ -89,8 +89,8 @@ export class ProposalVotersResponse {
     @Expose({ name: 'proposalId' })
     proposal_id: string;
 
-    @Expose({ name: 'voter' })
-    voter: string;
+    @Expose({ name: 'voterAddress' })
+    voter_address: string;
 
     constructor(data: Partial<ProposalVotersResponse>) {
         Object.assign(this, data);
@@ -102,8 +102,8 @@ export class ProposalDepositorsResponse {
     @Expose({ name: 'proposalId' })
     proposal_id: string;
 
-    @Expose({ name: 'depositor' })
-    depositor: string;
+    @Expose({ name: 'depositorAddress' })
+    depositor_address: string;
 
     constructor(data: Partial<ProposalVotersResponse>) {
         Object.assign(this, data);

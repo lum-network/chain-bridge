@@ -16,19 +16,21 @@ export class ProposalsVotesService {
         });
     };
 
-    createOrUpdateVoters = async (voter: string, proposalId: number): Promise<ProposalsVotesEntity> => {
+    createOrUpdateVoters = async (proposalId: number, voterAddress: string | null, voterOperatorAddress: string | null): Promise<ProposalsVotesEntity> => {
         let entity = await this.getById(proposalId);
 
         // If entity does not exists, we create with the new one
         if (!entity) {
             entity = new ProposalsVotesEntity({
                 proposal_id: proposalId,
-                voter,
+                voter_address: voterAddress,
+                voter_operator_address: voterOperatorAddress,
             });
         } else {
             // Otherwise, we just update the propertiess
-            entity.voter = voter;
             entity.proposal_id = proposalId;
+            entity.voter_address = voterAddress;
+            entity.voter_operator_address = voterOperatorAddress;
         }
 
         await this._repository.save(entity);

@@ -306,7 +306,7 @@ class DepositValueResponse {
     proposal_id: any;
 
     @ApiProperty()
-    @Expose({ name: 'depositor' })
+    @Expose({ name: 'depositorAddress' })
     depositor_address: string;
 
     @ApiProperty({ type: () => [BalanceResponse] })
@@ -329,7 +329,7 @@ class VoteValueResponse {
     proposal_id: Long;
 
     @ApiProperty()
-    @Expose({ name: 'voter' })
+    @Expose({ name: 'voterAddress' })
     voter_address: string;
 
     @ApiProperty()

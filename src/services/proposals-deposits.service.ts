@@ -16,18 +16,18 @@ export class ProposalsDepositsService {
         });
     };
 
-    createOrUpdateDepositors = async (depositor: string, proposalId: number): Promise<ProposalsDepositsEntity> => {
+    createOrUpdateDepositors = async (proposalId: number, depositorAddress: string): Promise<ProposalsDepositsEntity> => {
         let entity = await this.getById(proposalId);
 
         // If entity does not exists, we create with the new one
         if (!entity) {
             entity = new ProposalsDepositsEntity({
                 proposal_id: proposalId,
-                depositor,
+                depositor_address: depositorAddress,
             });
         } else {
             // Otherwise, we just update the propertiess
-            entity.depositor = depositor;
+            entity.depositor_address = depositorAddress;
             entity.proposal_id = proposalId;
         }
 

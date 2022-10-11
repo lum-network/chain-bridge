@@ -4,6 +4,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 
 import { ProposalsVotesService, ProposalsDepositsService, LumNetworkService } from '@app/services';
 import { ProposalsSync } from '@app/utils';
+import { LumBech32PrefixValPub } from '@lum-network/sdk-javascript/build/constants';
 
 @Injectable()
 export class GovernanceScheduler {
@@ -15,7 +16,7 @@ export class GovernanceScheduler {
         private readonly _governanceProposalsDepositsService: ProposalsDepositsService,
     ) {}
 
-    @Cron(CronExpression.EVERY_10_SECONDS)
+    @Cron(CronExpression.EVERY_30_SECONDS)
     async voteSync() {
         try {
             this._logger.log(`Syncing votes from chain...`);
@@ -36,7 +37,8 @@ export class GovernanceScheduler {
 
                 // Create or update to DB if we have new voters based on the proposalId
                 for (const voter of getVoter) {
-                    this._governanceProposalsVotesService.createOrUpdateVoters(voter, id);
+                    const getByOperatorAddress = (voter: string) => (voter.startsWith(LumBech32PrefixValPub) ? voter : null);
+                    this._governanceProposalsVotesService.createOrUpdateVoters(id, voter, getByOperatorAddress(voter));
                     this._logger.log(`Voter - ${voter} - got updated`);
                 }
 
@@ -51,7 +53,7 @@ export class GovernanceScheduler {
         }
     }
 
-    @Cron(CronExpression.EVERY_10_SECONDS)
+    @Cron(CronExpression.EVERY_30_SECONDS)
     async depositSync() {
         try {
             this._logger.log(`Syncing deposits from chain...`);
@@ -68,9 +70,9 @@ export class GovernanceScheduler {
                 const getDepositor = getDeposits.deposits.map((depositorHash) => depositorHash.depositor);
 
                 // Create or update to DB if we have new depositors based on the proposalId
-                for (const depositor of getDepositor) {
-                    this._governanceProposalsDepositsService.createOrUpdateDepositors(depositor, id);
-                    this._logger.log(`Depositor - ${depositor} - got updated`);
+                for (const depositorAddress of getDepositor) {
+                    this._governanceProposalsDepositsService.createOrUpdateDepositors(id, depositorAddress);
+                    this._logger.log(`Depositor - ${depositorAddress} - got updated`);
                 }
 
                 this._logger.log(`Found ${getDepositor.length} - Depositors`);

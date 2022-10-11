@@ -29,8 +29,6 @@ export class ProposalsSync {
                 '',
             );
 
-            this._logger.error(`Sync proposals from chain...`);
-
             return resultsProposals;
         } catch (error) {
             this._logger.error(`Failed to sync proposals from chain...`, error);
@@ -41,7 +39,7 @@ export class ProposalsSync {
         try {
             const getProposalId = await new ProposalsSync(this._lumNetworkService).getProposals();
             const getVotersByProposalId = getProposalId?.proposals.map((proposal) => proposal.proposalId).map((longInt) => longInt.low);
-            this._logger.error(`Sync getVotersByProposalId...`);
+
             return getVotersByProposalId;
         } catch (error) {
             this._logger.error(`Failed to sync proposalsById...`, error);
