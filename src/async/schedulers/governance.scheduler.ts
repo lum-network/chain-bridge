@@ -30,14 +30,18 @@ export class GovernanceScheduler {
 
                 // Fetch the votes based on the proposalId
                 const getVotes = await this._lumNetworkService.client.queryClient.gov.votes(id);
-                // Map the votes to get the voters
-                const getVoter = getVotes.votes.map((voterHash) => voterHash.voter);
-                this._logger.log(`Found ${getVoter.length} - voters`);
+
+                // Map the votes to get the voters and the voter's vote
+                const getVoterAndOptions = getVotes.votes.map((voteArgs) => ({
+                    voter: voteArgs.voter,
+                    voteOption: voteArgs.options[0].option,
+                    voteWeight: voteArgs.options[0].weight,
+                }));
 
                 // Create or update to DB if we have new voters based on the proposalId
-                for (const voter of getVoter) {
-                    this._governanceProposalsVotesService.createOrUpdateVoters(id, voter);
-                    this._logger.log(`Voter - ${voter} - got updated`);
+                for (const voteKey of getVoterAndOptions) {
+                    this._governanceProposalsVotesService.createOrUpdateVoters(id, voteKey.voter, voteKey.voteOption, voteKey.voteWeight);
+                    this._logger.log(`proposals_votes table got updated`);
                 }
 
                 // If we get a pagination key, we just patch it and it will process in the next loop
@@ -65,15 +69,16 @@ export class GovernanceScheduler {
                 const getDeposits = await this._lumNetworkService.client.queryClient.gov.deposits(id);
 
                 // Map the deposits to get the depositors
-                const getDepositor = getDeposits.deposits.map((depositorHash) => depositorHash.depositor);
+                const getDepositor = getDeposits.deposits.map((deposit) => ({
+                    depositor: deposit.depositor,
+                    amount: deposit.amount[0],
+                }));
 
                 // Create or update to DB if we have new depositors based on the proposalId
                 for (const depositorAddress of getDepositor) {
-                    this._governanceProposalsDepositsService.createOrUpdateDepositors(id, depositorAddress);
-                    this._logger.log(`Depositor - ${depositorAddress} - got updated`);
+                    this._governanceProposalsDepositsService.createOrUpdateDepositors(id, depositorAddress.depositor, depositorAddress.amount);
+                    this._logger.log(`proposals_deposits table got updated`);
                 }
-
-                this._logger.log(`Found ${getDepositor.length} - Depositors`);
 
                 // If we get a pagination key, we just patch it and it will process in the next loop
                 if (getDeposits.pagination && getDeposits.pagination.nextKey && getDeposits.pagination.nextKey.length) {

@@ -8,11 +8,20 @@ export class ProposalsVotesEntity {
     @Column({ type: 'int' })
     proposal_id: number;
 
-    @Column({ type: 'varchar', length: 42 })
-    voter_address: string | null;
+    @Column({ type: 'varchar' })
+    voter_address: string;
 
-    @Column({ type: 'varchar', length: 42 })
-    voter_operator_address: string | null;
+    @Column({ type: 'varchar' })
+    voter_operator_address: string;
+
+    @Column({ type: 'int' })
+    vote_option: number;
+
+    @Column({ type: 'varchar' })
+    vote_weight: string;
+
+    @Column({ type: 'boolean' })
+    voted_by_operator_address: boolean;
 
     constructor(data: Partial<ProposalsVotesEntity>) {
         Object.assign(this, data);

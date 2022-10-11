@@ -3,6 +3,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 
 import { ProposalsDepositsEntity } from '@app/database';
+import { Coin } from '@lum-network/sdk-javascript/build/codec/cosmos/base/v1beta1/coin';
 
 @Injectable()
 export class ProposalsDepositsService {
@@ -16,19 +17,26 @@ export class ProposalsDepositsService {
         });
     };
 
-    createOrUpdateDepositors = async (proposalId: number, depositorAddress: string): Promise<ProposalsDepositsEntity> => {
+    createOrUpdateDepositors = async (proposalId: number, depositorAddress: string, amount: Coin): Promise<ProposalsDepositsEntity> => {
         let entity = await this.getById(proposalId);
+
+        // Composite primary key compose proposalId and accountAddress
+        const compositeIdDepositorAddress = `${proposalId}:${depositorAddress}`;
 
         // If entity does not exists, we create with the new one
         if (!entity) {
             entity = new ProposalsDepositsEntity({
+                id: compositeIdDepositorAddress,
                 proposal_id: proposalId,
                 depositor_address: depositorAddress,
+                amount,
             });
         } else {
             // Otherwise, we just update the propertiess
+            entity.id = compositeIdDepositorAddress;
             entity.depositor_address = depositorAddress;
             entity.proposal_id = proposalId;
+            entity.amount = amount;
         }
 
         await this._repository.save(entity);

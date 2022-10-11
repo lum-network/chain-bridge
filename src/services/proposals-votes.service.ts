@@ -18,14 +18,19 @@ export class ProposalsVotesService {
         });
     };
 
-    createOrUpdateVoters = async (proposalId: number, voterAddress: string | null): Promise<ProposalsVotesEntity> => {
+    createOrUpdateVoters = async (proposalId: number, voterAddress: string, voteOption: number, voteWeight: string): Promise<ProposalsVotesEntity> => {
         let entity = await this.getById(proposalId);
+
+        // Initialize accountAddress and operatorAddress
         let accountAddress: string = null;
         let operatorAddress: string = null;
 
+        // Verify if the voterAddress is an operator
+        const isAddressOperator: boolean = voterAddress.startsWith(LumBech32PrefixValAddr);
+
         // Based on the voterAddress address we either encode the operator to have the account address
         // Or keep the existing
-        if (voterAddress.startsWith(LumBech32PrefixValAddr)) {
+        if (isAddressOperator) {
             accountAddress = LumUtils.Bech32.encode(LumConstants.LumBech32PrefixAccAddr, LumUtils.Bech32.decode(voterAddress).data);
             operatorAddress = voterAddress;
         } else {
@@ -33,22 +38,29 @@ export class ProposalsVotesService {
             accountAddress = voterAddress;
         }
 
-        const compositeId = `${proposalId}:${accountAddress}`;
+        // Composite primary key compose proposalId and accountAddress
+        const compositeIdVoterAddress = `${proposalId}:${accountAddress}`;
 
         // If entity does not exists, we create with the new one
         if (!entity) {
             entity = new ProposalsVotesEntity({
-                id: compositeId,
+                id: compositeIdVoterAddress,
                 proposal_id: proposalId,
                 voter_address: accountAddress,
                 voter_operator_address: operatorAddress,
+                vote_option: voteOption,
+                vote_weight: voteWeight,
+                voted_by_operator_address: isAddressOperator,
             });
         } else {
             // Otherwise, we just update the propertiess
-            entity.id = compositeId;
+            entity.id = compositeIdVoterAddress;
             entity.proposal_id = proposalId;
             entity.voter_address = accountAddress;
             entity.voter_operator_address = operatorAddress;
+            entity.vote_option = voteOption;
+            entity.vote_weight = voteWeight;
+            entity.voted_by_operator_address = isAddressOperator;
         }
 
         await this._repository.save(entity);
