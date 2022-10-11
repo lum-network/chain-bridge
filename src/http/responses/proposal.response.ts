@@ -89,6 +89,7 @@ export class ProposalVotersResponse {
     @Expose({ name: 'proposalId' })
     proposal_id: string;
 
+    @ApiProperty()
     @Expose({ name: 'voterAddress' })
     voter_address: string;
 
@@ -102,6 +103,7 @@ export class ProposalDepositorsResponse {
     @Expose({ name: 'proposalId' })
     proposal_id: string;
 
+    @ApiProperty()
     @Expose({ name: 'depositorAddress' })
     depositor_address: string;
 
