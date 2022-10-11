@@ -63,15 +63,19 @@ export class GovernanceController {
     }
 
     @ApiOkResponse({ status: 200, type: ProposalVotersResponse })
-    @DefaultTake(100)
+    // Return only 5 voters per page
+    @DefaultTake(5)
     @Get('proposals/:id/voters')
     async getVoters(@Req() request: ExplorerRequest, @Param('id') id: string): Promise<DataResponse> {
+        // Get voters and total for pagination
         const [voters, total] = await this._governanceProposalsVotesService.fetchVotersByProposalId(id, request.pagination.skip, request.pagination.limit);
 
+        // If no voters throw exception
         if (!voters) {
-            throw new NotFoundException('no voters');
+            throw new NotFoundException('voters_not_found');
         }
 
+        // return formated result and metadata
         return new DataResponse({
             result: voters,
             metadata: new DataResponseMetadata({
@@ -84,18 +88,19 @@ export class GovernanceController {
     }
 
     @ApiOkResponse({ status: 200, type: ProposalDepositorsResponse })
-    @DefaultTake(100)
+    // Return only 5 depositors per page
+    @DefaultTake(5)
     @Get('proposals/:id/depositors')
     async getDepositors(@Req() request: ExplorerRequest, @Param('id') id: string): Promise<DataResponse> {
+        // Get depositors and total for pagination
         const [depositors, total] = await this._governanceProposalsDepositsService.fetchDepositorsByProposalId(id, request.pagination.skip, request.pagination.limit);
-        const getVotes = await this._lumNetworkService.client.queryClient.gov.votes(21);
 
-        console.log(getVotes);
-
+        // If no depositors throw exception
         if (!depositors) {
-            throw new NotFoundException('no voters');
+            throw new NotFoundException('depositors_not_found');
         }
 
+        // return formated result and metadata
         return new DataResponse({
             result: depositors,
             metadata: new DataResponseMetadata({
