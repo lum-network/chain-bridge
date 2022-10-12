@@ -7,6 +7,7 @@ import Long from 'long';
 import { ProposalStatus } from '@lum-network/sdk-javascript/build/codec/cosmos/gov/v1beta1/gov';
 
 import { BalanceResponse } from '@app/http/responses/balance.response';
+import { Coin } from '@lum-network/sdk-javascript/build/codec/cosmos/base/v1beta1/coin';
 
 @Exclude()
 export class ResultResponse {
@@ -86,12 +87,32 @@ export class ProposalResponse {
 
 export class ProposalVotersResponse {
     @ApiProperty()
+    @Expose({ name: 'id' })
+    id: string;
+
+    @ApiProperty()
     @Expose({ name: 'proposalId' })
     proposal_id: string;
 
     @ApiProperty()
     @Expose({ name: 'voterAddress' })
     voter_address: string;
+
+    @ApiProperty()
+    @Expose({ name: 'voterOperatorAddress' })
+    voter_operator_address: string;
+
+    @ApiProperty()
+    @Expose({ name: 'voteOption' })
+    vote_option: number;
+
+    @ApiProperty()
+    @Expose({ name: 'voteOption' })
+    vote_weight: string;
+
+    @ApiProperty()
+    @Expose({ name: 'votedByOperatorAddress' })
+    voted_by_operator_address: string;
 
     constructor(data: Partial<ProposalVotersResponse>) {
         Object.assign(this, data);
@@ -100,6 +121,10 @@ export class ProposalVotersResponse {
 
 export class ProposalDepositorsResponse {
     @ApiProperty()
+    @Expose({ name: 'id' })
+    id: string;
+
+    @ApiProperty()
     @Expose({ name: 'proposalId' })
     proposal_id: string;
 
@@ -107,7 +132,11 @@ export class ProposalDepositorsResponse {
     @Expose({ name: 'depositorAddress' })
     depositor_address: string;
 
-    constructor(data: Partial<ProposalVotersResponse>) {
+    @ApiProperty()
+    @Expose({ name: 'amount' })
+    amount: Coin[];
+
+    constructor(data: Partial<ProposalDepositorsResponse>) {
         Object.assign(this, data);
     }
 }
