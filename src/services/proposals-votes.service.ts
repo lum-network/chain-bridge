@@ -29,7 +29,7 @@ export class ProposalsVotesService {
         const isAddressOperator: boolean = voterAddress.startsWith(LumBech32PrefixValAddr);
 
         // Based on the voterAddress address we either encode the operator to have the account address
-        // Or keep the existing
+        // Or we encode the operatorAddress to get the account one
         if (isAddressOperator) {
             accountAddress = LumUtils.Bech32.encode(LumConstants.LumBech32PrefixAccAddr, LumUtils.Bech32.decode(voterAddress).data);
             operatorAddress = voterAddress;
@@ -38,10 +38,10 @@ export class ProposalsVotesService {
             accountAddress = voterAddress;
         }
 
-        // Composite primary key compose proposalId and accountAddress
+        // Composite primary key composed proposalId and accountAddress
         const compositeIdVoterAddress = `${proposalId}:${accountAddress}`;
 
-        // If entity does not exists, we create with the new one
+        // If entity does not exists, we create a new one for ProposalsVotesEntity
         if (!entity) {
             entity = new ProposalsVotesEntity({
                 id: compositeIdVoterAddress,
@@ -53,7 +53,7 @@ export class ProposalsVotesService {
                 voted_by_operator_address: isAddressOperator,
             });
         } else {
-            // Otherwise, we just update the propertiess
+            // Otherwise, we just update the properties
             entity.id = compositeIdVoterAddress;
             entity.proposal_id = proposalId;
             entity.voter_address = accountAddress;

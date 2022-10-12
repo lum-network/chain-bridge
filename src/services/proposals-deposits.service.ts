@@ -23,7 +23,7 @@ export class ProposalsDepositsService {
         // Composite primary key compose proposalId and accountAddress
         const compositeIdDepositorAddress = `${proposalId}:${depositorAddress}`;
 
-        // If entity does not exists, we create with the new one
+        // If entity does not exists, we create with a new one
         if (!entity) {
             entity = new ProposalsDepositsEntity({
                 id: compositeIdDepositorAddress,

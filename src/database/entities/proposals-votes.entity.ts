@@ -1,3 +1,4 @@
+import { VoteOption } from '@lum-network/sdk-javascript/build/codec/cosmos/gov/v1beta1/gov';
 import { Column, Entity, PrimaryColumn } from 'typeorm';
 
 @Entity({ name: 'proposals_votes' })
@@ -15,7 +16,7 @@ export class ProposalsVotesEntity {
     voter_operator_address: string;
 
     @Column({ type: 'int' })
-    vote_option: number;
+    vote_option: VoteOption;
 
     @Column({ type: 'varchar' })
     vote_weight: string;

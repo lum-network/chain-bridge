@@ -23,15 +23,13 @@ export class GovernanceScheduler {
             // We need to get the proposalsId in order to fetch the voters
             const getProposalId = await new ProposalsSync(this._lumNetworkService).getProposalsId();
 
-            // Verify if any new proposalId where minted on chain
-
             for (const id of getProposalId) {
                 let page: Uint8Array | undefined = undefined;
 
                 // Fetch the votes based on the proposalId
                 const getVotes = await this._lumNetworkService.client.queryClient.gov.votes(id);
 
-                // Map the votes to get the voters and the voter's vote
+                // Map the votes to get the voters, the voteOption and the voteWeight
                 const getVoterAndOptions = getVotes.votes.map((voteArgs) => ({
                     voter: voteArgs.voter,
                     voteOption: voteArgs.options[0].option,
@@ -65,10 +63,11 @@ export class GovernanceScheduler {
 
             for (const id of getProposalId) {
                 let page: Uint8Array | undefined = undefined;
+
                 // Fetch the deposits based on the proposalId
                 const getDeposits = await this._lumNetworkService.client.queryClient.gov.deposits(id);
 
-                // Map the deposits to get the depositors
+                // Map the deposits to get the depositors and the amount
                 const getDepositor = getDeposits.deposits.map((deposit) => ({
                     depositor: deposit.depositor,
                     amount: deposit.amount[0],
