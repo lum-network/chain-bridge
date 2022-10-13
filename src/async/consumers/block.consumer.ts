@@ -13,14 +13,14 @@ import {isBeam, NotificationChannels, NotificationEvents, QueueJobs, Queues} fro
 import {BlockService, LumNetworkService, TransactionService, ValidatorService} from '@app/services';
 import {BlockEntity, TransactionEntity} from "@app/database";
 
-@Processor(Queues.QUEUE_BLOCKS)
+@Processor(Queues.BLOCKS)
 export class BlockConsumer {
     private readonly _logger: Logger = new Logger(BlockConsumer.name);
 
     constructor(
-        @InjectQueue(Queues.QUEUE_BLOCKS) private readonly _blockQueue: Queue,
-        @InjectQueue(Queues.QUEUE_BEAMS) private readonly _beamQueue: Queue,
-        @InjectQueue(Queues.QUEUE_NOTIFICATIONS) private readonly _notificationQueue: Queue,
+        @InjectQueue(Queues.BLOCKS) private readonly _blockQueue: Queue,
+        @InjectQueue(Queues.BEAMS) private readonly _beamQueue: Queue,
+        @InjectQueue(Queues.NOTIFICATIONS) private readonly _notificationQueue: Queue,
         private readonly _blockService: BlockService,
         private readonly _configService: ConfigService,
         private readonly _lumNetworkService: LumNetworkService,
@@ -171,8 +171,8 @@ export class BlockConsumer {
             if (job.data.notify) {
                 // Dispatch notification on websockets for frontend
                 await this._notificationQueue.add(QueueJobs.NOTIFICATION_SOCKET, {
-                    channel: NotificationChannels.CHANNEL_BLOCKS,
-                    event: NotificationEvents.EVENT_NEW_BLOCK,
+                    channel: NotificationChannels.BLOCKS,
+                    event: NotificationEvents.NEW_BLOCK,
                     data: blockDoc,
                 });
             }

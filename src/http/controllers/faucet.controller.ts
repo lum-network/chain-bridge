@@ -11,7 +11,7 @@ import {QueueJobs, Queues} from "@app/utils";
 @Controller('faucet')
 export class FaucetController {
     constructor(
-        @InjectQueue(Queues.QUEUE_FAUCET) private readonly _queue: Queue,
+        @InjectQueue(Queues.FAUCET) private readonly _queue: Queue,
         private readonly _configService: ConfigService
     ) {
     }

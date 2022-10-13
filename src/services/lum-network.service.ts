@@ -19,7 +19,7 @@ export class LumNetworkService {
     private readonly _logger: Logger = new Logger(LumNetworkService.name);
 
     constructor(
-        @InjectQueue(Queues.QUEUE_BLOCKS) private readonly _queue: Queue,
+        @InjectQueue(Queues.BLOCKS) private readonly _queue: Queue,
         private readonly _configService: ConfigService,
         private readonly _httpService: HttpService,
         private readonly _modulesContainer: ModulesContainer

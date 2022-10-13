@@ -56,7 +56,7 @@ export class SyncSchedulerModule implements OnModuleInit, OnApplicationBootstrap
     private readonly _logger: Logger = new Logger(SyncSchedulerModule.name);
 
     constructor(
-        @InjectQueue(Queues.QUEUE_BLOCKS) private readonly _queue: Queue,
+        @InjectQueue(Queues.BLOCKS) private readonly _queue: Queue,
         private readonly _configService: ConfigService,
         private readonly _lumNetworkService: LumNetworkService
     ) {

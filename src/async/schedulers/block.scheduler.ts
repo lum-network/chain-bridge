@@ -12,7 +12,7 @@ import {QueueJobs, Queues} from '@app/utils';
 export class BlockScheduler {
     private _logger: Logger = new Logger(BlockScheduler.name);
 
-    constructor(@InjectQueue(Queues.QUEUE_BLOCKS) private readonly _queue: Queue, private readonly _configService: ConfigService, private readonly _lumNetworkService: LumNetworkService) {
+    constructor(@InjectQueue(Queues.BLOCKS) private readonly _queue: Queue, private readonly _configService: ConfigService, private readonly _lumNetworkService: LumNetworkService) {
     }
 
     @Cron(CronExpression.EVERY_DAY_AT_4AM, {name: 'blocks_backward_ingest'})

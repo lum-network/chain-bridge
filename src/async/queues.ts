@@ -5,7 +5,7 @@ import {Queues} from "@app/utils";
 
 export const AsyncQueues: BullModuleAsyncOptions[] = [
     {
-        name: Queues.QUEUE_BEAMS,
+        name: Queues.BEAMS,
         imports: [ConfigModule],
         inject: [ConfigService],
         useFactory: (configService: ConfigService) => ({
@@ -21,7 +21,7 @@ export const AsyncQueues: BullModuleAsyncOptions[] = [
         })
     },
     {
-        name: Queues.QUEUE_BLOCKS,
+        name: Queues.BLOCKS,
         imports: [ConfigModule],
         inject: [ConfigService],
         useFactory: (configService: ConfigService) => ({
@@ -37,7 +37,7 @@ export const AsyncQueues: BullModuleAsyncOptions[] = [
         })
     },
     {
-        name: Queues.QUEUE_FAUCET,
+        name: Queues.FAUCET,
         imports: [ConfigModule],
         useFactory: (configService: ConfigService) => ({
             redis: {
@@ -57,7 +57,7 @@ export const AsyncQueues: BullModuleAsyncOptions[] = [
         inject: [ConfigService]
     },
     {
-        name: Queues.QUEUE_NOTIFICATIONS,
+        name: Queues.NOTIFICATIONS,
         imports: [ConfigModule],
         inject: [ConfigService],
         useFactory: (configService: ConfigService) => ({

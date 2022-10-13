@@ -21,10 +21,10 @@ export enum ChartTypes {
 }
 
 export enum Queues {
-    QUEUE_BEAMS = 'beams',
-    QUEUE_BLOCKS = 'blocks',
-    QUEUE_FAUCET = 'faucet',
-    QUEUE_NOTIFICATIONS = 'notifications',
+    BEAMS = 'beams',
+    BLOCKS = 'blocks',
+    FAUCET = 'faucet',
+    NOTIFICATIONS = 'notifications',
 }
 
 export enum QueueJobs {
@@ -35,11 +35,11 @@ export enum QueueJobs {
 }
 
 export enum NotificationChannels {
-    CHANNEL_BLOCKS = 'blocks',
-    CHANNEL_TRANSACTIONS = 'transactions',
+    BLOCKS = 'blocks',
+    TRANSACTIONS = 'transactions',
 }
 
 export enum NotificationEvents {
-    EVENT_NEW_BLOCK = 'new-block',
-    EVENT_NEW_TRANSACTION = 'new-transaction',
+    NEW_BLOCK = 'new-block',
+    NEW_TRANSACTION = 'new-transaction',
 }
