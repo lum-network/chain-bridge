@@ -10,7 +10,7 @@ import * as Joi from "joi";
 
 import {Queue} from 'bull';
 
-import {BlockScheduler, ValidatorScheduler} from '@app/async';
+import {AsyncQueues, BlockScheduler, ValidatorScheduler} from '@app/async';
 
 import {
     BeamService,
@@ -29,58 +29,7 @@ import {DatabaseConfig, DatabaseFeatures} from "@app/database";
             isGlobal: true,
             validationSchema: Joi.object(ConfigMap),
         }),
-        BullModule.registerQueueAsync({
-                name: Queues.QUEUE_BLOCKS,
-                imports: [ConfigModule],
-                inject: [ConfigService],
-                useFactory: (configService: ConfigService) => ({
-                    redis: {
-                        host: configService.get<string>('REDIS_HOST'),
-                        port: configService.get<number>('REDIS_PORT')
-                    },
-                    prefix: configService.get<string>('REDIS_PREFIX'),
-                    defaultJobOptions: {
-                        removeOnComplete: true,
-                        removeOnFail: true,
-                    },
-                })
-            },
-            {
-                name: Queues.QUEUE_BEAMS,
-                imports: [ConfigModule],
-                inject: [ConfigService],
-                useFactory: (configService: ConfigService) => ({
-                    redis: {
-                        host: configService.get<string>('REDIS_HOST'),
-                        port: configService.get<number>('REDIS_PORT')
-                    },
-                    prefix: configService.get<string>('REDIS_PREFIX'),
-                    defaultJobOptions: {
-                        removeOnComplete: true,
-                        removeOnFail: true,
-                    },
-                })
-            },
-            {
-                name: Queues.QUEUE_FAUCET,
-                imports: [ConfigModule],
-                inject: [ConfigService],
-                useFactory: (configService: ConfigService) => ({
-                    redis: {
-                        host: configService.get<string>('REDIS_HOST'),
-                        port: configService.get<number>('REDIS_PORT')
-                    },
-                    prefix: configService.get<string>('REDIS_PREFIX'),
-                    limiter: {
-                        max: 1,
-                        duration: 30,
-                    },
-                    defaultJobOptions: {
-                        removeOnComplete: true,
-                        removeOnFail: true,
-                    },
-                })
-            }),
+        ...AsyncQueues.map((queue) => BullModule.registerQueueAsync(queue)),
         ClientsModule.registerAsync([
             {
                 name: 'API',
