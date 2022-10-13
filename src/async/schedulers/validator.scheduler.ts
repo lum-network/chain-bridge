@@ -23,14 +23,14 @@ export class ValidatorScheduler {
     async delegationSync() {
         this._logger.log(`Syncing validator delegations from chain...`);
         const validators = await this._validatorService.fetchAll();
-        this._logger.log(`Found ${validators.length} validators to sync`);
+        this._logger.debug(`Found ${validators.length} validators to sync`);
 
         // For each stored validator, we query chain and ask for delegations
         for (const validator of validators) {
             let page: Uint8Array | undefined = undefined;
             while (true) {
                 const delegations = await this._lumNetworkService.client.queryClient.staking.validatorDelegations(validator.operator_address, page);
-                this._logger.log(`Found ${delegations.delegationResponses.length} delegations to sync for validator ${validator.operator_address}`);
+                this._logger.debug(`Found ${delegations.delegationResponses.length} delegations to sync for validator ${validator.operator_address}`);
 
                 // For each delegation, we create or update the matching entry in our database
                 for (const delegation of delegations.delegationResponses) {
@@ -124,7 +124,7 @@ export class ValidatorScheduler {
 
             // Persist to database
             await this._validatorService.saveBulk(validators);
-            this._logger.log(`Ingested validator set ${validators.length}`);
+            this._logger.log(`Persisted ${validators.length} validators`);
         } catch (error) {
             this._logger.error(`Failed to ingest validators: ${error}`, error.stack);
         }
