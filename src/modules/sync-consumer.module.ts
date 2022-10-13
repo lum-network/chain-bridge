@@ -45,7 +45,7 @@ import {DatabaseConfig, DatabaseFeatures} from "@app/database";
         TypeOrmModule.forFeature(DatabaseFeatures)
     ],
     controllers: [],
-    providers: [BeamService, BlockService, TransactionService, ValidatorService, ValidatorDelegationService, BeamConsumer, BlockConsumer, CoreConsumer, NotificationConsumer, LumNetworkService],
+    providers: [LumNetworkService, BeamService, BlockService, TransactionService, ValidatorService, ValidatorDelegationService, BeamConsumer, BlockConsumer, CoreConsumer, NotificationConsumer],
 })
 export class SyncConsumerModule implements OnModuleInit, OnApplicationBootstrap {
     constructor(private readonly _lumNetworkService: LumNetworkService) {
