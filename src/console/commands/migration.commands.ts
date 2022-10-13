@@ -1,17 +1,13 @@
-import {InjectQueue} from "@nestjs/bull";
-
 import {Command, Console} from "nestjs-console";
 import {LumTypes} from "@lum-network/sdk-javascript";
-import {Queue} from "bull";
+import fs from 'fs';
 
 import {BlockService, ElasticsearchService, LumNetworkService, ValidatorService} from "@app/services";
-import {QueueJobs, Queues} from "@app/utils";
 
 
 @Console({command: 'migration', description: 'Migration related commands'})
 export class MigrationCommands {
     constructor(
-        @InjectQueue(Queues.QUEUE_BLOCKS) private readonly _queue: Queue,
         private readonly _blockService: BlockService,
         private readonly _chainService: LumNetworkService,
         private readonly _elasticSearch: ElasticsearchService,
@@ -46,9 +42,12 @@ export class MigrationCommands {
 
     @Command({command: 'blocks', description: 'Migrate blocks from Elasticsearch to Postgres'})
     async migrateBlocks(): Promise<void> {
-        const chainId = await this._chainService.client.getChainId();
+        const writer = fs.createWriteStream('blocks.txt', {
+            flags: 'a'
+        });
 
-        console.log('starting');
+        let start = 810000;
+
         const params = {
             index: 'blocks',
             from: 0,
@@ -56,26 +55,25 @@ export class MigrationCommands {
             size: 10000,
             body: {
                 query: {
-                    match_all: {}
+                    range: {
+                        height: {
+                            gte: start,
+                            lte: 2000000
+                        }
+                    }
                 }
             },
-            scroll: '1m'
+            scroll: '2m'
         }
 
+        let counter = start;
         for await (const bl of this.scrollSearch(params)) {
             const block = bl._source.raw_block as LumTypes.BlockResponse;
-            await this._queue.add(QueueJobs.INGEST, {
-                block,
-                notify: false,
-                ingestTx: false,
-                ingestBeam: false
-            }, {
-                jobId: `${chainId}-block-${block.block.header.height}`,
-                attempts: 10,
-                backoff: 60000,
-            });
-            console.log('Sent block', block.block.header.height);
+            counter++;
+            writer.write(JSON.stringify(block) + '\n');
+            console.log(`Wrote ${counter} blocks`);
         }
+        writer.close();
         process.exit(0);
     }
 }

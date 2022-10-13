@@ -6,8 +6,6 @@ import {APP_FILTER, APP_INTERCEPTOR, APP_PIPE} from '@nestjs/core';
 import {TerminusModule} from '@nestjs/terminus';
 import {TypeOrmModule} from "@nestjs/typeorm";
 
-import {ConsoleModule} from 'nestjs-console';
-
 import * as redisStore from 'cache-manager-redis-store';
 
 import * as Joi from 'joi';
@@ -38,7 +36,6 @@ import {
 } from '@app/utils';
 
 import {GatewayWebsocket} from '@app/websocket';
-import {BlocksCommands, RedisCommands, TransactionsCommands, ValidatorsCommands} from '@app/console/commands';
 import {DatabaseConfig, DatabaseFeatures} from "@app/database";
 
 @Module({
@@ -98,7 +95,6 @@ import {DatabaseConfig, DatabaseFeatures} from "@app/database";
             }),
             inject: [ConfigService],
         }),
-        ConsoleModule,
         TerminusModule,
         HttpModule,
         TypeOrmModule.forRootAsync(DatabaseConfig),
@@ -115,10 +111,6 @@ import {DatabaseConfig, DatabaseFeatures} from "@app/database";
         LumNetworkIndicator,
         GatewayWebsocket,
         LumNetworkService,
-        BlocksCommands,
-        RedisCommands,
-        TransactionsCommands,
-        ValidatorsCommands,
         {provide: APP_FILTER, useClass: HttpExceptionFilter},
         {provide: APP_INTERCEPTOR, useClass: PaginationInterceptor},
         {provide: APP_INTERCEPTOR, useClass: ResponseInterceptor},
