@@ -50,7 +50,6 @@ export class ProposalsVotesService {
                 voter_operator_address: operatorAddress,
                 vote_option: voteOption,
                 vote_weight: voteWeight,
-                voted_by_operator_address: isAddressOperator,
             });
         } else {
             // Otherwise, we just update the properties
@@ -60,7 +59,6 @@ export class ProposalsVotesService {
             entity.voter_operator_address = operatorAddress;
             entity.vote_option = voteOption;
             entity.vote_weight = voteWeight;
-            entity.voted_by_operator_address = isAddressOperator;
         }
 
         await this._repository.save(entity);

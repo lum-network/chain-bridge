@@ -31,8 +31,7 @@ export const mockResponseVotersPage0 = {
             voter_address: 'lum14a3kmsuu75njmfe3xj9wt5sld5gw88vdfrn9kv',
             voter_operator_address: 'lumvaloper14a3kmsuu75njmfe3xj9wt5sld5gw88vdk56kdg',
             vote_option: 1,
-            vote_weight: 'yes',
-            voted_by_operator_address: false,
+            vote_weight: '1000000000000000000',
         },
         {
             id: '21:lum1aqzs28dufw3p9jrvtwtpke4c4lutnxfsclw08z',
@@ -40,8 +39,7 @@ export const mockResponseVotersPage0 = {
             voter_address: 'lum1aqzs28dufw3p9jrvtwtpke4c4lutnxfsclw08z',
             voter_operator_address: 'lumvaloper1aqzs28dufw3p9jrvtwtpke4c4lutnxfs8g8uux',
             vote_option: 3,
-            vote_weight: 'yes',
-            voted_by_operator_address: false,
+            vote_weight: '1000000000000000000',
         },
         {
             id: '21:lum1e9hr3fnf749sv40yge30dcz2jxrrwh9lw8yhrc',
@@ -49,8 +47,7 @@ export const mockResponseVotersPage0 = {
             voter_address: 'lum1e9hr3fnf749sv40yge30dcz2jxrrwh9lw8yhrc',
             voter_operator_address: 'lumvaloper1e9hr3fnf749sv40yge30dcz2jxrrwh9l3sdycu',
             vote_option: 4,
-            vote_weight: 'yes',
-            voted_by_operator_address: false,
+            vote_weight: '1000000000000000000',
         },
         {
             id: '21:lum1mjxsv6j9e2srh36ncsuj5yhlxa0vu97a6rjl47',
@@ -58,8 +55,7 @@ export const mockResponseVotersPage0 = {
             voter_address: 'lum1mjxsv6j9e2srh36ncsuj5yhlxa0vu97a6rjl47',
             voter_operator_address: 'lumvaloper1mjxsv6j9e2srh36ncsuj5yhlxa0vu97a95mvw6',
             vote_option: 0,
-            vote_weight: 'yes',
-            voted_by_operator_address: false,
+            vote_weight: '1000000000000000000',
         },
         {
             id: '21:lum1ny8y5e9js03xnz9wv4s3n4u05yz8x50fuvm87c',
@@ -67,8 +63,7 @@ export const mockResponseVotersPage0 = {
             voter_address: 'lum1ny8y5e9js03xnz9wv4s3n4u05yz8x50fuvm87c',
             voter_operator_address: 'lumvaloper1ny8y5e9js03xnz9wv4s3n4u05yz8x50frmj59u',
             vote_option: 1,
-            vote_weight: 'yes',
-            voted_by_operator_address: false,
+            vote_weight: '1000000000000000000',
         },
     ],
     metadata: {
@@ -92,8 +87,7 @@ export const mockResponseVotersPage1 = {
             voter_address: 'lum1p02gahyrqn68weajhy7gaxyx4gzlvfn6gy2nvr',
             voter_operator_address: 'lumvaloper1p02gahyrqn68weajhy7gaxyx4gzlvfn6hnrqh8',
             vote_option: 2,
-            vote_weight: 'yes',
-            voted_by_operator_address: false,
+            vote_weight: '1000000000000000000',
         },
         {
             id: '21:lum1sfc34ujkys84eeqmegm7lle955y3edyt47rpc5',
@@ -101,8 +95,7 @@ export const mockResponseVotersPage1 = {
             voter_address: 'lum1sfc34ujkys84eeqmegm7lle955y3edyt47rpc5',
             voter_operator_address: 'lumvaloper1sfc34ujkys84eeqmegm7lle955y3edyt2f2jrs',
             vote_option: 2,
-            vote_weight: 'yes',
-            voted_by_operator_address: false,
+            vote_weight: '1000000000000000000',
         },
         {
             id: '21:lum1ss7vkqzfal7h4m8ug8lh8peqqyt7vq3sd5v3hv',
@@ -110,8 +103,7 @@ export const mockResponseVotersPage1 = {
             voter_address: 'lum1ss7vkqzfal7h4m8ug8lh8peqqyt7vq3sd5v3hv',
             voter_operator_address: 'lumvaloper1ss7vkqzfal7h4m8ug8lh8peqqyt7vq3sjr9zvg',
             vote_option: 3,
-            vote_weight: 'yes',
-            voted_by_operator_address: true,
+            vote_weight: '1000000000000000000',
         },
         {
             id: '21:lum1xjvhpmflhue38mc8j75gqj2h0fds9guxaga7p5',
@@ -119,8 +111,7 @@ export const mockResponseVotersPage1 = {
             voter_address: 'lum1xjvhpmflhue38mc8j75gqj2h0fds9guxaga7p5',
             voter_operator_address: 'lumvaloper1xjvhpmflhue38mc8j75gqj2h0fds9guxzl5d6s',
             vote_option: 2,
-            vote_weight: 'yes',
-            voted_by_operator_address: false,
+            vote_weight: '1000000000000000000',
         },
         {
             id: '21:lum1yhaswwgg5tz7veknxwaj8vc8rfa9s0nahkjq30',
@@ -128,8 +119,7 @@ export const mockResponseVotersPage1 = {
             voter_address: 'lum1yhaswwgg5tz7veknxwaj8vc8rfa9s0nahkjq30',
             voter_operator_address: 'lumvaloper1yhaswwgg5tz7veknxwaj8vc8rfa9s0nagpmn2t',
             vote_option: 3,
-            vote_weight: 'yes',
-            voted_by_operator_address: false,
+            vote_weight: '1000000000000000000',
         },
     ],
     metadata: {

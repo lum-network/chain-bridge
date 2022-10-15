@@ -21,9 +21,6 @@ export class ProposalsVotesEntity {
     @Column({ type: 'varchar' })
     vote_weight: string;
 
-    @Column({ type: 'boolean' })
-    voted_by_operator_address: boolean;
-
     constructor(data: Partial<ProposalsVotesEntity>) {
         Object.assign(this, data);
     }

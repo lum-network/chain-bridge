@@ -110,10 +110,6 @@ export class ProposalVotersResponse {
     @Expose({ name: 'voteOption' })
     vote_weight: string;
 
-    @ApiProperty()
-    @Expose({ name: 'votedByOperatorAddress' })
-    voted_by_operator_address: string;
-
     constructor(data: Partial<ProposalVotersResponse>) {
         Object.assign(this, data);
     }
