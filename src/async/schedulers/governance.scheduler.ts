@@ -38,8 +38,11 @@ export class GovernanceScheduler {
 
                 // Create or update to DB if we have new voters based on the proposalId
                 for (const voteKey of getVoterAndOptions) {
-                    this._governanceProposalsVotesService.createOrUpdateVoters(id, voteKey.voter, voteKey.voteOption, voteKey.voteWeight);
-                    this._logger.log(`proposals_votes table got updated`);
+                    // Only update the db if there is any vote during the voting period
+                    if (getVotes.votes.length) {
+                        this._governanceProposalsVotesService.createOrUpdateVoters(id, voteKey.voter, voteKey.voteOption, voteKey.voteWeight);
+                        this._logger.log(`proposals_votes table got updated`);
+                    }
                 }
 
                 // If we get a pagination key, we just patch it and it will process in the next loop
