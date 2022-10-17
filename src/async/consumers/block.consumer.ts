@@ -105,6 +105,17 @@ export class BlockConsumer {
                     raw_tx_data: LumUtils.toJSON(txData) as string,
                 };
 
+                // Add addresses in case of transaction failure
+                if (!res.success) {
+                    for (const message of res.messages) {
+                        for (const key in message.value) {
+                            if (key === 'sender' || key === 'recipient' || key === 'validator') {
+                                res.addresses.push(message.value[key]);
+                            }
+                        }
+                    }
+                }
+
                 for (const log of logs) {
                     for (const ev of log.events) {
                         for (const attr of ev.attributes) {
