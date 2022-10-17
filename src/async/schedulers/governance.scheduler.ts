@@ -21,9 +21,9 @@ export class GovernanceScheduler {
             this._logger.log(`Syncing votes from chain...`);
 
             // We need to get the proposalsId in order to fetch the voters
-            const getProposals = await new ProposalsSync(this._lumNetworkService).getOpenVotingProposals();
+            const getProposalId = await new ProposalsSync(this._lumNetworkService).getOpenVotingProposals();
 
-            for (const id of getProposals) {
+            for (const id of getProposalId) {
                 let page: Uint8Array | undefined = undefined;
 
                 // Fetch the votes based on the proposalId
