@@ -11,7 +11,7 @@ import { Queue } from 'bull';
 
 import { BlockScheduler, ValidatorScheduler, GovernanceScheduler } from '@app/async';
 
-import { BeamService, BlockService, LumNetworkService, TransactionService, ValidatorDelegationService, ValidatorService, ProposalsVotesService, ProposalsDepositsService } from '@app/services';
+import { BeamService, BlockService, LumNetworkService, TransactionService, ValidatorDelegationService, ValidatorService, ProposalVoteService, ProposalDepositService } from '@app/services';
 import { ConfigMap, QueueJobs, Queues } from '@app/utils';
 import { databaseProviders } from '@app/database';
 
@@ -99,8 +99,8 @@ import { databaseProviders } from '@app/database';
         BlockService,
         TransactionService,
         ValidatorService,
-        ProposalsVotesService,
-        ProposalsDepositsService,
+        ProposalVoteService,
+        ProposalDepositService,
         ValidatorDelegationService,
         BlockScheduler,
         ValidatorScheduler,

@@ -2,8 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 
 import { Cron, CronExpression } from '@nestjs/schedule';
 
-import { ProposalsVotesService, ProposalsDepositsService, LumNetworkService } from '@app/services';
-import { ProposalsSync } from '@app/utils';
+import { ProposalVoteService, ProposalDepositService, LumNetworkService } from '@app/services';
 
 @Injectable()
 export class GovernanceScheduler {
@@ -11,8 +10,8 @@ export class GovernanceScheduler {
 
     constructor(
         private readonly _lumNetworkService: LumNetworkService,
-        private readonly _governanceProposalsVotesService: ProposalsVotesService,
-        private readonly _governanceProposalsDepositsService: ProposalsDepositsService,
+        private readonly _governanceProposalVoteService: ProposalVoteService,
+        private readonly _governanceProposalDepositService: ProposalDepositService,
     ) {}
 
     @Cron(CronExpression.EVERY_30_SECONDS)
@@ -21,7 +20,7 @@ export class GovernanceScheduler {
             this._logger.log(`Syncing votes from chain...`);
 
             // We need to get the proposalsId in order to fetch the voters
-            const getProposalId = await new ProposalsSync(this._lumNetworkService).getOpenVotingProposals();
+            const getProposalId = await this._lumNetworkService.getOpenVotingProposals();
 
             if (getProposalId) {
                 // Only start the patch process if there are actual proposalId
@@ -42,7 +41,7 @@ export class GovernanceScheduler {
                     for (const voteKey of getVoterAndOptions) {
                         // Only update the db if there is any vote during the voting period
                         if (getVotes.votes.length) {
-                            this._governanceProposalsVotesService.createOrUpdateVoters(id, voteKey.voter, voteKey.voteOption, voteKey.voteWeight);
+                            this._governanceProposalVoteService.createOrUpdateVoters(id, voteKey.voter, voteKey.voteOption, voteKey.voteWeight);
                             this._logger.log(`proposals_votes table got updated`);
                         }
                     }
@@ -67,7 +66,7 @@ export class GovernanceScheduler {
             this._logger.log(`Syncing deposits from chain...`);
 
             // We need to get the proposalsId in order to fetch the deposits
-            const getProposalId = await new ProposalsSync(this._lumNetworkService).getOpenVotingProposals();
+            const getProposalId = await this._lumNetworkService.getOpenVotingProposals();
 
             if (getProposalId) {
                 // Only start the patch process if there are actual proposalId
@@ -85,7 +84,7 @@ export class GovernanceScheduler {
 
                     // Create or update to DB if we have new depositors based on the proposalId
                     for (const depositorAddress of getDepositor) {
-                        this._governanceProposalsDepositsService.createOrUpdateDepositors(id, depositorAddress.depositor, depositorAddress.amount);
+                        this._governanceProposalDepositService.createOrUpdateDepositors(id, depositorAddress.depositor, depositorAddress.amount);
                         this._logger.log(`proposals_deposits table got updated`);
                     }
 

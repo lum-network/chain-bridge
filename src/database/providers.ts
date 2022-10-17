@@ -47,12 +47,12 @@ export const databaseProviders = [
         inject: ['DATABASE_CONNECTION'],
     },
     {
-        provide: 'PROPOSALS_VOTES_REPOSITORY',
+        provide: 'PROPOSAL_VOTE_REPOSITORY',
         useFactory: (connection: Connection) => connection.getRepository(ProposalsVotesEntity),
         inject: ['DATABASE_CONNECTION'],
     },
     {
-        provide: 'PROPOSALS_DEPOSITS_REPOSITORY',
+        provide: 'PROPOSAL_DEPOSIT_REPOSITORY',
         useFactory: (connection: Connection) => connection.getRepository(ProposalsDepositsEntity),
         inject: ['DATABASE_CONNECTION'],
     },

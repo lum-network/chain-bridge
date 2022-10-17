@@ -6,10 +6,10 @@ import { ProposalsDepositsEntity } from '@app/database';
 import { Coin } from '@lum-network/sdk-javascript/build/codec/cosmos/base/v1beta1/coin';
 
 @Injectable()
-export class ProposalsDepositsService {
-    constructor(@Inject('PROPOSALS_DEPOSITS_REPOSITORY') private readonly _repository: Repository<ProposalsDepositsEntity>) {}
+export class ProposalDepositService {
+    constructor(@Inject('PROPOSAL_DEPOSIT_REPOSITORY') private readonly _repository: Repository<ProposalsDepositsEntity>) {}
 
-    getById = async (proposalId: number): Promise<ProposalsDepositsEntity> => {
+    getByProposalId = async (proposalId: number): Promise<ProposalsDepositsEntity> => {
         return this._repository.findOne({
             where: {
                 proposal_id: proposalId,
@@ -18,7 +18,7 @@ export class ProposalsDepositsService {
     };
 
     createOrUpdateDepositors = async (proposalId: number, depositorAddress: string, amount: Coin): Promise<ProposalsDepositsEntity> => {
-        let entity = await this.getById(proposalId);
+        let entity = await this.getByProposalId(proposalId);
 
         // Composite primary key compose proposalId and accountAddress
         const compositeIdDepositorAddress = `${proposalId}:${depositorAddress}`;

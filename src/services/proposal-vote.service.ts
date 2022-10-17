@@ -7,10 +7,10 @@ import { LumConstants, LumUtils } from '@lum-network/sdk-javascript';
 import { LumBech32PrefixValAddr } from '@lum-network/sdk-javascript/build/constants';
 
 @Injectable()
-export class ProposalsVotesService {
-    constructor(@Inject('PROPOSALS_VOTES_REPOSITORY') private readonly _repository: Repository<ProposalsVotesEntity>) {}
+export class ProposalVoteService {
+    constructor(@Inject('PROPOSAL_VOTE_REPOSITORY') private readonly _repository: Repository<ProposalsVotesEntity>) {}
 
-    getById = async (proposalId: number): Promise<ProposalsVotesEntity> => {
+    getByProposalId = async (proposalId: number): Promise<ProposalsVotesEntity> => {
         return this._repository.findOne({
             where: {
                 proposal_id: proposalId,
@@ -19,7 +19,7 @@ export class ProposalsVotesService {
     };
 
     createOrUpdateVoters = async (proposalId: number, voterAddress: string, voteOption: number, voteWeight: string): Promise<ProposalsVotesEntity> => {
-        let entity = await this.getById(proposalId);
+        let entity = await this.getByProposalId(proposalId);
 
         // Initialize accountAddress and operatorAddress
         let accountAddress: string = null;

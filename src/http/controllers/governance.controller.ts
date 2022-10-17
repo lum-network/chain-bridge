@@ -3,9 +3,9 @@ import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 
 import { plainToInstance } from 'class-transformer';
 
-import { ProposalsDepositsService, ProposalsVotesService, LumNetworkService } from '@app/services';
-import { DataResponse, DataResponseMetadata, ProposalDepositorsResponse, ProposalResponse, ProposalVotersResponse, ResultResponse } from '@app/http/responses/';
-import { decodeContent, ExplorerRequest, ProposalsSync } from '@app/utils';
+import { ProposalDepositService, ProposalVoteService, LumNetworkService } from '@app/services';
+import { DataResponse, DataResponseMetadata, DepositorResponse, ProposalResponse, VoterResponse, ResultResponse } from '@app/http/responses/';
+import { decodeContent, ExplorerRequest } from '@app/utils';
 import { DefaultTake } from '@app/http/decorators';
 
 @ApiTags('governance')
@@ -14,14 +14,14 @@ import { DefaultTake } from '@app/http/decorators';
 export class GovernanceController {
     constructor(
         private readonly _lumNetworkService: LumNetworkService,
-        private readonly _governanceProposalsVotesService: ProposalsVotesService,
-        private readonly _governanceProposalsDepositsService: ProposalsDepositsService,
+        private readonly _governanceProposalVoteService: ProposalVoteService,
+        private readonly _governanceProposalDepositService: ProposalDepositService,
     ) {}
 
     @ApiOkResponse({ status: 200, type: [ProposalResponse] })
     @Get('proposals')
     async fetch(@Req() request: ExplorerRequest): Promise<DataResponse> {
-        const results = await new ProposalsSync(this._lumNetworkService).getProposals();
+        const results = await this._lumNetworkService.getProposals();
 
         return new DataResponse({
             result: results.proposals.map((proposal) => plainToInstance(ProposalResponse, decodeContent(proposal))),
@@ -62,17 +62,25 @@ export class GovernanceController {
         };
     }
 
-    @ApiOkResponse({ status: 200, type: ProposalVotersResponse })
+    @ApiOkResponse({ status: 200, type: VoterResponse })
     // Return only 5 voters per page
     @DefaultTake(5)
     @Get('proposals/:id/voters')
     async getVoters(@Req() request: ExplorerRequest, @Param('id') id: string): Promise<DataResponse> {
         // Get voters and total for pagination
-        const [voters, total] = await this._governanceProposalsVotesService.fetchVotersByProposalId(id, request.pagination.skip, request.pagination.limit);
+        const [voters, total] = await this._governanceProposalVoteService.fetchVotersByProposalId(id, request.pagination.skip, request.pagination.limit);
 
-        // If no voters throw exception
+        // If no voters return empty result
         if (!voters) {
-            throw new NotFoundException('voters_not_found');
+            return new DataResponse({
+                result: [],
+                metadata: new DataResponseMetadata({
+                    page: request.pagination.page,
+                    limit: request.pagination.limit,
+                    items_count: voters.length,
+                    items_total: total,
+                }),
+            });
         }
 
         // return formated result and metadata
@@ -87,17 +95,25 @@ export class GovernanceController {
         });
     }
 
-    @ApiOkResponse({ status: 200, type: ProposalDepositorsResponse })
+    @ApiOkResponse({ status: 200, type: DepositorResponse })
     // Return only 5 depositors per page
     @DefaultTake(5)
     @Get('proposals/:id/depositors')
     async getDepositors(@Req() request: ExplorerRequest, @Param('id') id: string): Promise<DataResponse> {
         // Get depositors and total for pagination
-        const [depositors, total] = await this._governanceProposalsDepositsService.fetchDepositorsByProposalId(id, request.pagination.skip, request.pagination.limit);
+        const [depositors, total] = await this._governanceProposalDepositService.fetchDepositorsByProposalId(id, request.pagination.skip, request.pagination.limit);
 
         // If no depositors throw exception
         if (!depositors) {
-            throw new NotFoundException('depositors_not_found');
+            return new DataResponse({
+                result: [],
+                metadata: new DataResponseMetadata({
+                    page: request.pagination.page,
+                    limit: request.pagination.limit,
+                    items_count: depositors.length,
+                    items_total: total,
+                }),
+            });
         }
 
         // return formated result and metadata

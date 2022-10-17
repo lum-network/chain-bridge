@@ -6,10 +6,10 @@ export class ProposalsDepositsEntity {
     @PrimaryColumn()
     id: string;
 
-    @Column({ type: 'int' })
+    @Column({ type: 'smallint' })
     proposal_id: number;
 
-    @Column({ type: 'varchar' })
+    @Column({ type: 'text' })
     depositor_address: string;
 
     @Column({ type: 'jsonb' })

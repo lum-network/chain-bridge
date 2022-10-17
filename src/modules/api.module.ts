@@ -37,8 +37,8 @@ import {
     BeamService,
     ValidatorDelegationService,
     StatService,
-    ProposalsVotesService,
-    ProposalsDepositsService,
+    ProposalVoteService,
+    ProposalDepositService,
 } from '@app/services';
 import { Queues, ConfigMap, PayloadValidationOptions } from '@app/utils';
 
@@ -129,8 +129,8 @@ import { databaseProviders } from '@app/database';
         StatService,
         TransactionService,
         ValidatorService,
-        ProposalsVotesService,
-        ProposalsDepositsService,
+        ProposalVoteService,
+        ProposalDepositService,
         ValidatorDelegationService,
         LumNetworkIndicator,
         GatewayWebsocket,
