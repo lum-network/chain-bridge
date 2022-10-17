@@ -53,6 +53,8 @@ export class GovernanceScheduler {
                         this._logger.log(`Found Voters Page - ${page}`);
                     }
                 }
+            } else {
+                this._logger.log(`voteSync scheduler not launched as no current open proposals to vote on...`);
             }
         } catch (error) {
             this._logger.error(`Failed to sync votes from chain...`, error);
@@ -93,6 +95,8 @@ export class GovernanceScheduler {
                         this._logger.log(`Found Depositors Page - ${page}`);
                     }
                 }
+            } else {
+                this._logger.log(`depositSync scheduler not launched as no current open proposals to vote on...`);
             }
         } catch (error) {
             this._logger.error(`Failed to sync deposits from chain...`, error);
