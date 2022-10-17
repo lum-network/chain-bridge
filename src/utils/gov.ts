@@ -2,6 +2,7 @@ import { Proposal, ProposalStatus } from '@lum-network/sdk-javascript/build/code
 import { LumRegistry } from '@lum-network/sdk-javascript';
 import { LumNetworkService } from '@app/services';
 import { Logger } from '@nestjs/common';
+import moment from 'moment';
 
 export const decodeContent = (proposal: Proposal): Proposal => {
     const newProposal = proposal;
@@ -38,9 +39,33 @@ export class ProposalsSync {
     async getProposalsId() {
         try {
             const getProposalId = await new ProposalsSync(this._lumNetworkService).getProposals();
+
             const getVotersByProposalId = getProposalId?.proposals.map((proposal) => proposal.proposalId).map((longInt) => longInt.low);
 
             return getVotersByProposalId;
+        } catch (error) {
+            this._logger.error(`Failed to sync proposalsById...`, error);
+        }
+    }
+
+    async getOpenVotingProposals() {
+        try {
+            const getProposals = await new ProposalsSync(this._lumNetworkService).getProposals();
+
+            const now = moment();
+
+            const votingDateTime = getProposals.proposals
+                .map((el) => ({
+                    votingTime: el.votingEndTime,
+                    proposalId: el.proposalId,
+                }))
+                .filter((el) => moment(el.votingTime) > now);
+
+            const getVotersByOpenProposalId = votingDateTime?.map((proposal) => proposal.proposalId).map((longInt) => longInt.low);
+
+            this._logger.error(`Failed proposalsId from open votes...`, getVotersByOpenProposalId);
+
+            return getVotersByOpenProposalId;
         } catch (error) {
             this._logger.error(`Failed to sync proposalsById...`, error);
         }
