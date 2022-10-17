@@ -2,15 +2,15 @@ import { Inject, Injectable } from '@nestjs/common';
 
 import { Repository } from 'typeorm';
 
-import { ProposalsVotesEntity } from '@app/database';
+import { ProposalVoteEntity } from '@app/database';
 import { LumConstants, LumUtils } from '@lum-network/sdk-javascript';
 import { LumBech32PrefixValAddr } from '@lum-network/sdk-javascript/build/constants';
 
 @Injectable()
 export class ProposalVoteService {
-    constructor(@Inject('PROPOSAL_VOTE_REPOSITORY') private readonly _repository: Repository<ProposalsVotesEntity>) {}
+    constructor(@Inject('PROPOSAL_VOTE_REPOSITORY') private readonly _repository: Repository<ProposalVoteEntity>) {}
 
-    getByProposalId = async (proposalId: number): Promise<ProposalsVotesEntity> => {
+    getByProposalId = async (proposalId: number): Promise<ProposalVoteEntity> => {
         return this._repository.findOne({
             where: {
                 proposal_id: proposalId,
@@ -18,7 +18,7 @@ export class ProposalVoteService {
         });
     };
 
-    createOrUpdateVoters = async (proposalId: number, voterAddress: string, voteOption: number, voteWeight: string): Promise<ProposalsVotesEntity> => {
+    createOrUpdateVoters = async (proposalId: number, voterAddress: string, voteOption: number, voteWeight: string): Promise<ProposalVoteEntity> => {
         let entity = await this.getByProposalId(proposalId);
 
         // Initialize accountAddress and operatorAddress
@@ -41,9 +41,9 @@ export class ProposalVoteService {
         // Composite primary key composed proposalId and accountAddress
         const compositeIdVoterAddress = `${proposalId}:${accountAddress}`;
 
-        // If entity does not exists, we create a new one for ProposalsVotesEntity
+        // If entity does not exists, we create a new one for ProposalVoteEntity
         if (!entity) {
-            entity = new ProposalsVotesEntity({
+            entity = new ProposalVoteEntity({
                 id: compositeIdVoterAddress,
                 proposal_id: proposalId,
                 voter_address: accountAddress,
@@ -65,7 +65,7 @@ export class ProposalVoteService {
         return entity;
     };
 
-    fetchVotersByProposalId = async (proposalId: string, skip: number, take: number): Promise<[ProposalsVotesEntity[], number]> => {
+    fetchVotersByProposalId = async (proposalId: string, skip: number, take: number): Promise<[ProposalVoteEntity[], number]> => {
         const query = this._repository.createQueryBuilder('proposals_votes').where('proposal_id = :id', { id: proposalId }).skip(skip).take(take);
         return query.getManyAndCount();
     };

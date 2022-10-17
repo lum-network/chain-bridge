@@ -2,7 +2,7 @@ import { Coin } from '@lum-network/sdk-javascript/build/codec/cosmos/base/v1beta
 import { Column, Entity, PrimaryColumn } from 'typeorm';
 
 @Entity({ name: 'proposals_deposits' })
-export class ProposalsDepositsEntity {
+export class ProposalDepositEntity {
     @PrimaryColumn()
     id: string;
 
@@ -15,7 +15,7 @@ export class ProposalsDepositsEntity {
     @Column({ type: 'jsonb' })
     amount: Coin;
 
-    constructor(data: Partial<ProposalsDepositsEntity>) {
+    constructor(data: Partial<ProposalDepositEntity>) {
         Object.assign(this, data);
     }
 }

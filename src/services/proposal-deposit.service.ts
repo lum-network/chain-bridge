@@ -2,14 +2,14 @@ import { Inject, Injectable } from '@nestjs/common';
 
 import { Repository } from 'typeorm';
 
-import { ProposalsDepositsEntity } from '@app/database';
+import { ProposalDepositEntity } from '@app/database';
 import { Coin } from '@lum-network/sdk-javascript/build/codec/cosmos/base/v1beta1/coin';
 
 @Injectable()
 export class ProposalDepositService {
-    constructor(@Inject('PROPOSAL_DEPOSIT_REPOSITORY') private readonly _repository: Repository<ProposalsDepositsEntity>) {}
+    constructor(@Inject('PROPOSAL_DEPOSIT_REPOSITORY') private readonly _repository: Repository<ProposalDepositEntity>) {}
 
-    getByProposalId = async (proposalId: number): Promise<ProposalsDepositsEntity> => {
+    getByProposalId = async (proposalId: number): Promise<ProposalDepositEntity> => {
         return this._repository.findOne({
             where: {
                 proposal_id: proposalId,
@@ -17,7 +17,7 @@ export class ProposalDepositService {
         });
     };
 
-    createOrUpdateDepositors = async (proposalId: number, depositorAddress: string, amount: Coin): Promise<ProposalsDepositsEntity> => {
+    createOrUpdateDepositors = async (proposalId: number, depositorAddress: string, amount: Coin): Promise<ProposalDepositEntity> => {
         let entity = await this.getByProposalId(proposalId);
 
         // Composite primary key compose proposalId and accountAddress
@@ -25,7 +25,7 @@ export class ProposalDepositService {
 
         // If entity does not exists, we create with a new one
         if (!entity) {
-            entity = new ProposalsDepositsEntity({
+            entity = new ProposalDepositEntity({
                 id: compositeIdDepositorAddress,
                 proposal_id: proposalId,
                 depositor_address: depositorAddress,
@@ -43,7 +43,7 @@ export class ProposalDepositService {
         return entity;
     };
 
-    fetchDepositorsByProposalId = async (proposalId: string, skip: number, take: number): Promise<[ProposalsDepositsEntity[], number]> => {
+    fetchDepositorsByProposalId = async (proposalId: string, skip: number, take: number): Promise<[ProposalDepositEntity[], number]> => {
         const query = this._repository.createQueryBuilder('proposals_deposits').where('proposal_id = :id', { id: proposalId }).skip(skip).take(take);
         return query.getManyAndCount();
     };

@@ -2,7 +2,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 
 import { Connection, createConnection } from 'typeorm';
 
-import { BeamEntity, BlockEntity, ProposalsDepositsEntity, ProposalsVotesEntity, TransactionEntity, ValidatorDelegationEntity, ValidatorEntity } from '@app/database/entities';
+import { BeamEntity, BlockEntity, ProposalDepositEntity, ProposalVoteEntity, TransactionEntity, ValidatorDelegationEntity, ValidatorEntity } from '@app/database/entities';
 
 export const databaseProviders = [
     {
@@ -48,12 +48,12 @@ export const databaseProviders = [
     },
     {
         provide: 'PROPOSAL_VOTE_REPOSITORY',
-        useFactory: (connection: Connection) => connection.getRepository(ProposalsVotesEntity),
+        useFactory: (connection: Connection) => connection.getRepository(ProposalVoteEntity),
         inject: ['DATABASE_CONNECTION'],
     },
     {
         provide: 'PROPOSAL_DEPOSIT_REPOSITORY',
-        useFactory: (connection: Connection) => connection.getRepository(ProposalsDepositsEntity),
+        useFactory: (connection: Connection) => connection.getRepository(ProposalDepositEntity),
         inject: ['DATABASE_CONNECTION'],
     },
 ];

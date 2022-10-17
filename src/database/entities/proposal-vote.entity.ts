@@ -2,7 +2,7 @@ import { VoteOption } from '@lum-network/sdk-javascript/build/codec/cosmos/gov/v
 import { Column, Entity, PrimaryColumn } from 'typeorm';
 
 @Entity({ name: 'proposals_votes' })
-export class ProposalsVotesEntity {
+export class ProposalVoteEntity {
     @PrimaryColumn()
     id: string;
 
@@ -21,7 +21,7 @@ export class ProposalsVotesEntity {
     @Column({ type: 'bigint' })
     vote_weight: string;
 
-    constructor(data: Partial<ProposalsVotesEntity>) {
+    constructor(data: Partial<ProposalVoteEntity>) {
         Object.assign(this, data);
     }
 }
