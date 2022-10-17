@@ -25,7 +25,7 @@ export class TransactionService {
     };
 
     fetchForAddress = async (address: string, skip: number, take: number): Promise<[TransactionEntity[], number]> => {
-        const query = this._repository.createQueryBuilder('transactions').where(':batch = ANY(transactions.addresses)', {batch: address}).skip(skip).take(take);
+        const query = this._repository.createQueryBuilder('transactions').where(':batch = ANY(transactions.addresses)', {batch: address}).orderBy('transactions.time', 'DESC').skip(skip).take(take);
         return query.getManyAndCount();
     }
 
