@@ -61,11 +61,14 @@ export class ProposalsSync {
                 }))
                 .filter((el) => moment(el.votingTime) > now);
 
-            const getVotersByOpenProposalId = votingDateTime?.map((proposal) => proposal.proposalId).map((longInt) => longInt.low);
+            if (votingDateTime.length) {
+                const getVotersByOpenProposalId = votingDateTime?.map((proposal) => proposal.proposalId).map((longInt) => longInt.low);
+                this._logger.log(`Fetched proposalId from open votes`, getVotersByOpenProposalId);
 
-            this._logger.error(`Failed proposalsId from open votes...`, getVotersByOpenProposalId);
-
-            return getVotersByOpenProposalId;
+                return getVotersByOpenProposalId;
+            } else {
+                this._logger.log(`No current open proposals to vote on...`);
+            }
         } catch (error) {
             this._logger.error(`Failed to sync proposalsById...`, error);
         }
