@@ -108,10 +108,22 @@ export class BlockConsumer {
                 // Add addresses in case of transaction failure
                 if (!res.success) {
                     for (const message of res.messages) {
-                        for (const key in message.value) {
-                            if (key === 'sender' || key === 'recipient' || key === 'validator') {
-                                res.addresses.push(message.value[key]);
+                        if (message.type_url === LumMessages.MsgExecUrl) {
+                            for (const key in message.value) {
+                                if (key === 'grantee') {
+                                    res.addresses.push(message.value[key]);
+                                }
                             }
+                        } else {
+                            for (const key in message.value) {
+                                if (key === 'sender' || key === 'recipient' || key === 'validator' || key === 'fromAddress' || key === 'delegatorAddress' || key === 'granter' || key === 'voter' || key === 'proposer' || key === 'depositor' || key === 'depositorAddress') {
+                                    res.addresses.push(message.value[key]);
+                                }
+                            }
+                        }
+
+                        if (res.addresses.length) {
+                            break;
                         }
                     }
                 }
