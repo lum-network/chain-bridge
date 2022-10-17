@@ -112,12 +112,14 @@ export class BlockConsumer {
                             for (const key in message.value) {
                                 if (key === 'grantee') {
                                     res.addresses.push(message.value[key]);
+                                    break;
                                 }
                             }
                         } else {
                             for (const key in message.value) {
                                 if (key === 'sender' || key === 'recipient' || key === 'validator' || key === 'fromAddress' || key === 'delegatorAddress' || key === 'granter' || key === 'voter' || key === 'proposer' || key === 'depositor' || key === 'depositorAddress') {
                                     res.addresses.push(message.value[key]);
+                                    break;
                                 }
                             }
                         }
