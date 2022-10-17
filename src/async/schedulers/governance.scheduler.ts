@@ -68,6 +68,7 @@ export class GovernanceScheduler {
             const getProposalId = await new ProposalsSync(this._lumNetworkService).getOpenVotingProposals();
 
             if (getProposalId) {
+                // Only start the patch process if there are actual proposalId
                 for (const id of getProposalId) {
                     let page: Uint8Array | undefined = undefined;
 
