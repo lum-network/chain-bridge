@@ -70,19 +70,6 @@ export class GovernanceController {
         // Get voters and total for pagination
         const [voters, total] = await this._governanceProposalVoteService.fetchVotersByProposalId(id, request.pagination.skip, request.pagination.limit);
 
-        // If no voters return empty result
-        if (!voters) {
-            return new DataResponse({
-                result: [],
-                metadata: new DataResponseMetadata({
-                    page: request.pagination.page,
-                    limit: request.pagination.limit,
-                    items_count: voters.length,
-                    items_total: total,
-                }),
-            });
-        }
-
         // return formated result and metadata
         return new DataResponse({
             result: voters,
@@ -102,19 +89,6 @@ export class GovernanceController {
     async getDepositors(@Req() request: ExplorerRequest, @Param('id') id: string): Promise<DataResponse> {
         // Get depositors and total for pagination
         const [depositors, total] = await this._governanceProposalDepositService.fetchDepositorsByProposalId(id, request.pagination.skip, request.pagination.limit);
-
-        // If no depositors throw exception
-        if (!depositors) {
-            return new DataResponse({
-                result: [],
-                metadata: new DataResponseMetadata({
-                    page: request.pagination.page,
-                    limit: request.pagination.limit,
-                    items_count: depositors.length,
-                    items_total: total,
-                }),
-            });
-        }
 
         // return formated result and metadata
         return new DataResponse({

@@ -17,6 +17,14 @@ export class ProposalDepositService {
         });
     };
 
+    getById = async (compositeKey: string): Promise<ProposalDepositEntity> => {
+        return this._repository.findOne({
+            where: {
+                id: compositeKey,
+            },
+        });
+    };
+
     createOrUpdateDepositors = async (proposalId: number, depositorAddress: string, amount: Coin): Promise<ProposalDepositEntity> => {
         let entity = await this.getByProposalId(proposalId);
 

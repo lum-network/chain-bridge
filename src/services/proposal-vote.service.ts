@@ -18,6 +18,14 @@ export class ProposalVoteService {
         });
     };
 
+    getById = async (compositeKey: string): Promise<ProposalVoteEntity> => {
+        return this._repository.findOne({
+            where: {
+                id: compositeKey,
+            },
+        });
+    };
+
     createOrUpdateVoters = async (proposalId: number, voterAddress: string, voteOption: number, voteWeight: string): Promise<ProposalVoteEntity> => {
         let entity = await this.getByProposalId(proposalId);
 
