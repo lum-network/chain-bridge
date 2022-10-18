@@ -8,7 +8,14 @@ import moment from 'moment';
 
 import {LumUtils, LumRegistry, LumMessages, LumConstants} from '@lum-network/sdk-javascript';
 
-import {isBeam, NotificationChannels, NotificationEvents, QueueJobs, Queues} from '@app/utils';
+import {
+    getAddressesRelatedToTransaction,
+    isBeam,
+    NotificationChannels,
+    NotificationEvents,
+    QueueJobs,
+    Queues
+} from '@app/utils';
 
 import {BlockService, LumNetworkService, TransactionService, ValidatorService} from '@app/services';
 import {BlockEntity, TransactionEntity} from "@app/database";
@@ -107,27 +114,7 @@ export class BlockConsumer {
 
                 // Add addresses in case of transaction failure
                 if (!res.success) {
-                    for (const message of res.messages) {
-                        if (message.type_url === LumMessages.MsgExecUrl) {
-                            for (const key in message.value) {
-                                if (key === 'grantee') {
-                                    res.addresses.push(message.value[key]);
-                                    break;
-                                }
-                            }
-                        } else {
-                            for (const key in message.value) {
-                                if (key === 'sender' || key === 'recipient' || key === 'validator' || key === 'fromAddress' || key === 'delegatorAddress' || key === 'granter' || key === 'voter' || key === 'proposer' || key === 'depositor' || key === 'depositorAddress') {
-                                    res.addresses.push(message.value[key]);
-                                    break;
-                                }
-                            }
-                        }
-
-                        if (res.addresses.length) {
-                            break;
-                        }
-                    }
+                    res.addresses = getAddressesRelatedToTransaction(res);
                 }
 
                 for (const log of logs) {
