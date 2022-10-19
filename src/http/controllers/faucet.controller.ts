@@ -10,7 +10,7 @@ import { QueueJobs, Queues } from '@app/utils';
 @ApiTags('faucet')
 @Controller('faucet')
 export class FaucetController {
-    constructor(@InjectQueue(Queues.QUEUE_FAUCET) private readonly _queue: Queue, private readonly _configService: ConfigService) {}
+    constructor(@InjectQueue(Queues.FAUCET) private readonly _queue: Queue, private readonly _configService: ConfigService) {}
 
     @ApiOkResponse({ status: 200, description: 'Request received, processing is intended in background' })
     @Get(':address')

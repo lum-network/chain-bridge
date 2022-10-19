@@ -1,4 +1,5 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 
 import { Repository } from 'typeorm';
 
@@ -7,7 +8,7 @@ import { BeamStatus } from '@app/utils';
 
 @Injectable()
 export class BeamService {
-    constructor(@Inject('BEAM_REPOSITORY') private readonly _repository: Repository<BeamEntity>) {}
+    constructor(@InjectRepository(BeamEntity) private readonly _repository: Repository<BeamEntity>) {}
 
     countTotal = async (): Promise<number> => {
         return this._repository.count();

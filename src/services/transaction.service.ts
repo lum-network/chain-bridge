@@ -1,4 +1,5 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 
 import { Repository } from 'typeorm';
 
@@ -6,7 +7,7 @@ import { TransactionEntity } from '@app/database';
 
 @Injectable()
 export class TransactionService {
-    constructor(@Inject('TRANSACTION_REPOSITORY') private readonly _repository: Repository<TransactionEntity>) {}
+    constructor(@InjectRepository(TransactionEntity) private readonly _repository: Repository<TransactionEntity>) {}
 
     get repository(): Repository<TransactionEntity> {
         return this._repository;

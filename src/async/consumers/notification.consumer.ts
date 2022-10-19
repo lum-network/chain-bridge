@@ -7,7 +7,7 @@ import { Job } from 'bull';
 
 import { QueueJobs, Queues, makeRequest } from '@app/utils';
 
-@Processor(Queues.QUEUE_NOTIFICATIONS)
+@Processor(Queues.NOTIFICATIONS)
 export class NotificationConsumer {
     constructor(@Inject('API') private readonly _client: ClientProxy, private readonly _configService: ConfigService) {}
 

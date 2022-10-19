@@ -10,7 +10,7 @@ import { QueueJobs, Queues } from '@app/utils/constants';
 
 import { LumNetworkService } from '@app/services';
 
-@Processor(Queues.QUEUE_FAUCET)
+@Processor(Queues.FAUCET)
 export class CoreConsumer {
     private readonly _logger: Logger = new Logger(CoreConsumer.name);
 
