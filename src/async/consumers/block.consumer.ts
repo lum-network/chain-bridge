@@ -13,15 +13,14 @@ import {isBeam, NotificationChannels, NotificationEvents, QueueJobs, Queues} fro
 import {BlockService, LumNetworkService, TransactionService, ValidatorService} from '@app/services';
 import {BlockEntity, TransactionEntity} from "@app/database";
 
-
-@Processor(Queues.QUEUE_BLOCKS)
+@Processor(Queues.BLOCKS)
 export class BlockConsumer {
     private readonly _logger: Logger = new Logger(BlockConsumer.name);
 
     constructor(
-        @InjectQueue(Queues.QUEUE_BLOCKS) private readonly _blockQueue: Queue,
-        @InjectQueue(Queues.QUEUE_BEAMS) private readonly _beamQueue: Queue,
-        @InjectQueue(Queues.QUEUE_NOTIFICATIONS) private readonly _notificationQueue: Queue,
+        @InjectQueue(Queues.BLOCKS) private readonly _blockQueue: Queue,
+        @InjectQueue(Queues.BEAMS) private readonly _beamQueue: Queue,
+        @InjectQueue(Queues.NOTIFICATIONS) private readonly _notificationQueue: Queue,
         private readonly _blockService: BlockService,
         private readonly _configService: ConfigService,
         private readonly _lumNetworkService: LumNetworkService,
@@ -30,7 +29,7 @@ export class BlockConsumer {
     ) {
     }
 
-    @Process(QueueJobs.INGEST_BLOCK)
+    @Process(QueueJobs.INGEST)
     async ingestBlock(job: Job<{ blockHeight: number; notify?: boolean }>) {
         // Only ingest if allowed by the configuration
         if (this._configService.get<boolean>('INGEST_ENABLED') === false) {
@@ -159,7 +158,7 @@ export class BlockConsumer {
             for (const txDoc of transactions) {
                 for (const message of txDoc.messages) {
                     if (isBeam(message.type_url)) {
-                        await this._beamQueue.add(QueueJobs.INGEST_BEAM, {id: message.value.id}, {
+                        await this._beamQueue.add(QueueJobs.INGEST, {id: message.value.id}, {
                             jobId: `beam-${message.value.id}`,
                             attempts: 5,
                             backoff: 60000,
@@ -172,8 +171,8 @@ export class BlockConsumer {
             if (job.data.notify) {
                 // Dispatch notification on websockets for frontend
                 await this._notificationQueue.add(QueueJobs.NOTIFICATION_SOCKET, {
-                    channel: NotificationChannels.CHANNEL_BLOCKS,
-                    event: NotificationEvents.EVENT_NEW_BLOCK,
+                    channel: NotificationChannels.BLOCKS,
+                    event: NotificationEvents.NEW_BLOCK,
                     data: blockDoc,
                 });
             }
@@ -201,7 +200,7 @@ export class BlockConsumer {
             const jobs = [];
             for (let i = job.data.fromBlock; i <= job.data.toBlock; i++) {
                 jobs.push({
-                    name: QueueJobs.INGEST_BLOCK,
+                    name: QueueJobs.INGEST,
                     data: {blockHeight: i},
                     opts: {
                         jobId: `${job.data.chainId}-block-${i}`,

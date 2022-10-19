@@ -1,4 +1,5 @@
-import {Inject, Injectable} from "@nestjs/common";
+import {Injectable} from "@nestjs/common";
+import {InjectRepository} from "@nestjs/typeorm";
 
 import {Repository} from "typeorm";
 
@@ -8,7 +9,7 @@ import {AmountModel} from "@app/database/entities/amount.model";
 @Injectable()
 export class ValidatorDelegationService {
     constructor(
-        @Inject('VALIDATOR_DELEGATION_REPOSITORY') private readonly _repository: Repository<ValidatorDelegationEntity>,
+        @InjectRepository(ValidatorDelegationEntity) private readonly _repository: Repository<ValidatorDelegationEntity>,
     ) {
     }
 

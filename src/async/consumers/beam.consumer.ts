@@ -7,7 +7,7 @@ import {QueueJobs, Queues} from "@app/utils";
 import {BeamService, LumNetworkService} from "@app/services";
 import {BeamEntity} from "@app/database";
 
-@Processor(Queues.QUEUE_BEAMS)
+@Processor(Queues.BEAMS)
 export class BeamConsumer {
     private readonly _logger: Logger = new Logger(BeamConsumer.name);
 
@@ -17,7 +17,7 @@ export class BeamConsumer {
     ) {
     }
 
-    @Process(QueueJobs.INGEST_BEAM)
+    @Process(QueueJobs.INGEST)
     async ingestBeam(job: Job<{ id: string }>) {
         if (await this._beamService.get(job.data.id)) {
             return;

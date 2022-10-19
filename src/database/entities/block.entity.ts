@@ -30,8 +30,8 @@ export class BlockEntity {
     @Column({type: "varchar", length: 128})
     proposer_address: string;
 
-    @Column({type: "varchar", length: 128})
-    operator_address: string;
+    @Column({type: "varchar", length: 128, nullable: true})
+    operator_address: string = null;
 
     @Column({type: "json"})
     raw_block: string;
