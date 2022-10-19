@@ -10,7 +10,7 @@ import * as Joi from 'joi';
 
 import { Queue } from 'bull';
 
-import { AsyncQueues, BlockScheduler, ValidatorScheduler } from '@app/async';
+import { AsyncQueues, BlockScheduler, GovernanceScheduler, ValidatorScheduler } from '@app/async';
 
 import { BeamService, BlockService, LumNetworkService, TransactionService, ValidatorDelegationService, ValidatorService } from '@app/services';
 import { ConfigMap, QueueJobs, Queues } from '@app/utils';
@@ -43,7 +43,7 @@ import { DatabaseConfig, DatabaseFeatures } from '@app/database';
         TypeOrmModule.forFeature(DatabaseFeatures),
     ],
     controllers: [],
-    providers: [BeamService, BlockService, TransactionService, ValidatorService, ValidatorDelegationService, BlockScheduler, ValidatorScheduler, LumNetworkService],
+    providers: [BeamService, BlockService, TransactionService, ValidatorService, ValidatorDelegationService, BlockScheduler, GovernanceScheduler, ValidatorScheduler, LumNetworkService],
 })
 export class SyncSchedulerModule implements OnModuleInit, OnApplicationBootstrap {
     private readonly _logger: Logger = new Logger(SyncSchedulerModule.name);
