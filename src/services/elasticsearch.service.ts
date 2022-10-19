@@ -1,6 +1,6 @@
-import {Injectable} from "@nestjs/common";
+import { Injectable } from '@nestjs/common';
 
-import {Client} from "@elastic/elasticsearch";
+import { Client } from '@elastic/elasticsearch';
 
 @Injectable()
 export class ElasticsearchService {
@@ -8,7 +8,7 @@ export class ElasticsearchService {
 
     constructor() {
         this._client = new Client({
-            node: 'http://localhost:9200'
+            node: 'http://localhost:9200',
         });
     }
 

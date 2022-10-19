@@ -1,7 +1,7 @@
-import {BullModuleAsyncOptions} from "@nestjs/bull";
-import {ConfigModule, ConfigService} from "@nestjs/config";
+import { BullModuleAsyncOptions } from '@nestjs/bull';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
-import {Queues} from "@app/utils";
+import { Queues } from '@app/utils';
 
 export const AsyncQueues: BullModuleAsyncOptions[] = [
     {
@@ -11,14 +11,14 @@ export const AsyncQueues: BullModuleAsyncOptions[] = [
         useFactory: (configService: ConfigService) => ({
             redis: {
                 host: configService.get<string>('REDIS_HOST'),
-                port: configService.get<number>('REDIS_PORT')
+                port: configService.get<number>('REDIS_PORT'),
             },
             prefix: configService.get<string>('REDIS_PREFIX'),
             defaultJobOptions: {
                 removeOnComplete: true,
                 removeOnFail: true,
             },
-        })
+        }),
     },
     {
         name: Queues.BLOCKS,
@@ -27,14 +27,14 @@ export const AsyncQueues: BullModuleAsyncOptions[] = [
         useFactory: (configService: ConfigService) => ({
             redis: {
                 host: configService.get<string>('REDIS_HOST'),
-                port: configService.get<number>('REDIS_PORT')
+                port: configService.get<number>('REDIS_PORT'),
             },
             prefix: configService.get<string>('REDIS_PREFIX'),
             defaultJobOptions: {
                 removeOnComplete: true,
                 removeOnFail: true,
             },
-        })
+        }),
     },
     {
         name: Queues.FAUCET,
@@ -42,7 +42,7 @@ export const AsyncQueues: BullModuleAsyncOptions[] = [
         useFactory: (configService: ConfigService) => ({
             redis: {
                 host: configService.get<string>('REDIS_HOST'),
-                port: configService.get<number>('REDIS_PORT')
+                port: configService.get<number>('REDIS_PORT'),
             },
             prefix: configService.get<string>('REDIS_PREFIX'),
             limiter: {
@@ -54,7 +54,7 @@ export const AsyncQueues: BullModuleAsyncOptions[] = [
                 removeOnFail: true,
             },
         }),
-        inject: [ConfigService]
+        inject: [ConfigService],
     },
     {
         name: Queues.NOTIFICATIONS,
@@ -63,7 +63,7 @@ export const AsyncQueues: BullModuleAsyncOptions[] = [
         useFactory: (configService: ConfigService) => ({
             redis: {
                 host: configService.get<string>('REDIS_HOST'),
-                port: configService.get<number>('REDIS_PORT')
+                port: configService.get<number>('REDIS_PORT'),
             },
             prefix: configService.get<string>('REDIS_PREFIX'),
             limiter: {
@@ -74,6 +74,6 @@ export const AsyncQueues: BullModuleAsyncOptions[] = [
                 removeOnComplete: true,
                 removeOnFail: true,
             },
-        })
-    }
+        }),
+    },
 ];

@@ -1,6 +1,6 @@
-import {BootstrapConsole} from 'nestjs-console';
+import { BootstrapConsole } from 'nestjs-console';
 
-import {CliModule} from '@app/modules';
+import { CliModule } from '@app/modules';
 
 const bootstrap = new BootstrapConsole({
     module: CliModule,

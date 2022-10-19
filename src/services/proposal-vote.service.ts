@@ -1,4 +1,5 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 
 import { Repository } from 'typeorm';
 
@@ -8,7 +9,7 @@ import { LumBech32PrefixValAddr } from '@lum-network/sdk-javascript/build/consta
 
 @Injectable()
 export class ProposalVoteService {
-    constructor(@Inject('PROPOSAL_VOTE_REPOSITORY') private readonly _repository: Repository<ProposalVoteEntity>) {}
+    constructor(@InjectRepository(ProposalVoteEntity) private readonly _repository: Repository<ProposalVoteEntity>) {}
 
     getByProposalId = async (proposalId: number): Promise<ProposalVoteEntity> => {
         return this._repository.findOne({

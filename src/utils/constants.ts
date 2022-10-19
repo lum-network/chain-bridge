@@ -1,4 +1,4 @@
-export const MODULE_NAMES = ["SyncConsumerModule", "SyncSchedulerModule", "ApiModule"];
+export const MODULE_NAMES = ['SyncConsumerModule', 'SyncSchedulerModule', 'ApiModule'];
 
 export const CLIENT_PRECISION = 1_000_000_000_000_000_000;
 export const SIGNED_BLOCK_WINDOW = 10000;

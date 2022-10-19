@@ -1,13 +1,14 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 
 import { Repository } from 'typeorm';
+import { Coin } from '@lum-network/sdk-javascript/build/codec/cosmos/base/v1beta1/coin';
 
 import { ProposalDepositEntity } from '@app/database';
-import { Coin } from '@lum-network/sdk-javascript/build/codec/cosmos/base/v1beta1/coin';
 
 @Injectable()
 export class ProposalDepositService {
-    constructor(@Inject('PROPOSAL_DEPOSIT_REPOSITORY') private readonly _repository: Repository<ProposalDepositEntity>) {}
+    constructor(@InjectRepository(ProposalDepositEntity) private readonly _repository: Repository<ProposalDepositEntity>) {}
 
     getByProposalId = async (proposalId: number): Promise<ProposalDepositEntity> => {
         return this._repository.findOne({
