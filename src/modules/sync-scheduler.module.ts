@@ -12,7 +12,15 @@ import { Queue } from 'bull';
 
 import { AsyncQueues, BlockScheduler, GovernanceScheduler, ValidatorScheduler } from '@app/async';
 
-import { BeamService, BlockService, LumNetworkService, TransactionService, ValidatorDelegationService, ValidatorService } from '@app/services';
+import {
+    BeamService,
+    BlockService,
+    LumNetworkService,
+    ProposalDepositService, ProposalVoteService,
+    TransactionService,
+    ValidatorDelegationService,
+    ValidatorService
+} from '@app/services';
 import { ConfigMap, QueueJobs, Queues } from '@app/utils';
 import { DatabaseConfig, DatabaseFeatures } from '@app/database';
 
@@ -43,7 +51,7 @@ import { DatabaseConfig, DatabaseFeatures } from '@app/database';
         TypeOrmModule.forFeature(DatabaseFeatures),
     ],
     controllers: [],
-    providers: [BeamService, BlockService, TransactionService, ValidatorService, ValidatorDelegationService, BlockScheduler, GovernanceScheduler, ValidatorScheduler, LumNetworkService],
+    providers: [BeamService, BlockService, TransactionService, ProposalDepositService, ProposalVoteService, ValidatorService, ValidatorDelegationService, BlockScheduler, GovernanceScheduler, ValidatorScheduler, LumNetworkService],
 })
 export class SyncSchedulerModule implements OnModuleInit, OnApplicationBootstrap {
     private readonly _logger: Logger = new Logger(SyncSchedulerModule.name);

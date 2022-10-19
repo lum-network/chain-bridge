@@ -9,7 +9,15 @@ import * as Joi from 'joi';
 
 import { AsyncQueues, BeamConsumer, BlockConsumer, CoreConsumer, NotificationConsumer } from '@app/async';
 
-import { BeamService, BlockService, LumNetworkService, TransactionService, ValidatorDelegationService, ValidatorService } from '@app/services';
+import {
+    BeamService,
+    BlockService,
+    LumNetworkService,
+    ProposalDepositService, ProposalVoteService,
+    TransactionService,
+    ValidatorDelegationService,
+    ValidatorService
+} from '@app/services';
 import { ConfigMap } from '@app/utils';
 import { DatabaseConfig, DatabaseFeatures } from '@app/database';
 
@@ -39,7 +47,7 @@ import { DatabaseConfig, DatabaseFeatures } from '@app/database';
         TypeOrmModule.forFeature(DatabaseFeatures),
     ],
     controllers: [],
-    providers: [LumNetworkService, BeamService, BlockService, TransactionService, ValidatorService, ValidatorDelegationService, BeamConsumer, BlockConsumer, CoreConsumer, NotificationConsumer],
+    providers: [LumNetworkService, BeamService, BlockService, ProposalDepositService, ProposalVoteService, TransactionService, ValidatorService, ValidatorDelegationService, BeamConsumer, BlockConsumer, CoreConsumer, NotificationConsumer],
 })
 export class SyncConsumerModule implements OnModuleInit, OnApplicationBootstrap {
     constructor(private readonly _lumNetworkService: LumNetworkService) {}
