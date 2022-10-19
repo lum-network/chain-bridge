@@ -1,26 +1,26 @@
-import {Column, CreateDateColumn, Entity, PrimaryColumn, UpdateDateColumn, VersionColumn} from "typeorm";
+import { Column, CreateDateColumn, Entity, PrimaryColumn, UpdateDateColumn, VersionColumn } from 'typeorm';
 
-@Entity({name: "validators"})
+@Entity({ name: 'validators' })
 export class ValidatorEntity {
-    @PrimaryColumn({type: "varchar", length: 256})
+    @PrimaryColumn({ type: 'varchar', length: 256 })
     proposer_address: string;
 
-    @Column({type: "varchar", length: 256})
+    @Column({ type: 'varchar', length: 256 })
     consensus_address: string;
 
-    @Column({type: "varchar", length: 256})
+    @Column({ type: 'varchar', length: 256 })
     consensus_pubkey: string;
 
-    @Column({type: "varchar", length: 256, nullable: true})
+    @Column({ type: 'varchar', length: 256, nullable: true })
     operator_address?: string;
 
-    @Column({type: "varchar", length: 256, nullable: true})
+    @Column({ type: 'varchar', length: 256, nullable: true })
     account_address?: string;
 
-    @Column("varchar", {length: 128, nullable: true})
+    @Column('varchar', { length: 128, nullable: true })
     displayed_name: string;
 
-    @Column("jsonb")
+    @Column('jsonb')
     description: {
         moniker: string;
         identity: string;
@@ -29,43 +29,43 @@ export class ValidatorEntity {
         details: string;
     };
 
-    @Column("boolean")
+    @Column('boolean')
     jailed: boolean;
 
-    @Column("integer")
+    @Column('integer')
     status: number;
 
-    @Column("bigint")
+    @Column('bigint')
     tokens: number;
 
-    @Column("bigint", {nullable: true})
+    @Column('bigint', { nullable: true })
     delegator_shares: number;
 
-    @Column("jsonb")
+    @Column('jsonb')
     commission: {
         rates: {
             current_rate: number;
             max_rate: number;
             max_change_rate: number;
-        },
+        };
         last_updated_at: Date;
     };
 
-    @Column("integer", {default: 0})
+    @Column('integer', { default: 0 })
     bonded_height: number;
 
-    @Column("boolean", {default: false})
+    @Column('boolean', { default: false })
     tombstoned: boolean;
 
-    @Column("float", {default: 100.0})
+    @Column('float', { default: 100.0 })
     uptime: number;
 
-    @CreateDateColumn({type: 'date', default: () => "CURRENT_DATE"})
-    created_at?: Date = new Date;
+    @CreateDateColumn({ type: 'date', default: () => 'CURRENT_DATE' })
+    created_at?: Date = new Date();
 
-    @UpdateDateColumn({type: 'date', default: null})
+    @UpdateDateColumn({ type: 'date', default: null })
     updated_at?: Date = null;
 
-    @VersionColumn({type: "integer", default: 0})
+    @VersionColumn({ type: 'integer', default: 0 })
     nonce?: number = 0;
 }

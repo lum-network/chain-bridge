@@ -1,9 +1,9 @@
-import {Column} from "typeorm";
+import { Column } from 'typeorm';
 
 export class AmountModel {
-    @Column({type: "bigint", nullable: true})
+    @Column({ type: 'bigint', nullable: true })
     amount: number;
 
-    @Column({type: "varchar", length: 32})
+    @Column({ type: 'varchar', length: 32 })
     denom: string;
 }

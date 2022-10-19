@@ -1,21 +1,16 @@
-import {
-    BadRequestException,
-    Controller,
-    Get,
-    Logger,
-} from '@nestjs/common';
-import {ApiOkResponse, ApiTags} from "@nestjs/swagger";
-import {ConfigService} from "@nestjs/config";
-import {MessagePattern, Payload} from '@nestjs/microservices';
+import { BadRequestException, Controller, Get, Logger } from '@nestjs/common';
+import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ConfigService } from '@nestjs/config';
+import { MessagePattern, Payload } from '@nestjs/microservices';
 
-import {plainToInstance} from 'class-transformer';
+import { plainToInstance } from 'class-transformer';
 
-import {fromUtf8, keyToHex} from "@lum-network/sdk-javascript/build/utils";
+import { fromUtf8, keyToHex } from '@lum-network/sdk-javascript/build/utils';
 
-import {LumNetworkService, BlockService, TransactionService} from '@app/services';
-import {BalanceResponse, DataResponse, LumResponse} from '@app/http/responses';
-import {GatewayWebsocket} from '@app/websocket';
-import {CLIENT_PRECISION} from "@app/utils";
+import { LumNetworkService, BlockService, TransactionService } from '@app/services';
+import { BalanceResponse, DataResponse, LumResponse } from '@app/http/responses';
+import { GatewayWebsocket } from '@app/websocket';
+import { CLIENT_PRECISION } from '@app/utils';
 
 @ApiTags('core')
 @Controller('')
@@ -27,11 +22,10 @@ export class CoreController {
         private readonly _configService: ConfigService,
         private readonly _lumNetworkService: LumNetworkService,
         private readonly _messageGateway: GatewayWebsocket,
-        private readonly _transactionService: TransactionService
-    ) {
-    }
+        private readonly _transactionService: TransactionService,
+    ) {}
 
-    @ApiOkResponse({status: 200, type: LumResponse})
+    @ApiOkResponse({ status: 200, type: LumResponse })
     @Get('price')
     async price(): Promise<DataResponse> {
         const lumPrice = await this._lumNetworkService.getPrice();
@@ -57,26 +51,26 @@ export class CoreController {
             liquidity: 0.0,
             volume_24h: lumPrice.data.market_data.total_volume.usd,
             name: lumPrice.data.name,
-            previous_day_price: previousPrice
+            previous_day_price: previousPrice,
         };
 
         return {
-            result: plainToInstance(LumResponse, res)
+            result: plainToInstance(LumResponse, res),
         };
     }
 
-    @ApiOkResponse({status: 200, type: [BalanceResponse]})
+    @ApiOkResponse({ status: 200, type: [BalanceResponse] })
     @Get('assets')
     async assets(): Promise<DataResponse> {
         const assets = await this._lumNetworkService.client.queryClient.bank.totalSupply();
         return {
-            result: assets.map(asset => {
+            result: assets.map((asset) => {
                 return {
                     denom: asset.denom,
-                    amount: parseInt(asset.amount, 10)
+                    amount: parseInt(asset.amount, 10),
                 };
-            })
-        }
+            }),
+        };
     }
 
     @Get('params')
@@ -86,12 +80,12 @@ export class CoreController {
             this._lumNetworkService.client.queryClient.mint.inflation(),
             this._lumNetworkService.client.queryClient.mint.params(),
             this._lumNetworkService.client.queryClient.staking.params(),
-            this._lumNetworkService.client.queryClient.gov.params("deposit"),
-            this._lumNetworkService.client.queryClient.gov.params("voting"),
+            this._lumNetworkService.client.queryClient.gov.params('deposit'),
+            this._lumNetworkService.client.queryClient.gov.params('voting'),
             this._lumNetworkService.client.queryClient.gov.params('tallying'),
             this._lumNetworkService.client.queryClient.distribution.params(),
             this._lumNetworkService.client.queryClient.slashing.params(),
-            this._lumNetworkService.client.queryClient.distribution.communityPool()
+            this._lumNetworkService.client.queryClient.distribution.communityPool(),
         ]);
         return {
             result: {
@@ -102,57 +96,57 @@ export class CoreController {
                         rate_change: parseInt(mintingParams.inflationRateChange, 10) / CLIENT_PRECISION,
                         max: parseInt(mintingParams.inflationMax, 10) / CLIENT_PRECISION,
                         min: parseInt(mintingParams.inflationMin, 10) / CLIENT_PRECISION,
-                        current: parseInt(mintingInflation, 10) / CLIENT_PRECISION
+                        current: parseInt(mintingInflation, 10) / CLIENT_PRECISION,
                     },
                     goal_bonded: parseInt(mintingParams.goalBonded, 10) / CLIENT_PRECISION,
-                    blocks_per_year: mintingParams.blocksPerYear.low
+                    blocks_per_year: mintingParams.blocksPerYear.low,
                 },
                 staking: {
                     max_validators: stakingParams.params.maxValidators,
                     max_entries: stakingParams.params.maxEntries,
                     historical_entries: stakingParams.params.historicalEntries,
                     denom: stakingParams.params.bondDenom,
-                    unbonding_time: stakingParams.params.unbondingTime.seconds.low
+                    unbonding_time: stakingParams.params.unbondingTime.seconds.low,
                 },
                 gov: {
                     vote: {
-                        period: govVoteParams.votingParams.votingPeriod.seconds.low
+                        period: govVoteParams.votingParams.votingPeriod.seconds.low,
                     },
                     deposit: {
-                        minimum: govDepositParams.depositParams.minDeposit.map(bal => {
+                        minimum: govDepositParams.depositParams.minDeposit.map((bal) => {
                             return {
                                 denom: bal.denom,
-                                amount: parseInt(bal.amount, 10)
-                            }
+                                amount: parseInt(bal.amount, 10),
+                            };
                         }),
-                        period: govDepositParams.depositParams.maxDepositPeriod.seconds.low
+                        period: govDepositParams.depositParams.maxDepositPeriod.seconds.low,
                     },
                     tally: {
                         quorum: keyToHex(govTallyParams.tallyParams.quorum).toString(),
                         threshold: keyToHex(govTallyParams.tallyParams.threshold).toString(),
-                        veto_threshold: keyToHex(govTallyParams.tallyParams.vetoThreshold).toString()
-                    }
+                        veto_threshold: keyToHex(govTallyParams.tallyParams.vetoThreshold).toString(),
+                    },
                 },
                 distribution: {
                     community_tax: parseInt(distributionParams.params.communityTax, 10) / CLIENT_PRECISION,
                     base_proposer_reward: parseInt(distributionParams.params.baseProposerReward, 10) / CLIENT_PRECISION,
                     bonus_proposer_reward: parseInt(distributionParams.params.bonusProposerReward, 10) / CLIENT_PRECISION,
                     withdraw_address_enabled: distributionParams.params.withdrawAddrEnabled,
-                    community_pool: communityPoolParams.pool.map(p => {
+                    community_pool: communityPoolParams.pool.map((p) => {
                         return {
                             denom: p.denom,
-                            amount: parseInt(p.amount, 10) / CLIENT_PRECISION
-                        }
-                    })
+                            amount: parseInt(p.amount, 10) / CLIENT_PRECISION,
+                        };
+                    }),
                 },
                 slashing: {
                     signed_blocks_window: slashingParams.params.signedBlocksWindow.low,
-                    min_signed_per_window: (parseInt(fromUtf8(slashingParams.params.minSignedPerWindow), 10) / CLIENT_PRECISION),
-                    slash_fraction_double_sign: (parseInt(fromUtf8(slashingParams.params.slashFractionDoubleSign), 10) / CLIENT_PRECISION),
-                    slash_fraction_downtime: (parseInt(fromUtf8(slashingParams.params.slashFractionDowntime), 10) / CLIENT_PRECISION),
-                    downtime_jail_duration: slashingParams.params.downtimeJailDuration.seconds.low
-                }
-            }
+                    min_signed_per_window: parseInt(fromUtf8(slashingParams.params.minSignedPerWindow), 10) / CLIENT_PRECISION,
+                    slash_fraction_double_sign: parseInt(fromUtf8(slashingParams.params.slashFractionDoubleSign), 10) / CLIENT_PRECISION,
+                    slash_fraction_downtime: parseInt(fromUtf8(slashingParams.params.slashFractionDowntime), 10) / CLIENT_PRECISION,
+                    downtime_jail_duration: slashingParams.params.downtimeJailDuration.seconds.low,
+                },
+            },
         };
     }
 

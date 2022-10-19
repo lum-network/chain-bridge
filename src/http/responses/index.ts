@@ -16,3 +16,5 @@ export * from './stats.response';
 export * from './transaction.response';
 export * from './unbonding.response';
 export * from './validator.response';
+export * from './depositor.response';
+export * from './voter.response';

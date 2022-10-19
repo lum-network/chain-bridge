@@ -1,17 +1,14 @@
-import {Body, Controller, Get, Post} from "@nestjs/common";
-import {ApiTags} from "@nestjs/swagger";
+import { Body, Controller, Get, Post } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 
-import {StatService} from "@app/services";
-import {ChartRequest} from "@app/http/requests";
-import {DataResponse} from "@app/http/responses";
+import { StatService } from '@app/services';
+import { ChartRequest } from '@app/http/requests';
+import { DataResponse } from '@app/http/responses';
 
 @ApiTags('stats')
 @Controller('stats')
 export class StatsController {
-    constructor(
-        private readonly _statService: StatService,
-    ) {
-    }
+    constructor(private readonly _statService: StatService) {}
 
     @Get('kpi')
     async getKpi(): Promise<any> {

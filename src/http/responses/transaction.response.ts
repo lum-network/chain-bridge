@@ -1,10 +1,10 @@
-import {ApiProperty} from "@nestjs/swagger";
+import { ApiProperty } from '@nestjs/swagger';
 
-import {Exclude, Expose, Type} from 'class-transformer';
+import { Exclude, Expose, Type } from 'class-transformer';
 
-import {LumMessages, LumTypes} from '@lum-network/sdk-javascript';
+import { LumMessages, LumTypes } from '@lum-network/sdk-javascript';
 
-import {BalanceResponse} from '@app/http/responses/balance.response';
+import { BalanceResponse } from '@app/http/responses/balance.response';
 import {
     ClaimBeamMessageResponse,
     CreateValidatorMessageResponse,
@@ -51,12 +51,12 @@ export class TransactionResponse {
     @Expose()
     action: string;
 
-    @ApiProperty({type: () => BalanceResponse})
+    @ApiProperty({ type: () => BalanceResponse })
     @Expose()
     @Type(() => BalanceResponse)
     amount: BalanceResponse;
 
-    @ApiProperty({type: () => BalanceResponse})
+    @ApiProperty({ type: () => BalanceResponse })
     @Expose()
     @Type(() => BalanceResponse)
     auto_claim_reward: BalanceResponse;
@@ -73,12 +73,12 @@ export class TransactionResponse {
     @Expose()
     gas_used: number;
 
-    @ApiProperty({type: () => [BalanceResponse]})
+    @ApiProperty({ type: () => [BalanceResponse] })
     @Expose()
     @Type(() => BalanceResponse)
     fees: BalanceResponse[];
 
-    @ApiProperty({isArray: true})
+    @ApiProperty({ isArray: true })
     @Expose()
     addresses: string[];
 
@@ -90,7 +90,7 @@ export class TransactionResponse {
     @Expose()
     time: Date;
 
-    @ApiProperty({type: () => [MessageResponse]})
+    @ApiProperty({ type: () => [MessageResponse] })
     @Expose()
     @Type(() => MessageResponse, {
         discriminator: {

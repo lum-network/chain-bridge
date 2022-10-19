@@ -1,8 +1,8 @@
-import {ApiProperty} from "@nestjs/swagger";
+import { ApiProperty } from '@nestjs/swagger';
 
-import {Exclude, Expose, Type} from 'class-transformer';
+import { Exclude, Expose, Type } from 'class-transformer';
 
-import {BalanceResponse} from '@app/http/responses/balance.response';
+import { BalanceResponse } from '@app/http/responses/balance.response';
 
 @Exclude()
 export class ValidatorDescriptionResponse {
@@ -44,12 +44,12 @@ class ValidatorDelegationDetailsResponse {
 
 @Exclude()
 export class ValidatorDelegationResponse {
-    @ApiProperty({type: () => ValidatorDelegationDetailsResponse})
+    @ApiProperty({ type: () => ValidatorDelegationDetailsResponse })
     @Expose()
     @Type(() => ValidatorDelegationDetailsResponse)
     delegation: ValidatorDelegationDetailsResponse;
 
-    @ApiProperty({type: () => BalanceResponse})
+    @ApiProperty({ type: () => BalanceResponse })
     @Expose()
     @Type(() => BalanceResponse)
     balance: BalanceResponse;
@@ -72,7 +72,7 @@ export class ValidatorCommissionRatesResponse {
 
 @Exclude()
 export class ValidatorCommissionResponse {
-    @ApiProperty({type: () => ValidatorCommissionRatesResponse})
+    @ApiProperty({ type: () => ValidatorCommissionRatesResponse })
     @Expose()
     @Type(() => ValidatorCommissionRatesResponse)
     rates: ValidatorCommissionRatesResponse;
@@ -136,23 +136,23 @@ export class ValidatorResponse {
     @Expose()
     uptime: number;
 
-    @ApiProperty({type: () => ValidatorDescriptionResponse})
+    @ApiProperty({ type: () => ValidatorDescriptionResponse })
     @Expose()
     @Type(() => ValidatorDescriptionResponse)
     description: ValidatorDescriptionResponse;
 
-    @ApiProperty({type: () => ValidatorCommissionResponse})
+    @ApiProperty({ type: () => ValidatorCommissionResponse })
     @Expose()
     @Type(() => ValidatorCommissionResponse)
     commission: ValidatorCommissionResponse;
 
-    @ApiProperty({type: () => [ValidatorDelegationResponse]})
+    @ApiProperty({ type: () => [ValidatorDelegationResponse] })
     @Expose()
     @Type(() => ValidatorDelegationResponse)
     delegations: ValidatorDelegationResponse[];
 
     @ApiProperty()
-    @Expose({name: 'delegationsNextKey'})
+    @Expose({ name: 'delegationsNextKey' })
     delegations_next_key: string;
 
     constructor(data: Partial<ValidatorResponse>) {

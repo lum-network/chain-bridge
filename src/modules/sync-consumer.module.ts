@@ -1,23 +1,25 @@
-import {HttpModule} from '@nestjs/axios';
-import {Module, OnApplicationBootstrap, OnModuleInit} from '@nestjs/common';
-import {BullModule} from '@nestjs/bull';
-import {ClientsModule, Transport} from '@nestjs/microservices';
-import {ConfigModule, ConfigService} from "@nestjs/config";
-import {TypeOrmModule} from "@nestjs/typeorm";
+import { HttpModule } from '@nestjs/axios';
+import { Module, OnApplicationBootstrap, OnModuleInit } from '@nestjs/common';
+import { BullModule } from '@nestjs/bull';
+import { ClientsModule, Transport } from '@nestjs/microservices';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
-import * as Joi from "joi";
+import * as Joi from 'joi';
 
-import {AsyncQueues, BeamConsumer, BlockConsumer, CoreConsumer, NotificationConsumer} from '@app/async';
+import { AsyncQueues, BeamConsumer, BlockConsumer, CoreConsumer, NotificationConsumer } from '@app/async';
 
 import {
     BeamService,
     BlockService,
     LumNetworkService,
-    TransactionService, ValidatorDelegationService,
+    ProposalDepositService, ProposalVoteService,
+    TransactionService,
+    ValidatorDelegationService,
     ValidatorService
 } from '@app/services';
-import {ConfigMap} from '@app/utils';
-import {DatabaseConfig, DatabaseFeatures} from "@app/database";
+import { ConfigMap } from '@app/utils';
+import { DatabaseConfig, DatabaseFeatures } from '@app/database';
 
 @Module({
     imports: [
@@ -35,21 +37,20 @@ import {DatabaseConfig, DatabaseFeatures} from "@app/database";
                     transport: Transport.REDIS,
                     options: {
                         host: configService.get<string>('REDIS_HOST'),
-                        port: configService.get<number>('REDIS_PORT')
+                        port: configService.get<number>('REDIS_PORT'),
                     },
-                })
-            }
+                }),
+            },
         ]),
         HttpModule,
         TypeOrmModule.forRootAsync(DatabaseConfig),
-        TypeOrmModule.forFeature(DatabaseFeatures)
+        TypeOrmModule.forFeature(DatabaseFeatures),
     ],
     controllers: [],
-    providers: [LumNetworkService, BeamService, BlockService, TransactionService, ValidatorService, ValidatorDelegationService, BeamConsumer, BlockConsumer, CoreConsumer, NotificationConsumer],
+    providers: [LumNetworkService, BeamService, BlockService, ProposalDepositService, ProposalVoteService, TransactionService, ValidatorService, ValidatorDelegationService, BeamConsumer, BlockConsumer, CoreConsumer, NotificationConsumer],
 })
 export class SyncConsumerModule implements OnModuleInit, OnApplicationBootstrap {
-    constructor(private readonly _lumNetworkService: LumNetworkService) {
-    }
+    constructor(private readonly _lumNetworkService: LumNetworkService) {}
 
     async onModuleInit() {
         // Make sure to initialize the lum network service

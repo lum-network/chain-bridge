@@ -1,7 +1,7 @@
-import {ApiProperty} from "@nestjs/swagger";
+import { ApiProperty } from '@nestjs/swagger';
 
-import {Exclude, Expose} from 'class-transformer';
-import {BalanceResponse} from '@app/http/responses/balance.response';
+import { Exclude, Expose } from 'class-transformer';
+import { BalanceResponse } from '@app/http/responses/balance.response';
 
 @Exclude()
 export class DelegationResponse {

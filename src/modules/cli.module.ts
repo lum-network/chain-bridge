@@ -1,24 +1,17 @@
-import {CacheModule, Module, OnModuleInit} from "@nestjs/common";
-import {HttpModule} from "@nestjs/axios";
-import {TypeOrmModule} from "@nestjs/typeorm";
-import {ConfigModule, ConfigService} from "@nestjs/config";
+import { CacheModule, Module, OnModuleInit } from '@nestjs/common';
+import { HttpModule } from '@nestjs/axios';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
-import {ConsoleModule} from "nestjs-console";
-import * as Joi from "joi";
+import { ConsoleModule } from 'nestjs-console';
+import * as Joi from 'joi';
 import * as redisStore from 'cache-manager-redis-store';
 
-import {
-    BeamService,
-    BlockService, ElasticsearchService, LumNetworkService,
-    StatService,
-    TransactionService,
-    ValidatorDelegationService,
-    ValidatorService
-} from "@app/services";
+import { BeamService, BlockService, ElasticsearchService, LumNetworkService, StatService, TransactionService, ValidatorDelegationService, ValidatorService } from '@app/services';
 
-import {BlocksCommands, MigrationCommands, RedisCommands, TransactionsCommands, ValidatorsCommands} from "@app/console";
-import {DatabaseConfig, DatabaseFeatures} from "@app/database";
-import {ConfigMap} from "@app/utils";
+import { BlocksCommands, MigrationCommands, RedisCommands, TransactionsCommands, ValidatorsCommands } from '@app/console';
+import { DatabaseConfig, DatabaseFeatures } from '@app/database';
+import { ConfigMap } from '@app/utils';
 
 @Module({
     imports: [
@@ -40,21 +33,26 @@ import {ConfigMap} from "@app/utils";
         ConsoleModule,
         HttpModule,
         TypeOrmModule.forRootAsync(DatabaseConfig),
-        TypeOrmModule.forFeature(DatabaseFeatures)
+        TypeOrmModule.forFeature(DatabaseFeatures),
     ],
     providers: [
-        LumNetworkService, ElasticsearchService,
-        BeamService, BlockService, StatService, TransactionService, ValidatorService, ValidatorDelegationService,
+        LumNetworkService,
+        ElasticsearchService,
+        BeamService,
+        BlockService,
+        StatService,
+        TransactionService,
+        ValidatorService,
+        ValidatorDelegationService,
         BlocksCommands,
         MigrationCommands,
         RedisCommands,
         TransactionsCommands,
-        ValidatorsCommands
-    ]
+        ValidatorsCommands,
+    ],
 })
 export class CliModule implements OnModuleInit {
-    constructor(private readonly _lumService: LumNetworkService) {
-    }
+    constructor(private readonly _lumService: LumNetworkService) {}
 
     async onModuleInit(): Promise<void> {
         await this._lumService.initialise();

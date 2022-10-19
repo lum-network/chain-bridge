@@ -1,4 +1,4 @@
-import {ApiProperty} from "@nestjs/swagger";
+import { ApiProperty } from '@nestjs/swagger';
 
 import { Exclude, Expose, Type } from 'class-transformer';
 
@@ -26,27 +26,27 @@ class VestingResponse {
     @Expose({ name: 'lockedPercentage' })
     locked_percentage: number;
 
-    @ApiProperty({type: () => BalanceResponse})
+    @ApiProperty({ type: () => BalanceResponse })
     @Expose()
     @Type(() => BalanceResponse)
     total_coins: BalanceResponse;
 
-    @ApiProperty({type: () => BalanceResponse})
+    @ApiProperty({ type: () => BalanceResponse })
     @Expose()
     @Type(() => BalanceResponse)
     unlocked_coins: BalanceResponse;
 
-    @ApiProperty({type: () => BalanceResponse})
+    @ApiProperty({ type: () => BalanceResponse })
     @Expose()
     @Type(() => BalanceResponse)
     locked_coins: BalanceResponse;
 
-    @ApiProperty({type: () => BalanceResponse})
+    @ApiProperty({ type: () => BalanceResponse })
     @Expose()
     @Type(() => BalanceResponse)
     locked_delegated_coins: BalanceResponse;
 
-    @ApiProperty({type: () => BalanceResponse})
+    @ApiProperty({ type: () => BalanceResponse })
     @Expose()
     @Type(() => BalanceResponse)
     locked_bank_coins: BalanceResponse;
@@ -62,7 +62,7 @@ class AirdropResponse {
     @Expose({ name: 'actionCompleted' })
     action_completed: boolean[];
 
-    @ApiProperty({type: () => [BalanceResponse]})
+    @ApiProperty({ type: () => [BalanceResponse] })
     @Expose({ name: 'initialClaimableAmount' })
     @Type(() => BalanceResponse)
     initial_claimable_amount: BalanceResponse[];
@@ -80,7 +80,7 @@ export class AccountResponse {
 
     @ApiProperty()
     @Expose()
-    @ApiProperty({type: () => BalanceResponse})
+    @ApiProperty({ type: () => BalanceResponse })
     @Type(() => BalanceResponse)
     balance: BalanceResponse;
 
@@ -92,17 +92,17 @@ export class AccountResponse {
     @Expose({ name: 'accountNumber' })
     account_number: number;
 
-    @ApiProperty({type: () => DelegationResponse})
+    @ApiProperty({ type: () => DelegationResponse })
     @Expose()
     @Type(() => DelegationResponse)
     delegations: DelegationResponse[];
 
-    @ApiProperty({type: () => AllRewardResponse})
+    @ApiProperty({ type: () => AllRewardResponse })
     @Expose()
     @Type(() => AllRewardResponse)
     all_rewards: AllRewardResponse;
 
-    @ApiProperty({type: () => [TransactionResponse]})
+    @ApiProperty({ type: () => [TransactionResponse] })
     @Expose()
     @Type(() => TransactionResponse)
     transactions: TransactionResponse[] = [];
@@ -115,17 +115,17 @@ export class AccountResponse {
     @Expose()
     total_shares: number;
 
-    @ApiProperty({type: () => [BalanceResponse]})
+    @ApiProperty({ type: () => [BalanceResponse] })
     @Expose()
     @Type(() => BalanceResponse)
     commissions: BalanceResponse[] = [];
 
-    @ApiProperty({type: () => VestingResponse})
+    @ApiProperty({ type: () => VestingResponse })
     @Expose()
     @Type(() => VestingResponse)
     vesting: VestingResponse;
 
-    @ApiProperty({type: () => AirdropResponse})
+    @ApiProperty({ type: () => AirdropResponse })
     @Expose()
     @Type(() => AirdropResponse)
     airdrop: AirdropResponse;

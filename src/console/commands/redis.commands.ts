@@ -1,17 +1,14 @@
-import {CACHE_MANAGER, Inject} from "@nestjs/common";
+import { CACHE_MANAGER, Inject } from '@nestjs/common';
 
-import {Command, Console, createSpinner} from "nestjs-console";
+import { Command, Console, createSpinner } from 'nestjs-console';
 
 import { Cache } from 'cache-manager';
 
-@Console({command: 'redis', description: 'Redis related commands'})
+@Console({ command: 'redis', description: 'Redis related commands' })
 export class RedisCommands {
-    constructor(
-        @Inject(CACHE_MANAGER) private readonly _cacheManager: Cache
-    ) {
-    }
+    constructor(@Inject(CACHE_MANAGER) private readonly _cacheManager: Cache) {}
 
-    @Command({command: 'clear', description: 'Clear the whole cache'})
+    @Command({ command: 'clear', description: 'Clear the whole cache' })
     async clear(): Promise<void> {
         const spin = createSpinner();
         spin.start('Clearing the cache...');

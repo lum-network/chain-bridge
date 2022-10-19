@@ -1,27 +1,28 @@
-import {HttpModule} from '@nestjs/axios';
-import {Logger, Module, OnApplicationBootstrap, OnModuleInit} from '@nestjs/common';
-import {BullModule, InjectQueue} from '@nestjs/bull';
-import {ScheduleModule} from '@nestjs/schedule';
-import {ClientsModule, Transport} from '@nestjs/microservices';
-import {TypeOrmModule} from "@nestjs/typeorm";
-import {ConfigModule, ConfigService} from "@nestjs/config";
+import { HttpModule } from '@nestjs/axios';
+import { Logger, Module, OnApplicationBootstrap, OnModuleInit } from '@nestjs/common';
+import { BullModule, InjectQueue } from '@nestjs/bull';
+import { ScheduleModule } from '@nestjs/schedule';
+import { ClientsModule, Transport } from '@nestjs/microservices';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
-import * as Joi from "joi";
+import * as Joi from 'joi';
 
-import {Queue} from 'bull';
+import { Queue } from 'bull';
 
-import {AsyncQueues, BlockScheduler, ValidatorScheduler} from '@app/async';
+import { AsyncQueues, BlockScheduler, GovernanceScheduler, ValidatorScheduler } from '@app/async';
 
 import {
     BeamService,
     BlockService,
     LumNetworkService,
+    ProposalDepositService, ProposalVoteService,
     TransactionService,
     ValidatorDelegationService,
     ValidatorService
 } from '@app/services';
-import {ConfigMap, QueueJobs, Queues} from '@app/utils';
-import {DatabaseConfig, DatabaseFeatures} from "@app/database";
+import { ConfigMap, QueueJobs, Queues } from '@app/utils';
+import { DatabaseConfig, DatabaseFeatures } from '@app/database';
 
 @Module({
     imports: [
@@ -39,28 +40,23 @@ import {DatabaseConfig, DatabaseFeatures} from "@app/database";
                     transport: Transport.REDIS,
                     options: {
                         host: configService.get<string>('REDIS_HOST'),
-                        url: configService.get<number>('REDIS_PORT')
+                        url: configService.get<number>('REDIS_PORT'),
                     },
-                })
-            }
+                }),
+            },
         ]),
         ScheduleModule.forRoot(),
         HttpModule,
         TypeOrmModule.forRootAsync(DatabaseConfig),
-        TypeOrmModule.forFeature(DatabaseFeatures)
+        TypeOrmModule.forFeature(DatabaseFeatures),
     ],
     controllers: [],
-    providers: [BeamService, BlockService, TransactionService, ValidatorService, ValidatorDelegationService, BlockScheduler, ValidatorScheduler, LumNetworkService],
+    providers: [BeamService, BlockService, TransactionService, ProposalDepositService, ProposalVoteService, ValidatorService, ValidatorDelegationService, BlockScheduler, GovernanceScheduler, ValidatorScheduler, LumNetworkService],
 })
 export class SyncSchedulerModule implements OnModuleInit, OnApplicationBootstrap {
     private readonly _logger: Logger = new Logger(SyncSchedulerModule.name);
 
-    constructor(
-        @InjectQueue(Queues.BLOCKS) private readonly _queue: Queue,
-        private readonly _configService: ConfigService,
-        private readonly _lumNetworkService: LumNetworkService
-    ) {
-    }
+    constructor(@InjectQueue(Queues.BLOCKS) private readonly _queue: Queue, private readonly _configService: ConfigService, private readonly _lumNetworkService: LumNetworkService) {}
 
     async onModuleInit() {
         // Log out

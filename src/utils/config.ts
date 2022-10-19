@@ -16,5 +16,5 @@ export const ConfigMap = {
     API_PORT: Joi.number().required(),
     SENTRY_DSN: Joi.string().optional(),
     FAUCET_MNEMONIC: Joi.string().optional(),
-    STARTING_HEIGHT: Joi.number().required()
-}
+    STARTING_HEIGHT: Joi.number().required(),
+};
