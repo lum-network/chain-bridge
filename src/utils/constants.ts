@@ -34,6 +34,12 @@ export enum QueueJobs {
     MINT_FAUCET_REQUEST = 'mint_faucet_request',
 }
 
+export enum QueuePriority {
+    URGENT = 1,
+    HIGH = 2,
+    NORMAL = 3,
+}
+
 export enum NotificationChannels {
     BLOCKS = 'blocks',
     TRANSACTIONS = 'transactions',

@@ -6,7 +6,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { Queue } from 'bull';
 
 import { LumNetworkService } from '@app/services';
-import { QueueJobs, Queues } from '@app/utils';
+import {QueueJobs, QueuePriority, Queues} from '@app/utils';
 
 @Injectable()
 export class BlockScheduler {
@@ -21,6 +21,8 @@ export class BlockScheduler {
             chainId: chainId,
             fromBlock: this._configService.get<number>('STARTING_HEIGHT'),
             toBlock: blockHeight,
+        }, {
+            priority: QueuePriority.NORMAL
         });
     }
 }
