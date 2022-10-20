@@ -1,12 +1,12 @@
-import {Injectable, Logger} from '@nestjs/common';
-import {Cron, CronExpression} from '@nestjs/schedule';
-import {ConfigService} from "@nestjs/config";
+import { Injectable, Logger } from '@nestjs/common';
+import { Cron, CronExpression } from '@nestjs/schedule';
+import { ConfigService } from '@nestjs/config';
 
-import {LumConstants, LumTypes, LumUtils, LumRegistry} from '@lum-network/sdk-javascript';
+import { LumConstants, LumTypes, LumUtils, LumRegistry } from '@lum-network/sdk-javascript';
 
-import {LumNetworkService, ValidatorDelegationService, ValidatorService} from '@app/services';
-import {ValidatorEntity} from "@app/database";
-import {CLIENT_PRECISION, SIGNED_BLOCK_WINDOW} from "@app/utils";
+import { LumNetworkService, ValidatorDelegationService, ValidatorService } from '@app/services';
+import { ValidatorEntity } from '@app/database';
+import { CLIENT_PRECISION, SIGNED_BLOCK_WINDOW } from '@app/utils';
 
 @Injectable()
 export class ValidatorScheduler {
@@ -16,28 +16,28 @@ export class ValidatorScheduler {
         private readonly _configService: ConfigService,
         private readonly _lumNetworkService: LumNetworkService,
         private readonly _validatorService: ValidatorService,
-        private readonly _validatorDelegationService: ValidatorDelegationService) {
-    }
+        private readonly _validatorDelegationService: ValidatorDelegationService,
+    ) {}
 
     @Cron(CronExpression.EVERY_5_MINUTES)
     async delegationSync() {
         this._logger.log(`Syncing validator delegations from chain...`);
         const validators = await this._validatorService.fetchAll();
-        this._logger.log(`Found ${validators.length} validators to sync`);
+        this._logger.debug(`Found ${validators.length} validators to sync`);
 
         // For each stored validator, we query chain and ask for delegations
         for (const validator of validators) {
             let page: Uint8Array | undefined = undefined;
             while (true) {
                 const delegations = await this._lumNetworkService.client.queryClient.staking.validatorDelegations(validator.operator_address, page);
-                this._logger.log(`Found ${delegations.delegationResponses.length} delegations to sync for validator ${validator.operator_address}`);
+                this._logger.debug(`Found ${delegations.delegationResponses.length} delegations to sync for validator ${validator.operator_address}`);
 
                 // For each delegation, we create or update the matching entry in our database
                 for (const delegation of delegations.delegationResponses) {
-                    const shares = Number((parseInt(delegation.delegation.shares, 10) / CLIENT_PRECISION).toFixed())
+                    const shares = Number((parseInt(delegation.delegation.shares, 10) / CLIENT_PRECISION).toFixed());
                     await this._validatorDelegationService.createOrUpdate(delegation.delegation.delegatorAddress, delegation.delegation.validatorAddress, shares, {
                         denom: delegation.balance.denom,
-                        amount: parseInt(delegation.balance.amount, 10)
+                        amount: parseInt(delegation.balance.amount, 10),
                     });
                 }
 
@@ -51,7 +51,7 @@ export class ValidatorScheduler {
         }
     }
 
-    @Cron(CronExpression.EVERY_10_SECONDS, {name: 'validators_live_ingest'})
+    @Cron(CronExpression.EVERY_10_SECONDS, { name: 'validators_live_ingest' })
     async basicSync() {
         try {
             // Fetch tendermint validators
@@ -92,7 +92,7 @@ export class ValidatorScheduler {
                                     identity: val.description.identity,
                                     website: val.description.website,
                                     security_contact: val.description.securityContact,
-                                    details: val.description.details
+                                    details: val.description.details,
                                 };
                                 validators[v].displayed_name = val.description.moniker || val.description.identity || val.operatorAddress;
                                 validators[v].jailed = val.jailed;
@@ -105,11 +105,11 @@ export class ValidatorScheduler {
                                         max_rate: parseInt(val.commission.commissionRates.maxRate, 10) / CLIENT_PRECISION,
                                         max_change_rate: parseInt(val.commission.commissionRates.maxChangeRate, 10) / CLIENT_PRECISION,
                                     },
-                                    last_updated_at: val.commission.updateTime
+                                    last_updated_at: val.commission.updateTime,
                                 };
                                 validators[v].bonded_height = signingInfos.valSigningInfo.startHeight.low;
                                 validators[v].tombstoned = signingInfos.valSigningInfo.tombstoned;
-                                validators[v].uptime = (SIGNED_BLOCK_WINDOW - signingInfos.valSigningInfo.missedBlocksCounter.low) / SIGNED_BLOCK_WINDOW * 100;
+                                validators[v].uptime = ((SIGNED_BLOCK_WINDOW - signingInfos.valSigningInfo.missedBlocksCounter.low) / SIGNED_BLOCK_WINDOW) * 100;
                                 break;
                             }
                         }
@@ -124,7 +124,7 @@ export class ValidatorScheduler {
 
             // Persist to database
             await this._validatorService.saveBulk(validators);
-            this._logger.log(`Ingested validator set ${validators.length}`);
+            this._logger.log(`Persisted ${validators.length} validators`);
         } catch (error) {
             this._logger.error(`Failed to ingest validators: ${error}`, error.stack);
         }

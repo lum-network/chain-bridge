@@ -1,8 +1,8 @@
-import {ApiProperty} from "@nestjs/swagger";
+import { ApiProperty } from '@nestjs/swagger';
 
-import {Exclude, Expose, Type} from "class-transformer";
+import { Exclude, Expose, Type } from 'class-transformer';
 
-import Long from "long";
+import Long from 'long';
 
 @Exclude()
 class UnbondingEntriesResponse {
@@ -21,7 +21,7 @@ class UnbondingEntriesResponse {
 
 @Exclude()
 export class UnbondingResponse {
-    @ApiProperty({type: () => [UnbondingEntriesResponse]})
+    @ApiProperty({ type: () => [UnbondingEntriesResponse] })
     @Expose()
     @Type(() => UnbondingEntriesResponse)
     entries: UnbondingEntriesResponse[] = [];

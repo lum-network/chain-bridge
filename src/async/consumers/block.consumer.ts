@@ -1,43 +1,32 @@
-import {Logger} from '@nestjs/common';
-import {ConfigService} from "@nestjs/config";
+import { Logger } from '@nestjs/common';
+import { InjectQueue, Process, Processor } from '@nestjs/bull';
+import { ConfigService } from '@nestjs/config';
 
-import {Job, Queue} from 'bull';
-import {InjectQueue, Process, Processor} from '@nestjs/bull';
-
+import { Job, Queue } from 'bull';
 import moment from 'moment';
+import { LumUtils, LumRegistry, LumMessages, LumConstants } from '@lum-network/sdk-javascript';
 
-import {LumUtils, LumRegistry, LumMessages, LumConstants} from '@lum-network/sdk-javascript';
+import { getAddressesRelatedToTransaction, isBeam, NotificationChannels, NotificationEvents, QueueJobs, Queues } from '@app/utils';
 
-import {
-    getAddressesRelatedToTransaction,
-    isBeam,
-    NotificationChannels,
-    NotificationEvents,
-    QueueJobs,
-    Queues
-} from '@app/utils';
+import { BlockService, LumNetworkService, TransactionService, ValidatorService } from '@app/services';
+import { BlockEntity, TransactionEntity } from '@app/database';
 
-import {BlockService, LumNetworkService, TransactionService, ValidatorService} from '@app/services';
-import {BlockEntity, TransactionEntity} from "@app/database";
-
-
-@Processor(Queues.QUEUE_BLOCKS)
+@Processor(Queues.BLOCKS)
 export class BlockConsumer {
     private readonly _logger: Logger = new Logger(BlockConsumer.name);
 
     constructor(
-        @InjectQueue(Queues.QUEUE_BLOCKS) private readonly _blockQueue: Queue,
-        @InjectQueue(Queues.QUEUE_BEAMS) private readonly _beamQueue: Queue,
-        @InjectQueue(Queues.QUEUE_NOTIFICATIONS) private readonly _notificationQueue: Queue,
+        @InjectQueue(Queues.BLOCKS) private readonly _blockQueue: Queue,
+        @InjectQueue(Queues.BEAMS) private readonly _beamQueue: Queue,
+        @InjectQueue(Queues.NOTIFICATIONS) private readonly _notificationQueue: Queue,
         private readonly _blockService: BlockService,
         private readonly _configService: ConfigService,
         private readonly _lumNetworkService: LumNetworkService,
         private readonly _transactionService: TransactionService,
         private readonly _validatorService: ValidatorService,
-    ) {
-    }
+    ) {}
 
-    @Process(QueueJobs.INGEST_BLOCK)
+    @Process(QueueJobs.INGEST)
     async ingestBlock(job: Job<{ blockHeight: number; notify?: boolean }>) {
         // Only ingest if allowed by the configuration
         if (this._configService.get<boolean>('INGEST_ENABLED') === false) {
@@ -95,14 +84,14 @@ export class BlockConsumer {
                     success: tx.result.code === 0,
                     code: tx.result.code,
                     fees: txData.authInfo.fee.amount.map((coin) => {
-                        return {denom: coin.denom, amount: parseFloat(coin.amount)};
+                        return { denom: coin.denom, amount: parseFloat(coin.amount) };
                     }),
                     addresses: [],
                     gas_wanted: (tx.result as unknown as { gasWanted: number }).gasWanted,
                     gas_used: (tx.result as unknown as { gasUsed: number }).gasUsed,
                     memo: txData.body.memo,
                     messages: txData.body.messages.map((msg) => {
-                        return {type_url: msg.typeUrl, value: LumUtils.toJSON(LumRegistry.decode(msg))};
+                        return { type_url: msg.typeUrl, value: LumUtils.toJSON(LumRegistry.decode(msg)) };
                     }),
                     message_type: txData.body.messages.length ? txData.body.messages[0].typeUrl : null,
                     messages_count: txData.body.messages.length,
@@ -130,7 +119,7 @@ export class BlockConsumer {
                                 const denom = attr.value.substr(amount.toString().length);
 
                                 if (!res.amount) {
-                                    res.amount = {amount, denom};
+                                    res.amount = { amount, denom };
                                 }
 
                                 // We get auto claim reward amount with unbond
@@ -140,7 +129,7 @@ export class BlockConsumer {
 
                                 // We get relevant amount with particular types
                                 if (ev.type === 'delegate' || ev.type === 'unbond' || ev.type === 'withdraw_rewards') {
-                                    res.amount = {amount, denom};
+                                    res.amount = { amount, denom };
                                 }
                             }
                         }
@@ -154,8 +143,8 @@ export class BlockConsumer {
                         amount: !res.messages[0].value.inputs
                             ? '0'
                             : res.messages[0].value.inputs
-                                .map((i: any) => (!i.coins ? 0 : i.coins.map((c: any) => (c.denom === LumConstants.MicroLumDenom ? parseInt(c.amount) : 0)).reduce((a: number, b: number) => a + b)))
-                                .reduce((a: number, b: number) => a + b),
+                                  .map((i: any) => (!i.coins ? 0 : i.coins.map((c: any) => (c.denom === LumConstants.MicroLumDenom ? parseInt(c.amount) : 0)).reduce((a: number, b: number) => a + b)))
+                                  .reduce((a: number, b: number) => a + b),
                     };
                 }
 
@@ -171,11 +160,15 @@ export class BlockConsumer {
             for (const txDoc of transactions) {
                 for (const message of txDoc.messages) {
                     if (isBeam(message.type_url)) {
-                        await this._beamQueue.add(QueueJobs.INGEST_BEAM, {id: message.value.id}, {
-                            jobId: `beam-${message.value.id}`,
-                            attempts: 5,
-                            backoff: 60000,
-                        });
+                        await this._beamQueue.add(
+                            QueueJobs.INGEST,
+                            { id: message.value.id },
+                            {
+                                jobId: `beam-${message.value.id}`,
+                                attempts: 5,
+                                backoff: 60000,
+                            },
+                        );
                     }
                 }
             }
@@ -184,8 +177,8 @@ export class BlockConsumer {
             if (job.data.notify) {
                 // Dispatch notification on websockets for frontend
                 await this._notificationQueue.add(QueueJobs.NOTIFICATION_SOCKET, {
-                    channel: NotificationChannels.CHANNEL_BLOCKS,
-                    event: NotificationEvents.EVENT_NEW_BLOCK,
+                    channel: NotificationChannels.BLOCKS,
+                    event: NotificationEvents.NEW_BLOCK,
                     data: blockDoc,
                 });
             }
@@ -213,8 +206,8 @@ export class BlockConsumer {
             const jobs = [];
             for (let i = job.data.fromBlock; i <= job.data.toBlock; i++) {
                 jobs.push({
-                    name: QueueJobs.INGEST_BLOCK,
-                    data: {blockHeight: i},
+                    name: QueueJobs.INGEST,
+                    data: { blockHeight: i },
                     opts: {
                         jobId: `${job.data.chainId}-block-${i}`,
                         attempts: 5,
