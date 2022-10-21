@@ -6,19 +6,12 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import * as Joi from 'joi';
+import { SentryModule } from '@ntegral/nestjs-sentry';
 
 import { AsyncQueues, BeamConsumer, BlockConsumer, CoreConsumer, NotificationConsumer } from '@app/async';
 
-import {
-    BeamService,
-    BlockService,
-    LumNetworkService,
-    ProposalDepositService, ProposalVoteService,
-    TransactionService,
-    ValidatorDelegationService,
-    ValidatorService
-} from '@app/services';
-import { ConfigMap } from '@app/utils';
+import { BeamService, BlockService, LumNetworkService, ProposalDepositService, ProposalVoteService, TransactionService, ValidatorDelegationService, ValidatorService } from '@app/services';
+import { ConfigMap, SentryModuleOptions } from '@app/utils';
 import { DatabaseConfig, DatabaseFeatures } from '@app/database';
 
 @Module({
@@ -43,11 +36,25 @@ import { DatabaseConfig, DatabaseFeatures } from '@app/database';
             },
         ]),
         HttpModule,
+        SentryModule.forRootAsync(SentryModuleOptions),
         TypeOrmModule.forRootAsync(DatabaseConfig),
         TypeOrmModule.forFeature(DatabaseFeatures),
     ],
     controllers: [],
-    providers: [LumNetworkService, BeamService, BlockService, ProposalDepositService, ProposalVoteService, TransactionService, ValidatorService, ValidatorDelegationService, BeamConsumer, BlockConsumer, CoreConsumer, NotificationConsumer],
+    providers: [
+        LumNetworkService,
+        BeamService,
+        BlockService,
+        ProposalDepositService,
+        ProposalVoteService,
+        TransactionService,
+        ValidatorService,
+        ValidatorDelegationService,
+        BeamConsumer,
+        BlockConsumer,
+        CoreConsumer,
+        NotificationConsumer,
+    ],
 })
 export class SyncConsumerModule implements OnModuleInit, OnApplicationBootstrap {
     constructor(private readonly _lumNetworkService: LumNetworkService) {}

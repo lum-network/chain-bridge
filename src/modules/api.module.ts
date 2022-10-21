@@ -1,5 +1,5 @@
 import { HttpModule } from '@nestjs/axios';
-import { Logger, Module, OnModuleInit, CacheModule, OnApplicationBootstrap, ValidationPipe } from '@nestjs/common';
+import { Logger, Module, OnModuleInit, CacheModule, OnApplicationBootstrap, ValidationPipe, HttpException } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { BullModule } from '@nestjs/bull';
 import { APP_FILTER, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
@@ -7,6 +7,7 @@ import { TerminusModule } from '@nestjs/terminus';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import * as redisStore from 'cache-manager-redis-store';
+import { SentryInterceptor, SentryModule } from '@ntegral/nestjs-sentry';
 
 import * as Joi from 'joi';
 
@@ -40,7 +41,7 @@ import {
     ProposalDepositService,
 } from '@app/services';
 
-import { ConfigMap, PayloadValidationOptions } from '@app/utils';
+import { ConfigMap, PayloadValidationOptions, SentryModuleOptions } from '@app/utils';
 
 import { GatewayWebsocket } from '@app/websocket';
 import { DatabaseConfig, DatabaseFeatures } from '@app/database';
@@ -64,6 +65,7 @@ import { AsyncQueues } from '@app/async';
             }),
             inject: [ConfigService],
         }),
+        SentryModule.forRootAsync(SentryModuleOptions),
         TerminusModule,
         HttpModule,
         TypeOrmModule.forRootAsync(DatabaseConfig),
@@ -97,6 +99,18 @@ import { AsyncQueues } from '@app/async';
         { provide: APP_FILTER, useClass: HttpExceptionFilter },
         { provide: APP_INTERCEPTOR, useClass: PaginationInterceptor },
         { provide: APP_INTERCEPTOR, useClass: ResponseInterceptor },
+        {
+            provide: APP_INTERCEPTOR,
+            useFactory: () =>
+                new SentryInterceptor({
+                    filters: [
+                        {
+                            type: HttpException,
+                            filter: (exception: HttpException) => exception.getStatus() >= 500,
+                        },
+                    ],
+                }),
+        },
         { provide: APP_PIPE, useFactory: () => new ValidationPipe(PayloadValidationOptions) },
     ],
 })

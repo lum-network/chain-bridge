@@ -7,21 +7,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
 import * as Joi from 'joi';
-
 import { Queue } from 'bull';
+import { SentryModule } from '@ntegral/nestjs-sentry';
 
 import { AsyncQueues, BlockScheduler, GovernanceScheduler, ValidatorScheduler } from '@app/async';
 
-import {
-    BeamService,
-    BlockService,
-    LumNetworkService,
-    ProposalDepositService, ProposalVoteService,
-    TransactionService,
-    ValidatorDelegationService,
-    ValidatorService
-} from '@app/services';
-import { ConfigMap, QueueJobs, Queues } from '@app/utils';
+import { BeamService, BlockService, LumNetworkService, ProposalDepositService, ProposalVoteService, TransactionService, ValidatorDelegationService, ValidatorService } from '@app/services';
+import { ConfigMap, QueueJobs, Queues, SentryModuleOptions } from '@app/utils';
 import { DatabaseConfig, DatabaseFeatures } from '@app/database';
 
 @Module({
@@ -47,11 +39,24 @@ import { DatabaseConfig, DatabaseFeatures } from '@app/database';
         ]),
         ScheduleModule.forRoot(),
         HttpModule,
+        SentryModule.forRootAsync(SentryModuleOptions),
         TypeOrmModule.forRootAsync(DatabaseConfig),
         TypeOrmModule.forFeature(DatabaseFeatures),
     ],
     controllers: [],
-    providers: [BeamService, BlockService, TransactionService, ProposalDepositService, ProposalVoteService, ValidatorService, ValidatorDelegationService, BlockScheduler, GovernanceScheduler, ValidatorScheduler, LumNetworkService],
+    providers: [
+        BeamService,
+        BlockService,
+        TransactionService,
+        ProposalDepositService,
+        ProposalVoteService,
+        ValidatorService,
+        ValidatorDelegationService,
+        BlockScheduler,
+        GovernanceScheduler,
+        ValidatorScheduler,
+        LumNetworkService,
+    ],
 })
 export class SyncSchedulerModule implements OnModuleInit, OnApplicationBootstrap {
     private readonly _logger: Logger = new Logger(SyncSchedulerModule.name);

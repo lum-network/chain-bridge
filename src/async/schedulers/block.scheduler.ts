@@ -6,7 +6,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { Queue } from 'bull';
 
 import { LumNetworkService } from '@app/services';
-import {QueueJobs, QueuePriority, Queues} from '@app/utils';
+import { QueueJobs, QueuePriority, Queues } from '@app/utils';
 
 @Injectable()
 export class BlockScheduler {
@@ -17,12 +17,16 @@ export class BlockScheduler {
         // Daily check that we did not miss a block sync somehow
         const chainId = await this._lumNetworkService.client.getChainId();
         const blockHeight = await this._lumNetworkService.client.getBlockHeight();
-        await this._queue.add(QueueJobs.TRIGGER_VERIFY_BLOCKS_BACKWARD, {
-            chainId: chainId,
-            fromBlock: this._configService.get<number>('STARTING_HEIGHT'),
-            toBlock: blockHeight,
-        }, {
-            priority: QueuePriority.NORMAL
-        });
+        await this._queue.add(
+            QueueJobs.TRIGGER_VERIFY_BLOCKS_BACKWARD,
+            {
+                chainId: chainId,
+                fromBlock: this._configService.get<number>('STARTING_HEIGHT'),
+                toBlock: blockHeight,
+            },
+            {
+                priority: QueuePriority.NORMAL,
+            },
+        );
     }
 }
