@@ -28,6 +28,8 @@ $ yarn install
 You should have a .env file at the root level with the following entries (and the values of your choice)
 
 ```bash
+# Must be any of development, mainnet, testnet
+ENV=development
 LUM_NETWORK_ENDPOINT=http://127.0.0.1:26657
 
 DATABASE_HOST=127.0.0.1
