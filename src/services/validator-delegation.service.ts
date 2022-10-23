@@ -1,40 +1,38 @@
-import {Inject, Injectable} from "@nestjs/common";
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 
-import {Repository} from "typeorm";
+import { Repository } from 'typeorm';
 
-import {ValidatorDelegationEntity} from "@app/database/entities";
-import {AmountModel} from "@app/database/entities/amount.model";
+import { ValidatorDelegationEntity } from '@app/database/entities';
+import { AmountModel } from '@app/database/entities/amount.model';
 
 @Injectable()
 export class ValidatorDelegationService {
-    constructor(
-        @Inject('VALIDATOR_DELEGATION_REPOSITORY') private readonly _repository: Repository<ValidatorDelegationEntity>,
-    ) {
-    }
+    constructor(@InjectRepository(ValidatorDelegationEntity) private readonly _repository: Repository<ValidatorDelegationEntity>) {}
 
     getById = async (delegatorAddress: string, validatorAddress: string): Promise<ValidatorDelegationEntity> => {
         return this._repository.findOne({
             where: {
                 delegator_address: delegatorAddress,
-                validator_address: validatorAddress
-            }
+                validator_address: validatorAddress,
+            },
         });
-    }
+    };
 
     fetchByValidatorAddress = async (validatorAddress: string, skip: number, take: number): Promise<[ValidatorDelegationEntity[], number]> => {
-        const query = this._repository.createQueryBuilder('validator_delegations').where('validator_address = :address', {address: validatorAddress}).skip(skip).take(take);
+        const query = this._repository.createQueryBuilder('validator_delegations').where('validator_address = :address', { address: validatorAddress }).skip(skip).take(take);
         return query.getManyAndCount();
-    }
+    };
 
     fetchByDelegatorAddress = async (delegatorAddress: string, skip: number, take: number): Promise<[ValidatorDelegationEntity[], number]> => {
-        const query = this._repository.createQueryBuilder('validator_delegations').where('delegator_address = :address', {address: delegatorAddress}).skip(skip).take(take);
+        const query = this._repository.createQueryBuilder('validator_delegations').where('delegator_address = :address', { address: delegatorAddress }).skip(skip).take(take);
         return query.getManyAndCount();
-    }
+    };
 
     sumTotalSharesForDelegator = async (delegatorAddress: string): Promise<AmountModel> => {
-        const query = this._repository.createQueryBuilder('validator_delegations').select('SUM(shares)', 'total_shares').where('delegator_address = :address', {address: delegatorAddress});
+        const query = this._repository.createQueryBuilder('validator_delegations').select('SUM(shares)', 'total_shares').where('delegator_address = :address', { address: delegatorAddress });
         return query.getRawOne();
-    }
+    };
 
     createOrUpdate = async (delegatorAddress: string, validatorAddress: string, shares: number, balance: AmountModel): Promise<ValidatorDelegationEntity> => {
         let entity = await this.getById(delegatorAddress, validatorAddress);
@@ -45,7 +43,7 @@ export class ValidatorDelegationService {
                 validator_address: validatorAddress,
                 delegator_address: delegatorAddress,
                 shares: shares,
-                balance: balance
+                balance: balance,
             });
         } else {
             // Otherwise, we just update the properties
@@ -55,5 +53,5 @@ export class ValidatorDelegationService {
 
         await this._repository.save(entity);
         return entity;
-    }
+    };
 }

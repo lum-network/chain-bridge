@@ -1,8 +1,9 @@
 import { BootstrapConsole } from 'nestjs-console';
-import { ApiModule } from '@app/modules';
+
+import { CliModule } from '@app/modules';
 
 const bootstrap = new BootstrapConsole({
-    module: ApiModule,
+    module: CliModule,
     useDecorators: true,
 });
 

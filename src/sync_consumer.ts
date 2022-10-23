@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
-import {ConfigService} from "@nestjs/config";
-import {RedisOptions, Transport} from '@nestjs/microservices';
+import { ConfigService } from '@nestjs/config';
+import { RedisOptions, Transport } from '@nestjs/microservices';
 
 import * as Sentry from '@sentry/node';
 
@@ -13,7 +13,7 @@ async function bootstrap() {
             options: {
                 host: process.env.REDIS_HOST,
                 port: parseInt(process.env.REDIS_PORT, 10),
-            }
+            },
         });
 
         const config = app.get(ConfigService);

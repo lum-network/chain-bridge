@@ -1,17 +1,9 @@
-import {Logger} from '@nestjs/common';
-import {
-    ConnectedSocket, GatewayMetadata,
-    MessageBody,
-    OnGatewayConnection,
-    OnGatewayInit,
-    SubscribeMessage,
-    WebSocketGateway,
-    WebSocketServer
-} from '@nestjs/websockets';
+import { Logger } from '@nestjs/common';
+import { ConnectedSocket, GatewayMetadata, MessageBody, OnGatewayConnection, OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 
-import {Server, Socket} from 'socket.io';
+import { Server, Socket } from 'socket.io';
 
-import {NotificationChannels} from '@app/utils';
+import { NotificationChannels } from '@app/utils';
 
 @WebSocketGateway<GatewayMetadata>({
     allowEIO3: true,
@@ -19,7 +11,7 @@ import {NotificationChannels} from '@app/utils';
     cors: {
         preflightContinue: true,
         credentials: true,
-        origin: ['https://explorer.testnet.lum.network', 'https://explorer.lum.network', 'http://localhost:3001']
+        origin: ['https://explorer.testnet.lum.network', 'https://explorer.lum.network', 'http://localhost:3001'],
     },
 })
 export class GatewayWebsocket implements OnGatewayInit, OnGatewayConnection {

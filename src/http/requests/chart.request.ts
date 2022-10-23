@@ -1,7 +1,7 @@
-import {ApiProperty} from "@nestjs/swagger";
+import { ApiProperty } from '@nestjs/swagger';
 
-import {IsDateString, IsNotEmpty, IsString} from 'class-validator';
-import {ChartTypes} from "@app/utils";
+import { IsDateString, IsNotEmpty, IsString } from 'class-validator';
+import { ChartTypes } from '@app/utils';
 
 export class ChartRequest {
     @ApiProperty()

@@ -7,3 +7,4 @@ export * from './metadata';
 export * from './microservice';
 export * from './validation';
 export * from './validators';
+export * from './dfract';

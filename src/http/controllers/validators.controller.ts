@@ -1,19 +1,12 @@
-import {CacheInterceptor, Controller, Get, Param, Req, UseInterceptors} from '@nestjs/common';
-import {ApiOkResponse, ApiTags} from "@nestjs/swagger";
+import { CacheInterceptor, Controller, Get, Param, Req, UseInterceptors } from '@nestjs/common';
+import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 
-import {plainToInstance} from 'class-transformer';
+import { plainToInstance } from 'class-transformer';
 
-import {BlockService, LumNetworkService, ValidatorDelegationService, ValidatorService} from '@app/services';
-import {DefaultTake} from "@app/http/decorators";
-import {
-    BalanceResponse,
-    BlockResponse,
-    DataResponse,
-    DataResponseMetadata,
-    DelegationResponse,
-    ValidatorResponse
-} from '@app/http/responses';
-import {ExplorerRequest} from "@app/utils";
+import { BlockService, LumNetworkService, ValidatorDelegationService, ValidatorService } from '@app/services';
+import { DefaultTake } from '@app/http/decorators';
+import { BalanceResponse, BlockResponse, DataResponse, DataResponseMetadata, DelegationResponse, ValidatorResponse } from '@app/http/responses';
+import { ExplorerRequest } from '@app/utils';
 
 @ApiTags('validators')
 @Controller('validators')
@@ -23,11 +16,10 @@ export class ValidatorsController {
         private readonly _blockService: BlockService,
         private readonly _lumNetworkService: LumNetworkService,
         private readonly _validatorService: ValidatorService,
-        private readonly _validatorDelegationService: ValidatorDelegationService
-    ) {
-    }
+        private readonly _validatorDelegationService: ValidatorDelegationService,
+    ) {}
 
-    @ApiOkResponse({status: 200, type: [ValidatorResponse]})
+    @ApiOkResponse({ status: 200, type: [ValidatorResponse] })
     @DefaultTake(100)
     @Get('')
     async fetch(@Req() request: ExplorerRequest): Promise<DataResponse> {
@@ -39,20 +31,20 @@ export class ValidatorsController {
                 limit: request.pagination.limit,
                 items_count: validators.length,
                 items_total: total,
-            })
-        })
+            }),
+        });
     }
 
-    @ApiOkResponse({status: 200, type: ValidatorResponse})
+    @ApiOkResponse({ status: 200, type: ValidatorResponse })
     @Get(':address')
     async show(@Param('address') address: string): Promise<DataResponse> {
         const result = await this._validatorService.getByOperatorAddress(address);
         return {
-            result: plainToInstance(ValidatorResponse, result)
+            result: plainToInstance(ValidatorResponse, result),
         };
     }
 
-    @ApiOkResponse({status: 200, type: [BlockResponse]})
+    @ApiOkResponse({ status: 200, type: [BlockResponse] })
     @DefaultTake(50)
     @Get(':address/blocks')
     async showBlocks(@Req() request: ExplorerRequest, @Param('address') address: string): Promise<DataResponse> {
@@ -64,31 +56,33 @@ export class ValidatorsController {
                 limit: request.pagination.limit,
                 items_count: blocks.length,
                 items_total: total,
-            })
-        })
+            }),
+        });
     }
 
-    @ApiOkResponse({status: 200, type: [DelegationResponse]})
+    @ApiOkResponse({ status: 200, type: [DelegationResponse] })
     @DefaultTake(50)
     @Get(':address/delegations')
     async showDelegations(@Req() request: ExplorerRequest, @Param('address') address: string): Promise<DataResponse> {
         const [delegations, total] = await this._validatorDelegationService.fetchByValidatorAddress(address, request.pagination.skip, request.pagination.limit);
         return new DataResponse({
-            result: delegations.map(del => plainToInstance(DelegationResponse, del)),
+            result: delegations.map((del) => plainToInstance(DelegationResponse, del)),
             metadata: new DataResponseMetadata({
                 page: request.pagination.page,
                 limit: request.pagination.limit,
                 items_count: delegations.length,
                 items_total: total,
-            })
+            }),
         });
     }
 
-    @ApiOkResponse({status: 200, type: [BalanceResponse]})
+    @ApiOkResponse({ status: 200, type: [BalanceResponse] })
     @DefaultTake(50)
     @Get(':address/rewards')
     async showRewards(@Req() request: ExplorerRequest, @Param('address') address: string): Promise<DataResponse> {
-        const {rewards: {rewards}} = await this._lumNetworkService.client.queryClient.distribution.validatorOutstandingRewards(address);
+        const {
+            rewards: { rewards },
+        } = await this._lumNetworkService.client.queryClient.distribution.validatorOutstandingRewards(address);
         return new DataResponse({
             result: rewards.map((rwd) => plainToInstance(BalanceResponse, rwd)),
             metadata: new DataResponseMetadata({
@@ -96,7 +90,7 @@ export class ValidatorsController {
                 limit: request.pagination.limit,
                 items_count: rewards.length,
                 items_total: null,
-            })
-        })
+            }),
+        });
     }
 }

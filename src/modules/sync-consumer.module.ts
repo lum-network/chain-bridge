@@ -1,22 +1,17 @@
-import {HttpModule} from '@nestjs/axios';
-import {Module, OnApplicationBootstrap, OnModuleInit} from '@nestjs/common';
-import {BullModule} from '@nestjs/bull';
-import {ClientsModule, Transport} from '@nestjs/microservices';
-import {ConfigModule, ConfigService} from "@nestjs/config";
+import { HttpModule } from '@nestjs/axios';
+import { Module, OnApplicationBootstrap, OnModuleInit } from '@nestjs/common';
+import { BullModule } from '@nestjs/bull';
+import { ClientsModule, Transport } from '@nestjs/microservices';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
-import * as Joi from "joi";
+import * as Joi from 'joi';
 
-import {BeamConsumer, BlockConsumer, CoreConsumer, NotificationConsumer} from '@app/async';
+import { AsyncQueues, BeamConsumer, BlockConsumer, CoreConsumer, NotificationConsumer } from '@app/async';
 
-import {
-    BeamService,
-    BlockService,
-    LumNetworkService,
-    TransactionService, ValidatorDelegationService,
-    ValidatorService
-} from '@app/services';
-import {ConfigMap, Queues} from '@app/utils';
-import {databaseProviders} from "@app/database";
+import { BeamService, BlockService, LumNetworkService, ProposalDepositService, ProposalVoteService, TransactionService, ValidatorDelegationService, ValidatorService } from '@app/services';
+import { ConfigMap } from '@app/utils';
+import { DatabaseConfig, DatabaseFeatures } from '@app/database';
 
 @Module({
     imports: [
@@ -24,76 +19,7 @@ import {databaseProviders} from "@app/database";
             isGlobal: true,
             validationSchema: Joi.object(ConfigMap),
         }),
-        BullModule.registerQueueAsync({
-                name: Queues.QUEUE_BLOCKS,
-                imports: [ConfigModule],
-                inject: [ConfigService],
-                useFactory: (configService: ConfigService) => ({
-                    redis: {
-                        host: configService.get<string>('REDIS_HOST'),
-                        port: configService.get<number>('REDIS_PORT')
-                    },
-                    prefix: configService.get<string>('REDIS_PREFIX'),
-                    defaultJobOptions: {
-                        removeOnComplete: true,
-                        removeOnFail: true,
-                    },
-                })
-            }, {
-                name: Queues.QUEUE_BEAMS,
-                imports: [ConfigModule],
-                inject: [ConfigService],
-                useFactory: (configService: ConfigService) => ({
-                    redis: {
-                        host: configService.get<string>('REDIS_HOST'),
-                        port: configService.get<number>('REDIS_PORT')
-                    },
-                    prefix: configService.get<string>('REDIS_PREFIX'),
-                    defaultJobOptions: {
-                        removeOnComplete: true,
-                        removeOnFail: true,
-                    },
-                })
-            }, {
-                name: Queues.QUEUE_FAUCET,
-                imports: [ConfigModule],
-                inject: [ConfigService],
-                useFactory: (configService: ConfigService) => ({
-                    redis: {
-                        host: configService.get<string>('REDIS_HOST'),
-                        port: configService.get<number>('REDIS_PORT')
-                    },
-                    prefix: configService.get<string>('REDIS_PREFIX'),
-                    limiter: {
-                        max: 1,
-                        duration: 30,
-                    },
-                    defaultJobOptions: {
-                        removeOnComplete: true,
-                        removeOnFail: true,
-                    },
-                })
-            },
-            {
-                name: Queues.QUEUE_NOTIFICATIONS,
-                imports: [ConfigModule],
-                inject: [ConfigService],
-                useFactory: (configService: ConfigService) => ({
-                    redis: {
-                        host: configService.get<string>('REDIS_HOST'),
-                        port: configService.get<number>('REDIS_PORT')
-                    },
-                    prefix: configService.get<string>('REDIS_PREFIX'),
-                    limiter: {
-                        max: 1,
-                        duration: 30,
-                    },
-                    defaultJobOptions: {
-                        removeOnComplete: true,
-                        removeOnFail: true,
-                    },
-                })
-            }),
+        ...AsyncQueues.map((queue) => BullModule.registerQueueAsync(queue)),
         ClientsModule.registerAsync([
             {
                 name: 'API',
@@ -103,23 +29,37 @@ import {databaseProviders} from "@app/database";
                     transport: Transport.REDIS,
                     options: {
                         host: configService.get<string>('REDIS_HOST'),
-                        port: configService.get<number>('REDIS_PORT')
+                        port: configService.get<number>('REDIS_PORT'),
                     },
-                })
-            }
+                }),
+            },
         ]),
         HttpModule,
+        TypeOrmModule.forRootAsync(DatabaseConfig),
+        TypeOrmModule.forFeature(DatabaseFeatures),
     ],
     controllers: [],
-    providers: [...databaseProviders, BeamService, BlockService, TransactionService, ValidatorService, ValidatorDelegationService, BeamConsumer, BlockConsumer, CoreConsumer, NotificationConsumer, LumNetworkService],
+    providers: [
+        LumNetworkService,
+        BeamService,
+        BlockService,
+        ProposalDepositService,
+        ProposalVoteService,
+        TransactionService,
+        ValidatorService,
+        ValidatorDelegationService,
+        BeamConsumer,
+        BlockConsumer,
+        CoreConsumer,
+        NotificationConsumer,
+    ],
 })
 export class SyncConsumerModule implements OnModuleInit, OnApplicationBootstrap {
-    constructor(private readonly _lumNetworkService: LumNetworkService) {
-    }
+    constructor(private readonly _lumNetworkService: LumNetworkService) {}
 
     async onModuleInit() {
         // Make sure to initialize the lum network service
-        await this._lumNetworkService.initialise();
+        await this._lumNetworkService.initialize();
     }
 
     async onApplicationBootstrap() {

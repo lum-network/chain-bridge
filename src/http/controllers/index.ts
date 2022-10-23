@@ -9,3 +9,4 @@ export * from './search.controller';
 export * from './stats.controller';
 export * from './transactions.controller';
 export * from './validators.controller';
+export * from './dfract.controller';

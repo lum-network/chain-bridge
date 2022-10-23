@@ -1,3 +1,3 @@
 export enum MetadataKeys {
-    DEFAULT_TAKE = 'defaultTake'
-};
+    DEFAULT_TAKE = 'defaultTake',
+}

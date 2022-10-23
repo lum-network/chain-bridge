@@ -1,11 +1,11 @@
-import {ApiProperty} from "@nestjs/swagger";
+import { ApiProperty } from '@nestjs/swagger';
 
-import {Exclude, Expose, Type} from "class-transformer";
+import { Exclude, Expose, Type } from 'class-transformer';
 
 @Exclude()
 class RedelegationEntry {
     @ApiProperty()
-    @Expose({name: 'completionTime'})
+    @Expose({ name: 'completionTime' })
     completion_time: string;
 }
 
@@ -15,8 +15,8 @@ class RedelegationEntries {
     @Expose()
     balance: string;
 
-    @ApiProperty({type: () => RedelegationEntry})
-    @Expose({name: 'redelegationEntry'})
+    @ApiProperty({ type: () => RedelegationEntry })
+    @Expose({ name: 'redelegationEntry' })
     @Type(() => RedelegationEntry)
     redelegation_entry: RedelegationEntry;
 }
@@ -24,26 +24,26 @@ class RedelegationEntries {
 @Exclude()
 class RedelegationDetails {
     @ApiProperty()
-    @Expose({name: 'delegatorAddress'})
+    @Expose({ name: 'delegatorAddress' })
     delegator_address: string;
 
     @ApiProperty()
-    @Expose({name: 'validatorSrcAddress'})
+    @Expose({ name: 'validatorSrcAddress' })
     validator_src_address: string;
 
     @ApiProperty()
-    @Expose({name: 'validatorDstAddress'})
+    @Expose({ name: 'validatorDstAddress' })
     validator_dst_address: string;
 }
 
 @Exclude()
 export class RedelegationResponse {
-    @ApiProperty({type: () => RedelegationDetails})
+    @ApiProperty({ type: () => RedelegationDetails })
     @Expose()
     @Type(() => RedelegationDetails)
     redelegation: RedelegationDetails;
 
-    @ApiProperty({type: () => [RedelegationEntries]})
+    @ApiProperty({ type: () => [RedelegationEntries] })
     @Expose()
     @Type(() => RedelegationEntries)
     entries: RedelegationEntries[];
