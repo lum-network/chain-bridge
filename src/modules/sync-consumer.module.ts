@@ -53,6 +53,7 @@ import { DatabaseConfig, DatabaseFeatures } from '@app/database';
         CoreConsumer,
         NotificationConsumer,
     ],
+    exports: [LumNetworkService],
 })
 export class SyncConsumerModule implements OnModuleInit, OnApplicationBootstrap {
     constructor(private readonly _lumNetworkService: LumNetworkService) {}

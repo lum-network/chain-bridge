@@ -6,7 +6,7 @@ import { Job, Queue } from 'bull';
 import moment from 'moment';
 import { LumUtils, LumRegistry, LumMessages, LumConstants } from '@lum-network/sdk-javascript';
 
-import { isBeam, NotificationChannels, NotificationEvents, QueueJobs, Queues } from '@app/utils';
+import { getAddressesRelatedToTransaction, isBeam, NotificationChannels, NotificationEvents, QueueJobs, Queues } from '@app/utils';
 
 import { BlockService, LumNetworkService, TransactionService, ValidatorService } from '@app/services';
 import { BlockEntity, TransactionEntity } from '@app/database';
@@ -100,6 +100,11 @@ export class BlockConsumer {
                     raw_tx: LumUtils.toJSON(tx) as string,
                     raw_tx_data: LumUtils.toJSON(txData) as string,
                 };
+
+                // Add addresses in case of transaction failure
+                if (!res.success) {
+                    res.addresses = getAddressesRelatedToTransaction(res);
+                }
 
                 for (const log of logs) {
                     for (const ev of log.events) {

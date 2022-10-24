@@ -74,6 +74,7 @@ import { DatabaseConfig, DatabaseFeatures } from '@app/database';
         GovernanceScheduler,
         ValidatorScheduler,
         LumNetworkService,
+        CosmosService,
         OsmosisService,
         JunoService,
         EvmosService,

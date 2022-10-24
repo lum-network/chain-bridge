@@ -11,7 +11,7 @@ import moment from 'moment';
 import { Stream } from 'xstream';
 import { Queue } from 'bull';
 
-import { DfractAssetSymbol, DfractAssetName, MODULE_NAMES, QueueJobs, Queues, apy, TEN_EXPONENT_SIX, CLIENT_PRECISION, computeTotalAmount, computeApyMetrics } from '@app/utils';
+import { DfractAssetSymbol, DfractAssetName, MODULE_NAMES, QueueJobs, QueuePriority, Queues, apy, TEN_EXPONENT_SIX, CLIENT_PRECISION, computeTotalAmount, computeApyMetrics } from '@app/utils';
 import { lastValueFrom, map } from 'rxjs';
 import { convertUnit } from '@lum-network/sdk-javascript/build/utils';
 import { TokenInfo } from '@app/http';
@@ -59,6 +59,7 @@ export class LumNetworkService {
                                 jobId: `${chainId}-block-${ev.header.height}`,
                                 attempts: 5,
                                 backoff: 60000,
+                                priority: QueuePriority.HIGH,
                             },
                         );
                     },

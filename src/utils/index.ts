@@ -5,6 +5,8 @@ export * from './gov';
 export * from './http';
 export * from './metadata';
 export * from './microservice';
+export * from './sentry';
+export * from './transactions';
 export * from './validation';
 export * from './validators';
 export * from './dfract';
