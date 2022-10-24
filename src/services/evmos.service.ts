@@ -4,7 +4,7 @@ import { ConfigService } from '@nestjs/config';
 
 import { LumClient } from '@lum-network/sdk-javascript';
 import { lastValueFrom, map } from 'rxjs';
-import { apy, CLIENT_PRECISION, DfractAssetName, DfractAssetSymbol, TEN_EXPONENT_SIX } from '@app/utils';
+import { apy, CLIENT_PRECISION, DfractAssetName, DfractAssetSymbol, EVMOS_STAKING_ADDRESS, TEN_EXPONENT_SIX } from '@app/utils';
 import { TokenInfo } from '@app/http';
 
 @Injectable()
@@ -109,30 +109,34 @@ export class EvmosService {
     getTvl = async (): Promise<number> => {
         try {
             const page: Uint8Array | undefined = undefined;
-
-            // TODO Verify decode for lum to evmos
-
-            /*             const decode = LumUtils.Bech32.decode(LUM_STAKING_ADDRESS);
-            const getDecodedAddress = LumUtils.Bech32.encode('evmos', decode.data); */
-            // Helper function cannot pass here as decode address is different
-            const getDecodedAddress = 'evmos1evap49dune5ffh6w3h6ueqv9hyyyyeargtp6gw';
+            // Helper function computeTotalAmount() we manually inject the delegator address
 
             const [balance, rewards, delegationResponses, unbondingResponses] = await Promise.all([
-                await this.evmosClient.getBalance(getDecodedAddress, 'aevmos'),
-                await this.evmosClient.queryClient.distribution.delegationTotalRewards(getDecodedAddress),
-                await this.evmosClient.queryClient.staking.delegatorDelegations(getDecodedAddress, page),
-                await this.evmosClient.queryClient.staking.delegatorUnbondingDelegations(getDecodedAddress, page),
+                await this.evmosClient.getBalance(EVMOS_STAKING_ADDRESS, 'aevmos'),
+                await this.evmosClient.queryClient.distribution.delegationTotalRewards(EVMOS_STAKING_ADDRESS),
+                await this.evmosClient.queryClient.staking.delegatorDelegations(EVMOS_STAKING_ADDRESS, page),
+                await this.evmosClient.queryClient.staking.delegatorUnbondingDelegations(EVMOS_STAKING_ADDRESS, page),
             ]);
 
             const getBalance = Number(balance.amount) || 0;
 
+            console.log('getBalance', getBalance);
+
             const getStakingRewards = Number(rewards.rewards.map((el) => el.reward.filter((el) => el.denom === 'aevmos'))[0].map((el) => el.amount)) / CLIENT_PRECISION;
+
+            console.log('getStakingRewards', getStakingRewards);
 
             const getDelegationReward = Number(delegationResponses.delegationResponses.map((el) => Number(el.balance.amount)));
 
+            console.log('getDelegationReward', getDelegationReward);
+
             const getUnbondingDelegation = Number(unbondingResponses.unbondingResponses.map((el) => el.entries.map((el) => el.balance))) || 0;
 
+            console.log('getUnbondingDelegation', getUnbondingDelegation);
+
             const totalToken = (Number(getStakingRewards) + Number(getUnbondingDelegation) + Number(getBalance) + Number(getDelegationReward)) / CLIENT_PRECISION;
+
+            console.log('totalToken', totalToken);
 
             const computedTvl = totalToken * Number(await this.getPrice());
 

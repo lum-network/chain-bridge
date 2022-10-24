@@ -10,7 +10,7 @@ import * as Joi from 'joi';
 
 import { Queue } from 'bull';
 
-import { AsyncQueues, BlockScheduler, GovernanceScheduler, ValidatorScheduler } from '@app/async';
+import { AsyncQueues, BlockScheduler, GovernanceScheduler, ValidatorScheduler, DfractScheduler } from '@app/async';
 
 import {
     BeamService,
@@ -73,6 +73,7 @@ import { DatabaseConfig, DatabaseFeatures } from '@app/database';
         BlockScheduler,
         GovernanceScheduler,
         ValidatorScheduler,
+        DfractScheduler,
         LumNetworkService,
         CosmosService,
         OsmosisService,

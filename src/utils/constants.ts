@@ -5,6 +5,7 @@ export const TEN_EXPONENT_SIX = 1_000_000;
 export const SIGNED_BLOCK_WINDOW = 10000;
 
 export const LUM_STAKING_ADDRESS = 'lum1euhszjasgkeskujz6zr42r3lsxv58mfgsmlps0';
+export const EVMOS_STAKING_ADDRESS = 'evmos1evap49dune5ffh6w3h6ueqv9hyyyyeargtp6gw';
 
 export enum BeamStatus {
     UNSPECIFIED,
