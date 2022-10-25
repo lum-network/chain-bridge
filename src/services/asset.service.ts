@@ -57,9 +57,9 @@ export class AssetService {
 
             await this.createOrUpdateAssetValue(compositeKey, value);
 
-            const entity = await this.getByMetrics(`${name}_${key}`);
+            const entity = await this.getByMetrics(compositeKey);
 
-            if (entity) await this.createOrUpdateAssetExtra(`${name}_${key}`);
+            if (entity) await this.createOrUpdateAssetExtra(compositeKey);
         }
     };
 }
