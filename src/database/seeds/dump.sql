@@ -54,3 +54,15 @@ VALUES
 ),(
 '21:lum1yhaswwgg5tz7veknxwaj8vc8rfa9s0nahkjq30', 21, 'lum1yhaswwgg5tz7veknxwaj8vc8rfa9s0nahkjq30', 'lumvaloper1yhaswwgg5tz7veknxwaj8vc8rfa9s0nagpmn2t', 3, '1000000000000000000'
 );
+
+CREATE TABLE IF NOT EXISTS assets(
+id VARCHAR,
+value JSON,
+extra JSON
+);
+
+DELETE FROM assets;
+
+INSERT INTO assets(id, value, extra)
+VALUES
+('cosmos_unit_price_usd', '{"unit_price_usd": 11.603241787030745, "last_updated_at": "2022-10-25T11:00:31.233Z"}', '[{"unit_price_usd": 11.603241787030745, "last_updated_at": "2022-10-25T11:00:31.233Z"}]');

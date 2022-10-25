@@ -1,7 +1,7 @@
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModuleAsyncOptions } from '@nestjs/typeorm';
 
-import { BeamEntity, BlockEntity, ProposalDepositEntity, ProposalVoteEntity, TransactionEntity, ValidatorDelegationEntity, ValidatorEntity } from '@app/database/entities';
+import { BeamEntity, BlockEntity, AssetEntity, ProposalDepositEntity, ProposalVoteEntity, TransactionEntity, ValidatorDelegationEntity, ValidatorEntity } from '@app/database/entities';
 
 export const DatabaseConfig: TypeOrmModuleAsyncOptions = {
     imports: [ConfigModule],
@@ -13,10 +13,10 @@ export const DatabaseConfig: TypeOrmModuleAsyncOptions = {
         username: configService.get<string>('DATABASE_USER'),
         password: configService.get<string>('DATABASE_PASSWORD'),
         database: configService.get<string>('DATABASE_NAME'),
-        entities: [BeamEntity, BlockEntity, ProposalDepositEntity, ProposalVoteEntity, TransactionEntity, ValidatorEntity, ValidatorDelegationEntity],
+        entities: [BeamEntity, BlockEntity, AssetEntity, ProposalDepositEntity, ProposalVoteEntity, TransactionEntity, ValidatorEntity, ValidatorDelegationEntity],
         synchronize: true,
         logging: false,
     }),
 };
 
-export const DatabaseFeatures = [BeamEntity, BlockEntity, ProposalDepositEntity, ProposalVoteEntity, TransactionEntity, ValidatorEntity, ValidatorDelegationEntity];
+export const DatabaseFeatures = [BeamEntity, BlockEntity, AssetEntity, ProposalDepositEntity, ProposalVoteEntity, TransactionEntity, ValidatorEntity, ValidatorDelegationEntity];

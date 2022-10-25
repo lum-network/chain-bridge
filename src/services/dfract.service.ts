@@ -1,4 +1,4 @@
-import { DfractAssetName, DfractAssetSymbol } from '@app/utils';
+import { DfractAssetName, DfractAssetSymbol, TEN_EXPONENT_SIX } from '@app/utils';
 import { convertUnit } from '@lum-network/sdk-javascript/build/utils';
 import { Injectable, Logger } from '@nestjs/common';
 import { LumNetworkService, OsmosisService, CosmosService, JunoService, EvmosService, ComdexService, StargazeService, AkashNetworkService, SentinelService, KichainService } from '@app/services';
@@ -79,8 +79,7 @@ export class DfractService {
 
     getAccountAvailableBalance = async (): Promise<any> => {
         try {
-            const balance = await this._lumNetworkService.client.queryClient.dfract.getAccountBalance();
-            console.log('balance', balance);
+            const balance = Number((await this._lumNetworkService.client.queryClient.dfract.getAccountBalance()).map((el) => el.amount)) / TEN_EXPONENT_SIX || 0;
 
             return balance;
         } catch (error) {
@@ -105,8 +104,6 @@ export class DfractService {
     getDfrToMintPrice = async (): Promise<number> => {
         try {
             const price = 1 / Number(await this.getDfrMintRatio());
-
-            console.log('price', price);
 
             return price;
         } catch (error) {
@@ -141,7 +138,7 @@ export class DfractService {
     getTokenInfo = async (): Promise<TokenInfo> => {
         try {
             const getTokenInfo = await Promise.all([await this.getDfrToMintPrice(), Number(await this.getMcap()), await this.getTokenSupply(), Number(await this.getApy())]).then(
-                ([unitPriceUsd, totalValueUsd, supply, apy]) => ({ unitPriceUsd, totalValueUsd, supply, apy }),
+                ([unit_price_usd, total_value_usd, supply, apy]) => ({ unit_price_usd, total_value_usd, supply, apy }),
             );
 
             return {

@@ -1,5 +1,5 @@
 import { HttpModule } from '@nestjs/axios';
-import { Logger, Module, OnApplicationBootstrap, OnModuleInit } from '@nestjs/common';
+import { CacheModule, Logger, Module, OnApplicationBootstrap, OnModuleInit } from '@nestjs/common';
 import { BullModule, InjectQueue } from '@nestjs/bull';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ClientsModule, Transport } from '@nestjs/microservices';
@@ -10,7 +10,7 @@ import * as Joi from 'joi';
 
 import { Queue } from 'bull';
 
-import { AsyncQueues, BlockScheduler, GovernanceScheduler, ValidatorScheduler, DfractScheduler } from '@app/async';
+import { AsyncQueues, BlockScheduler, GovernanceScheduler, ValidatorScheduler, AssetScheduler } from '@app/async';
 
 import {
     BeamService,
@@ -31,6 +31,7 @@ import {
     SentinelService,
     KichainService,
     DfractService,
+    AssetService,
 } from '@app/services';
 import { ConfigMap, QueueJobs, Queues } from '@app/utils';
 import { DatabaseConfig, DatabaseFeatures } from '@app/database';
@@ -56,6 +57,9 @@ import { DatabaseConfig, DatabaseFeatures } from '@app/database';
                 }),
             },
         ]),
+        CacheModule.register({
+            ttl: 60,
+        }),
         ScheduleModule.forRoot(),
         HttpModule,
         TypeOrmModule.forRootAsync(DatabaseConfig),
@@ -73,7 +77,7 @@ import { DatabaseConfig, DatabaseFeatures } from '@app/database';
         BlockScheduler,
         GovernanceScheduler,
         ValidatorScheduler,
-        DfractScheduler,
+        AssetScheduler,
         LumNetworkService,
         CosmosService,
         OsmosisService,
@@ -85,6 +89,7 @@ import { DatabaseConfig, DatabaseFeatures } from '@app/database';
         SentinelService,
         KichainService,
         DfractService,
+        AssetService,
     ],
     exports: [LumNetworkService, OsmosisService, CosmosService, JunoService, EvmosService, ComdexService, StargazeService, AkashNetworkService, SentinelService, KichainService, DfractService],
 })
@@ -117,7 +122,6 @@ export class SyncSchedulerModule implements OnModuleInit, OnApplicationBootstrap
             await this._cosmosService.initializeCosmos(),
             await this._osmosisService.initializeOsmosis(),
             await this._junoService.initializeJuno(),
-            await this._junoService.initializeJuno(),
             await this._evmosService.initializeEvmos(),
             await this._comdexService.initializeComdex(),
             await this._stargazeService.initializeStargaze(),
@@ -139,10 +143,6 @@ export class SyncSchedulerModule implements OnModuleInit, OnApplicationBootstrap
 
         if (!this._osmosisService.isInitializedOsmosis()) {
             throw new Error(`Cannot initialize the Osmosis Service, exiting...`);
-        }
-
-        if (!this._junoService.isInitializedJuno()) {
-            throw new Error(`Cannot initialize the Juno Service, exiting...`);
         }
 
         if (!this._junoService.isInitializedJuno()) {

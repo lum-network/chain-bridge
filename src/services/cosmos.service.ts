@@ -4,7 +4,7 @@ import { ConfigService } from '@nestjs/config';
 
 import { LumClient } from '@lum-network/sdk-javascript';
 import { lastValueFrom, map } from 'rxjs';
-import { apy, CLIENT_PRECISION, computeApyMetrics, computeTotalAmount, DfractAssetName, DfractAssetSymbol, TEN_EXPONENT_SIX } from '@app/utils';
+import { apy, CLIENT_PRECISION, computeApyMetrics, computeTotalAmount, DfractAssetSymbol, TEN_EXPONENT_SIX } from '@app/utils';
 import { convertUnit } from '@lum-network/sdk-javascript/build/utils';
 import { TokenInfo } from '@app/http';
 
@@ -79,12 +79,10 @@ export class CosmosService {
     getTokenInfo = async (): Promise<TokenInfo> => {
         try {
             const getTokenInfo = await Promise.all([await this.getPrice(), await this.getMcap(), await this.getTokenSupply(), await this.getApy()]).then(
-                ([unitPriceUsd, totalValueUsd, supply, apy]) => ({ unitPriceUsd, totalValueUsd, supply, apy }),
+                ([unit_price_usd, total_value_usd, supply, apy]) => ({ unit_price_usd, total_value_usd, supply, apy }),
             );
 
             return {
-                name: DfractAssetName.COSMOS,
-                symbol: DfractAssetSymbol.COSMOS,
                 ...getTokenInfo,
             };
         } catch (error) {

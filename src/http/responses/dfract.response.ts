@@ -8,13 +8,13 @@ export class TokenInfo {
     readonly symbol?: string;
 
     @ApiProperty()
-    readonly unitPriceUsd?: number;
+    readonly unit_price_usd?: number;
 
     @ApiProperty()
     readonly price?: number;
 
     @ApiProperty()
-    readonly totalValueUsd?: number;
+    readonly total_value_usd?: number;
 
     @ApiProperty()
     readonly supply?: number;

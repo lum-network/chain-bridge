@@ -50,8 +50,8 @@ import {
     SentinelService,
     KichainService,
     DfractService,
+    AssetService,
 } from '@app/services';
-
 
 import { ConfigMap, PayloadValidationOptions, SentryModuleOptions } from '@app/utils';
 
@@ -119,6 +119,7 @@ import { AsyncQueues } from '@app/async';
         SentinelService,
         KichainService,
         DfractService,
+        AssetService,
         { provide: APP_FILTER, useClass: HttpExceptionFilter },
         { provide: APP_INTERCEPTOR, useClass: PaginationInterceptor },
         { provide: APP_INTERCEPTOR, useClass: ResponseInterceptor },

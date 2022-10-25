@@ -167,7 +167,7 @@ export class LumNetworkService {
 
     getMcap = async (): Promise<number> => {
         try {
-            const getMcap = Promise.all([await this.getTokenSupply(), await this.getPrice()]).then(([supply, unitPriceUsd]) => Number(supply) * Number(unitPriceUsd));
+            const getMcap = Promise.all([await this.getTokenSupply(), await this.getPrice()]).then(([supply, unit_price_usd]) => Number(supply) * Number(unit_price_usd));
 
             return getMcap;
         } catch (error) {
@@ -190,7 +190,7 @@ export class LumNetworkService {
     getTokenInfo = async (): Promise<TokenInfo> => {
         try {
             const getSentinelTokenInfo = await Promise.all([await this.getPrice(), await this.getMcap(), await this.getTokenSupply(), await this.getApy()]).then(
-                ([unitPriceUsd, totalValueUsd, supply, apy]) => ({ unitPriceUsd, totalValueUsd, supply, apy }),
+                ([unit_price_usd, total_value_usd, supply, apy]) => ({ unit_price_usd, total_value_usd, supply, apy }),
             );
 
             return {
