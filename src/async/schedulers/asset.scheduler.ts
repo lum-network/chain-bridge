@@ -33,7 +33,7 @@ export class AssetScheduler {
             const name = DfractAssetName.COSMOS;
             const tokenInfo = await this._cosmosService.getTokenInfo().catch(() => null);
 
-            await this._assetService.genericAsset(tokenInfo, name);
+            if (tokenInfo) await this._assetService.genericAsset(tokenInfo, name);
         } catch (error) {
             this._logger.error(`Failed to sync token assets from Cosmsos chain...`, error);
         }
@@ -48,7 +48,7 @@ export class AssetScheduler {
 
             const tokenInfo = await this._osmosisService.getTokenInfo().catch(() => null);
 
-            await this._assetService.genericAsset(tokenInfo, name);
+            if (tokenInfo) await this._assetService.genericAsset(tokenInfo, name);
         } catch (error) {
             this._logger.error(`Failed to sync token assets from Osmosis chain...`, error);
         }
@@ -63,7 +63,7 @@ export class AssetScheduler {
 
             const tokenInfo = await this._junoService.getTokenInfo().catch(() => null);
 
-            await this._assetService.genericAsset(tokenInfo, name);
+            if (tokenInfo) await this._assetService.genericAsset(tokenInfo, name);
         } catch (error) {
             this._logger.error(`Failed to sync token assets from Osmosis chain...`, error);
         }
@@ -78,7 +78,7 @@ export class AssetScheduler {
 
             const tokenInfo = await this._evmosService.getTokenInfo().catch(() => null);
 
-            await this._assetService.genericAsset(tokenInfo, name);
+            if (tokenInfo) await this._assetService.genericAsset(tokenInfo, name);
         } catch (error) {
             this._logger.error(`Failed to sync token assets from Evmos chain...`, error);
         }
@@ -93,7 +93,7 @@ export class AssetScheduler {
 
             const tokenInfo = await this._lumNetworkService.getTokenInfo().catch(() => null);
 
-            await this._assetService.genericAsset(tokenInfo, name);
+            if (tokenInfo) await this._assetService.genericAsset(tokenInfo, name);
         } catch (error) {
             this._logger.error(`Failed to sync token assets from Lum Network chain...`, error);
         }
@@ -108,7 +108,7 @@ export class AssetScheduler {
 
             const tokenInfo = await this._comdexService.getTokenInfo().catch(() => null);
 
-            await this._assetService.genericAsset(tokenInfo, name);
+            if (tokenInfo) await this._assetService.genericAsset(tokenInfo, name);
         } catch (error) {
             this._logger.error(`Failed to sync token assets from Comdex chain...`, error);
         }
@@ -123,7 +123,7 @@ export class AssetScheduler {
 
             const tokenInfo = await this._stargazeService.getTokenInfo().catch(() => null);
 
-            await this._assetService.genericAsset(tokenInfo, name);
+            if (tokenInfo) await this._assetService.genericAsset(tokenInfo, name);
         } catch (error) {
             this._logger.error(`Failed to sync token assets from Stargaze chain...`, error);
         }
@@ -138,7 +138,7 @@ export class AssetScheduler {
 
             const tokenInfo = await this._akashNetworkService.getTokenInfo().catch(() => null);
 
-            await this._assetService.genericAsset(tokenInfo, name);
+            if (tokenInfo) await this._assetService.genericAsset(tokenInfo, name);
         } catch (error) {
             this._logger.error(`Failed to sync token assets from Akash Network chain...`, error);
         }
@@ -153,7 +153,7 @@ export class AssetScheduler {
 
             const tokenInfo = await this._sentinelService.getTokenInfo().catch(() => null);
 
-            await this._assetService.genericAsset(tokenInfo, name);
+            if (tokenInfo) await this._assetService.genericAsset(tokenInfo, name);
         } catch (error) {
             this._logger.error(`Failed to sync token assets from Sentinel chain...`, error);
         }
@@ -168,7 +168,7 @@ export class AssetScheduler {
 
             const tokenInfo = await this._kiChainService.getTokenInfo().catch(() => null);
 
-            await this._assetService.genericAsset(tokenInfo, name);
+            if (tokenInfo) await this._assetService.genericAsset(tokenInfo, name);
         } catch (error) {
             this._logger.error(`Failed to sync token assets from Kichain chain...`, error);
         }
