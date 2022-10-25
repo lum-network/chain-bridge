@@ -47,3 +47,10 @@ export const computeApyMetrics = async (
         communityTaxRate,
     };
 };
+
+export interface GenericValueEntity {
+    apy?: number;
+    supply?: number;
+    total_value_usd?: number;
+    unit_price_usd?: number;
+}

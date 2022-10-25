@@ -1,5 +1,5 @@
 import { HttpModule } from '@nestjs/axios';
-import { CacheModule, Logger, Module, OnApplicationBootstrap, OnModuleInit } from '@nestjs/common';
+import { Logger, Module, OnApplicationBootstrap, OnModuleInit } from '@nestjs/common';
 import { BullModule, InjectQueue } from '@nestjs/bull';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ClientsModule, Transport } from '@nestjs/microservices';
@@ -57,9 +57,6 @@ import { DatabaseConfig, DatabaseFeatures } from '@app/database';
                 }),
             },
         ]),
-        CacheModule.register({
-            ttl: 60,
-        }),
         ScheduleModule.forRoot(),
         HttpModule,
         TypeOrmModule.forRootAsync(DatabaseConfig),

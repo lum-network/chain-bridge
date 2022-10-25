@@ -5,7 +5,6 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { AkashNetworkService, ComdexService, CosmosService, EvmosService, JunoService, KichainService, LumNetworkService, OsmosisService, SentinelService, StargazeService } from '@app/services';
 import { AssetService } from '@app/services/asset.service';
 
-import { Cache } from 'cache-manager';
 import { DfractAssetName } from '@app/utils';
 
 @Injectable()
@@ -13,7 +12,6 @@ export class AssetScheduler {
     private _logger: Logger = new Logger(AssetScheduler.name);
 
     constructor(
-        @Inject(CACHE_MANAGER) private cacheManager: Cache,
         private readonly _lumNetworkService: LumNetworkService,
         private readonly _osmosisService: OsmosisService,
         private readonly _cosmosService: CosmosService,
