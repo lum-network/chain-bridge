@@ -4,7 +4,7 @@ import { ConfigService } from '@nestjs/config';
 
 import { LumClient } from '@lum-network/sdk-javascript';
 import { lastValueFrom, map } from 'rxjs';
-import { apy, CLIENT_PRECISION, computeApyMetrics, computeTotalAmount, DfractAssetName, DfractAssetSymbol, TEN_EXPONENT_SIX } from '@app/utils';
+import { apy, CLIENT_PRECISION, computeApyMetrics, computeTotalAmount, DfractAssetSymbol, TEN_EXPONENT_SIX } from '@app/utils';
 import { convertUnit } from '@lum-network/sdk-javascript/build/utils';
 import { TokenInfo } from '@app/http';
 
@@ -83,8 +83,6 @@ export class AkashNetworkService {
             );
 
             return {
-                name: DfractAssetName.AKASH_NETWORK,
-                symbol: DfractAssetSymbol.AKASH_NETWORK,
                 ...getTokenInfo,
             };
         } catch (error) {

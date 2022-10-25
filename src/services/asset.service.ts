@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { AssetEntity } from '@app/database';
+import { GenericValueEntity } from '@app/utils';
 
 @Injectable()
 export class AssetService {
@@ -46,5 +47,19 @@ export class AssetService {
         `);
 
         return query;
+    };
+
+    genericAsset = async (getTokenInfo: Promise<GenericValueEntity>, name: string) => {
+        for (const key in getTokenInfo) {
+            const compositeKey = `${name}_${key}`;
+
+            const value = { [key]: getTokenInfo[key], last_updated_at: new Date() };
+
+            await this.createOrUpdateAssetValue(compositeKey, value);
+
+            const entity = await this.getByMetrics(`${name}_${key}`);
+
+            if (entity) await this.createOrUpdateAssetExtra(`${name}_${key}`);
+        }
     };
 }

@@ -4,7 +4,7 @@ import { ConfigService } from '@nestjs/config';
 
 import { LumClient } from '@lum-network/sdk-javascript';
 import { lastValueFrom, map } from 'rxjs';
-import { apy, CLIENT_PRECISION, DfractAssetName, DfractAssetSymbol, EVMOS_STAKING_ADDRESS, TEN_EXPONENT_SIX } from '@app/utils';
+import { apy, CLIENT_PRECISION, DfractAssetSymbol, EVMOS_STAKING_ADDRESS, TEN_EXPONENT_SIX } from '@app/utils';
 import { TokenInfo } from '@app/http';
 
 @Injectable()
@@ -97,8 +97,6 @@ export class EvmosService {
             );
 
             return {
-                name: DfractAssetName.EVMOS,
-                symbol: DfractAssetSymbol.EVMOS,
                 ...getTokenInfo,
             };
         } catch (error) {
