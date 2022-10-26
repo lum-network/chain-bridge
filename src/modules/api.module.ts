@@ -34,6 +34,7 @@ import {
     LumNetworkService,
     BlockService,
     EvmosService,
+    ChainService,
     TransactionService,
     ValidatorService,
     BeamService,
@@ -100,6 +101,7 @@ import { AsyncQueues } from '@app/async';
     providers: [
         BeamService,
         BlockService,
+        ChainService,
         StatService,
         TransactionService,
         ValidatorService,
@@ -140,38 +142,30 @@ import { AsyncQueues } from '@app/async';
         },
         { provide: APP_PIPE, useFactory: () => new ValidationPipe(PayloadValidationOptions) },
     ],
-    exports: [LumNetworkService, OsmosisService, CosmosService, JunoService, EvmosService, ComdexService, StargazeService, AkashNetworkService, SentinelService, KichainService, DfractService],
+    exports: [
+        ChainService,
+        LumNetworkService,
+        OsmosisService,
+        CosmosService,
+        JunoService,
+        EvmosService,
+        ComdexService,
+        StargazeService,
+        AkashNetworkService,
+        SentinelService,
+        KichainService,
+        DfractService,
+    ],
 })
 export class ApiModule implements OnModuleInit, OnApplicationBootstrap {
     private readonly _logger: Logger = new Logger(ApiModule.name);
 
-    constructor(
-        private readonly _lumNetworkService: LumNetworkService,
-        private readonly _osmosisService: OsmosisService,
-        private readonly _cosmosService: CosmosService,
-        private readonly _junoService: JunoService,
-        private readonly _evmosService: EvmosService,
-        private readonly _comdexService: ComdexService,
-        private readonly _stargazeService: StargazeService,
-        private readonly _akashNetworkService: AkashNetworkService,
-        private readonly _sentinelService: SentinelService,
-        private readonly _kiChainService: KichainService,
-    ) {}
+    constructor(private readonly _lumNetworkService: LumNetworkService, private readonly _chainService: ChainService) {}
 
     async onModuleInit() {
-        // Make sure to initialize the lum network service
-        await Promise.all([
-            await this._lumNetworkService.initialize(),
-            await this._cosmosService.initializeCosmos(),
-            await this._osmosisService.initializeOsmosis(),
-            await this._junoService.initializeJuno(),
-            await this._evmosService.initializeEvmos(),
-            await this._comdexService.initializeComdex(),
-            await this._stargazeService.initializeStargaze(),
-            await this._akashNetworkService.initializeAkashNetwork(),
-            await this._sentinelService.initializeSentinel(),
-            await this._kiChainService.initializeKichain(),
-        ]);
+        // We want first LUM to be initialized before intializing the other chains
+        await this._lumNetworkService.initialize();
+        await this._chainService.initialize();
     }
 
     async onApplicationBootstrap() {
@@ -180,40 +174,8 @@ export class ApiModule implements OnModuleInit, OnApplicationBootstrap {
             throw new Error(`Cannot initialize the Lum Network Service, exiting...`);
         }
 
-        if (!this._cosmosService.isInitializedCosmos()) {
-            throw new Error(`Cannot initialize the Cosmos Service, exiting...`);
-        }
-
-        if (!this._osmosisService.isInitializedOsmosis()) {
-            throw new Error(`Cannot initialize the Osmosis Service, exiting...`);
-        }
-
-        if (!this._junoService.isInitializedJuno()) {
-            throw new Error(`Cannot initialize the Juno Service, exiting...`);
-        }
-
-        if (!this._evmosService.isInitializedEvmos()) {
-            throw new Error(`Cannot initialize the Evmos Service, exiting...`);
-        }
-
-        if (!this._comdexService.isInitializedComdex()) {
-            throw new Error(`Cannot initialize the Comdex Service, exiting...`);
-        }
-
-        if (!this._stargazeService.isInitializedStargaze()) {
-            throw new Error(`Cannot initialize the Stargaze Service, exiting...`);
-        }
-
-        if (!this._akashNetworkService.isInitializedAkashNetwork()) {
-            throw new Error(`Cannot initialize the Akash Network Service, exiting...`);
-        }
-
-        if (!this._sentinelService.isInitializedSentinel()) {
-            throw new Error(`Cannot initialize the Sentinel Service, exiting...`);
-        }
-
-        if (!this._kiChainService.isInitializedKichain()) {
-            throw new Error(`Cannot initialize the Kichain Service, exiting...`);
+        if (!this._chainService.isInitialized()) {
+            throw new Error(`Cannot initialize the External Service, exiting...`);
         }
     }
 }

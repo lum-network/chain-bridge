@@ -1,6 +1,7 @@
 export * from './asset.service';
 export * from './beam.service';
 export * from './block.service';
+export * from './chain.service';
 export * from './elasticsearch.service';
 export * from './stat.service';
 export * from './transaction.service';

@@ -81,3 +81,44 @@ export enum DfractAssetName {
     LUM = 'lum_network',
     DFR = 'dfract',
 }
+
+export enum DfractMicroDenum {
+    COSMOS = 'uatom',
+    OSMOSIS = 'uosmo',
+    JUNO = 'ujuno',
+    /*     EVMOS = 'aevmos', */
+    COMDEX = 'ucmdx',
+    STARGAZE = 'ustars',
+    AKASH_NETWORK = 'uakt',
+    SENTINEL = 'udvpn',
+    KI = 'uxki',
+    LUM = 'ulum',
+    DFR = 'udfr',
+}
+
+export enum DfractDenum {
+    COSMOS = 'atom',
+    OSMOSIS = 'osmo',
+    JUNO = 'juno',
+    /*     EVMOS = 'aevmos', */
+    COMDEX = 'ucmdx',
+    STARGAZE = 'stars',
+    AKASH_NETWORK = 'akt',
+    SENTINEL = 'dvpn',
+    KI = 'xki',
+    LUM = 'lum',
+    DFR = 'dfr',
+}
+
+// If we map the enums first, we encounter an error on the initialization onModuleInit
+export const CHAIN_ENV_CONFIG = [
+    'COSMOS_NETWORK_ENDPOINT',
+    'OSMOSIS_NETWORK_ENDPOINT',
+    'JUNO_NETWORK_ENDPOINT',
+    'EVMOS_NETWORK_ENDPOINT',
+    'STARGAZE_NETWORK_ENDPOINT',
+    'AKASH_NETWORK_ENDPOINT',
+    'COMDEX_NETWORK_ENDPOINT',
+    'SENTINEL_NETWORK_ENDPOINT',
+    'KICHAIN_NETWORK_ENDPOINT',
+];

@@ -15,6 +15,7 @@ import { AsyncQueues, BlockScheduler, GovernanceScheduler, ValidatorScheduler, A
 import {
     BeamService,
     BlockService,
+    ChainService,
     EvmosService,
     CosmosService,
     JunoService,
@@ -66,6 +67,7 @@ import { DatabaseConfig, DatabaseFeatures } from '@app/database';
     providers: [
         BeamService,
         BlockService,
+        ChainService,
         TransactionService,
         ProposalDepositService,
         ProposalVoteService,
@@ -88,7 +90,20 @@ import { DatabaseConfig, DatabaseFeatures } from '@app/database';
         DfractService,
         AssetService,
     ],
-    exports: [LumNetworkService, OsmosisService, CosmosService, JunoService, EvmosService, ComdexService, StargazeService, AkashNetworkService, SentinelService, KichainService, DfractService],
+    exports: [
+        ChainService,
+        LumNetworkService,
+        OsmosisService,
+        CosmosService,
+        JunoService,
+        EvmosService,
+        ComdexService,
+        StargazeService,
+        AkashNetworkService,
+        SentinelService,
+        KichainService,
+        DfractService,
+    ],
 })
 export class SyncSchedulerModule implements OnModuleInit, OnApplicationBootstrap {
     private readonly _logger: Logger = new Logger(SyncSchedulerModule.name);

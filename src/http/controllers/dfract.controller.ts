@@ -3,6 +3,7 @@ import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 
 import {
     AkashNetworkService,
+    ChainService,
     ComdexService,
     CosmosService,
     DfractService,
@@ -35,12 +36,15 @@ export class DfractController {
         private readonly _sentinelService: SentinelService,
         private readonly _kiChainService: KichainService,
         private readonly _dfract: DfractService,
+        private readonly _chainService: ChainService,
     ) {}
 
     @ApiOkResponse({ status: 200 })
     @Get('assets/latest')
     async getDfrInfo(@Req() request: ExplorerRequest): Promise<DataResponse> {
-        const result = await this._dfract.getDfrBackingPrice();
+        const result = await this._chainService.getTokenSupply();
+
+        console.log('result', result);
 
         return new DataResponse({
             result: result,
