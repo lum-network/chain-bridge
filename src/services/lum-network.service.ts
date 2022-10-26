@@ -11,7 +11,7 @@ import moment from 'moment';
 import { Stream } from 'xstream';
 import { Queue } from 'bull';
 
-import { DfractAssetSymbol, DfractAssetName, MODULE_NAMES, QueueJobs, QueuePriority, Queues, apy, TEN_EXPONENT_SIX, CLIENT_PRECISION, computeTotalAmount, computeApyMetrics } from '@app/utils';
+import { MODULE_NAMES, QueueJobs, QueuePriority, Queues, apy, TEN_EXPONENT_SIX, CLIENT_PRECISION, computeTotalAmount, computeApyMetrics } from '@app/utils';
 import { lastValueFrom, map } from 'rxjs';
 import { convertUnit } from '@lum-network/sdk-javascript/build/utils';
 import { TokenInfo } from '@app/http';
@@ -189,14 +189,12 @@ export class LumNetworkService {
 
     getTokenInfo = async (): Promise<TokenInfo> => {
         try {
-            const getSentinelTokenInfo = await Promise.all([await this.getPrice(), await this.getMcap(), await this.getTokenSupply(), await this.getApy()])
+            const getTokenInfo = await Promise.all([await this.getPrice(), await this.getMcap(), await this.getTokenSupply(), await this.getApy()])
                 .then(([unit_price_usd, total_value_usd, supply, apy]) => ({ unit_price_usd, total_value_usd, supply, apy }))
                 .catch(() => null);
 
             return {
-                name: DfractAssetName.LUM,
-                symbol: DfractAssetSymbol.LUM,
-                ...getSentinelTokenInfo,
+                ...getTokenInfo,
             };
         } catch (error) {
             this._logger.error('Failed to compute Token Info for Lum Network...', error);

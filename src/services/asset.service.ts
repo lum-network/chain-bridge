@@ -37,7 +37,7 @@ export class AssetService {
         return entity;
     };
 
-    createOrUpdateAssetExtra = async (metrics: string): Promise<any> => {
+    createOrUpdateAssetExtra = async (metrics: string): Promise<GenericValueEntity> => {
         const entity = await this.getByMetrics(metrics);
 
         const query = await this._repository.query(`
