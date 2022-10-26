@@ -55,7 +55,7 @@ export class AssetService {
 
             const value = { [key]: getTokenInfo[key], last_updated_at: new Date() };
 
-            await this.createOrUpdateAssetValue(compositeKey, value);
+            if (value[key]) await this.createOrUpdateAssetValue(compositeKey, value);
 
             const entity = await this.getByMetrics(compositeKey);
 

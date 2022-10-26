@@ -2,7 +2,19 @@ import { Injectable, Logger } from '@nestjs/common';
 
 import { Cron, CronExpression } from '@nestjs/schedule';
 
-import { AkashNetworkService, ComdexService, CosmosService, EvmosService, JunoService, KichainService, LumNetworkService, OsmosisService, SentinelService, StargazeService } from '@app/services';
+import {
+    AkashNetworkService,
+    ComdexService,
+    CosmosService,
+    DfractService,
+    EvmosService,
+    JunoService,
+    KichainService,
+    LumNetworkService,
+    OsmosisService,
+    SentinelService,
+    StargazeService,
+} from '@app/services';
 import { AssetService } from '@app/services/asset.service';
 
 import { DfractAssetName } from '@app/utils';
@@ -23,6 +35,7 @@ export class AssetScheduler {
         private readonly _sentinelService: SentinelService,
         private readonly _kiChainService: KichainService,
         private readonly _assetService: AssetService,
+        private readonly _dfractService: DfractService,
     ) {}
 
     // Each scheduler is launched in parallel in fetch the token info from the respective chains
@@ -168,6 +181,21 @@ export class AssetScheduler {
             const name = DfractAssetName.KI;
 
             const tokenInfo = await this._kiChainService.getTokenInfo().catch(() => null);
+
+            if (tokenInfo) await this._assetService.genericAsset(tokenInfo, name);
+        } catch (error) {
+            this._logger.error(`Failed to sync token assets from Kichain chain...`, error);
+        }
+    }
+
+    @Cron(CronExpression.EVERY_MINUTE)
+    async dfractSync() {
+        try {
+            this._logger.log(`Syncing token assets info from LumNetwork chain for Dfract...`);
+
+            const name = DfractAssetName.DFR;
+
+            const tokenInfo = await this._dfractService.getTokenInfo().catch(() => null);
 
             if (tokenInfo) await this._assetService.genericAsset(tokenInfo, name);
         } catch (error) {

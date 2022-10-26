@@ -118,23 +118,13 @@ export class EvmosService {
 
             const getBalance = Number(balance.amount) || 0;
 
-            console.log('getBalance', getBalance);
-
             const getStakingRewards = Number(rewards.rewards.map((el) => el.reward.filter((el) => el.denom === 'aevmos'))[0].map((el) => el.amount)) / CLIENT_PRECISION;
-
-            console.log('getStakingRewards', getStakingRewards);
 
             const getDelegationReward = Number(delegationResponses.delegationResponses.map((el) => Number(el.balance.amount)));
 
-            console.log('getDelegationReward', getDelegationReward);
-
             const getUnbondingDelegation = Number(unbondingResponses.unbondingResponses.map((el) => el.entries.map((el) => el.balance))) || 0;
 
-            console.log('getUnbondingDelegation', getUnbondingDelegation);
-
             const totalToken = (Number(getStakingRewards) + Number(getUnbondingDelegation) + Number(getBalance) + Number(getDelegationReward)) / CLIENT_PRECISION;
-
-            console.log('totalToken', totalToken);
 
             const computedTvl = totalToken * Number(await this.getPrice());
 
