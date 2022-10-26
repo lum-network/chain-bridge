@@ -25,6 +25,7 @@ export class AssetScheduler {
         private readonly _assetService: AssetService,
     ) {}
 
+    // Each scheduler is launched in parallel in fetch the token info from the respective chains
     @Cron(CronExpression.EVERY_10_SECONDS)
     async cosmosSync() {
         try {

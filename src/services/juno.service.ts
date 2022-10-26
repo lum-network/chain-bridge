@@ -77,9 +77,9 @@ export class JunoService {
 
     getTokenInfo = async (): Promise<TokenInfo> => {
         try {
-            const getTokenInfo = await Promise.all([await this.getPrice(), await this.getMcap(), await this.getTokenSupply(), await this.getApy()]).then(
-                ([unit_price_usd, total_value_usd, supply, apy]) => ({ unit_price_usd, total_value_usd, supply, apy }),
-            );
+            const getTokenInfo = await Promise.all([await this.getPrice(), await this.getMcap(), await this.getTokenSupply(), await this.getApy()])
+                .then(([unit_price_usd, total_value_usd, supply, apy]) => ({ unit_price_usd, total_value_usd, supply, apy }))
+                .catch(() => null);
 
             return {
                 ...getTokenInfo,

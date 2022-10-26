@@ -40,13 +40,10 @@ export class DfractController {
     @ApiOkResponse({ status: 200 })
     @Get('assets/dfract')
     async getDfrInfo(@Req() request: ExplorerRequest): Promise<DataResponse> {
-        /* const tokenInfo = await this._dfract.getTotalComputedTvl(); */
-        const accountBalance = await this._dfract.getAccountAvailableBalance();
-
-        console.log('accountBalance', accountBalance);
+        const result = await this._dfract.getDfrBackingPrice();
 
         return new DataResponse({
-            result: accountBalance,
+            result: result,
             metadata: new DataResponseMetadata({
                 page: request.pagination.page,
                 limit: request.pagination.limit,
