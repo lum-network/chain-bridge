@@ -42,9 +42,7 @@ export class DfractController {
     @ApiOkResponse({ status: 200 })
     @Get('assets/latest')
     async getDfrInfo(@Req() request: ExplorerRequest): Promise<DataResponse> {
-        const result = await this._chainService.getTokenSupply();
-
-        console.log('result', result);
+        const result = await this._chainService.getApy();
 
         return new DataResponse({
             result: result,

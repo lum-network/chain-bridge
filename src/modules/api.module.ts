@@ -160,12 +160,13 @@ import { AsyncQueues } from '@app/async';
 export class ApiModule implements OnModuleInit, OnApplicationBootstrap {
     private readonly _logger: Logger = new Logger(ApiModule.name);
 
-    constructor(private readonly _lumNetworkService: LumNetworkService, private readonly _chainService: ChainService) {}
+    constructor(private readonly _lumNetworkService: LumNetworkService, private readonly _chainService: ChainService, private readonly _comdexService: ComdexService) {}
 
     async onModuleInit() {
         // We want first LUM to be initialized before intializing the other chains
         await this._lumNetworkService.initialize();
         await this._chainService.initialize();
+        await this._comdexService.initializeComdex();
     }
 
     async onApplicationBootstrap() {

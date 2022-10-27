@@ -31,13 +31,14 @@ export const computeTotalAmount = async (prefix: string, client: LumClient, deno
 export const computeApyMetrics = async (
     client: LumClient,
     supply: number,
+    inflation: number,
     applyClientPrecision: number,
     applyTenExponentSix: number,
 ): Promise<{ stakingRatio: number; inflation: number; communityTaxRate: number }> => {
     const bonding = Number((await client.queryClient.staking.pool()).pool.bondedTokens) / applyTenExponentSix;
     const stakingRatio = Number(bonding) / Number(supply);
 
-    const inflation = Number(await client.queryClient.mint.inflation()) / applyClientPrecision;
+    /*     const inflation = Number(await client.queryClient.mint.inflation()) / applyClientPrecision; */
 
     const communityTaxRate = Number((await client.queryClient.distribution.params()).params.communityTax) / applyClientPrecision;
 

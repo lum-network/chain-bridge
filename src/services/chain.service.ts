@@ -4,32 +4,42 @@ import { ConfigService } from '@nestjs/config';
 
 import { LumClient } from '@lum-network/sdk-javascript';
 import { lastValueFrom, map } from 'rxjs';
-import { apy, CHAIN_ENV_CONFIG, CLIENT_PRECISION, computeApyMetrics, computeTotalAmount, DfractAssetSymbol, DfractDenum, DfractMicroDenum, TEN_EXPONENT_SIX } from '@app/utils';
-import { convertUnit } from '@lum-network/sdk-javascript/build/utils';
-import { TokenInfo } from '@app/http';
+import {
+    apy,
+    CHAIN_ENV_CONFIG,
+    CLIENT_PRECISION,
+    computeApyMetrics,
+    computeTotalAmount,
+    DfractOnChainApy,
+    DfractAssetSymbol,
+    DfractDenum,
+    DfractMicroDenum,
+    TEN_EXPONENT_SIX,
+    PERCENTAGE,
+} from '@app/utils';
 
 @Injectable()
 export class ChainService {
     private readonly _logger: Logger = new Logger(ChainService.name);
     private _chainClient: LumClient = null;
     private _client: LumClient[] = [];
-    private _tokenSupply: number = null;
 
     private _assetSymbol = Object.values(DfractAssetSymbol).map((key) => key);
     private _assetMicroDenum = Object.values(DfractMicroDenum).map((key) => key);
     private _assetDenum = Object.values(DfractDenum).map((key) => key);
+    private _DfractOnChainApy = Object.values(DfractOnChainApy).map((key) => key);
 
     constructor(private readonly _configService: ConfigService, private readonly _httpService: HttpService) {}
 
     initialize = async () => {
         try {
-            for (const id of CHAIN_ENV_CONFIG) {
-                this._chainClient = await LumClient.connect(this._configService.get<string>(id));
+            for (const env of CHAIN_ENV_CONFIG) {
+                this._chainClient = await LumClient.connect(this._configService.get<string>(env));
                 const chainId = await this._chainClient.getChainId();
 
                 this._client.push(this._chainClient);
 
-                this._logger.log(`Connection established to ${id} ${this._configService.get<string>(id)} = ${chainId}`);
+                this._logger.log(`Connection established to ${env} ${this._configService.get<string>(env)} = ${chainId}`);
             }
         } catch (e) {
             console.error(e);
@@ -40,9 +50,9 @@ export class ChainService {
         return this._client !== null;
     };
 
-    client = (): LumClient => {
-        return this._chainClient;
-    };
+    get client(): LumClient[] {
+        return this._client;
+    }
 
     getPrice = async (): Promise<number> => {
         try {
@@ -57,6 +67,7 @@ export class ChainService {
                 }));
         } catch (error) {
             this._logger.error(`Could not fetch Price Market Cap...`);
+            return null;
         }
     };
 
@@ -72,43 +83,100 @@ export class ChainService {
                     symbol: el.symbol,
                 }));
         } catch (error) {
-            this._logger.error(`Could not fetch Market Cap for External Chains...`);
+            this._logger.error(`Could not fetch Market Cap for External Chains...`, error);
+            return null;
         }
     };
 
     getTokenSupply = async (): Promise<any> => {
         try {
-            const getTokenSupply = Number(convertUnit(await client.getSupply('uakt'), 'akt'));
+            // return token supply based on the microDenum and denum from assets in the index
+            const chainSupply = await Promise.all(
+                this._client.map(async (el, index) => {
+                    const supply = Number((await el.getSupply(this._assetMicroDenum[index])).amount) / TEN_EXPONENT_SIX;
 
-            return getTokenSupply;
+                    return { supply, symbol: this._assetDenum[index] };
+                }),
+            );
+            // The value returned from Evmos on chain does not seem accurate to us.
+            // Hence, we rely on their official documentation endpoint to retrieve the supply
+            const evmosSupply = [
+                {
+                    supply:
+                        Number(
+                            await lastValueFrom(
+                                this._httpService.get(`https://rest.bd.evmos.org:1317/evmos/inflation/v1/circulating_supply`).pipe(map((response) => response.data.circulating_supply.amount)),
+                            ),
+                        ) / CLIENT_PRECISION,
+                    symbol: 'aevmos',
+                },
+            ];
+
+            return chainSupply.map((el) => evmosSupply.find((o) => o.symbol === el.symbol) || el);
         } catch (error) {
-            this._logger.error(`Could not fetch Token Supply for External Chains...`);
+            this._logger.error(`Could not fetch Token Supply for External Chains...`, error);
+            return null;
         }
     };
 
-    getApy = async (): Promise<number> => {
+    getApy = async (): Promise<any> => {
         try {
-            const metrics = await computeApyMetrics(this._chainClient, Number(await this.getTokenSupply()), CLIENT_PRECISION, TEN_EXPONENT_SIX);
+            // As inflation is not retrievable for now for some chain
+            // We take the first 5 chain as we need to compute the last one manually for now
+            const client = this._client.slice(0, this._DfractOnChainApy.length);
 
-            const getAktApy = apy(metrics.inflation, metrics.communityTaxRate, metrics.stakingRatio);
+            // Chains where inflation is retrievable
+            const getChainApy = await Promise.all(
+                client.map(async (el, index) => {
+                    const inflation = Number(await el.queryClient.mint.inflation()) / CLIENT_PRECISION;
 
-            return getAktApy;
+                    const metrics = await computeApyMetrics(el, Number((await this.getTokenSupply())[index].supply), inflation, CLIENT_PRECISION, TEN_EXPONENT_SIX);
+
+                    return { apy: apy(metrics.inflation, metrics.communityTaxRate, metrics.stakingRatio), symbol: this._assetDenum[index] };
+                }),
+            );
+
+            // Evmos manual inflation calculation
+            // We use their official endpoint to retrieve the inflation rate
+
+            const evmosIndex = CHAIN_ENV_CONFIG.findIndex((el) => el === `${DfractAssetSymbol.EVMOS}_NETWORK_ENDPOINT`);
+            const evmosInflation = Number(
+                await lastValueFrom(this._httpService.get(`https://rest.bd.evmos.dev:1317/evmos/inflation/v1/inflation_rate`).pipe(map((response) => response.data.inflation_rate))),
+            );
+            const metrics = await computeApyMetrics(this._client[evmosIndex], Number((await this.getTokenSupply())[evmosIndex].supply), evmosInflation, CLIENT_PRECISION, TEN_EXPONENT_SIX);
+
+            const getEvmosApy = { apy: apy(metrics.inflation, metrics.communityTaxRate, metrics.stakingRatio), symbol: this._assetDenum[evmosIndex] };
+
+            // Chains for which inflation is not retrievable via the mint module. Hence, we rely on their official endpoints
+            const getOsmosisApy = Number(await lastValueFrom(this._httpService.get(`https://api-osmosis.imperator.co/apr/v2/staking`).pipe(map((response) => response.data)))) / PERCENTAGE;
+            const getJunoApy = (await lastValueFrom(this._httpService.get(`https://supply-api.junonetwork.io/apr`).pipe(map((response) => response.data)))) / PERCENTAGE;
+            const getStargazeApy = (await lastValueFrom(this._httpService.get(`https://supply-api.publicawesome.dev/apr`).pipe(map((response) => response.data)))) / PERCENTAGE;
+
+            return [
+                ...getChainApy,
+                getEvmosApy,
+                { apy: getOsmosisApy, symbol: DfractDenum.OSMOSIS },
+                { apy: getJunoApy, symbol: DfractDenum.JUNO },
+                { apy: getStargazeApy, symbol: DfractDenum.STARGAZE },
+            ];
         } catch (error) {
-            this._logger.error(`Could not fetch Apy for AkashNetwork...`);
+            this._logger.error(`Could not fetch Token Apy for External Chains...`, error);
+            return null;
         }
     };
 
-    getTokenInfo = async (): Promise<TokenInfo> => {
+    /*     getTokenInfo = async (): Promise<TokenInfo> => {
         try {
-            const getTokenInfo = await Promise.all([await this.getPrice(), await this.getMcap(), await this.getTokenSupply(), await this.getApy()])
-                .then(([unit_price_usd, total_value_usd, supply, apy]) => ({ unit_price_usd, total_value_usd, supply, apy }))
-                .catch(() => null);
+            const getTokenInfo = await Promise.all([await this.getPrice(), await this.getMcap(), await this.getTokenSupply(), await this.getApy()]).then(
+                ([unit_price_usd, total_value_usd, supply, apy]) => ({ unit_price_usd, total_value_usd, supply, apy }),
+            );
 
             return {
                 ...getTokenInfo,
             };
         } catch (error) {
             this._logger.error('Failed to compute Token Info for AkashNetwork...', error);
+            return null;
         }
     };
 
@@ -122,5 +190,5 @@ export class ChainService {
         } catch (error) {
             this._logger.error('Failed to compute TVL for AkashNetwork...', error);
         }
-    };
+    }; */
 }

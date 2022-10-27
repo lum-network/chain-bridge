@@ -3,6 +3,7 @@ export const MODULE_NAMES = ['SyncConsumerModule', 'SyncSchedulerModule', 'ApiMo
 export const CLIENT_PRECISION = 1_000_000_000_000_000_000;
 export const TEN_EXPONENT_SIX = 1_000_000;
 export const SIGNED_BLOCK_WINDOW = 10000;
+export const PERCENTAGE = 100;
 
 export const LUM_STAKING_ADDRESS = 'lum1euhszjasgkeskujz6zr42r3lsxv58mfgsmlps0';
 export const EVMOS_STAKING_ADDRESS = 'evmos1evap49dune5ffh6w3h6ueqv9hyyyyeargtp6gw';
@@ -56,69 +57,84 @@ export enum NotificationEvents {
 
 export enum DfractAssetSymbol {
     COSMOS = 'ATOM',
+    AKASH_NETWORK = 'AKT',
+    COMDEX = 'CMDX',
+    SENTINEL = 'DVPN',
+    KI = 'XKI',
     OSMOSIS = 'OSMO',
     JUNO = 'JUNO',
     EVMOS = 'EVMOS',
-    COMDEX = 'CMDX',
     STARGAZE = 'STARS',
-    AKASH_NETWORK = 'AKT',
-    SENTINEL = 'DVPN',
-    KI = 'XKI',
     LUM = 'LUM',
     DFR = 'DFR',
 }
 
 export enum DfractAssetName {
     COSMOS = 'cosmos',
-    OSMOSIS = 'osmosis',
-    JUNO = 'juno',
-    EVMOS = 'evmos',
-    COMDEX = 'comdex',
     STARGAZE = 'stars',
     AKASH_NETWORK = 'akash_network',
     SENTINEL = 'sentinel',
     KI = 'kichain',
+    OSMOSIS = 'osmosis',
+    JUNO = 'juno',
+    EVMOS = 'evmos',
+    COMDEX = 'comdex',
     LUM = 'lum_network',
     DFR = 'dfract',
 }
 
 export enum DfractMicroDenum {
     COSMOS = 'uatom',
-    OSMOSIS = 'uosmo',
-    JUNO = 'ujuno',
-    /*     EVMOS = 'aevmos', */
-    COMDEX = 'ucmdx',
-    STARGAZE = 'ustars',
     AKASH_NETWORK = 'uakt',
+    COMDEX = 'ucmdx',
     SENTINEL = 'udvpn',
     KI = 'uxki',
+    OSMOSIS = 'uosmo',
+    JUNO = 'ujuno',
+    EVMOS = 'aevmos',
+    STARGAZE = 'ustars',
     LUM = 'ulum',
     DFR = 'udfr',
 }
 
 export enum DfractDenum {
     COSMOS = 'atom',
-    OSMOSIS = 'osmo',
-    JUNO = 'juno',
-    /*     EVMOS = 'aevmos', */
-    COMDEX = 'ucmdx',
-    STARGAZE = 'stars',
     AKASH_NETWORK = 'akt',
+    COMDEX = 'ucmdx',
     SENTINEL = 'dvpn',
     KI = 'xki',
+    OSMOSIS = 'osmo',
+    JUNO = 'juno',
+    EVMOS = 'aevmos',
+    STARGAZE = 'stars',
     LUM = 'lum',
     DFR = 'dfr',
+}
+
+export enum DfractOnChainApy {
+    COSMOS = 'atom',
+    AKASH_NETWORK = 'akt',
+    COMDEX = 'ucmdx',
+    SENTINEL = 'dvpn',
+    KI = 'xki',
+}
+
+export enum DfractManualApy {
+    OSMOSIS = 'osmo',
+    JUNO = 'juno',
+    EVMOS = 'aevmos',
+    STARGAZE = 'stars',
 }
 
 // If we map the enums first, we encounter an error on the initialization onModuleInit
 export const CHAIN_ENV_CONFIG = [
     'COSMOS_NETWORK_ENDPOINT',
-    'OSMOSIS_NETWORK_ENDPOINT',
-    'JUNO_NETWORK_ENDPOINT',
-    'EVMOS_NETWORK_ENDPOINT',
-    'STARGAZE_NETWORK_ENDPOINT',
     'AKASH_NETWORK_ENDPOINT',
     'COMDEX_NETWORK_ENDPOINT',
     'SENTINEL_NETWORK_ENDPOINT',
     'KICHAIN_NETWORK_ENDPOINT',
+    'OSMOSIS_NETWORK_ENDPOINT',
+    'JUNO_NETWORK_ENDPOINT',
+    'EVMOS_NETWORK_ENDPOINT',
+    'STARGAZE_NETWORK_ENDPOINT',
 ];

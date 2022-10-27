@@ -66,7 +66,7 @@ export class KichainService {
 
     getApy = async (): Promise<number> => {
         try {
-            const metrics = await computeApyMetrics(this.kichainClient, Number(await this.getTokenSupply()), CLIENT_PRECISION, TEN_EXPONENT_SIX);
+            const metrics = await computeApyMetrics(this.kichainClient, Number(await this.getTokenSupply()), 0.5, CLIENT_PRECISION, TEN_EXPONENT_SIX);
 
             const getXkiApy = apy(metrics.inflation, metrics.communityTaxRate, metrics.stakingRatio);
 

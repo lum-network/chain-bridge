@@ -66,7 +66,7 @@ export class SentinelService {
 
     getApy = async (): Promise<number> => {
         try {
-            const metrics = await computeApyMetrics(this.sentinelClient, Number(await this.getTokenSupply()), CLIENT_PRECISION, TEN_EXPONENT_SIX);
+            const metrics = await computeApyMetrics(this.sentinelClient, Number(await this.getTokenSupply()), 0.5, CLIENT_PRECISION, TEN_EXPONENT_SIX);
 
             const getDvpnApy = apy(metrics.inflation, metrics.communityTaxRate, metrics.stakingRatio);
 

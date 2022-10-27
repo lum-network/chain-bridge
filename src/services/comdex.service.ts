@@ -58,6 +58,8 @@ export class ComdexService {
         try {
             const getTokenSupply = Number(convertUnit(await this.comdexClient.getSupply('ucmdx'), 'cmdx'));
 
+            console.log('token supply inside comdex', getTokenSupply);
+
             return getTokenSupply;
         } catch (error) {
             this._logger.error(`Could not fetch Token Supply for Comdex...`);
@@ -66,9 +68,13 @@ export class ComdexService {
 
     getApy = async (): Promise<any> => {
         try {
-            const metrics = await computeApyMetrics(this.comdexClient, Number(await this.getTokenSupply()), CLIENT_PRECISION, TEN_EXPONENT_SIX);
+            const metrics = await computeApyMetrics(this.comdexClient, Number(await this.getTokenSupply()), 0.5, CLIENT_PRECISION, TEN_EXPONENT_SIX);
+
+            console.log('metrics', metrics);
 
             const getCmdxApy = apy(metrics.inflation, metrics.communityTaxRate, metrics.stakingRatio);
+
+            console.log('getCmdxApy', getCmdxApy);
 
             return getCmdxApy;
         } catch (error) {

@@ -66,7 +66,7 @@ export class CosmosService {
 
     getApy = async (): Promise<number> => {
         try {
-            const metrics = await computeApyMetrics(this.cosmosClient, Number(await this.getTokenSupply()), CLIENT_PRECISION, TEN_EXPONENT_SIX);
+            const metrics = await computeApyMetrics(this.cosmosClient, Number(await this.getTokenSupply()), 0.5, CLIENT_PRECISION, TEN_EXPONENT_SIX);
 
             const getAtomApy = apy(metrics.inflation, metrics.communityTaxRate, metrics.stakingRatio);
 
