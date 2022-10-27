@@ -65,19 +65,17 @@ export enum DfractAssetSymbol {
     JUNO = 'JUNO',
     STARGAZE = 'STARS',
     EVMOS = 'EVMOS',
-    LUM = 'LUM',
-    DFR = 'DFR',
 }
 
 export enum DfractAssetName {
     COSMOS = 'cosmos',
-    STARGAZE = 'stars',
     AKASH_NETWORK = 'akash_network',
+    COMDEX = 'comdex',
     SENTINEL = 'sentinel',
     KI = 'kichain',
     OSMOSIS = 'osmosis',
     JUNO = 'juno',
-    COMDEX = 'comdex',
+    STARGAZE = 'stars',
     EVMOS = 'evmos',
     LUM = 'lum_network',
     DFR = 'dfract',

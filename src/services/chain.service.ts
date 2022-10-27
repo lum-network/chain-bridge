@@ -181,15 +181,9 @@ export class ChainService {
         try {
             // We need to compute the tvl differently for evmos as the Lum decode is not working
             // So we exclude evmos from the first batch
-            const client = this._client.slice(0, 8);
-            const getTotalPrice = await this.getPrice();
-
             const evmosIndex = CHAIN_ENV_CONFIG.findIndex((el) => el === `${DfractAssetSymbol.EVMOS}_NETWORK_ENDPOINT`);
-
-            const evmosTotalToken = {
-                total_token: Number(await computeTotalAmount(EVMOS_STAKING_ADDRESS, this._client[evmosIndex], this._assetMicroDenum[evmosIndex], CLIENT_PRECISION, TEN_EXPONENT_SIX)),
-                symbol: this._assetSymbol[evmosIndex],
-            };
+            const client = this._client.slice(0, evmosIndex);
+            const getTotalPrice = (await this.getPrice()).sort((a, b) => a.symbol.localeCompare(b.symbol));
 
             const computedTotalToken = await Promise.all(
                 client.map(async (el, index) => {
@@ -202,13 +196,19 @@ export class ChainService {
                 }),
             );
 
-            console.log('computedTotalToken', computedTotalToken);
+            // We calculate for evmos
+            const evmosTotalToken = {
+                total_token: Number(await computeTotalAmount(EVMOS_STAKING_ADDRESS, this._client[evmosIndex], this._assetMicroDenum[evmosIndex], CLIENT_PRECISION, CLIENT_PRECISION)),
+                symbol: this._assetSymbol[evmosIndex],
+            };
 
-            return getTotalPrice
-                .map((item, index) => Object.assign({}, item, computedTotalToken[index]))
-                .map((el, index) => ({
+            const totalComputedToken = [...computedTotalToken, evmosTotalToken].sort((a, b) => a.symbol.localeCompare(b.symbol));
+
+            return totalComputedToken
+                .map((item, i) => Object.assign({}, item, getTotalPrice[i]))
+                .map((el) => ({
                     tvl: Number(el.unit_price_usd) * Number(el.total_token),
-                    symbol: this._assetSymbol[index],
+                    symbol: el.symbol,
                 }));
         } catch (error) {
             this._logger.error('Failed to compute TVL for External Chain...', error);
