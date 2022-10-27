@@ -42,7 +42,7 @@ export class DfractController {
     @ApiOkResponse({ status: 200 })
     @Get('assets/latest')
     async getDfrInfo(@Req() request: ExplorerRequest): Promise<DataResponse> {
-        const result = await this._chainService.getApy();
+        const result = await this._chainService.getTvl();
 
         return new DataResponse({
             result: result,

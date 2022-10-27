@@ -63,8 +63,8 @@ export enum DfractAssetSymbol {
     KI = 'XKI',
     OSMOSIS = 'OSMO',
     JUNO = 'JUNO',
-    EVMOS = 'EVMOS',
     STARGAZE = 'STARS',
+    EVMOS = 'EVMOS',
     LUM = 'LUM',
     DFR = 'DFR',
 }
@@ -77,8 +77,8 @@ export enum DfractAssetName {
     KI = 'kichain',
     OSMOSIS = 'osmosis',
     JUNO = 'juno',
-    EVMOS = 'evmos',
     COMDEX = 'comdex',
+    EVMOS = 'evmos',
     LUM = 'lum_network',
     DFR = 'dfract',
 }
@@ -91,8 +91,8 @@ export enum DfractMicroDenum {
     KI = 'uxki',
     OSMOSIS = 'uosmo',
     JUNO = 'ujuno',
-    EVMOS = 'aevmos',
     STARGAZE = 'ustars',
+    EVMOS = 'aevmos',
     LUM = 'ulum',
     DFR = 'udfr',
 }
@@ -105,8 +105,8 @@ export enum DfractDenum {
     KI = 'xki',
     OSMOSIS = 'osmo',
     JUNO = 'juno',
-    EVMOS = 'aevmos',
     STARGAZE = 'stars',
+    EVMOS = 'aevmos',
     LUM = 'lum',
     DFR = 'dfr',
 }
@@ -119,11 +119,18 @@ export enum DfractOnChainApy {
     KI = 'xki',
 }
 
-export enum DfractManualApy {
+export enum DfractPrefix {
+    COSMOS = 'cosmos',
+    AKASH_NETWORK = 'akash',
+    COMDEX = 'comdex',
+    SENTINEL = 'sent',
+    KI = 'ki',
     OSMOSIS = 'osmo',
     JUNO = 'juno',
-    EVMOS = 'aevmos',
     STARGAZE = 'stars',
+    EVMOS = 'evmos',
+    LUM = 'lum',
+    DFR = 'dfr',
 }
 
 // If we map the enums first, we encounter an error on the initialization onModuleInit
@@ -135,6 +142,6 @@ export const CHAIN_ENV_CONFIG = [
     'KICHAIN_NETWORK_ENDPOINT',
     'OSMOSIS_NETWORK_ENDPOINT',
     'JUNO_NETWORK_ENDPOINT',
-    'EVMOS_NETWORK_ENDPOINT',
     'STARGAZE_NETWORK_ENDPOINT',
+    'EVMOS_NETWORK_ENDPOINT',
 ];

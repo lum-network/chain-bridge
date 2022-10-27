@@ -1,12 +1,9 @@
-import { LumClient, LumUtils } from '@lum-network/sdk-javascript';
-import { LUM_STAKING_ADDRESS } from './constants';
+import { LumClient } from '@lum-network/sdk-javascript';
 
 export const apy = (inflation: number, rateCommunityTax: number, stakingRatio: number) => (inflation * (1 - rateCommunityTax)) / stakingRatio;
 
-export const computeTotalAmount = async (prefix: string, client: LumClient, denom: string, applyClientPrecision: number, applyTenExponentSix: number): Promise<number> => {
+export const computeTotalAmount = async (getDecodedAddress: string, client: LumClient, denom: string, applyClientPrecision: number, applyTenExponentSix: number): Promise<number> => {
     const page: Uint8Array | undefined = undefined;
-    const decode = LumUtils.Bech32.decode(LUM_STAKING_ADDRESS);
-    const getDecodedAddress = LumUtils.Bech32.encode(prefix, decode.data);
 
     const [balance, rewards, delegationResponses, unbondingResponses] = await Promise.all([
         await client.getBalance(getDecodedAddress, denom),
@@ -37,8 +34,6 @@ export const computeApyMetrics = async (
 ): Promise<{ stakingRatio: number; inflation: number; communityTaxRate: number }> => {
     const bonding = Number((await client.queryClient.staking.pool()).pool.bondedTokens) / applyTenExponentSix;
     const stakingRatio = Number(bonding) / Number(supply);
-
-    /*     const inflation = Number(await client.queryClient.mint.inflation()) / applyClientPrecision; */
 
     const communityTaxRate = Number((await client.queryClient.distribution.params()).params.communityTax) / applyClientPrecision;
 
