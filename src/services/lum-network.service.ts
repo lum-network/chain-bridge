@@ -5,13 +5,26 @@ import { ModulesContainer } from '@nestjs/core';
 import { InjectQueue } from '@nestjs/bull';
 
 import { NewBlockEvent } from '@cosmjs/tendermint-rpc';
-import { LumClient } from '@lum-network/sdk-javascript';
+import { LumClient, LumConstants, LumUtils } from '@lum-network/sdk-javascript';
 import { ProposalStatus } from '@lum-network/sdk-javascript/build/codec/cosmos/gov/v1beta1/gov';
 import moment from 'moment';
 import { Stream } from 'xstream';
 import { Queue } from 'bull';
 
-import { MODULE_NAMES, QueueJobs, QueuePriority, Queues, apy, TEN_EXPONENT_SIX, CLIENT_PRECISION, computeTotalAmount, computeApyMetrics } from '@app/utils';
+import {
+    MODULE_NAMES,
+    QueueJobs,
+    QueuePriority,
+    Queues,
+    apy,
+    TEN_EXPONENT_SIX,
+    CLIENT_PRECISION,
+    computeTotalAmount,
+    computeApyMetrics,
+    LUM_STAKING_ADDRESS,
+    AssetPrefix,
+    AssetSymbol,
+} from '@app/utils';
 import { lastValueFrom, map } from 'rxjs';
 import { convertUnit } from '@lum-network/sdk-javascript/build/utils';
 import { TokenInfo } from '@app/http';
@@ -84,14 +97,17 @@ export class LumNetworkService {
         return this._client;
     }
 
-    getPrice = async (): Promise<any> => {
+    getPriceLum = async (): Promise<any> => {
         try {
-            const getPrice = await lastValueFrom(this._httpService.get(`https://api-osmosis.imperator.co/tokens/v2/price/lum`).pipe(map((response) => response.data.price)));
-
-            return getPrice;
+            return await lastValueFrom(this._httpService.get(`https://api.coingecko.com/api/v3/coins/lum-network`).pipe(map((response) => response.data.market_data.current_price.usd)));
         } catch (error) {
-            this._logger.error(`Could not fetch price from Kichain...`);
+            this._logger.error(`Could not fetch Token Supply for Lum Network...`, error);
+            return null;
         }
+    };
+
+    getPrice = (): Promise<any> => {
+        return this._httpService.get(`https://api.coingecko.com/api/v3/coins/lum-network`).toPromise();
     };
 
     getPriceHistory = async (startAt: number, endAt: number): Promise<any> => {
@@ -157,59 +173,60 @@ export class LumNetworkService {
 
     getTokenSupply = async (): Promise<number> => {
         try {
-            const getTokenSupply = Number(convertUnit(await this.client.getSupply('ulum'), 'lum'));
-
-            return getTokenSupply;
+            return Number(convertUnit(await this.client.getSupply(LumConstants.MicroLumDenom), LumConstants.LumDenom));
         } catch (error) {
-            this._logger.error(`Could not fetch Token Supply for Lum Network...`);
+            this._logger.error(`Could not fetch Token Supply for Lum Network...`, error);
+            return null;
         }
     };
 
     getMcap = async (): Promise<number> => {
         try {
-            const getMcap = Promise.all([await this.getTokenSupply(), await this.getPrice()]).then(([supply, unit_price_usd]) => Number(supply) * Number(unit_price_usd));
-
-            return getMcap;
+            return Promise.all([await this.getTokenSupply(), await this.getPriceLum()]).then(([supply, unit_price_usd]) => Number(supply) * Number(unit_price_usd));
         } catch (error) {
-            this._logger.error(`Could not fetch Market Cap for Lum Network...`);
+            this._logger.error(`Could not fetch Market Cap for Lum Network...`, error);
+            return null;
         }
     };
 
-    getApy = async (): Promise<number> => {
+    getApy = async (): Promise<{ apy: number; symbol: string }> => {
         try {
-            const metrics = await computeApyMetrics(this.client, Number(await this.getTokenSupply()), 0.5, CLIENT_PRECISION, TEN_EXPONENT_SIX);
+            const inflation = Number(await this._client.queryClient.mint.inflation()) / CLIENT_PRECISION;
+            const metrics = await computeApyMetrics(this.client, Number(await this.getTokenSupply()), inflation, CLIENT_PRECISION, TEN_EXPONENT_SIX);
 
-            const getLumApy = apy(metrics.inflation, metrics.communityTaxRate, metrics.stakingRatio);
-
-            return getLumApy;
+            return { apy: apy(metrics.inflation, metrics.communityTaxRate, metrics.stakingRatio), symbol: AssetSymbol.LUM };
         } catch (error) {
-            this._logger.error(`Could not fetch Apy for Lum Network...`);
+            this._logger.error(`Could not fetch Apy for Lum Network...`, error);
+            return null;
         }
     };
 
     getTokenInfo = async (): Promise<TokenInfo> => {
         try {
-            const getTokenInfo = await Promise.all([await this.getPrice(), await this.getMcap(), await this.getTokenSupply(), await this.getApy()])
-                .then(([unit_price_usd, total_value_usd, supply, apy]) => ({ unit_price_usd, total_value_usd, supply, apy }))
-                .catch(() => null);
-
-            return {
-                ...getTokenInfo,
-            };
+            return await Promise.all([await this.getPriceLum(), await this.getMcap(), await this.getTokenSupply(), (await this.getApy()).apy]).then(
+                ([unit_price_usd, total_value_usd, supply, apy]) => ({
+                    unit_price_usd,
+                    total_value_usd,
+                    supply,
+                    apy,
+                }),
+            );
         } catch (error) {
             this._logger.error('Failed to compute Token Info for Lum Network...', error);
+            return null;
         }
     };
 
-    getTvl = async (): Promise<number> => {
+    getTvl = async (): Promise<any> => {
         try {
-            const totalToken = await computeTotalAmount('lum', this.client, 'ulum', CLIENT_PRECISION, TEN_EXPONENT_SIX);
+            const decode = LumUtils.Bech32.decode(LUM_STAKING_ADDRESS);
+            const getDecodedAddress = LumUtils.Bech32.encode(AssetPrefix.LUM, decode.data);
+            const totalToken = await computeTotalAmount(getDecodedAddress, this.client, LumConstants.MicroLumDenom, CLIENT_PRECISION, TEN_EXPONENT_SIX);
 
-            const computedTvl = Number(totalToken) * Number(await this.getPrice());
-
-            return computedTvl;
+            return { tvl: Number(totalToken) * Number(await this.getPriceLum()), symbol: AssetSymbol.LUM };
         } catch (error) {
             this._logger.error('Failed to compute TVL for Lum Network...', error);
+            return null;
         }
     };
 }

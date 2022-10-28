@@ -55,7 +55,7 @@ export enum NotificationEvents {
     NEW_TRANSACTION = 'new-transaction',
 }
 
-export enum DfractAssetSymbol {
+export enum AssetSymbol {
     COSMOS = 'ATOM',
     AKASH_NETWORK = 'AKT',
     COMDEX = 'CMDX',
@@ -65,9 +65,11 @@ export enum DfractAssetSymbol {
     JUNO = 'JUNO',
     STARGAZE = 'STARS',
     EVMOS = 'EVMOS',
+    LUM = 'LUM',
+    DFR = 'DFR',
 }
 
-export enum DfractAssetName {
+export enum AssetName {
     COSMOS = 'cosmos',
     AKASH_NETWORK = 'akash_network',
     COMDEX = 'comdex',
@@ -81,43 +83,7 @@ export enum DfractAssetName {
     DFR = 'dfract',
 }
 
-export enum DfractMicroDenum {
-    COSMOS = 'uatom',
-    AKASH_NETWORK = 'uakt',
-    COMDEX = 'ucmdx',
-    SENTINEL = 'udvpn',
-    KI = 'uxki',
-    OSMOSIS = 'uosmo',
-    JUNO = 'ujuno',
-    STARGAZE = 'ustars',
-    EVMOS = 'aevmos',
-    LUM = 'ulum',
-    DFR = 'udfr',
-}
-
-export enum DfractDenum {
-    COSMOS = 'atom',
-    AKASH_NETWORK = 'akt',
-    COMDEX = 'ucmdx',
-    SENTINEL = 'dvpn',
-    KI = 'xki',
-    OSMOSIS = 'osmo',
-    JUNO = 'juno',
-    STARGAZE = 'stars',
-    EVMOS = 'aevmos',
-    LUM = 'lum',
-    DFR = 'dfr',
-}
-
-export enum DfractOnChainApy {
-    COSMOS = 'atom',
-    AKASH_NETWORK = 'akt',
-    COMDEX = 'ucmdx',
-    SENTINEL = 'dvpn',
-    KI = 'xki',
-}
-
-export enum DfractPrefix {
+export enum AssetPrefix {
     COSMOS = 'cosmos',
     AKASH_NETWORK = 'akash',
     COMDEX = 'comdex',
@@ -129,6 +95,31 @@ export enum DfractPrefix {
     EVMOS = 'evmos',
     LUM = 'lum',
     DFR = 'dfr',
+}
+
+export enum AssetMicroDenum {
+    COSMOS = 'uatom',
+    AKASH_NETWORK = 'uakt',
+    COMDEX = 'ucmdx',
+    SENTINEL = 'udvpn',
+    KI = 'uxki',
+    OSMOSIS = 'uosmo',
+    JUNO = 'ujuno',
+    STARGAZE = 'ustars',
+    EVMOS = 'aevmos',
+    DFR = 'udfr',
+}
+
+export enum AssetDenum {
+    DFR = 'dfr',
+}
+
+export enum DfractOnChainApy {
+    COSMOS = 'atom',
+    AKASH_NETWORK = 'akt',
+    COMDEX = 'ucmdx',
+    SENTINEL = 'dvpn',
+    KI = 'xki',
 }
 
 // If we map the enums first, we encounter an error on the initialization onModuleInit
