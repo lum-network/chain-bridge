@@ -5,6 +5,7 @@ import { Repository } from 'typeorm';
 
 import { AssetEntity } from '@app/database';
 import { GenericValueEntity } from '@app/utils';
+import { TokenInfo } from '@app/http';
 
 @Injectable()
 export class AssetService {
@@ -49,13 +50,13 @@ export class AssetService {
         return query;
     };
 
-    genericAsset = async (getTokenInfo: Promise<GenericValueEntity>, name: string) => {
-        for (const key in getTokenInfo) {
-            const compositeKey = `${name}_${key}`;
+    genericAsset = async (getTokenInfo: any) => {
+        for (const key of await getTokenInfo) {
+            const compositeKey = `${key.symbol}_${Object.keys(key)[0]}`;
 
-            const value = { [key]: getTokenInfo[key], last_updated_at: new Date() };
+            const value = { [Object.keys(key)[0]]: Object.values(key)[0], last_updated_at: new Date() };
 
-            if (value[key]) await this.createOrUpdateAssetValue(compositeKey, value);
+            await this.createOrUpdateAssetValue(compositeKey, value);
 
             const entity = await this.getByMetrics(compositeKey);
 

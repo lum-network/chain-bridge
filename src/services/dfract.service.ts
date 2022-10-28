@@ -105,6 +105,7 @@ export class DfractService {
             );
         } catch (error) {
             this._logger.error('Failed to compute Token Info for Dfract...', error);
+            return null;
         }
     };
 }

@@ -5,8 +5,6 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { ChainService, DfractService, LumNetworkService } from '@app/services';
 import { AssetService } from '@app/services/asset.service';
 
-import { AssetName } from '@app/utils';
-
 @Injectable()
 export class AssetScheduler {
     private _logger: Logger = new Logger(AssetScheduler.name);
@@ -22,14 +20,15 @@ export class AssetScheduler {
     @Cron(CronExpression.EVERY_10_SECONDS)
     async chainSync() {
         try {
-            this._logger.log(`Syncing token assets info from Cosmos chain...`);
+            this._logger.log(`Syncing token assets info from External chain...`);
 
-            const name = AssetName.COSMOS;
-            const tokenInfo = await this._chainService.getTokenInfo().catch(() => null);
+            /* const name = AssetName.COSMOS; */
+            const tokenInfo = (await this._chainService.getTokenInfo()).sort((a, b) => a.symbol.localeCompare(b.symbol));
 
-            if (tokenInfo) await this._assetService.genericAsset(tokenInfo, name);
+            if (tokenInfo) await this._assetService.genericAsset(tokenInfo);
         } catch (error) {
             this._logger.error(`Failed to sync token assets from Cosmsos chain...`, error);
+            return null;
         }
     }
 
