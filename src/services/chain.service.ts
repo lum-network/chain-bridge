@@ -79,7 +79,7 @@ export class ChainService {
             const getMktCap = await lastValueFrom(this._httpService.get(`https://api-osmosis.imperator.co/tokens/v2/mcap`).pipe(map((response) => response.data)));
 
             return getMktCap
-                .filter((el) => this._assetSymbol.some((f) => f === el.symbol))
+                .filter((el) => this._assetSymbol.some((f) => f === el.symbol && el.symbol !== AssetSymbol.LUM))
                 .map((el) => ({
                     total_value_usd: el.market_cap,
                     symbol: el.symbol,
@@ -187,8 +187,6 @@ export class ChainService {
             const client = this._client.slice(0, evmosIndex);
             const getTotalPrice = (await this.getPrice()).sort((a, b) => a.symbol.localeCompare(b.symbol));
 
-            console.log('getTotalPrice', getTotalPrice);
-
             const computedTotalToken = await Promise.all(
                 client.map(async (el, index) => {
                     const decode = LumUtils.Bech32.decode(LUM_STAKING_ADDRESS);
@@ -207,18 +205,6 @@ export class ChainService {
             };
 
             const totalComputedToken = [...computedTotalToken, evmosTotalToken].sort((a, b) => a.symbol.localeCompare(b.symbol));
-
-            console.log('totalComputedToken', totalComputedToken);
-
-            console.log(
-                'Merged',
-                totalComputedToken
-                    .map((item, i) => Object.assign({}, item, getTotalPrice[i]))
-                    .map((el) => ({
-                        tvl: Number(el.unit_price_usd) * Number(el.total_token),
-                        symbol: el.symbol,
-                    })),
-            );
 
             return totalComputedToken
                 .map((item, i) => Object.assign({}, item, getTotalPrice[i]))

@@ -4,6 +4,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 
 import { ChainService, DfractService, LumNetworkService } from '@app/services';
 import { AssetService } from '@app/services/asset.service';
+import { AssetSymbol } from '@app/utils';
 
 @Injectable()
 export class AssetScheduler {
@@ -20,30 +21,26 @@ export class AssetScheduler {
     @Cron(CronExpression.EVERY_10_SECONDS)
     async chainSync() {
         try {
-            this._logger.log(`Syncing token assets info from External chain...`);
+            this._logger.log(`Syncing token assets info from chain...`);
 
-            /* const name = AssetName.COSMOS; */
-            const tokenInfo = (await this._chainService.getTokenInfo()).sort((a, b) => a.symbol.localeCompare(b.symbol));
+            const getMetrics = await this._chainService.getTokenInfo();
 
-            if (tokenInfo) await this._assetService.genericAsset(tokenInfo);
+            if (getMetrics) await this._assetService.chainAssetCreateOrUpdate(getMetrics);
         } catch (error) {
-            this._logger.error(`Failed to sync token assets from Cosmsos chain...`, error);
-            return null;
+            this._logger.error(`Failed to sync token assets from External chain...`, error);
         }
     }
 
-    /*     @Cron(CronExpression.EVERY_10_SECONDS)
+    @Cron(CronExpression.EVERY_10_SECONDS)
     async lumNetworkSync() {
         try {
-            this._logger.log(`Syncing token assets info from Lum Network chain...`);
+            this._logger.log(`Syncing token assets info from LumNetwork chain...`);
 
-            const name = AssetName.LUM;
+            const tokenInfo = await this._lumNetworkService.getTokenInfo();
 
-            const tokenInfo = await this._lumNetworkService.getTokenInfo().catch(() => null);
-
-            if (tokenInfo) await this._assetService.genericAsset(tokenInfo, name);
+            if (tokenInfo) await this._assetService.owneAssetCreateOrUpdate(tokenInfo, AssetSymbol.LUM);
         } catch (error) {
-            this._logger.error(`Failed to sync token assets from Lum Network chain...`, error);
+            this._logger.error(`Failed to sync token assets from LumNetwork chain...`, error);
         }
     }
 
@@ -52,13 +49,11 @@ export class AssetScheduler {
         try {
             this._logger.log(`Syncing token assets info from LumNetwork chain for Dfract...`);
 
-            const name = AssetName.DFR;
+            const tokenInfo = await this._dfractService.getTokenInfo();
 
-            const tokenInfo = await this._dfractService.getTokenInfo().catch(() => null);
-
-            if (tokenInfo) await this._assetService.genericAsset(tokenInfo, name);
+            if (tokenInfo) await this._assetService.owneAssetCreateOrUpdate(tokenInfo, AssetSymbol.DFR);
         } catch (error) {
-            this._logger.error(`Failed to sync token assets from Kichain chain...`, error);
+            this._logger.error(`Failed to sync token assets from LumNetwork chain for Dfract...`, error);
         }
-    } */
+    }
 }

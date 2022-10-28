@@ -4,8 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { AssetEntity } from '@app/database';
-import { GenericValueEntity } from '@app/utils';
-import { TokenInfo } from '@app/http';
+import { AssetSymbol, GenericValueEntity } from '@app/utils';
 
 @Injectable()
 export class AssetService {
@@ -50,7 +49,7 @@ export class AssetService {
         return query;
     };
 
-    genericAsset = async (getTokenInfo: any) => {
+    chainAssetCreateOrUpdate = async (getTokenInfo: any) => {
         for (const key of await getTokenInfo) {
             const compositeKey = `${key.symbol}_${Object.keys(key)[0]}`;
 
@@ -62,5 +61,28 @@ export class AssetService {
 
             if (entity) await this.createOrUpdateAssetExtra(compositeKey);
         }
+    };
+
+    owneAssetCreateOrUpdate = async (getTokenInfo: any, name: string) => {
+        for (const key in getTokenInfo) {
+            const compositeKey = `${name}_${key}`;
+
+            const value = { [key]: getTokenInfo[key], last_updated_at: new Date() };
+
+            if (value[key]) await this.createOrUpdateAssetValue(compositeKey, value);
+
+            const entity = await this.getByMetrics(compositeKey);
+
+            if (entity) await this.createOrUpdateAssetExtra(compositeKey);
+        }
+    };
+
+    fetchLastMetrics = async (): Promise<any> => {
+        const query = await this._repository.query(`
+            SELECT id, value FROM assets
+            ORDER BY id ASC
+        `);
+
+        return query;
     };
 }
