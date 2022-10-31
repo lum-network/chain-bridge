@@ -69,20 +69,6 @@ export enum AssetSymbol {
     DFR = 'DFR',
 }
 
-export enum AssetName {
-    COSMOS = 'cosmos',
-    AKASH_NETWORK = 'akash_network',
-    COMDEX = 'comdex',
-    SENTINEL = 'sentinel',
-    KI = 'kichain',
-    OSMOSIS = 'osmosis',
-    JUNO = 'juno',
-    STARGAZE = 'stars',
-    EVMOS = 'evmos',
-    LUM = 'lum_network',
-    DFR = 'dfract',
-}
-
 export enum AssetPrefix {
     COSMOS = 'cosmos',
     AKASH_NETWORK = 'akash',

@@ -12,7 +12,7 @@ export class DfractService {
 
     getTokenSupply = async (): Promise<number> => {
         try {
-            return Number(convertUnit(await this._lumNetworkService.client.getSupply(AssetMicroDenum.DFR), AssetDenum.DFR));
+            return Number(convertUnit(await this._lumNetworkService.client.getSupply(AssetMicroDenum.DFR), AssetDenum.DFR)) + 4850.662478984576;
         } catch (error) {
             this._logger.error(`Could not fetch Token Supply for DFR on Lum Network...`, error);
             return null;

@@ -4,7 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { AssetEntity } from '@app/database';
-import { AssetSymbol, GenericValueEntity } from '@app/utils';
+import { GenericValueEntity } from '@app/utils';
 
 @Injectable()
 export class AssetService {
@@ -16,6 +16,18 @@ export class AssetService {
                 id: metrics,
             },
         });
+    };
+
+    getLatestValue = async (): Promise<any> => {
+        const query = await this._repository.createQueryBuilder('assets').select(['id', 'value']).orderBy('id', 'ASC').getRawMany();
+
+        return query;
+    };
+
+    getLatestExtra = async (): Promise<any> => {
+        const query = await this._repository.createQueryBuilder('assets').select(['id', 'extra']).orderBy('id', 'ASC').getRawMany();
+
+        return query;
     };
 
     createOrUpdateAssetValue = async (metrics: string, value: any): Promise<AssetEntity> => {
@@ -37,6 +49,29 @@ export class AssetService {
         return entity;
     };
 
+    chainAssetCreateOrUpdateValue = async (getTokenInfo: any) => {
+        for (const key of await getTokenInfo) {
+            if (key) {
+                const compositeKey = `${key?.symbol}_${Object.keys(key)[0]}`;
+                const value = { [Object.keys(key)[0]]: Object.values(key)[0], last_updated_at: new Date() };
+
+                await this.createOrUpdateAssetValue(compositeKey, value);
+            }
+        }
+    };
+
+    owneAssetCreateOrUpdateValue = async (getTokenInfo: any, name: string) => {
+        for (const key in getTokenInfo) {
+            if (key) {
+                const compositeKey = `${name}_${key}`;
+
+                const value = { [key]: getTokenInfo[key], last_updated_at: new Date() };
+
+                await this.createOrUpdateAssetValue(compositeKey, value);
+            }
+        }
+    };
+
     createOrUpdateAssetExtra = async (metrics: string): Promise<GenericValueEntity> => {
         const entity = await this.getByMetrics(metrics);
 
@@ -49,39 +84,29 @@ export class AssetService {
         return query;
     };
 
-    chainAssetCreateOrUpdate = async (getTokenInfo: any) => {
-        for (const key of await getTokenInfo) {
-            const compositeKey = `${key.symbol}_${Object.keys(key)[0]}`;
+    assetCreateOrAppendExtra = async () => {
+        const record = await this.getLatestValue();
 
-            const value = { [Object.keys(key)[0]]: Object.values(key)[0], last_updated_at: new Date() };
+        for (const key of record) {
+            const entity = await this.getByMetrics(key?.id);
 
-            await this.createOrUpdateAssetValue(compositeKey, value);
-
-            const entity = await this.getByMetrics(compositeKey);
-
-            if (entity) await this.createOrUpdateAssetExtra(compositeKey);
+            if (entity) await this.createOrUpdateAssetExtra(key?.id);
         }
     };
 
-    owneAssetCreateOrUpdate = async (getTokenInfo: any, name: string) => {
-        for (const key in getTokenInfo) {
-            const compositeKey = `${name}_${key}`;
+    fetchLatestAssetMetrics = async (skip: number, take: number): Promise<any> => {
+        let query = {};
 
-            const value = { [key]: getTokenInfo[key], last_updated_at: new Date() };
+        const sql = await this._repository.createQueryBuilder('assets').select(['id', 'value']).orderBy('id', 'ASC').skip(skip).take(take).getRawMany();
 
-            if (value[key]) await this.createOrUpdateAssetValue(compositeKey, value);
+        const data = sql.map((el) => {
+            const { id, ...rest } = el;
+            return { symbol: el.id.substring(0, id.indexOf('_')), ...rest.value };
+        });
 
-            const entity = await this.getByMetrics(compositeKey);
+        data.forEach((a) => (query[a.symbol] = { ...query[a.symbol], ...a }));
 
-            if (entity) await this.createOrUpdateAssetExtra(compositeKey);
-        }
-    };
-
-    fetchLastMetrics = async (): Promise<any> => {
-        const query = await this._repository.query(`
-            SELECT id, value FROM assets
-            ORDER BY id ASC
-        `);
+        query = Object.values(query);
 
         return query;
     };

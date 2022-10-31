@@ -22,14 +22,17 @@ export class DfractController {
     @ApiOkResponse({ status: 200 })
     @Get('assets/latest')
     async getDfrInfo(@Req() request: ExplorerRequest): Promise<DataResponse> {
-        const result = await this._assetService.fetchLastMetrics();
+        const customOffset = 100;
+
+        const result = await this._assetService.fetchLatestAssetMetrics(request.pagination.skip, customOffset);
 
         return new DataResponse({
             result: result,
             metadata: new DataResponseMetadata({
                 page: request.pagination.page,
-                limit: request.pagination.limit,
-                items_total: null,
+                limit: customOffset,
+                items_count: result.length,
+                items_total: result.length,
             }),
         });
     }
