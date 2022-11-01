@@ -19,6 +19,11 @@ export class AssetService {
         });
     };
 
+    getExtra = async (): Promise<{ id: string; extra: [] }[]> => {
+        const extra = this._repository.createQueryBuilder('assets').select(['id', 'extra']);
+        return await extra.getRawMany();
+    };
+
     createOrUpdateAssetValue = async (compositeKey: string, value: any): Promise<AssetEntity> => {
         let entity = await this.getByCompositeKey(compositeKey);
 
@@ -77,25 +82,27 @@ export class AssetService {
         const record = await this._repository.createQueryBuilder('assets').select(['id', 'value']).orderBy('id', 'ASC').getRawMany();
 
         for (const key of record) {
-            const entity = await this.getByCompositeKey(key?.id);
+            if (key) {
+                const entity = await this.getByCompositeKey(key.id);
 
-            if (entity) await this.createOrUpdateAssetExtra(key?.id);
+                if (entity) await this.createOrUpdateAssetExtra(key.id);
+            }
         }
     };
 
     fetchLatestMetrics = async (skip: number, take: number): Promise<TokenInfo[]> => {
-        const query = {};
+        const sql = {};
 
-        const sql = await this._repository.createQueryBuilder('assets').select(['id', 'value']).orderBy('id', 'ASC').skip(skip).take(take).getRawMany();
+        const query = await this._repository.createQueryBuilder('assets').select(['id', 'value']).orderBy('id', 'ASC').skip(skip).take(take).getRawMany();
 
-        const data = sql.map((el) => {
+        const data = query.map((el) => {
             const { id, ...rest } = el;
             return { symbol: el.id.substring(0, id.indexOf('_')), ...rest.value };
         });
 
-        data.forEach((el) => (query[el.symbol] = { ...query[el.symbol], ...el }));
+        data.forEach((el) => (sql[el.symbol] = { ...sql[el.symbol], ...el }));
 
-        return Object.values(query);
+        return Object.values(sql);
     };
 
     fetchMetricsSince = async (metrics: string, date: string, skip: number, take: number): Promise<{ id: string; extra: [] }[]> => {

@@ -97,8 +97,6 @@ export class AccountsController {
             this._validatorDelegationService.sumTotalSharesForDelegator(address).catch(() => null),
         ]);
 
-        console.log('accounts', account);
-
         if (!account) {
             throw new NotFoundException('account_not_found');
         }

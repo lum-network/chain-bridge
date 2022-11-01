@@ -109,6 +109,7 @@ export enum DfractOnChainApy {
 }
 
 // If we map the enums first, we encounter an error on the initialization onModuleInit
+// Hence, we hardcod the endpoint env
 export const CHAIN_ENV_CONFIG = [
     'COSMOS_NETWORK_ENDPOINT',
     'AKASH_NETWORK_ENDPOINT',

@@ -1,9 +1,18 @@
 import { LumClient } from '@lum-network/sdk-javascript';
 
+// Helper function to return apy percentage
 export const apy = (inflation: number, rateCommunityTax: number, stakingRatio: number) => (inflation * (1 - rateCommunityTax)) / stakingRatio;
 
-export const computeTotalAmount = async (getDecodedAddress: string, client: LumClient, denom: string, applyClientPrecision: number, applyTenExponentSix: number): Promise<number> => {
+// Helper function to compute total token amount from chains where we can get the info
+export const computeTotalTokenAmount = async (getDecodedAddress: string, client: LumClient, denom: string, applyClientPrecision: number, applyTenExponentSix: number): Promise<number> => {
     const page: Uint8Array | undefined = undefined;
+
+    // The total token amount is composed of:
+    // 1) available tokens in balance
+    // 2) staking rewards tokens
+    // 3) staking rewards tokens
+    // 4) delagation rewards tokens
+    // 5) unbounding delegation
 
     const [balance, rewards, delegationResponses, unbondingResponses] = await Promise.all([
         await client.getBalance(getDecodedAddress, denom),
@@ -25,13 +34,19 @@ export const computeTotalAmount = async (getDecodedAddress: string, client: LumC
     return totalToken;
 };
 
-export const computeApyMetrics = async (
+// Helper function to compute total apy from chains where we can get the info
+export const computeTotalApy = async (
     client: LumClient,
     supply: number,
     inflation: number,
     applyClientPrecision: number,
     applyTenExponentSix: number,
 ): Promise<{ stakingRatio: number; inflation: number; communityTaxRate: number }> => {
+    // The total apy is computed based on the following information:
+    // 1) The inflation rate which is dependent on the bonding ration and supply
+    // 2) The stakingRatio ratio
+    // 3) The community tax rate
+
     const bonding = Number((await client.queryClient.staking.pool()).pool.bondedTokens) / applyTenExponentSix;
     const stakingRatio = Number(bonding) / Number(supply);
 
@@ -51,6 +66,7 @@ export interface GenericValueEntity {
     unit_price_usd?: number;
 }
 
+// Helper function to convert month params in number from client
 export const getDateFromString = (mon: string, year: string) => {
     const d = Date.parse(mon + `1, ${year}`);
     if (!isNaN(d)) {

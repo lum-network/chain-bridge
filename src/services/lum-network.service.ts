@@ -19,8 +19,8 @@ import {
     apy,
     TEN_EXPONENT_SIX,
     CLIENT_PRECISION,
-    computeTotalAmount,
-    computeApyMetrics,
+    computeTotalTokenAmount,
+    computeTotalApy,
     LUM_STAKING_ADDRESS,
     AssetPrefix,
     AssetSymbol,
@@ -192,7 +192,7 @@ export class LumNetworkService {
     getApy = async (): Promise<{ apy: number; symbol: string }> => {
         try {
             const inflation = Number(await this._client.queryClient.mint.inflation()) / CLIENT_PRECISION;
-            const metrics = await computeApyMetrics(this.client, Number(await this.getTokenSupply()), inflation, CLIENT_PRECISION, TEN_EXPONENT_SIX);
+            const metrics = await computeTotalApy(this.client, Number(await this.getTokenSupply()), inflation, CLIENT_PRECISION, TEN_EXPONENT_SIX);
 
             return { apy: apy(metrics.inflation, metrics.communityTaxRate, metrics.stakingRatio), symbol: AssetSymbol.LUM };
         } catch (error) {
@@ -221,7 +221,7 @@ export class LumNetworkService {
         try {
             const decode = LumUtils.Bech32.decode(LUM_STAKING_ADDRESS);
             const getDecodedAddress = LumUtils.Bech32.encode(AssetPrefix.LUM, decode.data);
-            const totalToken = await computeTotalAmount(getDecodedAddress, this.client, LumConstants.MicroLumDenom, CLIENT_PRECISION, TEN_EXPONENT_SIX);
+            const totalToken = await computeTotalTokenAmount(getDecodedAddress, this.client, LumConstants.MicroLumDenom, CLIENT_PRECISION, TEN_EXPONENT_SIX);
 
             return { tvl: Number(totalToken) * Number(await this.getPriceLum()), symbol: AssetSymbol.LUM };
         } catch (error) {

@@ -8,8 +8,8 @@ import {
     apy,
     CHAIN_ENV_CONFIG,
     CLIENT_PRECISION,
-    computeApyMetrics,
-    computeTotalAmount,
+    computeTotalApy,
+    computeTotalTokenAmount,
     DfractOnChainApy,
     AssetSymbol,
     AssetMicroDenum,
@@ -135,7 +135,7 @@ export class ChainService {
                 client.map(async (el, index) => {
                     const inflation = Number(await el.queryClient.mint.inflation()) / CLIENT_PRECISION;
 
-                    const metrics = await computeApyMetrics(el, Number((await this.getTokenSupply())[index].supply), inflation, CLIENT_PRECISION, TEN_EXPONENT_SIX);
+                    const metrics = await computeTotalApy(el, Number((await this.getTokenSupply())[index].supply), inflation, CLIENT_PRECISION, TEN_EXPONENT_SIX);
 
                     return { apy: apy(metrics.inflation, metrics.communityTaxRate, metrics.stakingRatio), symbol: this._assetSymbol[index] };
                 }),
@@ -147,7 +147,7 @@ export class ChainService {
             const evmosInflation = Number(
                 await lastValueFrom(this._httpService.get(`https://rest.bd.evmos.dev:1317/evmos/inflation/v1/inflation_rate`).pipe(map((response) => response.data.inflation_rate))),
             );
-            const metrics = await computeApyMetrics(this._client[evmosIndex], Number((await this.getTokenSupply())[evmosIndex].supply), evmosInflation, CLIENT_PRECISION, TEN_EXPONENT_SIX);
+            const metrics = await computeTotalApy(this._client[evmosIndex], Number((await this.getTokenSupply())[evmosIndex].supply), evmosInflation, CLIENT_PRECISION, TEN_EXPONENT_SIX);
 
             const getEvmosApy = { apy: apy(metrics.inflation, metrics.communityTaxRate, metrics.stakingRatio), symbol: this._assetSymbol[evmosIndex] };
 
@@ -193,7 +193,7 @@ export class ChainService {
                     const decode = LumUtils.Bech32.decode(LUM_STAKING_ADDRESS);
                     const getDecodedAddress = LumUtils.Bech32.encode(this._dfractPrefix[index], decode.data);
                     return {
-                        total_token: Number(await computeTotalAmount(getDecodedAddress, el, this._assetMicroDenum[index], CLIENT_PRECISION, TEN_EXPONENT_SIX)),
+                        total_token: Number(await computeTotalTokenAmount(getDecodedAddress, el, this._assetMicroDenum[index], CLIENT_PRECISION, TEN_EXPONENT_SIX)),
                         symbol: this._assetSymbol[index],
                     };
                 }),
@@ -201,7 +201,7 @@ export class ChainService {
 
             // We calculate for evmos
             const evmosTotalToken = {
-                total_token: Number(await computeTotalAmount(EVMOS_STAKING_ADDRESS, this._client[evmosIndex], this._assetMicroDenum[evmosIndex], CLIENT_PRECISION, CLIENT_PRECISION)),
+                total_token: Number(await computeTotalTokenAmount(EVMOS_STAKING_ADDRESS, this._client[evmosIndex], this._assetMicroDenum[evmosIndex], CLIENT_PRECISION, CLIENT_PRECISION)),
                 symbol: this._assetSymbol[evmosIndex],
             };
 

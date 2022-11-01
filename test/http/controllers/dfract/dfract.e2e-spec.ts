@@ -34,7 +34,7 @@ describe('Dfract (e2e)', () => {
         return request(app.getHttpServer()).get('/dfract/assets/latest').expect(200).expect(mockResponseLatestMetrics);
     });
 
-    it('[GET] Dfract - should return the asset the apy metrics for atom from since october 2022', () => {
+    it('[GET] Dfract - should return the apy metrics for atom from since october 2022', () => {
         return request(app.getHttpServer()).get('/dfract/assets/atom_apy/oct-2022').expect(200).expect(mockResponseHistoricalMetrics);
     });
 
