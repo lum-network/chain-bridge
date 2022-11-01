@@ -11,26 +11,26 @@ import { TokenInfo } from '@app/http';
 export class AssetService {
     constructor(@InjectRepository(AssetEntity) private readonly _repository: Repository<AssetEntity>) {}
 
-    getByMetrics = async (metrics: string): Promise<AssetEntity> => {
+    getByCompositeKey = async (compositeKey: string): Promise<AssetEntity> => {
         return this._repository.findOne({
             where: {
-                id: metrics,
+                id: compositeKey,
             },
         });
     };
 
-    createOrUpdateAssetValue = async (metrics: string, value: any): Promise<AssetEntity> => {
-        let entity = await this.getByMetrics(metrics);
+    createOrUpdateAssetValue = async (compositeKey: string, value: any): Promise<AssetEntity> => {
+        let entity = await this.getByCompositeKey(compositeKey);
 
         // If entity does not exists, we create with a new one
         if (!entity) {
             entity = new AssetEntity({
-                id: metrics,
+                id: compositeKey,
                 value,
             });
         } else {
             // Otherwise, we just update the propertiess
-            entity.id = metrics;
+            entity.id = compositeKey;
             entity.value = value;
         }
 
@@ -38,7 +38,7 @@ export class AssetService {
         return entity;
     };
 
-    chainAssetCreateOrUpdateValue = async (getTokenInfo: TokenInfo[]) => {
+    chainAssetCreateOrUpdateValue = async (getTokenInfo: TokenInfo[]): Promise<void> => {
         for (const key of getTokenInfo) {
             if (key) {
                 const compositeKey = `${key.symbol.toLowerCase()}_${Object.keys(key)[0]}`;
@@ -49,7 +49,7 @@ export class AssetService {
         }
     };
 
-    owneAssetCreateOrUpdateValue = async (getTokenInfo: any, name: string) => {
+    owneAssetCreateOrUpdateValue = async (getTokenInfo: any, name: string): Promise<void> => {
         for (const key in getTokenInfo) {
             if (key) {
                 const compositeKey = `${name.toLowerCase()}_${key}`;
@@ -61,23 +61,23 @@ export class AssetService {
         }
     };
 
-    createOrUpdateAssetExtra = async (metrics: string): Promise<GenericValueEntity> => {
-        const entity = await this.getByMetrics(metrics);
+    createOrUpdateAssetExtra = async (compositeKey: string): Promise<GenericValueEntity> => {
+        const entity = await this.getByCompositeKey(compositeKey);
 
         const query = await this._repository.query(`
             UPDATE assets
             SET extra = extra || '${JSON.stringify(entity.value)}'::jsonb
-            WHERE id = '${metrics}'
+            WHERE id = '${compositeKey}'
         `);
 
         return query;
     };
 
-    assetCreateOrAppendExtra = async () => {
+    assetCreateOrAppendExtra = async (): Promise<void> => {
         const record = await this._repository.createQueryBuilder('assets').select(['id', 'value']).orderBy('id', 'ASC').getRawMany();
 
         for (const key of record) {
-            const entity = await this.getByMetrics(key?.id);
+            const entity = await this.getByCompositeKey(key?.id);
 
             if (entity) await this.createOrUpdateAssetExtra(key?.id);
         }
@@ -98,7 +98,7 @@ export class AssetService {
         return Object.values(query);
     };
 
-    fetchMetricsSince = async (metrics: string, date: string, skip: number, take: number): Promise<any> => {
+    fetchMetricsSince = async (metrics: string, date: string, skip: number, take: number): Promise<{ id: string; extra: [] }[]> => {
         // Date will come as string format with month and year 'Jan-2022'
         const formatedDate = date.split('-');
 
