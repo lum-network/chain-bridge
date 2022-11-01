@@ -50,3 +50,11 @@ export interface GenericValueEntity {
     total_value_usd?: number;
     unit_price_usd?: number;
 }
+
+export const getDateFromString = (mon: string, year: string) => {
+    const d = Date.parse(mon + `1, ${year}`);
+    if (!isNaN(d)) {
+        return new Date(d).getMonth() + 1;
+    }
+    return -1;
+};

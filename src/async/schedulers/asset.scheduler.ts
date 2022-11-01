@@ -5,7 +5,6 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { ChainService, DfractService, LumNetworkService } from '@app/services';
 import { AssetService } from '@app/services/asset.service';
 import { AssetSymbol } from '@app/utils';
-import moment from 'moment';
 
 @Injectable()
 export class AssetScheduler {
@@ -18,43 +17,36 @@ export class AssetScheduler {
         private readonly _chainService: ChainService,
     ) {}
 
-    @Cron(CronExpression.EVERY_MINUTE)
-    async syncValue() {
+    @Cron(CronExpression.EVERY_5_MINUTES)
+    async syncHourly() {
         try {
-            this._logger.log(`Syncing latest token info values from chain...`);
+            this._logger.log(`Syncing latest token values from chain...`);
+            // We sync all values except DFR every hour
+            // Data we get {unit_price_usd, total_value_usd, supply, apy}
 
             const chainMetrics = await this._chainService.getTokenInfo();
-            if (chainMetrics.length) this._assetService.chainAssetCreateOrUpdateValue(chainMetrics);
+            if (chainMetrics) this._assetService.chainAssetCreateOrUpdateValue(chainMetrics);
 
             const lumMetrics = await this._lumNetworkService.getTokenInfo();
             if (lumMetrics) this._assetService.owneAssetCreateOrUpdateValue(lumMetrics, AssetSymbol.LUM);
         } catch (error) {
-            this._logger.error(`Failed to sync token assets from External chain...`, error);
+            this._logger.error(`Failed to update hourly values...`, error);
         }
     }
 
-    @Cron(CronExpression.EVERY_5_MINUTES)
-    async syncExtra() {
+    @Cron(CronExpression.EVERY_10_MINUTES)
+    async syncWeekly() {
         try {
-            this._logger.log(`Querying latest value from assets table...`);
-
-            await this._assetService.assetCreateOrAppendExtra();
-        } catch (error) {
-            this._logger.error(`Failed to query latest value from assets table...`, error);
-        }
-    }
-
-    @Cron(CronExpression.EVERY_5_MINUTES)
-    async dfractSync() {
-        try {
-            this._logger.log(`Syncing token assets info from LumNetwork chain for Dfract...`);
+            this._logger.log(`Updating DFR token values from chain...`);
 
             const dfractMetrics = await this._dfractService.getTokenInfo();
             if (dfractMetrics) this._assetService.owneAssetCreateOrUpdateValue(dfractMetrics, AssetSymbol.DFR);
 
+            this._logger.log(`Updating historical value from index assets...`);
+
             await this._assetService.assetCreateOrAppendExtra();
         } catch (error) {
-            this._logger.error(`Failed to sync token assets from LumNetwork chain for Dfract...`, error);
+            this._logger.error(`Failed to update weekly historical data...`, error);
         }
     }
 }

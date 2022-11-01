@@ -4,7 +4,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { AssetEntity } from '@app/database';
-import { GenericValueEntity } from '@app/utils';
+import { GenericValueEntity, getDateFromString } from '@app/utils';
+import { TokenInfo } from '@app/http';
 
 @Injectable()
 export class AssetService {
@@ -16,18 +17,6 @@ export class AssetService {
                 id: metrics,
             },
         });
-    };
-
-    getLatestValue = async (): Promise<any> => {
-        const query = await this._repository.createQueryBuilder('assets').select(['id', 'value']).orderBy('id', 'ASC').getRawMany();
-
-        return query;
-    };
-
-    getLatestExtra = async (): Promise<any> => {
-        const query = await this._repository.createQueryBuilder('assets').select(['id', 'extra']).orderBy('id', 'ASC').getRawMany();
-
-        return query;
     };
 
     createOrUpdateAssetValue = async (metrics: string, value: any): Promise<AssetEntity> => {
@@ -49,10 +38,10 @@ export class AssetService {
         return entity;
     };
 
-    chainAssetCreateOrUpdateValue = async (getTokenInfo: any) => {
-        for (const key of await getTokenInfo) {
+    chainAssetCreateOrUpdateValue = async (getTokenInfo: TokenInfo[]) => {
+        for (const key of getTokenInfo) {
             if (key) {
-                const compositeKey = `${key?.symbol}_${Object.keys(key)[0]}`;
+                const compositeKey = `${key.symbol.toLowerCase()}_${Object.keys(key)[0]}`;
                 const value = { [Object.keys(key)[0]]: Object.values(key)[0], last_updated_at: new Date() };
 
                 await this.createOrUpdateAssetValue(compositeKey, value);
@@ -63,7 +52,7 @@ export class AssetService {
     owneAssetCreateOrUpdateValue = async (getTokenInfo: any, name: string) => {
         for (const key in getTokenInfo) {
             if (key) {
-                const compositeKey = `${name}_${key}`;
+                const compositeKey = `${name.toLowerCase()}_${key}`;
 
                 const value = { [key]: getTokenInfo[key], last_updated_at: new Date() };
 
@@ -85,7 +74,7 @@ export class AssetService {
     };
 
     assetCreateOrAppendExtra = async () => {
-        const record = await this.getLatestValue();
+        const record = await this._repository.createQueryBuilder('assets').select(['id', 'value']).orderBy('id', 'ASC').getRawMany();
 
         for (const key of record) {
             const entity = await this.getByMetrics(key?.id);
@@ -94,8 +83,8 @@ export class AssetService {
         }
     };
 
-    fetchLatestAssetMetrics = async (skip: number, take: number): Promise<any> => {
-        let query = {};
+    fetchLatestMetrics = async (skip: number, take: number): Promise<TokenInfo[]> => {
+        const query = {};
 
         const sql = await this._repository.createQueryBuilder('assets').select(['id', 'value']).orderBy('id', 'ASC').skip(skip).take(take).getRawMany();
 
@@ -104,10 +93,23 @@ export class AssetService {
             return { symbol: el.id.substring(0, id.indexOf('_')), ...rest.value };
         });
 
-        data.forEach((a) => (query[a.symbol] = { ...query[a.symbol], ...a }));
+        data.forEach((el) => (query[el.symbol] = { ...query[el.symbol], ...el }));
 
-        query = Object.values(query);
+        return Object.values(query);
+    };
 
-        return query;
+    fetchMetricsSince = async (metrics: string, date: string, skip: number, take: number): Promise<any> => {
+        // Date will come as string format with month and year 'Jan-2022'
+        const formatedDate = date.split('-');
+
+        const getMonth = getDateFromString(formatedDate[0], formatedDate[1]);
+        const startDate = new Date(`${formatedDate[1]}-${getMonth}-01`);
+
+        const query = await this._repository.createQueryBuilder('assets').select(['id', 'extra']).where('id = :metrics', { metrics: metrics }).skip(skip).take(take).getRawMany();
+
+        return query.map((el) => ({
+            id: el.id,
+            extra: el.extra.filter((el) => new Date(el.last_updated_at).getTime() >= startDate.getTime() && new Date(el.last_updated_at).getTime() < new Date().getTime()),
+        }));
     };
 }

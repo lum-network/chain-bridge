@@ -97,7 +97,7 @@ export class LumNetworkService {
         return this._client;
     }
 
-    getPriceLum = async (): Promise<any> => {
+    getPriceLum = async (): Promise<number> => {
         try {
             return await lastValueFrom(this._httpService.get(`https://api.coingecko.com/api/v3/coins/lum-network`).pipe(map((response) => response.data.market_data.current_price.usd)));
         } catch (error) {
@@ -217,7 +217,7 @@ export class LumNetworkService {
         }
     };
 
-    getTvl = async (): Promise<any> => {
+    getTvl = async (): Promise<{ symbol: string; tvl: number }> => {
         try {
             const decode = LumUtils.Bech32.decode(LUM_STAKING_ADDRESS);
             const getDecodedAddress = LumUtils.Bech32.encode(AssetPrefix.LUM, decode.data);

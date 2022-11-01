@@ -1,30 +1,42 @@
-import { CacheInterceptor, Controller, Get, Req, UseInterceptors } from '@nestjs/common';
+import { CacheInterceptor, Controller, Get, Param, Req, UseInterceptors } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 
-import { AssetService, ChainService, DfractService, LumNetworkService } from '@app/services';
-import { DataResponse, DataResponseMetadata } from '@app/http/responses/';
+import { AssetService, ChainService } from '@app/services';
+import { DataResponse, DataResponseMetadata, TokenInfo } from '@app/http/responses/';
 import { ExplorerRequest } from '@app/utils';
-import { ConfigService } from '@nestjs/config';
 
 @ApiTags('dfract')
 @Controller('dfract')
 @UseInterceptors(CacheInterceptor)
 export class DfractController {
-    constructor(
-        private readonly _configService: ConfigService,
-        private readonly _lumNetworkService: LumNetworkService,
-        private readonly _dfract: DfractService,
-        private readonly _chainService: ChainService,
-        private readonly _dfr: DfractService,
-        private readonly _assetService: AssetService,
-    ) {}
+    constructor(private readonly _assetService: AssetService, private readonly _chainService: ChainService) {}
 
-    @ApiOkResponse({ status: 200 })
+    @ApiOkResponse({ status: 200, type: TokenInfo })
     @Get('assets/latest')
-    async getDfrInfo(@Req() request: ExplorerRequest): Promise<DataResponse> {
+    async getLatestAsset(@Req() request: ExplorerRequest): Promise<DataResponse> {
         const customOffset = 100;
 
-        const result = await this._assetService.fetchLatestAssetMetrics(request.pagination.skip, customOffset);
+        const result = await this._assetService.fetchLatestMetrics(request.pagination.skip, customOffset);
+
+        return new DataResponse({
+            result: result,
+            metadata: new DataResponseMetadata({
+                page: request.pagination.page,
+                limit: customOffset,
+                items_count: result.length,
+                items_total: result.length,
+            }),
+        });
+    }
+
+    @ApiOkResponse({ status: 200 })
+    // example-1: assets/lum_unit_price_usd/nov-2022
+    // example-2: assets/akt_apy/nov-2022
+    @Get('assets/:metrics/:since')
+    async getHistoricalData(@Req() request: ExplorerRequest, @Param('since') since: string, @Param('metrics') id: string): Promise<DataResponse> {
+        const customOffset = 100;
+
+        const result = await this._assetService.fetchMetricsSince(id, since, request.pagination.skip, customOffset);
 
         return new DataResponse({
             result: result,

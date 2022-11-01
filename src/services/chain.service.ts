@@ -19,6 +19,7 @@ import {
     LUM_STAKING_ADDRESS,
     EVMOS_STAKING_ADDRESS,
 } from '@app/utils';
+import { TokenInfo } from '@app/http';
 
 @Injectable()
 export class ChainService {
@@ -56,7 +57,7 @@ export class ChainService {
         return this._client;
     }
 
-    getPrice = async (): Promise<any[]> => {
+    getPrice = async (): Promise<{ unit_price_usd: number; symbol: string }[]> => {
         try {
             // Observable to get the prices and filter with the one we represent in the index
             const price = await lastValueFrom(this._httpService.get(`https://api-osmosis.imperator.co/tokens/v2/all`).pipe(map((response) => response.data)));
@@ -73,7 +74,7 @@ export class ChainService {
         }
     };
 
-    getMcap = async (): Promise<any[]> => {
+    getMcap = async (): Promise<{ total_value_usd: number; symbol: string }[]> => {
         try {
             // Observable to get the mcap and filter with the one we represent in the index
             const getMktCap = await lastValueFrom(this._httpService.get(`https://api-osmosis.imperator.co/tokens/v2/mcap`).pipe(map((response) => response.data)));
@@ -90,7 +91,7 @@ export class ChainService {
         }
     };
 
-    getTokenSupply = async (): Promise<any> => {
+    getTokenSupply = async (): Promise<{ supply: number; symbol: string }[]> => {
         try {
             // return token supply based on the microDenum and denum from assets in the index
             const chainSupply = await Promise.all(
@@ -122,7 +123,7 @@ export class ChainService {
         }
     };
 
-    getApy = async (): Promise<any> => {
+    getApy = async (): Promise<{ apy: number; symbol: string }[]> => {
         try {
             // As inflation is not retrievable for now for some chain
             // We take the first 5 chain as we need to compute the last one manually for now
@@ -168,7 +169,7 @@ export class ChainService {
         }
     };
 
-    getTokenInfo = async (): Promise<any> => {
+    getTokenInfo = async (): Promise<TokenInfo[]> => {
         try {
             return await Promise.all([await this.getPrice(), await this.getMcap(), await this.getTokenSupply(), await this.getApy()]).then(([unit_price_usd, total_value_usd, supply, apy]) =>
                 [unit_price_usd, total_value_usd, supply, apy].flat(),
@@ -179,7 +180,7 @@ export class ChainService {
         }
     };
 
-    getTvl = async (): Promise<any> => {
+    getTvl = async (): Promise<{ tvl: number; symbol: string }[]> => {
         try {
             // We need to compute the tvl differently for evmos as the Lum decode is not working
             // So we exclude evmos from the first batch
