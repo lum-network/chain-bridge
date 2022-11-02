@@ -17,17 +17,18 @@ export class AssetScheduler {
         private readonly _chainService: ChainService,
     ) {}
 
-    @Cron(CronExpression.EVERY_WEEK)
+    /* @Cron(CronExpression.EVERY_30_MINUTES) */
+    @Cron(CronExpression.EVERY_5_SECONDS)
     async syncHourly(): Promise<void> {
         try {
-            this._logger.log(`Syncing latest token values from chain...`);
+            this._logger.log(`Syncing latest assets values from chain...`);
             // We sync all values except DFR every hour by starting with LUM
             // Data we get {unit_price_usd, total_value_usd, supply, apy}
 
-            const lumMetrics = await this._lumNetworkService.getTokenInfo();
+            const lumMetrics = await this._lumNetworkService.getAssetInfo();
             if (lumMetrics) this._assetService.owneAssetCreateOrUpdateValue(lumMetrics, AssetSymbol.LUM);
 
-            const chainMetrics = await this._chainService.getTokenInfo();
+            const chainMetrics = await this._chainService.getAssetInfo();
             if (chainMetrics) this._assetService.chainAssetCreateOrUpdateValue(chainMetrics);
         } catch (error) {
             this._logger.error(`Failed to update hourly values...`, error);
@@ -35,18 +36,19 @@ export class AssetScheduler {
     }
 
     // Every Monday at noon
-    @Cron('0 0 12 * * 1,0')
+    /* @Cron('0 0 12 * * 1,0') */
+    @Cron(CronExpression.EVERY_30_SECONDS)
     async syncWeekly(): Promise<void> {
         try {
             this._logger.log(`Updating DFR token values from chain...`);
 
             // We only update DFR values once every epoch
-            const dfractMetrics = await this._dfractService.getTokenInfo();
+            const dfractMetrics = await this._dfractService.getAssetInfo();
             if (dfractMetrics) this._assetService.owneAssetCreateOrUpdateValue(dfractMetrics, AssetSymbol.DFR);
 
             this._logger.log(`Updating historical value from index assets...`);
 
-            // We append historical data to being compute trends
+            // We append historical data to be able to compute trends
             await this._assetService.assetCreateOrAppendExtra();
         } catch (error) {
             this._logger.error(`Failed to update weekly historical data...`, error);
@@ -54,7 +56,7 @@ export class AssetScheduler {
     }
 
     // Cron that makes sure that the weekly historical data gets properly populated in case of failure
-    @Cron(CronExpression.EVERY_HOUR)
+    /* @Cron(CronExpression.EVERY_HOUR) */
     async retrySync(): Promise<void> {
         try {
             this._logger.log(`Verifying missing historical data...`);

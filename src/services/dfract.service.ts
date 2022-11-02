@@ -2,7 +2,7 @@ import { AssetDenum, AssetMicroDenum, TEN_EXPONENT_SIX } from '@app/utils';
 import { convertUnit } from '@lum-network/sdk-javascript/build/utils';
 import { Injectable, Logger } from '@nestjs/common';
 import { LumNetworkService, ChainService } from '@app/services';
-import { TokenInfo } from '@app/http';
+import { AssetInfo } from '@app/http';
 
 @Injectable()
 export class DfractService {
@@ -12,7 +12,7 @@ export class DfractService {
 
     getTokenSupply = async (): Promise<number> => {
         try {
-            return Number(convertUnit(await this._lumNetworkService.client.getSupply(AssetMicroDenum.DFR), AssetDenum.DFR)) + 4850.662478984576;
+            return Number(convertUnit(await this._lumNetworkService.client.getSupply(AssetMicroDenum.DFR), AssetDenum.DFR));
         } catch (error) {
             this._logger.error(`Could not fetch Token Supply for DFR on Lum Network...`, error);
             return null;
@@ -23,7 +23,10 @@ export class DfractService {
         try {
             return (await Promise.all([await this._chainService.getTvl(), await this._lumNetworkService.getTvl()]))
                 .flat()
-                .map((el) => el.tvl)
+                .map((el) => {
+                    console.log('el.tvl', { symbol: el.symbol, tvl: el.tvl });
+                    return el.tvl;
+                })
                 .reduce((prev, next) => prev + next);
         } catch (error) {
             this._logger.error(`Could not fetch Computed TVL for DFR on Lum Network...`, error);
@@ -53,6 +56,12 @@ export class DfractService {
 
     getNewDfrToMint = async (): Promise<number> => {
         try {
+            console.log(
+                'new DFR to Mint',
+                await Promise.all([Number(await this.getTokenSupply()), Number(await this.getCashInVault()), Number(await this.getTotalComputedTvl())]).then(
+                    ([supply, accountBalance, computedTvl]) => (supply * accountBalance) / computedTvl,
+                ),
+            );
             return Promise.all([Number(await this.getTokenSupply()), Number(await this.getCashInVault()), Number(await this.getTotalComputedTvl())]).then(
                 ([supply, accountBalance, computedTvl]) => (supply * accountBalance) / computedTvl,
             );
@@ -98,7 +107,7 @@ export class DfractService {
         }
     };
 
-    getTokenInfo = async (): Promise<TokenInfo> => {
+    getAssetInfo = async (): Promise<AssetInfo> => {
         try {
             return await Promise.all([await this.getDfrBackingPrice(), Number(await this.getMcap()), await this.getTokenSupply(), Number(await this.getApy())]).then(
                 ([unit_price_usd, total_value_usd, supply, apy]) => ({ unit_price_usd, total_value_usd, supply, apy }),

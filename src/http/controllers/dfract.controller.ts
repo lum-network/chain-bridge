@@ -1,22 +1,23 @@
 import { CacheInterceptor, Controller, Get, Param, Req, UseInterceptors } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 
-import { AssetService, ChainService } from '@app/services';
-import { DataResponse, DataResponseMetadata, TokenInfo } from '@app/http/responses/';
+import { AssetService, ChainService, LumNetworkService } from '@app/services';
+import { DataResponse, DataResponseMetadata, AssetInfo } from '@app/http/responses/';
 import { ExplorerRequest } from '@app/utils';
 
 @ApiTags('dfract')
 @Controller('dfract')
 @UseInterceptors(CacheInterceptor)
 export class DfractController {
-    constructor(private readonly _assetService: AssetService, private readonly _chainService: ChainService) {}
+    constructor(private readonly _assetService: AssetService, private readonly _lumService: LumNetworkService) {}
 
-    @ApiOkResponse({ status: 200, type: TokenInfo })
+    @ApiOkResponse({ status: 200, type: AssetInfo })
     @Get('assets/latest')
     async getLatestAsset(@Req() request: ExplorerRequest): Promise<DataResponse> {
         const customOffset = 100;
 
         const result = await this._assetService.fetchLatestMetrics(request.pagination.skip, customOffset);
+        const result2 = await this._lumService.getAssetInfo();
 
         return new DataResponse({
             result: result,

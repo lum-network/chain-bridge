@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-export class TokenInfo {
+export class AssetInfo {
     @ApiProperty()
     readonly symbol?: string;
 

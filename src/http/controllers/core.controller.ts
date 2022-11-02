@@ -30,14 +30,14 @@ export class CoreController {
     async price(): Promise<DataResponse> {
         const lumPrice = await this._lumNetworkService.getPrice();
 
-        if (!lumPrice || !lumPrice.data || !lumPrice.data) {
+        if (!lumPrice || !lumPrice || !lumPrice) {
             throw new BadRequestException('data_not_found');
         }
 
         // Compute the previous price
-        const price = lumPrice.data.market_data.current_price.usd;
+        const price = lumPrice.market_data.current_price.usd;
         let previousPrice = 0.0;
-        const priceChange = String(lumPrice.data.market_data.price_change_24h);
+        const priceChange = String(lumPrice.market_data.price_change_24h);
         if (priceChange[0] === '-') {
             previousPrice = price + parseFloat(priceChange.split('-')[1]);
         } else {
@@ -46,11 +46,11 @@ export class CoreController {
 
         const res = {
             price: price,
-            denom: lumPrice.data.platforms.cosmos,
-            symbol: lumPrice.data.symbol.toUpperCase(),
+            denom: lumPrice.platforms.cosmos,
+            symbol: lumPrice.symbol.toUpperCase(),
             liquidity: 0.0,
-            volume_24h: lumPrice.data.market_data.total_volume.usd,
-            name: lumPrice.data.name,
+            volume_24h: lumPrice.market_data.total_volume.usd,
+            name: lumPrice.name,
             previous_day_price: previousPrice,
         };
 

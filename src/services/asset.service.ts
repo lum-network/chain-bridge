@@ -4,8 +4,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { AssetEntity } from '@app/database';
-import { GenericValueEntity, getDateFromString } from '@app/utils';
-import { TokenInfo } from '@app/http';
+import { filterFalsy, GenericValueEntity, getDateFromString } from '@app/utils';
+import { AssetInfo } from '@app/http';
 
 @Injectable()
 export class AssetService {
@@ -43,26 +43,22 @@ export class AssetService {
         return entity;
     };
 
-    chainAssetCreateOrUpdateValue = async (getTokenInfo: TokenInfo[]): Promise<void> => {
-        for (const key of getTokenInfo) {
-            if (key) {
-                const compositeKey = `${key.symbol.toLowerCase()}_${Object.keys(key)[0]}`;
-                const value = { [Object.keys(key)[0]]: Object.values(key)[0], last_updated_at: new Date() };
+    chainAssetCreateOrUpdateValue = async (getAssetInfo: AssetInfo[]): Promise<void> => {
+        for (const key of filterFalsy(getAssetInfo)) {
+            const compositeKey = `${key.symbol.toLowerCase()}_${Object.keys(key)[0]}`;
+            const value = { [Object.keys(key)[0]]: Object.values(key)[0], last_updated_at: new Date() };
 
-                await this.createOrUpdateAssetValue(compositeKey, value);
-            }
+            await this.createOrUpdateAssetValue(compositeKey, value);
         }
     };
 
-    owneAssetCreateOrUpdateValue = async (getTokenInfo: any, name: string): Promise<void> => {
-        for (const key in getTokenInfo) {
-            if (key) {
-                const compositeKey = `${name.toLowerCase()}_${key}`;
+    owneAssetCreateOrUpdateValue = async (getAssetInfo: any, name: string): Promise<void> => {
+        for (const key in filterFalsy(getAssetInfo)) {
+            const compositeKey = `${name.toLowerCase()}_${key}`;
 
-                const value = { [key]: getTokenInfo[key], last_updated_at: new Date() };
+            const value = { [key]: getAssetInfo[key], last_updated_at: new Date() };
 
-                await this.createOrUpdateAssetValue(compositeKey, value);
-            }
+            await this.createOrUpdateAssetValue(compositeKey, value);
         }
     };
 
@@ -90,7 +86,7 @@ export class AssetService {
         }
     };
 
-    fetchLatestMetrics = async (skip: number, take: number): Promise<TokenInfo[]> => {
+    fetchLatestMetrics = async (skip: number, take: number): Promise<AssetInfo[]> => {
         const sql = {};
 
         const query = await this._repository.createQueryBuilder('assets').select(['id', 'value']).orderBy('id', 'ASC').skip(skip).take(take).getRawMany();

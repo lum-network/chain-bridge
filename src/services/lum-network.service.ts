@@ -5,29 +5,16 @@ import { ModulesContainer } from '@nestjs/core';
 import { InjectQueue } from '@nestjs/bull';
 
 import { NewBlockEvent } from '@cosmjs/tendermint-rpc';
-import { LumClient, LumConstants, LumUtils } from '@lum-network/sdk-javascript';
+import { LumClient, LumConstants } from '@lum-network/sdk-javascript';
 import { ProposalStatus } from '@lum-network/sdk-javascript/build/codec/cosmos/gov/v1beta1/gov';
 import moment from 'moment';
 import { Stream } from 'xstream';
 import { Queue } from 'bull';
 
-import {
-    MODULE_NAMES,
-    QueueJobs,
-    QueuePriority,
-    Queues,
-    apy,
-    TEN_EXPONENT_SIX,
-    CLIENT_PRECISION,
-    computeTotalTokenAmount,
-    computeTotalApy,
-    LUM_STAKING_ADDRESS,
-    AssetPrefix,
-    AssetSymbol,
-} from '@app/utils';
+import { MODULE_NAMES, QueueJobs, QueuePriority, Queues, apy, TEN_EXPONENT_SIX, CLIENT_PRECISION, computeTotalTokenAmount, computeTotalApy, LUM_STAKING_ADDRESS, AssetSymbol } from '@app/utils';
 import { lastValueFrom, map } from 'rxjs';
 import { convertUnit } from '@lum-network/sdk-javascript/build/utils';
-import { TokenInfo } from '@app/http';
+import { AssetInfo } from '@app/http';
 
 @Injectable()
 export class LumNetworkService {
@@ -97,17 +84,13 @@ export class LumNetworkService {
         return this._client;
     }
 
-    getPriceLum = async (): Promise<number> => {
+    getPrice = async (): Promise<any> => {
         try {
-            return await lastValueFrom(this._httpService.get(`https://api.coingecko.com/api/v3/coins/lum-network`).pipe(map((response) => response.data.market_data.current_price.usd)));
+            return await lastValueFrom(this._httpService.get(`https://api.coingecko.com/api/v3/coins/lum-network`).pipe(map((response) => response.data)));
         } catch (error) {
-            this._logger.error(`Could not fetch Token Supply for Lum Network...`, error);
+            this._logger.error(`Could not fetch price for Lum Network...`, error);
             return null;
         }
-    };
-
-    getPrice = (): Promise<any> => {
-        return this._httpService.get(`https://api.coingecko.com/api/v3/coins/lum-network`).toPromise();
     };
 
     getPriceHistory = async (startAt: number, endAt: number): Promise<any> => {
@@ -182,7 +165,8 @@ export class LumNetworkService {
 
     getMcap = async (): Promise<number> => {
         try {
-            return Promise.all([await this.getTokenSupply(), await this.getPriceLum()]).then(([supply, unit_price_usd]) => Number(supply) * Number(unit_price_usd));
+            // We multiply the price by the supply to get the mcap
+            return Promise.all([await this.getTokenSupply(), (await this.getPrice())?.market_data.current_price.usd]).then(([supply, unit_price_usd]) => Number(supply) * Number(unit_price_usd));
         } catch (error) {
             this._logger.error(`Could not fetch Market Cap for Lum Network...`, error);
             return null;
@@ -194,6 +178,8 @@ export class LumNetworkService {
             const inflation = Number(await this._client.queryClient.mint.inflation()) / CLIENT_PRECISION;
             const metrics = await computeTotalApy(this.client, Number(await this.getTokenSupply()), inflation, CLIENT_PRECISION, TEN_EXPONENT_SIX);
 
+            // See util files src/utils/dfract to see how we compute inflation
+
             return { apy: apy(metrics.inflation, metrics.communityTaxRate, metrics.stakingRatio), symbol: AssetSymbol.LUM };
         } catch (error) {
             this._logger.error(`Could not fetch Apy for Lum Network...`, error);
@@ -201,9 +187,9 @@ export class LumNetworkService {
         }
     };
 
-    getTokenInfo = async (): Promise<TokenInfo> => {
+    getAssetInfo = async (): Promise<AssetInfo> => {
         try {
-            return await Promise.all([await this.getPriceLum(), await this.getMcap(), await this.getTokenSupply(), (await this.getApy()).apy]).then(
+            return await Promise.all([(await this.getPrice())?.market_data.current_price.usd, await this.getMcap(), await this.getTokenSupply(), (await this.getApy()).apy]).then(
                 ([unit_price_usd, total_value_usd, supply, apy]) => ({
                     unit_price_usd,
                     total_value_usd,
@@ -219,11 +205,9 @@ export class LumNetworkService {
 
     getTvl = async (): Promise<{ symbol: string; tvl: number }> => {
         try {
-            const decode = LumUtils.Bech32.decode(LUM_STAKING_ADDRESS);
-            const getDecodedAddress = LumUtils.Bech32.encode(AssetPrefix.LUM, decode.data);
-            const totalToken = await computeTotalTokenAmount(getDecodedAddress, this.client, LumConstants.MicroLumDenom, CLIENT_PRECISION, TEN_EXPONENT_SIX);
+            const totalToken = await computeTotalTokenAmount(LUM_STAKING_ADDRESS, this.client, LumConstants.MicroLumDenom, CLIENT_PRECISION, TEN_EXPONENT_SIX);
 
-            return { tvl: Number(totalToken) * Number(await this.getPriceLum()), symbol: AssetSymbol.LUM };
+            return { tvl: Number(totalToken) * Number((await this.getPrice())?.market_data.current_price.usd), symbol: AssetSymbol.LUM };
         } catch (error) {
             this._logger.error('Failed to compute TVL for Lum Network...', error);
             return null;

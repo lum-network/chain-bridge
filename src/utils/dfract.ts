@@ -74,3 +74,13 @@ export const getDateFromString = (mon: string, year: string) => {
     }
     return -1;
 };
+
+// Eliminate falsy values to be inserted in DB
+export const filterFalsy = (obj) =>
+    Object.keys(obj).reduce((acc, key) => {
+        if (obj[key]) {
+            acc[key] = obj[key];
+        }
+
+        return acc;
+    }, []);
