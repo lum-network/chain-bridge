@@ -1,7 +1,7 @@
 import { LumClient } from '@lum-network/sdk-javascript';
 
 // Helper function to return apy percentage
-export const apy = (inflation: number, rateCommunityTax: number, stakingRatio: number) => (inflation * (1 - rateCommunityTax)) / stakingRatio;
+export const apy = (inflation: number, communityTaxRate: number, stakingRatio: number) => (inflation * (1 - communityTaxRate)) / stakingRatio;
 
 // Helper function to compute total token amount from chains where we can get the info
 export const computeTotalTokenAmount = async (getDecodedAddress: string, client: LumClient, denom: string, applyClientPrecision: number, applyTenExponentSix: number): Promise<number> => {
@@ -49,7 +49,6 @@ export const computeTotalApy = async (
 
     const bonding = Number((await client.queryClient.staking.pool()).pool.bondedTokens) / applyTenExponentSix;
 
-    /* const stakingRatio = Number(bonding) / Number(supply); */
     const stakingRatio = Number(bonding) / Number(supply);
 
     const communityTaxRate = Number((await client.queryClient.distribution.params()).params.communityTax) / applyClientPrecision;
