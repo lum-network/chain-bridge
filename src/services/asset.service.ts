@@ -67,6 +67,7 @@ export class AssetService {
     };
 
     createOrUpdateAssetExtra = async (compositeKey: string): Promise<GenericValueEntity> => {
+        // Helper function to append historical data to the extra column
         const entity = await this.getByCompositeKey(compositeKey);
 
         const query = await this._repository.query(`
@@ -79,6 +80,7 @@ export class AssetService {
     };
 
     assetCreateOrAppendExtra = async (): Promise<void> => {
+        // We ONLY append historical data to the extra column if there is a value record registered
         const record = await this._repository.createQueryBuilder('assets').select(['id', 'value']).orderBy('id', 'ASC').getRawMany();
 
         for (const key of record) {
@@ -115,6 +117,8 @@ export class AssetService {
         const startDate = new Date(`${formatedDate[1]}-${getMonth}-01`);
 
         const query = await this._repository.createQueryBuilder('assets').select(['id', 'extra']).where('id = :metrics', { metrics: metrics }).skip(skip).getRawMany();
+
+        // We return data that has been request since the start of the requested month
         const result = query.map((el) => ({
             id: el.id,
             extra: el.extra.filter((el) => new Date(el.last_updated_at).getTime() >= startDate.getTime() && new Date(el.last_updated_at).getTime() < new Date().getTime()),

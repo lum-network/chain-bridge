@@ -119,8 +119,6 @@ export class DfractService {
 
     getAssetInfo = async (): Promise<AssetInfo> => {
         try {
-            const getAvailableCash = await this.getCashInVault();
-            console.log('getAvailableCash', getAvailableCash);
             return await Promise.all([await this.getDfrBackingPrice(), Number(await this.getMcap()), await this.getTokenSupply(), Number(await this.getApy())]).then(
                 ([unit_price_usd, total_value_usd, supply, apy]) => ({ unit_price_usd, total_value_usd, supply, apy }),
             );
