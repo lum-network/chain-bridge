@@ -16,3 +16,11 @@ export class AssetInfo {
     @ApiProperty()
     readonly apy?: number;
 }
+
+export class AssetHistorical {
+    @ApiProperty()
+    readonly id?: string;
+
+    @ApiProperty()
+    readonly extra?: any[];
+}

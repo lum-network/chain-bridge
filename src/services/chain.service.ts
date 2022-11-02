@@ -211,8 +211,6 @@ export class ChainService {
             // Merge evmos and the other total computed tokens
             const totalComputedToken = [...computedTotalToken, evmosTotalToken].sort((a, b) => a.symbol.localeCompare(b.symbol));
 
-            console.log('totalComputedToken', totalComputedToken);
-
             return totalComputedToken
                 .map((item, i) => Object.assign({}, item, getTotalPrice[i]))
                 .map((el) => ({

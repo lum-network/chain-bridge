@@ -86,33 +86,36 @@ export class AssetService {
         }
     };
 
-    fetchLatestMetrics = async (skip: number, take: number): Promise<AssetInfo[]> => {
-        const sql = {};
+    fetchLatestMetrics = async (skip: number): Promise<[AssetInfo[], number]> => {
+        const assetInfo = {};
 
-        const query = await this._repository.createQueryBuilder('assets').select(['id', 'value']).orderBy('id', 'ASC').skip(skip).take(take).getRawMany();
+        const query = await this._repository.createQueryBuilder('assets').select(['id', 'value']).skip(skip).orderBy('id', 'ASC').getRawMany();
 
+        // For every compositeKey we group by symbol to get the {unit_price_usd, total_value_usd, apy, supply}
         const data = query.map((el) => {
             const { id, ...rest } = el;
             return { symbol: el.id.substring(0, id.indexOf('_')), ...rest.value };
         });
 
-        data.forEach((el) => (sql[el.symbol] = { ...sql[el.symbol], ...el }));
+        data.forEach((el) => (assetInfo[el.symbol] = { ...assetInfo[el.symbol], ...el }));
 
-        return Object.values(sql);
+        // Return the length and the values
+        return [Object.values(assetInfo), Object.values(assetInfo).length];
     };
 
-    fetchMetricsSince = async (metrics: string, date: string, skip: number, take: number): Promise<{ id: string; extra: [] }[]> => {
+    fetchMetricsSince = async (metrics: string, date: string, skip: number): Promise<[{ id: string; extra: [] }[], number]> => {
         // Date will come as string format with month and year 'Jan-2022'
         const formatedDate = date.split('-');
 
         const getMonth = getDateFromString(formatedDate[0], formatedDate[1]);
         const startDate = new Date(`${formatedDate[1]}-${getMonth}-01`);
 
-        const query = await this._repository.createQueryBuilder('assets').select(['id', 'extra']).where('id = :metrics', { metrics: metrics }).skip(skip).take(take).getRawMany();
-
-        return query.map((el) => ({
+        const query = await this._repository.createQueryBuilder('assets').select(['id', 'extra']).where('id = :metrics', { metrics: metrics }).skip(skip).getRawMany();
+        const result = query.map((el) => ({
             id: el.id,
             extra: el.extra.filter((el) => new Date(el.last_updated_at).getTime() >= startDate.getTime() && new Date(el.last_updated_at).getTime() < new Date().getTime()),
         }));
+
+        return [result, result.length];
     };
 }
