@@ -11,7 +11,7 @@ export const mockResponseLatestMetrics = {
     ],
     metadata: {
         page: 0,
-        limit: 100,
+        limit: 5,
         items_count: 1,
         items_total: 1,
         pages_total: 1,
@@ -40,7 +40,7 @@ export const mockResponseHistoricalMetrics = {
     ],
     metadata: {
         page: 0,
-        limit: 100,
+        limit: 5,
         items_count: 1,
         items_total: 1,
         pages_total: 1,

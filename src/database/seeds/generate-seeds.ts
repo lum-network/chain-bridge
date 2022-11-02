@@ -28,11 +28,11 @@ const execute = async (query) => {
     }
 };
 
-// execute proposals_depositors seed
+// executes seed
 execute(sql).then((result) => {
     try {
         if (result) {
-            console.log('Seeding data to database...');
+            console.log('Seeding database...');
         }
     } catch (error) {
         console.log('error during seeding phase', error);
