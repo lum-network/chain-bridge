@@ -6,10 +6,10 @@ export class AssetEntity {
     @PrimaryColumn({ type: 'text' })
     id: string;
 
-    @Column({ type: 'jsonb' })
+    @Column({ type: 'jsonb', nullable: false })
     value: GenericValueEntity;
 
-    @Column({ type: 'jsonb', nullable: true, default: () => "'[]'", array: false })
+    @Column({ type: 'jsonb', nullable: false, default: () => "'[]'", array: false })
     extra: GenericValueEntity[] = [];
 
     constructor(data: Partial<AssetEntity>) {

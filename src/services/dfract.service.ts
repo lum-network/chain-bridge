@@ -23,10 +23,7 @@ export class DfractService {
         try {
             return (await Promise.all([await this._chainService.getTvl(), await this._lumNetworkService.getTvl()]))
                 .flat()
-                .map((el) => {
-                    console.log('el.tvl', { symbol: el.symbol, tvl: el.tvl });
-                    return el.tvl;
-                })
+                .map((el) => el.tvl)
                 .reduce((prev, next) => prev + next);
         } catch (error) {
             this._logger.error(`Could not fetch Computed TVL for DFR on Lum Network...`, error);
@@ -56,13 +53,7 @@ export class DfractService {
 
     getNewDfrToMint = async (): Promise<number> => {
         try {
-            console.log(
-                'new DFR to Mint',
-                await Promise.all([Number(await this.getTokenSupply()), Number(await this.getCashInVault()), Number(await this.getTotalComputedTvl())]).then(
-                    ([supply, accountBalance, computedTvl]) => (supply * accountBalance) / computedTvl,
-                ),
-            );
-            return Promise.all([Number(await this.getTokenSupply()), Number(await this.getCashInVault()), Number(await this.getTotalComputedTvl())]).then(
+            return await Promise.all([Number(await this.getTokenSupply()), Number(await this.getCashInVault()), Number(await this.getTotalComputedTvl())]).then(
                 ([supply, accountBalance, computedTvl]) => (supply * accountBalance) / computedTvl,
             );
         } catch (error) {
@@ -73,7 +64,9 @@ export class DfractService {
 
     getDfrMintRatio = async (): Promise<number> => {
         try {
-            return Promise.all([Number(await this.getNewDfrToMint()), Number(await this.getCashInVault())]).then(([dfrToMint, accountBalance]) => dfrToMint / accountBalance);
+            return await Promise.all([Number(await this.getNewDfrToMint()), Number(await this.getTotalComputedTvl()), Number(await this.getTokenSupply())]).then(
+                ([dfrToMint, computedTvl, tokenSupply]) => (dfrToMint + tokenSupply) / computedTvl,
+            );
         } catch (error) {
             this._logger.error(`Could not compute Dfr To Mint Ratio for DFR on Lum Network...`, error);
             return null;
@@ -91,7 +84,7 @@ export class DfractService {
 
     getMcap = async (): Promise<number> => {
         try {
-            return Promise.all([Number(await this.getDfrBackingPrice()), Number(await this.getTokenSupply())]).then(([dfrToMintPrice, supply]) => dfrToMintPrice * supply);
+            return await Promise.all([Number(await this.getDfrBackingPrice()), Number(await this.getTokenSupply())]).then(([dfrToMintPrice, supply]) => dfrToMintPrice * supply);
         } catch (error) {
             this._logger.error(`Could not compute new DFR Market Cap on Lum Network...`, error);
             return null;
@@ -100,7 +93,24 @@ export class DfractService {
 
     getApy = async (): Promise<number> => {
         try {
-            return Promise.all([Number(await this.getTotalComputedTvl()), Number(await this.getTotalComputedApy())]).then(([computedTvl, computedApy]) => (computedTvl + computedApy) / computedTvl);
+            // We compute the apy from DFR based on the following formula
+            // (token tvl (price * token amount) * token apy) / total computed tvl
+            return await Promise.all([
+                await this._chainService.getTvl(),
+                await this._lumNetworkService.getTvl(),
+                await this._chainService.getApy(),
+                await this._lumNetworkService.getApy(),
+                await this.getTotalComputedTvl(),
+            ]).then(([chainServiceTvl, lumTvl, chainServiceApy, lumApy, computedTvl]) => {
+                const tvl = [...chainServiceTvl, lumTvl];
+                const apy = [...chainServiceApy, lumApy];
+                const merged = tvl
+                    .map((item, i) => Object.assign({}, item, apy[i]))
+                    .map((el) => Number(el.apy) * Number(el.tvl))
+                    .reduce((prev, next) => prev + next);
+
+                return merged / computedTvl;
+            });
         } catch (error) {
             this._logger.error(`Could not fetch Apy for Dfract...`, error);
             return null;
@@ -109,6 +119,8 @@ export class DfractService {
 
     getAssetInfo = async (): Promise<AssetInfo> => {
         try {
+            const getAvailableCash = await this.getCashInVault();
+            console.log('getAvailableCash', getAvailableCash);
             return await Promise.all([await this.getDfrBackingPrice(), Number(await this.getMcap()), await this.getTokenSupply(), Number(await this.getApy())]).then(
                 ([unit_price_usd, total_value_usd, supply, apy]) => ({ unit_price_usd, total_value_usd, supply, apy }),
             );

@@ -29,7 +29,7 @@ export class DfractController {
 
     @ApiOkResponse({ status: 200, type: AssetHistorical })
     // example-1: assets/lum_unit_price_usd/nov-2022
-    // example-2: assets/akt_apy/nov-2022
+    // example-2: assets/akt_apy/oct-2022
     @Get('assets/:metrics/:since')
     async getHistoricalData(@Req() request: ExplorerRequest, @Param('since') since: string, @Param('metrics') id: string): Promise<DataResponse> {
         const [result, total] = await this._assetService.fetchMetricsSince(id, since, request.pagination.skip);

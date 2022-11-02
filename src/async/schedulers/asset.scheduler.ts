@@ -17,13 +17,13 @@ export class AssetScheduler {
         private readonly _chainService: ChainService,
     ) {}
 
-    /* @Cron(CronExpression.EVERY_30_MINUTES) */
-    @Cron(CronExpression.EVERY_5_SECONDS)
+    @Cron(CronExpression.EVERY_HOUR)
     async syncHourly(): Promise<void> {
         try {
-            this._logger.log(`Syncing latest assets values from chain...`);
+            this._logger.log(`Syncing latest assets info from chain...`);
             // We sync all values except DFR every hour by starting with LUM
             // Data we get {unit_price_usd, total_value_usd, supply, apy}
+            // We want to start syncing lum before moving to other chains
 
             const lumMetrics = await this._lumNetworkService.getAssetInfo();
             if (lumMetrics) this._assetService.owneAssetCreateOrUpdateValue(lumMetrics, AssetSymbol.LUM);
@@ -31,22 +31,16 @@ export class AssetScheduler {
             const chainMetrics = await this._chainService.getAssetInfo();
             if (chainMetrics) this._assetService.chainAssetCreateOrUpdateValue(chainMetrics);
         } catch (error) {
-            this._logger.error(`Failed to update hourly values...`, error);
+            this._logger.error(`Failed to update hourly asset info...`, error);
         }
     }
 
-    // Every Monday at noon
-    /* @Cron('0 0 12 * * 1,0') */
-    @Cron(CronExpression.EVERY_30_SECONDS)
+    @Cron(CronExpression.EVERY_WEEK)
     async syncWeekly(): Promise<void> {
         try {
-            this._logger.log(`Updating DFR token values from chain...`);
+            // We only update chain values other than DFR once a week
 
-            // We only update DFR values once every epoch
-            const dfractMetrics = await this._dfractService.getAssetInfo();
-            if (dfractMetrics) this._assetService.owneAssetCreateOrUpdateValue(dfractMetrics, AssetSymbol.DFR);
-
-            this._logger.log(`Updating historical value from index assets...`);
+            this._logger.log(`Updating historical info from index assets...`);
 
             // We append historical data to be able to compute trends
             await this._assetService.assetCreateOrAppendExtra();
@@ -55,8 +49,25 @@ export class AssetScheduler {
         }
     }
 
+    // Every 15 minutes on Mondays between 12 and 17h
+    @Cron('0 */15 12-17 * * 1,0')
+    async syncDfr(): Promise<void> {
+        try {
+            this._logger.log(`Updating DFR token values from chain...`);
+
+            // We only update DFR values once every epoch
+            const dfractMetrics = await this._dfractService.getAssetInfo();
+            const availabeBalnce = await this._dfractService.getCashInVault();
+            // We lock the price once the cash balance has been used
+            if (dfractMetrics && availabeBalnce > 0) this._assetService.owneAssetCreateOrUpdateValue(dfractMetrics, AssetSymbol.DFR);
+        } catch (error) {
+            this._logger.error(`Failed to update DFR token values from chain...`, error);
+        }
+    }
+
     // Cron that makes sure that the weekly historical data gets properly populated in case of failure
-    /* @Cron(CronExpression.EVERY_HOUR) */
+    // Runs every 2 hours
+    @Cron(CronExpression.EVERY_2_HOURS)
     async retrySync(): Promise<void> {
         try {
             this._logger.log(`Verifying missing historical data...`);
@@ -69,7 +80,7 @@ export class AssetScheduler {
                 arr.push({ id: key?.id, extra: key?.extra?.pop() });
             }
 
-            // As we update historical data one time per epoch we verify if the last updated record was inserted during that time
+            // As we update historical data one time per epoch we verify if the last updated record was inserted during that week time
             // If not we retry
             const today = new Date();
             const firstWeekDay = new Date(today.setDate(today.getDate() - today.getDay())).toISOString();
@@ -80,11 +91,11 @@ export class AssetScheduler {
 
                 if (!isUpdated) {
                     this._assetService.createOrUpdateAssetExtra(el.id);
-                    this._logger.log(`Updated failed syncronized historical data for ${el.id}`);
+                    this._logger.log(`Updated failed sync historical data for ${el.id}`);
                 }
             });
         } catch (error) {
-            this._logger.error(`Failed to update weekly historical data...`, error);
+            this._logger.error(`Failed to resync weekly historical data...`, error);
         }
     }
 }

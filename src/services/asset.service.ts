@@ -45,20 +45,24 @@ export class AssetService {
 
     chainAssetCreateOrUpdateValue = async (getAssetInfo: AssetInfo[]): Promise<void> => {
         for (const key of filterFalsy(getAssetInfo)) {
-            const compositeKey = `${key.symbol.toLowerCase()}_${Object.keys(key)[0]}`;
-            const value = { [Object.keys(key)[0]]: Object.values(key)[0], last_updated_at: new Date() };
+            if (key) {
+                const compositeKey = `${key.symbol.toLowerCase()}_${Object.keys(key)[0]}`;
+                const value = { [Object.keys(key)[0]]: Object.values(key)[0], last_updated_at: new Date() };
 
-            await this.createOrUpdateAssetValue(compositeKey, value);
+                await this.createOrUpdateAssetValue(compositeKey, value);
+            }
         }
     };
 
     owneAssetCreateOrUpdateValue = async (getAssetInfo: any, name: string): Promise<void> => {
         for (const key in filterFalsy(getAssetInfo)) {
-            const compositeKey = `${name.toLowerCase()}_${key}`;
+            if (key) {
+                const compositeKey = `${name.toLowerCase()}_${key}`;
 
-            const value = { [key]: getAssetInfo[key], last_updated_at: new Date() };
+                const value = { [key]: getAssetInfo[key], last_updated_at: new Date() };
 
-            await this.createOrUpdateAssetValue(compositeKey, value);
+                await this.createOrUpdateAssetValue(compositeKey, value);
+            }
         }
     };
 

@@ -48,6 +48,8 @@ export const computeTotalApy = async (
     // 3) The community tax rate
 
     const bonding = Number((await client.queryClient.staking.pool()).pool.bondedTokens) / applyTenExponentSix;
+
+    /* const stakingRatio = Number(bonding) / Number(supply); */
     const stakingRatio = Number(bonding) / Number(supply);
 
     const communityTaxRate = Number((await client.queryClient.distribution.params()).params.communityTax) / applyClientPrecision;

@@ -146,10 +146,11 @@ export class ChainService {
             // Evmos manual inflation calculation
             // We use their official endpoint to retrieve the inflation rate
             const evmosIndex = CHAIN_ENV_CONFIG.findIndex((el) => el === `${AssetSymbol.EVMOS}_NETWORK_ENDPOINT`);
-            const evmosInflation = Number(
-                await lastValueFrom(this._httpService.get(`https://rest.bd.evmos.dev:1317/evmos/inflation/v1/inflation_rate`).pipe(map((response) => response.data.inflation_rate))),
-            );
-            const metrics = await computeTotalApy(this._client[evmosIndex], Number((await this.getTokenSupply())[evmosIndex].supply), evmosInflation, CLIENT_PRECISION, TEN_EXPONENT_SIX);
+            const evmosInflation =
+                Number(await lastValueFrom(this._httpService.get(`https://rest.bd.evmos.dev:1317/evmos/inflation/v1/inflation_rate`).pipe(map((response) => response.data.inflation_rate)))) /
+                PERCENTAGE;
+
+            const metrics = await computeTotalApy(this._client[evmosIndex], Number((await this.getTokenSupply())[evmosIndex].supply), evmosInflation, CLIENT_PRECISION, CLIENT_PRECISION);
 
             const getEvmosApy = { apy: apy(metrics.inflation, metrics.communityTaxRate, metrics.stakingRatio), symbol: this._assetSymbol[evmosIndex] };
 
