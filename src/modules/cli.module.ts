@@ -7,9 +7,9 @@ import { ConsoleModule } from 'nestjs-console';
 import * as Joi from 'joi';
 import * as redisStore from 'cache-manager-redis-store';
 
-import { BeamService, BlockService, ElasticsearchService, LumNetworkService, StatService, TransactionService, ValidatorDelegationService, ValidatorService } from '@app/services';
+import { BeamService, BlockService, LumNetworkService, StatService, TransactionService, ValidatorDelegationService, ValidatorService } from '@app/services';
 
-import { BlocksCommands, MigrationCommands, RedisCommands, TransactionsCommands, ValidatorsCommands } from '@app/console';
+import { BlocksCommands, RedisCommands, TransactionsCommands, ValidatorsCommands } from '@app/console';
 import { DatabaseConfig, DatabaseFeatures } from '@app/database';
 import { ConfigMap } from '@app/utils';
 
@@ -37,7 +37,6 @@ import { ConfigMap } from '@app/utils';
     ],
     providers: [
         LumNetworkService,
-        ElasticsearchService,
         BeamService,
         BlockService,
         StatService,
@@ -45,7 +44,6 @@ import { ConfigMap } from '@app/utils';
         ValidatorService,
         ValidatorDelegationService,
         BlocksCommands,
-        MigrationCommands,
         RedisCommands,
         TransactionsCommands,
         ValidatorsCommands,
