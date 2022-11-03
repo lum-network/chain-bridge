@@ -7,6 +7,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import * as Joi from 'joi';
 import { SentryModule } from '@ntegral/nestjs-sentry';
+import * as parseRedisUrl from 'parse-redis-url-simple';
 
 import { AsyncQueues, BeamConsumer, BlockConsumer, CoreConsumer, NotificationConsumer } from '@app/async';
 
@@ -26,13 +27,16 @@ import { DatabaseConfig, DatabaseFeatures } from '@app/database';
                 name: 'API',
                 imports: [ConfigModule],
                 inject: [ConfigService],
-                useFactory: (configService: ConfigService) => ({
-                    transport: Transport.REDIS,
-                    options: {
-                        host: configService.get<string>('REDIS_HOST'),
-                        port: configService.get<number>('REDIS_PORT'),
-                    },
-                }),
+                useFactory: (configService: ConfigService) => {
+                    const parsed = parseRedisUrl.parseRedisUrl(configService.get('REDIS_URL'));
+                    return {
+                        transport: Transport.REDIS,
+                        options: {
+                            host: parsed[0].host,
+                            port: parsed[0].port,
+                        },
+                    };
+                },
             },
         ]),
         HttpModule,

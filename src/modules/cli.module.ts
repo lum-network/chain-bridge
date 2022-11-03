@@ -6,6 +6,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ConsoleModule } from 'nestjs-console';
 import * as Joi from 'joi';
 import * as redisStore from 'cache-manager-redis-store';
+import * as parseRedisUrl from 'parse-redis-url-simple';
 
 import { BeamService, BlockService, LumNetworkService, StatService, TransactionService, ValidatorDelegationService, ValidatorService } from '@app/services';
 
@@ -21,13 +22,16 @@ import { ConfigMap } from '@app/utils';
         }),
         CacheModule.registerAsync({
             imports: [ConfigModule],
-            useFactory: (configService: ConfigService) => ({
-                store: redisStore,
-                host: configService.get<string>('REDIS_HOST'),
-                port: configService.get<number>('REDIS_PORT'),
-                ttl: 10,
-                max: 50,
-            }),
+            useFactory: (configService: ConfigService) => {
+                const parsed = parseRedisUrl.parseRedisUrl(configService.get('REDIS_URL'));
+                return {
+                    store: redisStore,
+                    host: parsed[0].host,
+                    port: parsed[0].port,
+                    ttl: 10,
+                    max: 50,
+                }
+            },
             inject: [ConfigService],
         }),
         ConsoleModule,

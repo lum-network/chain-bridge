@@ -9,6 +9,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as Joi from 'joi';
 import { Queue } from 'bull';
 import { SentryModule } from '@ntegral/nestjs-sentry';
+import * as parseRedisUrl from 'parse-redis-url-simple';
 
 import { AsyncQueues, BlockScheduler, GovernanceScheduler, ValidatorScheduler } from '@app/async';
 
@@ -28,13 +29,16 @@ import { DatabaseConfig, DatabaseFeatures } from '@app/database';
                 name: 'API',
                 imports: [ConfigModule],
                 inject: [ConfigService],
-                useFactory: (configService: ConfigService) => ({
-                    transport: Transport.REDIS,
-                    options: {
-                        host: configService.get<string>('REDIS_HOST'),
-                        url: configService.get<number>('REDIS_PORT'),
-                    },
-                }),
+                useFactory: (configService: ConfigService) => {
+                    const parsed = parseRedisUrl.parseRedisUrl(configService.get('REDIS_URL'));
+                    return {
+                        transport: Transport.REDIS,
+                        options: {
+                            host: parsed[0].host,
+                            port: parsed[0].port,
+                        },
+                    };
+                },
             },
         ]),
         ScheduleModule.forRoot(),
