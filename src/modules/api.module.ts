@@ -63,6 +63,7 @@ import { AsyncQueues } from '@app/async';
                     store: redisStore,
                     host: parsed[0].host,
                     port: parsed[0].port,
+                    password: parsed[0].password,
                     ttl: 10,
                     max: 50,
                 }

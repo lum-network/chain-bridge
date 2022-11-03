@@ -20,6 +20,7 @@ async function bootstrap() {
             options: {
                 host: redisUrl[0].host,
                 port: redisUrl[0].port,
+                password: redisUrl[0].password,
             },
         },
         { inheritAppConfig: true },

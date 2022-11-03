@@ -34,6 +34,7 @@ import { DatabaseConfig, DatabaseFeatures } from '@app/database';
                         options: {
                             host: parsed[0].host,
                             port: parsed[0].port,
+                            password: parsed[0].password,
                         },
                     };
                 },
