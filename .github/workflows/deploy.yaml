@@ -99,7 +99,7 @@ jobs:
           host: '${{ secrets.CAPROVER_HOST }}'
           password: '${{ secrets.CAPROVER_PASSWORD }}'
           app: 'explorer-testnet'
-          image: '${{REGISTRY_ADDRESS}}/${{REGISTRY_ADDRESS_PROJECT}}-api:${{ steps.vars.outputs.version_tag_number }}'
+          image: '$REGISTRY_ADDRESS/$REGISTRY_ADDRESS_PROJECT-api:${{ steps.vars.outputs.version_tag_number }}'
 
       - name: Update Sync Consumer service
         uses: floms/action-caprover@v1
@@ -107,7 +107,7 @@ jobs:
           host: '${{ secrets.CAPROVER_HOST }}'
           password: '${{ secrets.CAPROVER_PASSWORD }}'
           app: 'explorer-testnet-sync-consumer'
-          image: '${{REGISTRY_ADDRESS}}/${{REGISTRY_ADDRESS_PROJECT}}-sync-consumer:${{ steps.vars.outputs.version_tag_number }}'
+          image: '$REGISTRY_ADDRESS/$REGISTRY_ADDRESS_PROJECT-sync-consumer:${{ steps.vars.outputs.version_tag_number }}'
 
       - name: Update Sync Scheduler service
         uses: floms/action-caprover@v1
@@ -115,7 +115,7 @@ jobs:
           host: '${{ secrets.CAPROVER_HOST }}'
           password: '${{ secrets.CAPROVER_PASSWORD }}'
           app: 'explorer-testnet-sync-scheduler'
-          image: '${{REGISTRY_ADDRESS}}/${{REGISTRY_ADDRESS_PROJECT}}-sync-scheduler:${{ steps.vars.outputs.version_tag_number }}'
+          image: '$REGISTRY_ADDRESS/$REGISTRY_ADDRESS_PROJECT-sync-scheduler:${{ steps.vars.outputs.version_tag_number }}'
 
 
   deploy_mainnet:
@@ -142,7 +142,7 @@ jobs:
           host: '${{ secrets.CAPROVER_HOST }}'
           password: '${{ secrets.CAPROVER_PASSWORD }}'
           app: 'explorer-mainnet'
-          image: '${{REGISTRY_ADDRESS}}/${{REGISTRY_ADDRESS_PROJECT}}-api:${{ steps.vars.outputs.version_tag_number }}'
+          image: '$REGISTRY_ADDRESS/$REGISTRY_ADDRESS_PROJECT-api:${{ steps.vars.outputs.version_tag_number }}'
 
       - name: Update Sync Consumer service
         uses: floms/action-caprover@v1
@@ -150,7 +150,7 @@ jobs:
           host: '${{ secrets.CAPROVER_HOST }}'
           password: '${{ secrets.CAPROVER_PASSWORD }}'
           app: 'explorer-mainnet-sync-consumer'
-          image: '${{REGISTRY_ADDRESS}}/${{REGISTRY_ADDRESS_PROJECT}}-sync-consumer:${{ steps.vars.outputs.version_tag_number }}'
+          image: '$REGISTRY_ADDRESS/$REGISTRY_ADDRESS_PROJECT-sync-consumer:${{ steps.vars.outputs.version_tag_number }}'
 
       - name: Update Sync Scheduler service
         uses: floms/action-caprover@v1
@@ -158,4 +158,4 @@ jobs:
           host: '${{ secrets.CAPROVER_HOST }}'
           password: '${{ secrets.CAPROVER_PASSWORD }}'
           app: 'explorer-mainnet-sync-scheduler'
-          image: '${{REGISTRY_ADDRESS}}/${{REGISTRY_ADDRESS_PROJECT}}-sync-scheduler:${{ steps.vars.outputs.version_tag_number }}'
+          image: '$REGISTRY_ADDRESS/$REGISTRY_ADDRESS_PROJECT-sync-scheduler:${{ steps.vars.outputs.version_tag_number }}'
