@@ -4,7 +4,7 @@ import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { AssetService } from '@app/services';
 import { DataResponse, DataResponseMetadata, AssetInfo, AssetHistorical } from '@app/http/responses/';
 import { ExplorerRequest } from '@app/utils';
-import { AssetRequest } from '../requests/asset.request';
+import { AssetRequest } from '@app/http/requests';
 
 @ApiTags('dfract')
 @Controller('dfract')
