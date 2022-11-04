@@ -3,6 +3,8 @@ import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { RedisOptions, Transport } from '@nestjs/microservices';
 
+import * as parseRedisUrl from 'parse-redis-url-simple';
+
 import { ApiModule } from '@app/modules';
 
 async function bootstrap() {
@@ -11,12 +13,14 @@ async function bootstrap() {
     app.enableCors();
 
     // Microservice module setup
+    const redisUrl = parseRedisUrl.parseRedisUrl(process.env.REDIS_URL);
     app.connectMicroservice<RedisOptions>(
         {
             transport: Transport.REDIS,
             options: {
-                host: process.env.REDIS_HOST,
-                port: parseInt(process.env.REDIS_PORT, 10),
+                host: redisUrl[0].host,
+                port: redisUrl[0].port,
+                password: redisUrl[0].password,
             },
         },
         { inheritAppConfig: true },

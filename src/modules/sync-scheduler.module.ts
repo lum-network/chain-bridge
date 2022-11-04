@@ -9,6 +9,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as Joi from 'joi';
 
 import { Queue } from 'bull';
+import { SentryModule } from '@ntegral/nestjs-sentry';
+import * as parseRedisUrl from 'parse-redis-url-simple';
 
 import { AsyncQueues, BlockScheduler, GovernanceScheduler, ValidatorScheduler, AssetScheduler } from '@app/async';
 
@@ -25,7 +27,7 @@ import {
     AssetService,
     DfractService,
 } from '@app/services';
-import { ConfigMap, QueueJobs, Queues } from '@app/utils';
+import { ConfigMap, QueueJobs, Queues, SentryModuleOptions } from '@app/utils';
 import { DatabaseConfig, DatabaseFeatures } from '@app/database';
 
 @Module({
@@ -40,17 +42,22 @@ import { DatabaseConfig, DatabaseFeatures } from '@app/database';
                 name: 'API',
                 imports: [ConfigModule],
                 inject: [ConfigService],
-                useFactory: (configService: ConfigService) => ({
-                    transport: Transport.REDIS,
-                    options: {
-                        host: configService.get<string>('REDIS_HOST'),
-                        url: configService.get<number>('REDIS_PORT'),
-                    },
-                }),
+                useFactory: (configService: ConfigService) => {
+                    const parsed = parseRedisUrl.parseRedisUrl(configService.get('REDIS_URL'));
+                    return {
+                        transport: Transport.REDIS,
+                        options: {
+                            host: parsed[0].host,
+                            port: parsed[0].port,
+                            password: parsed[0].password,
+                        },
+                    };
+                },
             },
         ]),
         ScheduleModule.forRoot(),
         HttpModule,
+        SentryModule.forRootAsync(SentryModuleOptions),
         TypeOrmModule.forRootAsync(DatabaseConfig),
         TypeOrmModule.forFeature(DatabaseFeatures),
     ],
@@ -89,8 +96,9 @@ export class SyncSchedulerModule implements OnModuleInit, OnApplicationBootstrap
         const ingestEnabled = this._configService.get<boolean>('INGEST_ENABLED') ? 'enabled' : 'disabled';
         this._logger.log(`AppModule ingestion: ${ingestEnabled}`);
 
-        // Make sure to initialize the chains
-        await Promise.all([await this._lumNetworkService.initialize(), await this._chainService.initialize()]);
+        // We want to intitiliaze lum network first
+        await this._lumNetworkService.initialize();
+        await this._chainService.initialize();
     }
 
     async onApplicationBootstrap() {

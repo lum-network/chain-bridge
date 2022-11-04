@@ -9,11 +9,7 @@ export const AsyncQueues: BullModuleAsyncOptions[] = [
         imports: [ConfigModule],
         inject: [ConfigService],
         useFactory: (configService: ConfigService) => ({
-            redis: {
-                host: configService.get<string>('REDIS_HOST'),
-                port: configService.get<number>('REDIS_PORT'),
-            },
-            prefix: configService.get<string>('REDIS_PREFIX'),
+            url: configService.get<string>('REDIS_URL'),
             defaultJobOptions: {
                 removeOnComplete: true,
                 removeOnFail: true,
@@ -25,11 +21,7 @@ export const AsyncQueues: BullModuleAsyncOptions[] = [
         imports: [ConfigModule],
         inject: [ConfigService],
         useFactory: (configService: ConfigService) => ({
-            redis: {
-                host: configService.get<string>('REDIS_HOST'),
-                port: configService.get<number>('REDIS_PORT'),
-            },
-            prefix: configService.get<string>('REDIS_PREFIX'),
+            url: configService.get<string>('REDIS_URL'),
             defaultJobOptions: {
                 removeOnComplete: true,
                 removeOnFail: true,
@@ -40,11 +32,7 @@ export const AsyncQueues: BullModuleAsyncOptions[] = [
         name: Queues.FAUCET,
         imports: [ConfigModule],
         useFactory: (configService: ConfigService) => ({
-            redis: {
-                host: configService.get<string>('REDIS_HOST'),
-                port: configService.get<number>('REDIS_PORT'),
-            },
-            prefix: configService.get<string>('REDIS_PREFIX'),
+            url: configService.get<string>('REDIS_URL'),
             limiter: {
                 max: 1,
                 duration: 30,
@@ -61,11 +49,7 @@ export const AsyncQueues: BullModuleAsyncOptions[] = [
         imports: [ConfigModule],
         inject: [ConfigService],
         useFactory: (configService: ConfigService) => ({
-            redis: {
-                host: configService.get<string>('REDIS_HOST'),
-                port: configService.get<number>('REDIS_PORT'),
-            },
-            prefix: configService.get<string>('REDIS_PREFIX'),
+            url: configService.get<string>('REDIS_URL'),
             limiter: {
                 max: 1,
                 duration: 30,

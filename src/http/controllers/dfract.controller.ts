@@ -1,9 +1,10 @@
-import { CacheInterceptor, Controller, Get, Param, Req, UseInterceptors } from '@nestjs/common';
+import { Body, CacheInterceptor, Controller, Get, Post, Req, UseInterceptors } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 
 import { AssetService } from '@app/services';
 import { DataResponse, DataResponseMetadata, AssetInfo, AssetHistorical } from '@app/http/responses/';
 import { ExplorerRequest } from '@app/utils';
+import { AssetRequest } from '../requests/asset.request';
 
 @ApiTags('dfract')
 @Controller('dfract')
@@ -30,18 +31,12 @@ export class DfractController {
     @ApiOkResponse({ status: 200, type: AssetHistorical })
     // example-1: assets/lum_unit_price_usd/nov-2022
     // example-2: assets/akt_apy/oct-2022
-    @Get('assets/:metrics/:since')
-    async getHistoricalData(@Req() request: ExplorerRequest, @Param('since') since: string, @Param('metrics') id: string): Promise<DataResponse> {
-        const [result, total] = await this._assetService.fetchMetricsSince(id, since, request.pagination.skip);
+    @Post('assets/since')
+    async getHistoricalData(@Body() body: AssetRequest): Promise<DataResponse> {
+        const result = await this._assetService.fetchMetricsSince(body.metrics, new Date(body.since));
 
         return new DataResponse({
-            result: result,
-            metadata: new DataResponseMetadata({
-                page: request.pagination.page,
-                limit: request.pagination.limit,
-                items_count: result.length,
-                items_total: total,
-            }),
+            result,
         });
     }
 }

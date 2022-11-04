@@ -6,11 +6,13 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import * as Joi from 'joi';
+import { SentryModule } from '@ntegral/nestjs-sentry';
+import * as parseRedisUrl from 'parse-redis-url-simple';
 
 import { AsyncQueues, BeamConsumer, BlockConsumer, CoreConsumer, NotificationConsumer } from '@app/async';
 
 import { BeamService, BlockService, LumNetworkService, ProposalDepositService, ProposalVoteService, TransactionService, ValidatorDelegationService, ValidatorService } from '@app/services';
-import { ConfigMap } from '@app/utils';
+import { ConfigMap, SentryModuleOptions } from '@app/utils';
 import { DatabaseConfig, DatabaseFeatures } from '@app/database';
 
 @Module({
@@ -25,16 +27,21 @@ import { DatabaseConfig, DatabaseFeatures } from '@app/database';
                 name: 'API',
                 imports: [ConfigModule],
                 inject: [ConfigService],
-                useFactory: (configService: ConfigService) => ({
-                    transport: Transport.REDIS,
-                    options: {
-                        host: configService.get<string>('REDIS_HOST'),
-                        port: configService.get<number>('REDIS_PORT'),
-                    },
-                }),
+                useFactory: (configService: ConfigService) => {
+                    const parsed = parseRedisUrl.parseRedisUrl(configService.get('REDIS_URL'));
+                    return {
+                        transport: Transport.REDIS,
+                        options: {
+                            host: parsed[0].host,
+                            port: parsed[0].port,
+                            password: parsed[0].password,
+                        },
+                    };
+                },
             },
         ]),
         HttpModule,
+        SentryModule.forRootAsync(SentryModuleOptions),
         TypeOrmModule.forRootAsync(DatabaseConfig),
         TypeOrmModule.forFeature(DatabaseFeatures),
     ],
@@ -53,7 +60,6 @@ import { DatabaseConfig, DatabaseFeatures } from '@app/database';
         CoreConsumer,
         NotificationConsumer,
     ],
-    exports: [LumNetworkService],
 })
 export class SyncConsumerModule implements OnModuleInit, OnApplicationBootstrap {
     constructor(private readonly _lumNetworkService: LumNetworkService) {}

@@ -32,15 +32,8 @@ You should have a .env file at the root level with the following entries (and th
 ENV=development
 LUM_NETWORK_ENDPOINT=http://127.0.0.1:26657
 
-DATABASE_HOST=127.0.0.1
-DATABASE_PORT=5432
-DATABASE_USER=postgres
-DATABASE_PASSWORD=emulator
-DATABASE_NAME=postgres
-
-REDIS_HOST=127.0.0.1
-REDIS_PORT=6379
-REDIS_PREFIX=lm-bridge
+DATABASE_URL=postgresql://postgres:emulator@127.0.0.1:5432/postgres
+REDIS_URL=redis://127.0.0.1:6379
 
 INGEST_ENABLED=true
 

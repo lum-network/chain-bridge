@@ -8,6 +8,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import * as redisStore from 'cache-manager-redis-store';
 import { SentryInterceptor, SentryModule } from '@ntegral/nestjs-sentry';
+import * as parseRedisUrl from 'parse-redis-url-simple';
 
 import * as Joi from 'joi';
 
@@ -60,13 +61,17 @@ import { AsyncQueues } from '@app/async';
         ...AsyncQueues.map((queue) => BullModule.registerQueueAsync(queue)),
         CacheModule.registerAsync({
             imports: [ConfigModule],
-            useFactory: (configService: ConfigService) => ({
-                store: redisStore,
-                host: configService.get<string>('REDIS_HOST'),
-                port: configService.get<number>('REDIS_PORT'),
-                ttl: 10,
-                max: 50,
-            }),
+            useFactory: (configService: ConfigService) => {
+                const parsed = parseRedisUrl.parseRedisUrl(configService.get('REDIS_URL'));
+                return {
+                    store: redisStore,
+                    host: parsed[0].host,
+                    port: parsed[0].port,
+                    password: parsed[0].password,
+                    ttl: 10,
+                    max: 50,
+                }
+            },
             inject: [ConfigService],
         }),
         SentryModule.forRootAsync(SentryModuleOptions),

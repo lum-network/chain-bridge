@@ -22,15 +22,13 @@ export class GovernanceScheduler {
             // We need to get the proposalsId in order to fetch the voters
             const proposalIds = await this._lumNetworkService.getOpenVotingProposals();
 
-            if (!proposalIds.length) {
+            if (!proposalIds || !proposalIds.length) {
                 this._logger.log(`voteSync scheduler not launched as no current open proposals to vote on...`);
                 return;
             }
 
             // Only start the patch process if there are actual proposalId
             for (const id of proposalIds) {
-                let page: Uint8Array | undefined = undefined;
-
                 // Fetch the votes based on the proposalId
                 const getVotes = await this._lumNetworkService.client.queryClient.gov.votes(id);
 
@@ -44,17 +42,12 @@ export class GovernanceScheduler {
                 // Create or update to DB if we have new voters based on the proposalId
                 for (const voteKey of getVoterAndOptions) {
                     // Only update the db if there is any vote during the voting period
-                    if (getVotes.votes.length) {
+                    if (getVotes && getVotes.votes && getVotes.votes.length > 0) {
                         await this._governanceProposalVoteService.createOrUpdateVoters(id, voteKey.voter, voteKey.voteOption, voteKey.voteWeight);
                     }
                 }
-
-                // If we get a pagination key, we just patch it and it will process in the next loop
-                if (getVotes.pagination && getVotes.pagination.nextKey && getVotes.pagination.nextKey.length) {
-                    page = getVotes.pagination.nextKey;
-                }
             }
-            this._logger.log(`Synced ${proposalIds.length} proposals from chain...`);
+            this._logger.log(`Synced ${proposalIds.length || 0} proposals from chain...`);
         } catch (error) {
             this._logger.error(`Failed to sync votes from chain...`, error);
         }
@@ -68,14 +61,13 @@ export class GovernanceScheduler {
             // We need to get the proposalsId in order to fetch the deposits
             const proposalIds = await this._lumNetworkService.getOpenVotingProposals();
 
-            if (!proposalIds.length) {
+            if (!proposalIds || !proposalIds.length) {
                 this._logger.log(`No active proposals to sync deposits for...`);
                 return;
             }
 
             // Only start the patch process if there are actual proposalId
             for (const id of proposalIds) {
-                let page: Uint8Array | undefined = undefined;
 
                 // Fetch the deposits based on the proposalId
                 const getDeposits = await this._lumNetworkService.client.queryClient.gov.deposits(id);
@@ -90,13 +82,8 @@ export class GovernanceScheduler {
                 for (const depositorAddress of getDepositor) {
                     await this._governanceProposalDepositService.createOrUpdateDepositors(id, depositorAddress.depositor, depositorAddress.amount);
                 }
-
-                // If we get a pagination key, we just patch it and it will process in the next loop
-                if (getDeposits.pagination && getDeposits.pagination.nextKey && getDeposits.pagination.nextKey.length) {
-                    page = getDeposits.pagination.nextKey;
-                }
             }
-            this._logger.log(`Synced ${proposalIds.length} proposals from chain...`);
+            this._logger.log(`Synced ${proposalIds.length || 0} proposals from chain...`);
         } catch (error) {
             this._logger.error(`Failed to sync deposits from chain...`, error);
         }

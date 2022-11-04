@@ -67,15 +67,6 @@ export interface GenericValueEntity {
     unit_price_usd?: number;
 }
 
-// Helper function to convert month params in number from client
-export const getDateFromString = (mon: string, year: string) => {
-    const d = Date.parse(mon + `1, ${year}`);
-    if (!isNaN(d)) {
-        return new Date(d).getMonth() + 1;
-    }
-    return -1;
-};
-
 // Eliminate falsy values to be inserted in DB
 export const filterFalsy = (obj) =>
     Object.keys(obj).reduce((acc, key) => {

@@ -4,7 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { AssetEntity } from '@app/database';
-import { filterFalsy, GenericValueEntity, getDateFromString } from '@app/utils';
+import { filterFalsy, GenericValueEntity } from '@app/utils';
 import { AssetInfo } from '@app/http';
 
 @Injectable()
@@ -109,21 +109,19 @@ export class AssetService {
         return [Object.values(assetInfo), Object.values(assetInfo).length];
     };
 
-    fetchMetricsSince = async (metrics: string, date: string, skip: number): Promise<[{ id: string; extra: [] }[], number]> => {
+    fetchMetricsSince = async (metrics: string, date: Date): Promise<{ id: string; extra: [] }[]> => {
         // Date will come as string format with month and year 'Jan-2022'
-        const formatedDate = date.split('-');
+        /*         const formatedDate = date.split('-');
 
         const getMonth = getDateFromString(formatedDate[0], formatedDate[1]);
-        const startDate = new Date(`${formatedDate[1]}-${getMonth}-01`);
+        const startDate = new Date(`${formatedDate[1]}-${getMonth}-01`); */
 
-        const query = await this._repository.createQueryBuilder('assets').select(['id', 'extra']).where('id = :metrics', { metrics: metrics }).skip(skip).getRawMany();
+        const query = await this._repository.createQueryBuilder('assets').select(['id', 'extra']).where('id = :metrics', { metrics: metrics }).getRawMany();
 
         // We return data that has been request since the start of the requested month
-        const result = query.map((el) => ({
+        return query.map((el) => ({
             id: el.id,
-            extra: el.extra.filter((el) => new Date(el.last_updated_at).getTime() >= startDate.getTime() && new Date(el.last_updated_at).getTime() < new Date().getTime()),
+            extra: el.extra.filter((el) => new Date(el.last_updated_at).getTime() >= date.getTime() && new Date(el.last_updated_at).getTime() < new Date().getTime()),
         }));
-
-        return [result, result.length];
     };
 }
