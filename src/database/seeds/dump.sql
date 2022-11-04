@@ -54,3 +54,13 @@ VALUES
 ),(
 '21:lum1yhaswwgg5tz7veknxwaj8vc8rfa9s0nahkjq30', 21, 'lum1yhaswwgg5tz7veknxwaj8vc8rfa9s0nahkjq30', 'lumvaloper1yhaswwgg5tz7veknxwaj8vc8rfa9s0nagpmn2t', 3, '1000000000000000000'
 );
+
+CREATE TABLE IF NOT EXISTS earnings(employee_id VARCHAR NOT NULL, hour timestamp NOT NULL, total numeric NOT NULL);
+insert into earnings (employee_id, hour, total) VALUES (1, '2016-09-20 08:00:00', 25.0 );
+insert into earnings (employee_id, hour, total) VALUES (1, '2016-09-20 09:00:00', 70.3 );
+insert into earnings (employee_id, hour, total) VALUES (1, '2016-09-20 10:00:00', 53.0);
+
+insert into earnings (employee_id, hour, total) VALUES (1, '2016-09-21 08:00:00', 11.5);
+insert into earnings (employee_id, hour, total) VALUES (1, '2016-09-21 09:00:00', 39.7);
+insert into earnings (employee_id, hour, total) VALUES (1, '2016-09-21 10:00:00', 61.4);
+

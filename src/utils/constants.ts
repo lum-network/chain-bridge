@@ -20,6 +20,12 @@ export enum ChartTypes {
     WALLETS_TOP = 'wallets_top',
 }
 
+export enum ChartGroupType {
+    GROUP_MONTHLY = 'monthly',
+    GROUP_DAILY = 'daily',
+    GROUP_WEEKLY = 'weekly',
+}
+
 export enum Queues {
     BEAMS = 'beams',
     BLOCKS = 'blocks',

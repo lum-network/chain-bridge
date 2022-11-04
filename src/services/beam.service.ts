@@ -4,7 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { BeamEntity } from '@app/database';
-import { BeamStatus } from '@app/utils';
+import { BeamStatus, ChartGroupType } from '@app/utils';
 
 @Injectable()
 export class BeamService {
@@ -57,28 +57,42 @@ export class BeamService {
         });
     };
 
-    countInRange = async (startAt: Date, endAt: Date, monthly = false): Promise<{ key: string; value: number }[]> => {
+    countInRange = async (startAt: Date, endAt: Date, groupBy: string): Promise<{ key: string; value: number }[]> => {
+        const monthOrDate = groupBy === ChartGroupType.GROUP_MONTHLY ? 'month' : 'date';
+        const monthOrDay = groupBy === ChartGroupType.GROUP_MONTHLY ? 'month' : 'day';
         const query = await this._repository.query(`
-            with dates as (
-                select generate_series(
-                   (date '${startAt}')::timestamp,
-                   (date '${endAt}')::timestamp,
-                   interval '1 ${monthly ? 'day' : 'hour'}'
-                 ) as dt
-            )
-            SELECT d.dt::date::text as day, to_char(d.dt::time,'HH24:MM:SS') as hour, COUNT(id) as count FROM dates d LEFT JOIN beams b ON b.dispatched_at >= d.dt AND b.dispatched_at < d.dt + interval '1 ${
-                monthly ? 'day' : 'hour'
-            }' GROUP BY d.dt ORDER BY d.dt;
+            SELECT
+                series.${monthOrDate},
+                COUNT(e.id)
+            FROM (
+                SELECT
+                    to_char(${monthOrDay}, 'YYYY-MM-DD') AS ${monthOrDate}
+                FROM
+                    generate_series('${startAt}'::date, '${endAt}'::date, '1${monthOrDay}') AS ${monthOrDay}) series
+                LEFT OUTER JOIN (
+                SELECT
+                    *
+                FROM
+                    beams
+                WHERE
+                    dispatched_at >= '${startAt}'
+                    AND dispatched_at <= '${endAt}') AS e ON (series.${monthOrDate} = to_char(e.dispatched_at, 'YYYY-MM-DD'))
+            GROUP BY
+                series.${monthOrDate}
+            ORDER BY
+                series.${monthOrDate};
+
         `);
+
         return query.map((i) => {
             return {
-                key: String(i.day + ' ' + i.hour),
+                key: String(`${i[monthOrDate]}`),
                 value: Number(i.count),
             };
         });
     };
 
-    averageTotalAmountInRange = async (startAt: Date, endAt: Date, monthly = false): Promise<{ key: string; value: number }[]> => {
+    /*     averageTotalAmountInRange = async (startAt: Date, endAt: Date, monthly = false): Promise<{ key: string; value: number }[]> => {
         const query = await this._repository.query(`
             with dates as (
                 select generate_series(
@@ -90,6 +104,40 @@ export class BeamService {
             SELECT d.dt::date::text as day, to_char(d.dt::time,'HH24:MM:SS') as hour, AVG((amount->'amount')::bigint) as average FROM dates d LEFT JOIN beams b ON b.dispatched_at >= d.dt AND b.dispatched_at < d.dt + interval '1 ${
                 monthly ? 'day' : 'hour'
             }' GROUP BY d.dt ORDER BY d.dt;
+        `);
+        return query.map((i) => {
+            return {
+                key: String(i.day + ' ' + i.hour),
+                value: Number(i.average || 0),
+            };
+        });
+    }; */
+
+    averageTotalAmountInRange = async (startAt: Date, endAt: Date, groupBy: string): Promise<{ key: string; value: number }[]> => {
+        const monthOrDate = groupBy === ChartGroupType.GROUP_MONTHLY ? 'month' : 'date';
+        const monthOrDay = groupBy === ChartGroupType.GROUP_MONTHLY ? 'month' : 'day';
+        const query = await this._repository.query(`
+            SELECT
+                series.${monthOrDate},
+                AVG((amount->'amount')
+            FROM (
+                SELECT
+                    to_char(${monthOrDay}, 'YYYY-MM-DD') AS ${monthOrDate}
+                FROM
+                    generate_series('${startAt}'::date, '${endAt}'::date, '1${monthOrDay}') AS ${monthOrDay}) series
+                LEFT OUTER JOIN (
+                SELECT
+                    *
+                FROM
+                    beams
+                WHERE
+                    dispatched_at >= '${startAt}'
+                    AND dispatched_at <= '${endAt}') AS e ON (series.${monthOrDate} = to_char(e.dispatched_at, 'YYYY-MM-DD'))
+            GROUP BY
+                series.${monthOrDate}
+            ORDER BY
+                series.${monthOrDate};
+
         `);
         return query.map((i) => {
             return {
