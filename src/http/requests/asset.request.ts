@@ -10,6 +10,6 @@ export class AssetRequest {
 
     @ApiProperty()
     @IsNotEmpty()
-    @IsString()
+    @IsDateString()
     since: string;
 }
