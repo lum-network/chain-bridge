@@ -17,8 +17,7 @@ export class AssetScheduler {
         private readonly _chainService: ChainService,
     ) {}
 
-    //@Cron(CronExpression.EVERY_HOUR)
-    @Cron(CronExpression.EVERY_30_SECONDS)
+    @Cron(CronExpression.EVERY_HOUR)
     async syncHourly(): Promise<void> {
         try {
             this._logger.log(`Syncing latest assets info from chain...`);
@@ -36,8 +35,7 @@ export class AssetScheduler {
         }
     }
 
-    //@Cron(CronExpression.EVERY_WEEK)
-    @Cron(CronExpression.EVERY_MINUTE)
+    @Cron(CronExpression.EVERY_WEEK)
     async syncWeekly(): Promise<void> {
         try {
             // We only update chain values other than DFR once a week
