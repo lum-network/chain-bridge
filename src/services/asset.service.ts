@@ -111,10 +111,6 @@ export class AssetService {
 
     fetchMetricsSince = async (metrics: string, date: Date): Promise<{ id: string; extra: [] }[]> => {
         // Date will come as string format with month and year 'Jan-2022'
-        /*         const formatedDate = date.split('-');
-
-        const getMonth = getDateFromString(formatedDate[0], formatedDate[1]);
-        const startDate = new Date(`${formatedDate[1]}-${getMonth}-01`); */
 
         const query = await this._repository.createQueryBuilder('assets').select(['id', 'extra']).where('id = :metrics', { metrics: metrics }).getRawMany();
 
