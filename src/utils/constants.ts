@@ -23,7 +23,6 @@ export enum ChartTypes {
 export enum ChartGroupType {
     GROUP_MONTHLY = 'monthly',
     GROUP_DAILY = 'daily',
-    GROUP_WEEKLY = 'weekly',
 }
 
 export enum Queues {

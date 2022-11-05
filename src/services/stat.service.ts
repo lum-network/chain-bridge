@@ -69,7 +69,7 @@ export class StatService {
                 return await this._beamService.countInRange(startAt, endAt, groupType);
 
             case ChartTypes.REWARDS_SUM:
-                return await this._beamService.sumTotalAmountInRange(startAt, endAt);
+                return await this._beamService.sumTotalAmountInRange(startAt, endAt, groupType);
 
             case ChartTypes.REWARDS_AVG:
                 return await this._beamService.averageTotalAmountInRange(startAt, endAt, groupType);
