@@ -4,7 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { BeamEntity } from '@app/database';
-import { BeamStatus, ChartGroupType, monthOrDate, formatDate, monthOrDay } from '@app/utils';
+import { BeamStatus, monthOrDate, formatDate, monthOrDay } from '@app/utils';
 
 @Injectable()
 export class BeamService {
