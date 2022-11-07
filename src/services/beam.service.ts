@@ -4,7 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { BeamEntity } from '@app/database';
-import { BeamStatus, monthOrDate, formatDate, monthOrDay } from '@app/utils';
+import { BeamStatus, groupTypeToChar, formatDate, groupTypeInterval } from '@app/utils';
 
 @Injectable()
 export class BeamService {
@@ -39,7 +39,7 @@ export class BeamService {
     sumTotalAmountInRange = async (startAt: Date, endAt: Date, groupType: string): Promise<{ key: string; value: number }[]> => {
         const query = await this._repository.query(`
             SELECT
-                to_char(${monthOrDate(groupType)}, '${formatDate(groupType)}') AS date,
+                to_char(${groupTypeToChar(groupType)}, '${formatDate(groupType)}') AS date,
                 (
                     SELECT
                         COALESCE(SUM((amount->'amount')::bigint), 0) as sum
@@ -47,17 +47,17 @@ export class BeamService {
                         beams
                     WHERE
                         id NOTNULL
-                        AND dispatched_at >= ${monthOrDate(groupType)}
-                        AND dispatched_at < ${monthOrDate(groupType)} + '1 ${monthOrDay(groupType)}'::INTERVAL)
+                        AND dispatched_at >= ${groupTypeToChar(groupType)}
+                        AND dispatched_at < ${groupTypeToChar(groupType)} + '1 ${groupTypeInterval(groupType)}'::INTERVAL)
                 FROM (
                     SELECT
-                        date_trunc('${monthOrDay(groupType)}', generate_series('${startAt}'::DATE, '${endAt}'::DATE, '1 ${monthOrDay(groupType)}')) AS ${monthOrDate(groupType)}) ${monthOrDate(
+                        date_trunc('${groupTypeInterval(groupType)}', generate_series('${startAt}'::DATE, '${endAt}'::DATE, '1 ${groupTypeInterval(groupType)}')) AS ${groupTypeToChar(
             groupType,
-        )}
+        )}) ${groupTypeToChar(groupType)}
             GROUP BY
-                ${monthOrDate(groupType)}
+                ${groupTypeToChar(groupType)}
             ORDER BY
-                ${monthOrDate(groupType)};
+                ${groupTypeToChar(groupType)};
         `);
 
         return query.map((i: { date: Date; sum: bigint }) => ({
@@ -69,7 +69,7 @@ export class BeamService {
     countInRange = async (startAt: Date, endAt: Date, groupType: string): Promise<{ key: string; value: number }[]> => {
         const query = await this._repository.query(`
             SELECT
-                to_char(${monthOrDate(groupType)}, '${formatDate(groupType)}') AS date,
+                to_char(${groupTypeToChar(groupType)}, '${formatDate(groupType)}') AS date,
                 (
                     SELECT
                         count(*)
@@ -77,17 +77,17 @@ export class BeamService {
                         beams
                     WHERE
                         id NOTNULL
-                        AND dispatched_at >= ${monthOrDate(groupType)}
-                        AND dispatched_at < ${monthOrDate(groupType)} + '1 ${monthOrDay(groupType)}'::INTERVAL)
+                        AND dispatched_at >= ${groupTypeToChar(groupType)}
+                        AND dispatched_at < ${groupTypeToChar(groupType)} + '1 ${groupTypeInterval(groupType)}'::INTERVAL)
                 FROM (
                     SELECT
-                        date_trunc('${monthOrDay(groupType)}', generate_series('${startAt}'::DATE, '${endAt}'::DATE, '1 ${monthOrDay(groupType)}')) AS ${monthOrDate(groupType)}) ${monthOrDate(
+                        date_trunc('${groupTypeInterval(groupType)}', generate_series('${startAt}'::DATE, '${endAt}'::DATE, '1 ${groupTypeInterval(groupType)}')) AS ${groupTypeToChar(
             groupType,
-        )}
+        )}) ${groupTypeToChar(groupType)}
             GROUP BY
-                ${monthOrDate(groupType)}
+                ${groupTypeToChar(groupType)}
             ORDER BY
-                ${monthOrDate(groupType)};
+                ${groupTypeToChar(groupType)};
         `);
 
         return query.map((i: { date: Date; count: number }) => ({
@@ -99,7 +99,7 @@ export class BeamService {
     averageTotalAmountInRange = async (startAt: Date, endAt: Date, groupType: string): Promise<{ key: string; value: number }[]> => {
         const query = await this._repository.query(`
             SELECT
-                to_char(${monthOrDate(groupType)}, '${formatDate(groupType)}') AS date,
+                to_char(${groupTypeToChar(groupType)}, '${formatDate(groupType)}') AS date,
                 (
                     SELECT
                         AVG((amount->'amount')::bigint)
@@ -107,17 +107,17 @@ export class BeamService {
                         beams
                     WHERE
                         id NOTNULL
-                        AND dispatched_at >= ${monthOrDate(groupType)}
-                        AND dispatched_at < ${monthOrDate(groupType)} + '1 ${monthOrDay(groupType)}'::INTERVAL)
+                        AND dispatched_at >= ${groupTypeToChar(groupType)}
+                        AND dispatched_at < ${groupTypeToChar(groupType)} + '1 ${groupTypeInterval(groupType)}'::INTERVAL)
                 FROM (
                     SELECT
-                        date_trunc('${monthOrDay(groupType)}', generate_series('${startAt}'::DATE, '${endAt}'::DATE, '1 ${monthOrDay(groupType)}')) AS ${monthOrDate(groupType)}) ${monthOrDate(
+                        date_trunc('${groupTypeInterval(groupType)}', generate_series('${startAt}'::DATE, '${endAt}'::DATE, '1 ${groupTypeInterval(groupType)}')) AS ${groupTypeToChar(
             groupType,
-        )}
+        )}) ${groupTypeToChar(groupType)}
             GROUP BY
-                ${monthOrDate(groupType)}
+                ${groupTypeToChar(groupType)}
             ORDER BY
-                ${monthOrDate(groupType)};
+                ${groupTypeToChar(groupType)};
         `);
 
         return query.map((i: { date: Date; avg: bigint }) => ({

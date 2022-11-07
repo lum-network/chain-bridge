@@ -21,8 +21,9 @@ export enum ChartTypes {
 }
 
 export enum ChartGroupType {
-    GROUP_MONTHLY = 'monthly',
     GROUP_DAILY = 'daily',
+    GROUP_MONTHLY = 'monthly',
+    GROUP_YEARLY = 'yearly',
 }
 
 export enum Queues {

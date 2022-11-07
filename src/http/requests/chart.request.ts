@@ -22,6 +22,6 @@ export class ChartRequest {
     @ApiProperty()
     @IsNotEmpty()
     @IsString()
-    @IsIn([ChartGroupType.GROUP_MONTHLY, ChartGroupType.GROUP_DAILY])
+    @IsIn([ChartGroupType.GROUP_DAILY, ChartGroupType.GROUP_MONTHLY, ChartGroupType.GROUP_YEARLY])
     group_type: ChartGroupType;
 }
