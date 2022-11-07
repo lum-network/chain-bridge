@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { IsDateString, IsNotEmpty, IsString } from 'class-validator';
-import { ChartTypes } from '@app/utils';
+import { IsDateString, IsIn, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { ChartGroupType, ChartTypes } from '@app/utils';
 
 export class ChartRequest {
     @ApiProperty()
@@ -18,4 +18,11 @@ export class ChartRequest {
     @IsNotEmpty()
     @IsString()
     type: ChartTypes;
+
+    @ApiProperty()
+    @IsOptional()
+    @IsNotEmpty()
+    @IsString()
+    @IsIn([ChartGroupType.GROUP_DAILY, ChartGroupType.GROUP_MONTHLY, ChartGroupType.GROUP_YEARLY])
+    group_type?: ChartGroupType;
 }

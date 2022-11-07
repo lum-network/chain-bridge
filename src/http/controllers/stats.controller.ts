@@ -17,7 +17,7 @@ export class StatsController {
 
     @Post('chart')
     async getChart(@Body() body: ChartRequest): Promise<DataResponse> {
-        const result = await this._statService.getChart(body.type, body.start_at, body.end_at);
+        const result = await this._statService.getChart(body.type, body.start_at, body.end_at, body.group_type);
         return new DataResponse({
             result,
         });
