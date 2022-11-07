@@ -6,6 +6,8 @@ import request from 'supertest';
 
 import { mockResponseDepositors, mockResponseVotersPage0, mockResponseVotersPage1 } from './mock.data';
 
+import { DatabaseConfig } from '@app/database';
+
 describe('Governance (e2e)', () => {
     let app: INestApplication;
 
@@ -13,17 +15,10 @@ describe('Governance (e2e)', () => {
         const moduleFixture: TestingModule = await Test.createTestingModule({
             imports: [
                 ApiModule,
+
                 // Use the e2e_test database to run the tests
-                TypeOrmModule.forRoot({
-                    type: 'postgres',
-                    host: process.env.DATABASE_HOST,
-                    port: parseInt(process.env.DATABASE_PORT),
-                    username: process.env.DATABASE_USER,
-                    password: process.env.DATABASE_PASSWORD,
-                    database: process.env.DATABASE_NAME,
-                    entities: ['./**/*.entity.ts'],
-                    synchronize: true,
-                }),
+
+                TypeOrmModule.forRootAsync({ ...DatabaseConfig }),
             ],
         }).compile();
         app = moduleFixture.createNestApplication();
