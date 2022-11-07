@@ -54,11 +54,7 @@ VALUES
 ),(
 '21:lum1yhaswwgg5tz7veknxwaj8vc8rfa9s0nahkjq30', 21, 'lum1yhaswwgg5tz7veknxwaj8vc8rfa9s0nahkjq30', 'lumvaloper1yhaswwgg5tz7veknxwaj8vc8rfa9s0nagpmn2t', 3, '1000000000000000000'
 );
-CREATE TABLE IF NOT EXISTS assets(
-id VARCHAR,
-value JSON,
-extra JSON
-);
+
 
 
 
