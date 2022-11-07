@@ -24,5 +24,5 @@ export class ChartRequest {
     @IsNotEmpty()
     @IsString()
     @IsIn([ChartGroupType.GROUP_DAILY, ChartGroupType.GROUP_MONTHLY, ChartGroupType.GROUP_YEARLY])
-    group_type: ChartGroupType;
+    group_type?: ChartGroupType;
 }

@@ -28,7 +28,7 @@ describe('Stats (e2e)', () => {
 
                 // Use the e2e_test database to run the tests
 
-                TypeOrmModule.forRootAsync({ ...DatabaseConfig }),
+                TypeOrmModule.forRootAsync(DatabaseConfig),
             ],
         }).compile();
         app = moduleFixture.createNestApplication();
@@ -71,6 +71,17 @@ describe('Stats (e2e)', () => {
                 })
                 .expect(mockResponseReviewSumYearly);
         });
+
+        it('[POST] - fallback to daily if no group_type property', () => {
+            return request(app.getHttpServer())
+                .post('/stats/chart')
+                .send({
+                    type: 'reviews_sum',
+                    start_at: '2022-07-11 00:00:00',
+                    end_at: '2022-09-16 00:00:00',
+                })
+                .expect(mockResponseReviewSumDaily);
+        });
     });
 
     describe('REWARDS_SUM - should return the sum of rewards from 2022-11-07 to 2022-16-09', () => {
@@ -109,6 +120,17 @@ describe('Stats (e2e)', () => {
                 })
                 .expect(mockResponseRewardSumYearly);
         });
+
+        it('[POST] - fallback to daily if no group_type property', () => {
+            return request(app.getHttpServer())
+                .post('/stats/chart')
+                .send({
+                    type: 'rewards_sum',
+                    start_at: '2022-07-11 00:00:00',
+                    end_at: '2022-09-16 00:00:00',
+                })
+                .expect(mockResponseRewardSumDaily);
+        });
     });
 
     describe('REWARDS_AVG - should return the average of rewards from 2022-11-07 to 2022-16-09', () => {
@@ -146,6 +168,17 @@ describe('Stats (e2e)', () => {
                     group_type: 'yearly',
                 })
                 .expect(mockResponseRewardAvgYearly);
+        });
+
+        it('[POST] - fallback to daily if no group_type property', () => {
+            return request(app.getHttpServer())
+                .post('/stats/chart')
+                .send({
+                    type: 'rewards_avg',
+                    start_at: '2022-07-11 00:00:00',
+                    end_at: '2022-09-16 00:00:00',
+                })
+                .expect(mockResponseRewardAvgDaily);
         });
     });
 
