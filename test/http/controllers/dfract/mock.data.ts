@@ -38,15 +38,6 @@ export const mockResponseHistoricalMetrics = {
             ],
         },
     ],
-    metadata: {
-        page: 0,
-        limit: 5,
-        items_count: 1,
-        items_total: 1,
-        pages_total: 1,
-        has_previous_page: false,
-        has_next_page: false,
-    },
     code: 200,
     message: '',
 };
