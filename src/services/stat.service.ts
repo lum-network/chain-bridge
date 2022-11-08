@@ -57,7 +57,7 @@ export class StatService {
         };
     };
 
-    getChart = async (type: ChartTypes, startAt: Date, endAt: Date): Promise<any> => {
+    getChart = async (type: ChartTypes, startAt: Date, endAt: Date, groupType: string): Promise<any> => {
         switch (type) {
             case ChartTypes.ASSET_VALUE:
                 const startAtTimestamp = moment(startAt).unix();
@@ -66,13 +66,13 @@ export class StatService {
                 return await this._lumService.getPriceHistory(startAtTimestamp, endAtTimestamp);
 
             case ChartTypes.REVIEWS_SUM:
-                return await this._beamService.countInRange(startAt, endAt);
+                return await this._beamService.countInRange(startAt, endAt, groupType);
 
             case ChartTypes.REWARDS_SUM:
-                return await this._beamService.sumTotalAmountInRange(startAt, endAt);
+                return await this._beamService.sumTotalAmountInRange(startAt, endAt, groupType);
 
             case ChartTypes.REWARDS_AVG:
-                return await this._beamService.averageTotalAmountInRange(startAt, endAt);
+                return await this._beamService.averageTotalAmountInRange(startAt, endAt, groupType);
 
             case ChartTypes.REWARDS_LAST:
                 return await this._beamService.fetchLastClaimed();
