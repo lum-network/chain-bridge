@@ -16,7 +16,6 @@ import { AsyncQueues, BlockScheduler, GovernanceScheduler, MetricScheduler, Vali
 import { BeamService, BlockService, LumNetworkService, ProposalDepositService, ProposalVoteService, TransactionService, ValidatorDelegationService, ValidatorService } from '@app/services';
 import { ConfigMap, QueueJobs, Queues, SentryModuleOptions } from '@app/utils';
 import { DatabaseConfig, DatabaseFeatures } from '@app/database';
-import { metrics } from '@app/utils/metrics';
 
 @Module({
     imports: [
@@ -63,7 +62,6 @@ import { metrics } from '@app/utils/metrics';
         MetricScheduler,
         ValidatorScheduler,
         LumNetworkService,
-        ...metrics,
     ],
 })
 export class SyncSchedulerModule implements OnModuleInit, OnApplicationBootstrap {

@@ -43,12 +43,11 @@ import {
     ProposalDepositService,
 } from '@app/services';
 
-import { ConfigMap, PayloadValidationOptions, SentryModuleOptions } from '@app/utils';
+import { metrics, ConfigMap, PayloadValidationOptions, SentryModuleOptions } from '@app/utils';
 
 import { GatewayWebsocket } from '@app/websocket';
 import { DatabaseConfig, DatabaseFeatures } from '@app/database';
 import { AsyncQueues } from '@app/async';
-import { metrics } from '@app/utils/metrics';
 
 @Module({
     imports: [
