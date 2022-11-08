@@ -6,6 +6,7 @@ import { APP_FILTER, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { TerminusModule } from '@nestjs/terminus';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
+import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 import * as redisStore from 'cache-manager-redis-store';
 import { SentryInterceptor, SentryModule } from '@ntegral/nestjs-sentry';
 import * as parseRedisUrl from 'parse-redis-url-simple';
@@ -42,7 +43,7 @@ import {
     ProposalDepositService,
 } from '@app/services';
 
-import { ConfigMap, PayloadValidationOptions, SentryModuleOptions } from '@app/utils';
+import { metrics, ConfigMap, PayloadValidationOptions, SentryModuleOptions } from '@app/utils';
 
 import { GatewayWebsocket } from '@app/websocket';
 import { DatabaseConfig, DatabaseFeatures } from '@app/database';
@@ -73,6 +74,7 @@ import { AsyncQueues } from '@app/async';
         SentryModule.forRootAsync(SentryModuleOptions),
         TerminusModule,
         HttpModule,
+        PrometheusModule.register(),
         TypeOrmModule.forRootAsync(DatabaseConfig),
         TypeOrmModule.forFeature(DatabaseFeatures),
     ],
@@ -101,6 +103,7 @@ import { AsyncQueues } from '@app/async';
         LumNetworkIndicator,
         GatewayWebsocket,
         LumNetworkService,
+        ...metrics,
         { provide: APP_FILTER, useClass: HttpExceptionFilter },
         { provide: APP_INTERCEPTOR, useClass: PaginationInterceptor },
         { provide: APP_INTERCEPTOR, useClass: ResponseInterceptor },

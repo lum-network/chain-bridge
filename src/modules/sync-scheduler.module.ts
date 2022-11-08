@@ -11,7 +11,7 @@ import { Queue } from 'bull';
 import { SentryModule } from '@ntegral/nestjs-sentry';
 import * as parseRedisUrl from 'parse-redis-url-simple';
 
-import { AsyncQueues, BlockScheduler, GovernanceScheduler, ValidatorScheduler } from '@app/async';
+import { AsyncQueues, BlockScheduler, GovernanceScheduler, MetricScheduler, ValidatorScheduler } from '@app/async';
 
 import { BeamService, BlockService, LumNetworkService, ProposalDepositService, ProposalVoteService, TransactionService, ValidatorDelegationService, ValidatorService } from '@app/services';
 import { ConfigMap, QueueJobs, Queues, SentryModuleOptions } from '@app/utils';
@@ -59,6 +59,7 @@ import { DatabaseConfig, DatabaseFeatures } from '@app/database';
         ValidatorDelegationService,
         BlockScheduler,
         GovernanceScheduler,
+        MetricScheduler,
         ValidatorScheduler,
         LumNetworkService,
     ],

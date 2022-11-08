@@ -77,6 +77,10 @@ export class LumNetworkService {
         return this._client !== null;
     };
 
+    get moduleName(): string {
+        return this._currentModuleName;
+    }
+
     get client(): LumClient {
         return this._client;
     }

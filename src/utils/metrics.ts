@@ -1,0 +1,42 @@
+import { makeGaugeProvider } from '@willsoto/nestjs-prometheus';
+
+import { MetricNames } from '@app/utils/constants';
+
+export const metrics = [
+    makeGaugeProvider({
+        name: MetricNames.DFRACT_CURRENT_SUPPLY,
+        help: 'Current supply of udfr',
+    }),
+    makeGaugeProvider({
+        name: MetricNames.LUM_CURRENT_SUPPLY,
+        help: 'Current supply of ulum',
+    }),
+    makeGaugeProvider({
+        name: MetricNames.COMMUNITY_POOL_SUPPLY,
+        help: 'Current supply of community pool',
+    }),
+    makeGaugeProvider({
+        name: MetricNames.LUM_PRICE_USD,
+        help: 'Current price of LUM in USD',
+    }),
+    makeGaugeProvider({
+        name: MetricNames.LUM_PRICE_EUR,
+        help: 'Current price of LUM in EUR',
+    }),
+    makeGaugeProvider({
+        name: MetricNames.MARKET_CAP,
+        help: 'Current market cap of LUM',
+    }),
+    makeGaugeProvider({
+        name: MetricNames.TWITTER_FOLLOWERS,
+        help: 'Current number of Twitter followers',
+    }),
+    makeGaugeProvider({
+        name: MetricNames.DISCORD_MEMBERS,
+        help: 'Current number of Discord members',
+    }),
+    makeGaugeProvider({
+        name: MetricNames.DFRACT_MA_BALANCE,
+        help: 'Current balance of dfract Module Account',
+    }),
+];

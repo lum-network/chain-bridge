@@ -4,13 +4,15 @@ import { ConfigService } from '@nestjs/config';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 
 import { plainToInstance } from 'class-transformer';
-
 import { fromUtf8, keyToHex } from '@lum-network/sdk-javascript/build/utils';
+
+import { InjectMetric } from '@willsoto/nestjs-prometheus';
+import { Gauge } from 'prom-client';
 
 import { LumNetworkService, BlockService, TransactionService } from '@app/services';
 import { BalanceResponse, DataResponse, LumResponse } from '@app/http/responses';
 import { GatewayWebsocket } from '@app/websocket';
-import { CLIENT_PRECISION } from '@app/utils';
+import { CLIENT_PRECISION, MetricNames } from '@app/utils';
 
 @ApiTags('core')
 @Controller('')
@@ -18,6 +20,14 @@ export class CoreController {
     private readonly _logger: Logger = new Logger(CoreController.name);
 
     constructor(
+        @InjectMetric(MetricNames.COMMUNITY_POOL_SUPPLY) private readonly _communityPoolSupply: Gauge<string>,
+        @InjectMetric(MetricNames.DFRACT_CURRENT_SUPPLY) private readonly _dfrCurrentSupply: Gauge<string>,
+        @InjectMetric(MetricNames.DFRACT_MA_BALANCE) private readonly _dfrMaBalance: Gauge<string>,
+        @InjectMetric(MetricNames.LUM_CURRENT_SUPPLY) private readonly _lumCurrentSupply: Gauge<string>,
+        @InjectMetric(MetricNames.LUM_PRICE_USD) private readonly _lumPriceUSD: Gauge<string>,
+        @InjectMetric(MetricNames.LUM_PRICE_EUR) private readonly _lumPriceEUR: Gauge<string>,
+        @InjectMetric(MetricNames.MARKET_CAP) private readonly _marketCap: Gauge<string>,
+        @InjectMetric(MetricNames.TWITTER_FOLLOWERS) private readonly _twitterFollowers: Gauge<string>,
         private readonly _blockService: BlockService,
         private readonly _configService: ConfigService,
         private readonly _lumNetworkService: LumNetworkService,
@@ -155,6 +165,27 @@ export class CoreController {
         this._logger.log(`Dispatching notification on channel ${data.channel}...`);
         if (this._messageGateway && this._messageGateway._server) {
             this._messageGateway._server.to(data.channel).emit(data.event, data.data);
+        }
+    }
+
+    @MessagePattern('updateMetric')
+    async updateMetric(@Payload() data: { name: string; value: number }): Promise<void> {
+        if (data.name == MetricNames.LUM_CURRENT_SUPPLY) {
+            await this._lumCurrentSupply.set(data.value);
+        } else if (data.name == MetricNames.DFRACT_CURRENT_SUPPLY) {
+            await this._dfrCurrentSupply.set(data.value);
+        } else if (data.name == MetricNames.COMMUNITY_POOL_SUPPLY) {
+            await this._communityPoolSupply.set(data.value);
+        } else if (data.name == MetricNames.LUM_PRICE_USD) {
+            await this._lumPriceUSD.set(data.value);
+        } else if (data.name == MetricNames.LUM_PRICE_EUR) {
+            await this._lumPriceEUR.set(data.value);
+        } else if (data.name == MetricNames.DFRACT_MA_BALANCE) {
+            await this._dfrMaBalance.set(data.value);
+        } else if (data.name == MetricNames.MARKET_CAP) {
+            await this._marketCap.set(data.value);
+        } else if (data.name == MetricNames.TWITTER_FOLLOWERS) {
+            await this._twitterFollowers.set(data.value);
         }
     }
 }
