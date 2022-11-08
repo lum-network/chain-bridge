@@ -4,6 +4,7 @@ import { ClientProxy } from '@nestjs/microservices';
 
 import { CLIENT_PRECISION, makeRequest, MetricNames } from '@app/utils';
 import { LumNetworkService } from '@app/services';
+import {LumConstants} from "@lum-network/sdk-javascript";
 
 @Injectable()
 export class MetricScheduler {
@@ -12,13 +13,13 @@ export class MetricScheduler {
     @Cron(CronExpression.EVERY_5_SECONDS)
     async update() {
         // Acquire data
-        const [dfrSupply, lumSupply] = await Promise.all([this._lumNetworkService.client.queryClient.bank.supplyOf('udfr'), this._lumNetworkService.client.queryClient.bank.supplyOf('ulum')]);
+        const [dfrSupply, lumSupply] = await Promise.all([this._lumNetworkService.client.queryClient.bank.supplyOf('udfr'), this._lumNetworkService.client.queryClient.bank.supplyOf(LumConstants.MicroLumDenom)]);
         const [communityPool] = await Promise.all([this._lumNetworkService.client.queryClient.distribution.communityPool()]);
         const [dfrBalance] = await Promise.all([this._lumNetworkService.client.queryClient.dfract.getAccountBalance()]);
         const price = await this._lumNetworkService.getPrice();
 
         // Compute data
-        const communityPoolSupply = communityPool.pool.find((coin) => coin.denom === 'ulum');
+        const communityPoolSupply = communityPool.pool.find((coin) => coin.denom === LumConstants.MicroLumDenom);
 
         await Promise.all([
             makeRequest(this._client, 'updateMetric', { name: MetricNames.LUM_CURRENT_SUPPLY, value: parseInt(lumSupply.amount, 10) }),
