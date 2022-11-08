@@ -68,7 +68,6 @@ export class GovernanceScheduler {
 
             // Only start the patch process if there are actual proposalId
             for (const id of proposalIds) {
-
                 // Fetch the deposits based on the proposalId
                 const getDeposits = await this._lumNetworkService.client.queryClient.gov.deposits(id);
 

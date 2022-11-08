@@ -31,7 +31,7 @@ import { ConfigMap } from '@app/utils';
                     password: parsed[0].password,
                     ttl: 10,
                     max: 50,
-                }
+                };
             },
             inject: [ConfigService],
         }),
