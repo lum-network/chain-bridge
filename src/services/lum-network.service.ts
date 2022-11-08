@@ -6,16 +6,19 @@ import { InjectQueue } from '@nestjs/bull';
 
 import { NewBlockEvent } from '@cosmjs/tendermint-rpc';
 import { LumClient, LumConstants } from '@lum-network/sdk-javascript';
+import { convertUnit } from '@lum-network/sdk-javascript/build/utils';
 import { ProposalStatus } from '@lum-network/sdk-javascript/build/codec/cosmos/gov/v1beta1/gov';
+
+import * as Sentry from '@sentry/node';
+
 import moment from 'moment';
 import { Stream } from 'xstream';
 import { Queue } from 'bull';
+import { lastValueFrom, map } from 'rxjs';
 
 import { AssetInfo } from '@app/http';
 
 import { MODULE_NAMES, QueueJobs, QueuePriority, Queues, apy, TEN_EXPONENT_SIX, CLIENT_PRECISION, computeTotalTokenAmount, computeTotalApy, LUM_STAKING_ADDRESS, AssetSymbol } from '@app/utils';
-import { lastValueFrom, map } from 'rxjs';
-import { convertUnit } from '@lum-network/sdk-javascript/build/utils';
 
 @Injectable()
 export class LumNetworkService {
@@ -160,6 +163,9 @@ export class LumNetworkService {
             return Number(convertUnit(await this.client.getSupply(LumConstants.MicroLumDenom), LumConstants.LumDenom));
         } catch (error) {
             this._logger.error(`Could not fetch Token Supply for Lum Network...`, error);
+
+            Sentry.captureException(error);
+
             return null;
         }
     };
@@ -167,9 +173,14 @@ export class LumNetworkService {
     getMcap = async (): Promise<number> => {
         try {
             // We multiply the price by the supply to get the mcap
-            return Promise.all([await this.getTokenSupply(), (await this.getPrice())?.market_data.current_price.usd]).then(([supply, unit_price_usd]) => Number(supply) * Number(unit_price_usd));
+            const getMetricsToComputeMcap = [await this.getTokenSupply(), (await this.getPrice())?.market_data.current_price.usd];
+
+            return Promise.all(getMetricsToComputeMcap).then(([supply, unit_price_usd]) => Number(supply) * Number(unit_price_usd));
         } catch (error) {
             this._logger.error(`Could not fetch Market Cap for Lum Network...`, error);
+
+            Sentry.captureException(error);
+
             return null;
         }
     };
@@ -184,22 +195,29 @@ export class LumNetworkService {
             return { apy: apy(metrics.inflation, metrics.communityTaxRate, metrics.stakingRatio), symbol: AssetSymbol.LUM };
         } catch (error) {
             this._logger.error(`Could not fetch Apy for Lum Network...`, error);
+
+            Sentry.captureException(error);
+
             return null;
         }
     };
 
     getAssetInfo = async (): Promise<AssetInfo> => {
         try {
-            return await Promise.all([(await this.getPrice())?.market_data.current_price.usd, await this.getMcap(), await this.getTokenSupply(), (await this.getApy()).apy]).then(
-                ([unit_price_usd, total_value_usd, supply, apy]) => ({
-                    unit_price_usd,
-                    total_value_usd,
-                    supply,
-                    apy,
-                }),
-            );
+            // To compute metrics info we need lum's {unit_price_usd, total_value_usd, supply and apy}
+            const getMetricsToComputeInfo = [(await this.getPrice())?.market_data.current_price.usd, await this.getMcap(), await this.getTokenSupply(), (await this.getApy()).apy];
+
+            return Promise.all(getMetricsToComputeInfo).then(([unit_price_usd, total_value_usd, supply, apy]) => ({
+                unit_price_usd,
+                total_value_usd,
+                supply,
+                apy,
+            }));
         } catch (error) {
             this._logger.error('Failed to compute Token Info for Lum Network...', error);
+
+            Sentry.captureException(error);
+
             return null;
         }
     };
@@ -211,6 +229,9 @@ export class LumNetworkService {
             return { tvl: Number(totalToken) * Number((await this.getPrice())?.market_data.current_price.usd), symbol: AssetSymbol.LUM };
         } catch (error) {
             this._logger.error('Failed to compute TVL for Lum Network...', error);
+
+            Sentry.captureException(error);
+
             return null;
         }
     };
