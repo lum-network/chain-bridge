@@ -4,7 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { BeamEntity } from '@app/database';
-import { BeamStatus } from '@app/utils';
+import { BeamStatus, groupTypeToChar, formatDate, groupTypeInterval } from '@app/utils';
 
 @Injectable()
 export class BeamService {
@@ -36,67 +36,94 @@ export class BeamService {
         return ((await queryBuilder.getRawOne()) as any).sum;
     };
 
-    sumTotalAmountInRange = async (startAt: Date, endAt: Date, monthly = false): Promise<{ key: string; value: number }[]> => {
+    sumTotalAmountInRange = async (startAt: Date, endAt: Date, groupType: string): Promise<{ key: string; value: number }[]> => {
         const query = await this._repository.query(`
-            with dates as (
-                select generate_series(
-                   (date '${startAt}')::timestamp,
-                   (date '${endAt}')::timestamp,
-                   interval '1 ${monthly ? 'day' : 'hour'}'
-                 ) as dt
-            )
-            SELECT d.dt::date::text as day, to_char(d.dt::time,'HH24:MM:SS') as hour, COALESCE(SUM((amount->'amount')::bigint), 0) as sum FROM dates d LEFT JOIN beams b ON b.dispatched_at >= d.dt AND b.dispatched_at < d.dt + interval '1 ${
-                monthly ? 'day' : 'hour'
-            }' GROUP BY d.dt ORDER BY d.dt;
+            SELECT
+                to_char(${groupTypeToChar(groupType)}, '${formatDate(groupType)}') AS date,
+                (
+                    SELECT
+                        COALESCE(SUM((amount->'amount')::bigint), 0) as sum
+                    FROM
+                        beams
+                    WHERE
+                        id NOTNULL
+                        AND dispatched_at >= ${groupTypeToChar(groupType)}
+                        AND dispatched_at < ${groupTypeToChar(groupType)} + '1 ${groupTypeInterval(groupType)}'::INTERVAL)
+                FROM (
+                    SELECT
+                        date_trunc('${groupTypeInterval(groupType)}', generate_series('${startAt}'::DATE, '${endAt}'::DATE, '1 ${groupTypeInterval(groupType)}')) AS ${groupTypeToChar(
+            groupType,
+        )}) ${groupTypeToChar(groupType)}
+            GROUP BY
+                ${groupTypeToChar(groupType)}
+            ORDER BY
+                ${groupTypeToChar(groupType)};
         `);
-        return query.map((i) => {
-            return {
-                key: String(i.day + ' ' + i.hour),
-                value: Number(i.sum),
-            };
-        });
+
+        return query.map((i: { date: Date; sum: bigint }) => ({
+            key: String(i.date),
+            value: Number(i.sum),
+        }));
     };
 
-    countInRange = async (startAt: Date, endAt: Date, monthly = false): Promise<{ key: string; value: number }[]> => {
+    countInRange = async (startAt: Date, endAt: Date, groupType: string): Promise<{ key: string; value: number }[]> => {
         const query = await this._repository.query(`
-            with dates as (
-                select generate_series(
-                   (date '${startAt}')::timestamp,
-                   (date '${endAt}')::timestamp,
-                   interval '1 ${monthly ? 'day' : 'hour'}'
-                 ) as dt
-            )
-            SELECT d.dt::date::text as day, to_char(d.dt::time,'HH24:MM:SS') as hour, COUNT(id) as count FROM dates d LEFT JOIN beams b ON b.dispatched_at >= d.dt AND b.dispatched_at < d.dt + interval '1 ${
-                monthly ? 'day' : 'hour'
-            }' GROUP BY d.dt ORDER BY d.dt;
+            SELECT
+                to_char(${groupTypeToChar(groupType)}, '${formatDate(groupType)}') AS date,
+                (
+                    SELECT
+                        count(*)
+                    FROM
+                        beams
+                    WHERE
+                        id NOTNULL
+                        AND dispatched_at >= ${groupTypeToChar(groupType)}
+                        AND dispatched_at < ${groupTypeToChar(groupType)} + '1 ${groupTypeInterval(groupType)}'::INTERVAL)
+                FROM (
+                    SELECT
+                        date_trunc('${groupTypeInterval(groupType)}', generate_series('${startAt}'::DATE, '${endAt}'::DATE, '1 ${groupTypeInterval(groupType)}')) AS ${groupTypeToChar(
+            groupType,
+        )}) ${groupTypeToChar(groupType)}
+            GROUP BY
+                ${groupTypeToChar(groupType)}
+            ORDER BY
+                ${groupTypeToChar(groupType)};
         `);
-        return query.map((i) => {
-            return {
-                key: String(i.day + ' ' + i.hour),
-                value: Number(i.count),
-            };
-        });
+
+        return query.map((i: { date: Date; count: number }) => ({
+            key: String(i.date),
+            value: Number(i.count),
+        }));
     };
 
-    averageTotalAmountInRange = async (startAt: Date, endAt: Date, monthly = false): Promise<{ key: string; value: number }[]> => {
+    averageTotalAmountInRange = async (startAt: Date, endAt: Date, groupType: string): Promise<{ key: string; value: number }[]> => {
         const query = await this._repository.query(`
-            with dates as (
-                select generate_series(
-                   (date '${startAt}')::timestamp,
-                   (date '${endAt}')::timestamp,
-                   interval '1 ${monthly ? 'day' : 'hour'}'
-                 ) as dt
-            )
-            SELECT d.dt::date::text as day, to_char(d.dt::time,'HH24:MM:SS') as hour, AVG((amount->'amount')::bigint) as average FROM dates d LEFT JOIN beams b ON b.dispatched_at >= d.dt AND b.dispatched_at < d.dt + interval '1 ${
-                monthly ? 'day' : 'hour'
-            }' GROUP BY d.dt ORDER BY d.dt;
+            SELECT
+                to_char(${groupTypeToChar(groupType)}, '${formatDate(groupType)}') AS date,
+                (
+                    SELECT
+                        AVG((amount->'amount')::bigint)
+                    FROM
+                        beams
+                    WHERE
+                        id NOTNULL
+                        AND dispatched_at >= ${groupTypeToChar(groupType)}
+                        AND dispatched_at < ${groupTypeToChar(groupType)} + '1 ${groupTypeInterval(groupType)}'::INTERVAL)
+                FROM (
+                    SELECT
+                        date_trunc('${groupTypeInterval(groupType)}', generate_series('${startAt}'::DATE, '${endAt}'::DATE, '1 ${groupTypeInterval(groupType)}')) AS ${groupTypeToChar(
+            groupType,
+        )}) ${groupTypeToChar(groupType)}
+            GROUP BY
+                ${groupTypeToChar(groupType)}
+            ORDER BY
+                ${groupTypeToChar(groupType)};
         `);
-        return query.map((i) => {
-            return {
-                key: String(i.day + ' ' + i.hour),
-                value: Number(i.average || 0),
-            };
-        });
+
+        return query.map((i: { date: Date; avg: bigint }) => ({
+            key: String(i.date),
+            value: Number(i.avg || 0),
+        }));
     };
 
     averageTotalAmount = async (date: Date = null): Promise<number> => {
