@@ -101,7 +101,7 @@ export class AssetService {
             return { symbol: el.id.substring(0, id.indexOf('_')), ...rest.value };
         });
 
-        Promise.all(data.map((el) => (assetInfo[el.symbol] = { ...assetInfo[el.symbol], ...el })));
+        await Promise.all(data.map((el) => (assetInfo[el.symbol] = { ...assetInfo[el.symbol], ...el })));
 
         // Return the length and the values
         return [Object.values(assetInfo), Object.values(assetInfo).length];
@@ -113,9 +113,11 @@ export class AssetService {
         const query = await this._repository.createQueryBuilder('assets').select(['id', 'extra']).where('id = :metrics', { metrics: metrics }).getRawMany();
 
         // We return data that has been request since the start of the requested month
-        return query.map((el) => ({
-            id: el.id,
-            extra: el.extra.filter((el) => new Date(el.last_updated_at).getTime() >= new Date(date).getTime() && new Date(el.last_updated_at).getTime() < new Date().getTime()),
-        }));
+        return await Promise.all(
+            query.map((el) => ({
+                id: el.id,
+                extra: el.extra.filter((el) => new Date(el.last_updated_at).getTime() >= new Date(date).getTime() && new Date(el.last_updated_at).getTime() < new Date().getTime()),
+            })),
+        );
     };
 }
