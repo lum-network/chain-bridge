@@ -20,6 +20,18 @@ export enum ChartTypes {
     WALLETS_TOP = 'wallets_top',
 }
 
+export enum MetricNames {
+    DFRACT_CURRENT_SUPPLY = 'dfract_current_supply',
+    DFRACT_MA_BALANCE = 'dfract_ma_balance',
+    LUM_CURRENT_SUPPLY = 'lum_current_supply',
+    COMMUNITY_POOL_SUPPLY = 'community_pool_supply',
+    MARKET_CAP = 'market_cap',
+    LUM_PRICE_USD = 'lum_price_usd',
+    LUM_PRICE_EUR = 'lum_price_eur',
+    TWITTER_FOLLOWERS = 'twitter_followers',
+    DISCORD_MEMBERS = 'discord_members',
+}
+
 export enum Queues {
     BEAMS = 'beams',
     BLOCKS = 'blocks',

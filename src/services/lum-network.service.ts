@@ -4,6 +4,9 @@ import { ConfigService } from '@nestjs/config';
 import { ModulesContainer } from '@nestjs/core';
 import { InjectQueue } from '@nestjs/bull';
 
+import { InjectMetric } from '@willsoto/nestjs-prometheus';
+import { Gauge } from 'prom-client';
+
 import { NewBlockEvent } from '@cosmjs/tendermint-rpc';
 import { LumClient } from '@lum-network/sdk-javascript';
 import { ProposalStatus } from '@lum-network/sdk-javascript/build/codec/cosmos/gov/v1beta1/gov';
@@ -11,7 +14,7 @@ import moment from 'moment';
 import { Stream } from 'xstream';
 import { Queue } from 'bull';
 
-import { MODULE_NAMES, QueueJobs, QueuePriority, Queues } from '@app/utils';
+import { CLIENT_PRECISION, MetricNames, MODULE_NAMES, QueueJobs, QueuePriority, Queues } from '@app/utils';
 
 @Injectable()
 export class LumNetworkService {
@@ -21,6 +24,14 @@ export class LumNetworkService {
     private readonly _logger: Logger = new Logger(LumNetworkService.name);
 
     constructor(
+        @InjectMetric(MetricNames.COMMUNITY_POOL_SUPPLY) private readonly _communityPoolSupply: Gauge<string>,
+        @InjectMetric(MetricNames.DFRACT_CURRENT_SUPPLY) private readonly _dfrCurrentSupply: Gauge<string>,
+        @InjectMetric(MetricNames.DFRACT_MA_BALANCE) private readonly _dfrMaBalance: Gauge<string>,
+        @InjectMetric(MetricNames.LUM_CURRENT_SUPPLY) private readonly _lumCurrentSupply: Gauge<string>,
+        @InjectMetric(MetricNames.LUM_PRICE_USD) private readonly _lumPriceUSD: Gauge<string>,
+        @InjectMetric(MetricNames.LUM_PRICE_EUR) private readonly _lumPriceEUR: Gauge<string>,
+        @InjectMetric(MetricNames.MARKET_CAP) private readonly _marketCap: Gauge<string>,
+        @InjectMetric(MetricNames.TWITTER_FOLLOWERS) private readonly _twitterFollowers: Gauge<string>,
         @InjectQueue(Queues.BLOCKS) private readonly _queue: Queue,
         private readonly _configService: ConfigService,
         private readonly _httpService: HttpService,
@@ -67,6 +78,38 @@ export class LumNetworkService {
                         this._logger.error(`Stream completed before we had time to process`);
                     },
                 });
+            } else if (this._currentModuleName === 'ApiModule') {
+                // We only set the metrics in case of the api module
+                // Those are computed at each block event
+                this._clientStream = this._client.tmClient.subscribeNewBlock();
+                this._clientStream.addListener({
+                    next: async () => {
+                        // Acquire data
+                        const [dfrSupply, lumSupply] = await Promise.all([this.client.queryClient.bank.supplyOf('udfr'), this.client.queryClient.bank.supplyOf('ulum')]);
+                        const [communityPool] = await Promise.all([this.client.queryClient.distribution.communityPool()]);
+                        const [dfrBalance] = await Promise.all([this.client.queryClient.dfract.getAccountBalance()]);
+                        const price = await this.getPrice();
+
+                        // Compute data
+                        const communityPoolSupply = communityPool.pool.find((coin) => coin.denom === 'ulum');
+
+                        // Update metrics
+                        await this._dfrCurrentSupply.set(parseInt(dfrSupply.amount, 10));
+                        await this._lumCurrentSupply.set(parseInt(lumSupply.amount, 10));
+                        await this._communityPoolSupply.set(parseInt(communityPoolSupply.amount, 10) / CLIENT_PRECISION);
+                        await this._lumPriceUSD.set(price.data.market_data.current_price.usd);
+                        await this._lumPriceEUR.set(price.data.market_data.current_price.eur);
+                        await this._dfrMaBalance.set(dfrBalance.map((balance) => parseInt(balance.amount, 10)).reduce((a, b) => a + b, 0));
+                        await this._marketCap.set(parseInt(lumSupply.amount, 10) * price.data.market_data.current_price.usd);
+                        await this._twitterFollowers.set(price.data.community_data.twitter_followers);
+                    },
+                    error: (err: Error) => {
+                        this._logger.error(`Failed to process the block event ${err}`);
+                    },
+                    complete: () => {
+                        this._logger.error(`Stream completed before we had time to process`);
+                    },
+                });
             }
         } catch (e) {
             console.error(e);
@@ -76,6 +119,10 @@ export class LumNetworkService {
     isInitialized = (): boolean => {
         return this._client !== null;
     };
+
+    get moduleName(): string {
+        return this._currentModuleName;
+    }
 
     get client(): LumClient {
         return this._client;
