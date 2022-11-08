@@ -14,6 +14,7 @@ export class DfractService {
 
     getTokenSupply = async (): Promise<number> => {
         try {
+            // Total current circulating dfr token
             return Number(convertUnit(await this._lumNetworkService.client.getSupply(AssetMicroDenum.DFR), AssetDenum.DFR));
         } catch (error) {
             this._logger.error(`Could not fetch Token Supply for DFR on Lum Network...`, error);
@@ -26,7 +27,9 @@ export class DfractService {
 
     getTotalComputedTvl = async (): Promise<any> => {
         try {
+            // Apy from all external chains with the tvl of lumNetwork summed up together
             const getMetricsToComputeTotalTvl = [await this._chainService.getTvl(), await this._lumNetworkService.getTvl()];
+
             return (await Promise.all(getMetricsToComputeTotalTvl))
                 .flat()
                 .map((el) => el.tvl)
@@ -42,7 +45,9 @@ export class DfractService {
 
     getTotalComputedApy = async (): Promise<any> => {
         try {
-            const getMetricsToComputeTotalApy = [this._chainService.getApy(), this._lumNetworkService.getApy()];
+            // Apy from all external chains with the apy of lumNetwork summed up together
+            const getMetricsToComputeTotalApy = [await this._chainService.getApy(), await this._lumNetworkService.getApy()];
+
             return (await Promise.all(getMetricsToComputeTotalApy))
                 .flat()
                 .map((el) => el.apy)
@@ -58,6 +63,7 @@ export class DfractService {
 
     getCashInVault = async (): Promise<number> => {
         try {
+            // Represents the available deposited cash in our account balance
             return Number((await this._lumNetworkService.client.queryClient.dfract.getAccountBalance()).map((el) => el.amount)) / TEN_EXPONENT_SIX || 0;
         } catch (error) {
             this._logger.error(`Could not compute cash available in vault for DFR on Lum Network...`, error);
@@ -70,9 +76,10 @@ export class DfractService {
 
     getNewDfrToMint = async (): Promise<number> => {
         try {
-            const getMetricsToComputeDfrToMint = [Number(this.getTokenSupply()), Number(this.getCashInVault()), Number(this.getTotalComputedTvl())];
+            // The new dfr to be minted is calculated by (dfr supply * cash in vault (balance)) / (total computed tvl)
+            const getMetricsToComputeDfrToMint = [Number(await this.getTokenSupply()), Number(await this.getCashInVault()), Number(await this.getTotalComputedTvl())];
 
-            return await Promise.all(getMetricsToComputeDfrToMint).then(([supply, accountBalance, computedTvl]) => (supply * accountBalance) / computedTvl);
+            return Promise.all(getMetricsToComputeDfrToMint).then(([supply, accountBalance, computedTvl]) => (supply * accountBalance) / computedTvl);
         } catch (error) {
             this._logger.error(`Could not compute new Dfr To Mint for DFR on Lum Network...`, error);
 
@@ -84,9 +91,10 @@ export class DfractService {
 
     getDfrMintRatio = async (): Promise<number> => {
         try {
-            const getMetricsToComputeMintRatio = [Number(this.getNewDfrToMint()), Number(this.getTotalComputedTvl()), Number(this.getTokenSupply())];
+            // To get the MinRatio we do (DFR to Mint + dfr token supply) / (total computed tvl across all assets we have the index)
+            const getMetricsToComputeMintRatio = [Number(await this.getNewDfrToMint()), Number(await this.getTotalComputedTvl()), Number(await this.getTokenSupply())];
 
-            return await Promise.all(getMetricsToComputeMintRatio).then(([dfrToMint, computedTvl, tokenSupply]) => (dfrToMint + tokenSupply) / computedTvl);
+            return Promise.all(getMetricsToComputeMintRatio).then(([dfrToMint, computedTvl, tokenSupply]) => (dfrToMint + tokenSupply) / computedTvl);
         } catch (error) {
             this._logger.error(`Could not compute Dfr To Mint Ratio for DFR on Lum Network...`, error);
 
@@ -98,6 +106,7 @@ export class DfractService {
 
     getDfrBackingPrice = async (): Promise<number> => {
         try {
+            // To get dfr price we divide the mintRatio by 1
             return 1 / Number(await this.getDfrMintRatio());
         } catch (error) {
             this._logger.error(`Could not compute new DFR backing price for DFR on Lum Network...`, error);
@@ -110,9 +119,10 @@ export class DfractService {
 
     getMcap = async (): Promise<number> => {
         try {
-            const getMetricsToComputeMcap = [Number(this.getDfrBackingPrice()), Number(this.getTokenSupply())];
+            // We compute the market cap by multiplying the backing price by the dfr token supply
+            const getMetricsToComputeMcap = [Number(await this.getDfrBackingPrice()), Number(await this.getTokenSupply())];
 
-            return await Promise.all(getMetricsToComputeMcap).then(([dfrToMintPrice, supply]) => dfrToMintPrice * supply);
+            return Promise.all(getMetricsToComputeMcap).then(([dfrToMintPrice, supply]) => dfrToMintPrice * supply);
         } catch (error) {
             this._logger.error(`Could not compute new DFR Market Cap on Lum Network...`, error);
 
@@ -154,9 +164,15 @@ export class DfractService {
 
     getAssetInfo = async (): Promise<AssetInfo> => {
         try {
-            return await Promise.all([await this.getDfrBackingPrice(), Number(await this.getMcap()), await this.getTokenSupply(), Number(await this.getApy())]).then(
-                ([unit_price_usd, total_value_usd, supply, apy]) => ({ unit_price_usd, total_value_usd, supply, apy }),
-            );
+            // DFR asset info representing the {unit_price_usd, total_value_usd, supply, apy}
+            const getMetricsToComputeInfo = [this.getDfrBackingPrice(), this.getMcap(), this.getTokenSupply(), this.getApy()];
+
+            return await Promise.all(getMetricsToComputeInfo).then(([unit_price_usd, total_value_usd, supply, apy]) => ({
+                unit_price_usd,
+                total_value_usd,
+                supply,
+                apy,
+            }));
         } catch (error) {
             this._logger.error('Failed to compute Token Info for Dfract...', error);
 

@@ -15,20 +15,28 @@ export const computeTotalTokenAmount = async (getDecodedAddress: string, client:
     // 5) unbounding delegation
 
     const [balance, rewards, delegationResponses, unbondingResponses] = await Promise.all([
-        await client.getBalance(getDecodedAddress, denom),
-        await client.queryClient.distribution.delegationTotalRewards(getDecodedAddress),
-        await client.queryClient.staking.delegatorDelegations(getDecodedAddress, page),
-        await client.queryClient.staking.delegatorUnbondingDelegations(getDecodedAddress, page),
+        client.getBalance(getDecodedAddress, denom),
+        client.queryClient.distribution.delegationTotalRewards(getDecodedAddress),
+        client.queryClient.staking.delegatorDelegations(getDecodedAddress, page),
+        client.queryClient.staking.delegatorUnbondingDelegations(getDecodedAddress, page),
     ]);
+
+    // 1) We get the available balance on the asset account
 
     const getAvailableBalance = Number(balance.amount) || 0;
 
+    // 2) We get the nb of tokens coming from the staking rewards
+    // For each chain we compute the lum address to the equivalent of other chains address denom and can retrieve the token repartition
     const getStakingRewards = Number(rewards.rewards.map((el) => el.reward.filter((el) => el.denom === denom))[0].map((el) => el.amount)) / applyClientPrecision;
 
+    // 3) We get the nb of tokens coming from the delegation rewards.
+    // From that we extract the amount
     const getDelegationReward = delegationResponses.delegationResponses.map((el) => Number(el.balance.amount));
 
+    // 4) We get the nb of tokens coming from the unbounding delation
     const getUnbondingDelegation = unbondingResponses.unbondingResponses.map((el) => el.entries.map((el) => el.balance || 0));
 
+    // 5) The total token is computed from the sum of the 4 previous elements divided by 10^6
     const totalToken = (Number(getStakingRewards) + Number(getUnbondingDelegation) + Number(getAvailableBalance) + Number(getDelegationReward)) / applyTenExponentSix;
 
     return totalToken;
@@ -49,6 +57,7 @@ export const computeTotalApy = async (
 
     const bonding = Number((await client.queryClient.staking.pool()).pool.bondedTokens) / applyTenExponentSix;
 
+    // The staking ratio represents the bonded token divided by the supply
     const stakingRatio = Number(bonding) / Number(supply);
 
     const communityTaxRate = Number((await client.queryClient.distribution.params()).params.communityTax) / applyClientPrecision;

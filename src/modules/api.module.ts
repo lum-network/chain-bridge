@@ -129,7 +129,7 @@ import { AsyncQueues } from '@app/async';
         },
         { provide: APP_PIPE, useFactory: () => new ValidationPipe(PayloadValidationOptions) },
     ],
-    exports: [ChainService, LumNetworkService, DfractService],
+    exports: [ChainService, DfractService, LumNetworkService],
 })
 export class ApiModule implements OnModuleInit, OnApplicationBootstrap {
     private readonly _logger: Logger = new Logger(ApiModule.name);

@@ -17,8 +17,7 @@ export class AssetScheduler {
         private readonly _chainService: ChainService,
     ) {}
 
-    //@Cron(CronExpression.EVERY_HOUR)
-    @Cron(CronExpression.EVERY_30_SECONDS)
+    @Cron(CronExpression.EVERY_HOUR)
     async syncHourly(): Promise<void> {
         try {
             this._logger.log(`Syncing latest assets info from chain...`);
@@ -40,8 +39,7 @@ export class AssetScheduler {
         }
     }
 
-    // @Cron(CronExpression.EVERY_WEEK)
-    @Cron(CronExpression.EVERY_MINUTE)
+    @Cron(CronExpression.EVERY_WEEK)
     async syncWeekly(): Promise<void> {
         try {
             // We only update chain values other than DFR once a week
@@ -56,8 +54,7 @@ export class AssetScheduler {
     }
 
     // Every 15 minutes on Mondays between 12 and 17h
-    //@Cron('0 */15 12-17 * * 1,0')
-    @Cron(CronExpression.EVERY_5_MINUTES)
+    @Cron('0 */15 12-17 * * 1,0')
     async syncDfr(): Promise<void> {
         try {
             this._logger.log(`Updating DFR token values from chain...`);
@@ -76,8 +73,7 @@ export class AssetScheduler {
 
     // Cron that makes sure that the weekly historical data gets properly populated in case of failure
     // Runs every 2 hours
-    // @Cron(CronExpression.EVERY_2_HOURS)
-    @Cron(CronExpression.EVERY_10_MINUTES)
+    @Cron(CronExpression.EVERY_2_HOURS)
     async retrySync(): Promise<void> {
         try {
             this._logger.log(`Verifying missing historical data...`);

@@ -11,10 +11,11 @@ import moment from 'moment';
 import { Stream } from 'xstream';
 import { Queue } from 'bull';
 
+import { AssetInfo } from '@app/http';
+
 import { MODULE_NAMES, QueueJobs, QueuePriority, Queues, apy, TEN_EXPONENT_SIX, CLIENT_PRECISION, computeTotalTokenAmount, computeTotalApy, LUM_STAKING_ADDRESS, AssetSymbol } from '@app/utils';
 import { lastValueFrom, map } from 'rxjs';
 import { convertUnit } from '@lum-network/sdk-javascript/build/utils';
-import { AssetInfo } from '@app/http';
 
 @Injectable()
 export class LumNetworkService {

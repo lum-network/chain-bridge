@@ -3,8 +3,9 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import { LumClient, LumUtils } from '@lum-network/sdk-javascript';
-import { lastValueFrom, map } from 'rxjs';
 import * as Sentry from '@sentry/node';
+
+import { lastValueFrom, map } from 'rxjs';
 
 import {
     apy,
@@ -35,6 +36,8 @@ export class ChainService {
     private _dfractPrefix = Object.values(AssetPrefix).map((key) => key);
 
     constructor(private readonly _configService: ConfigService, private readonly _httpService: HttpService) {}
+
+    // This service aims to initialize and compute various metrics for the assets we represent in our Dfract index
 
     initialize = async () => {
         try {
@@ -216,7 +219,7 @@ export class ChainService {
                 }),
             );
 
-            // We calculate for evmos
+            // We calculate the total token amount for evmos
             const evmosTotalToken = {
                 total_token: Number(await computeTotalTokenAmount(EVMOS_STAKING_ADDRESS, this._client[evmosIndex], this._assetMicroDenum[evmosIndex], CLIENT_PRECISION, CLIENT_PRECISION)),
                 symbol: this._assetSymbol[evmosIndex],
