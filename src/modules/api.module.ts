@@ -32,18 +32,18 @@ import {
 } from '@app/http';
 
 import {
-    LumNetworkService,
+    AssetService,
+    BeamService,
     BlockService,
     ChainService,
+    DfractService,
+    LumNetworkService,
+    ProposalDepositService,
+    ProposalVoteService,
+    StatService,
     TransactionService,
     ValidatorService,
-    BeamService,
     ValidatorDelegationService,
-    StatService,
-    ProposalVoteService,
-    ProposalDepositService,
-    DfractService,
-    AssetService,
 } from '@app/services';
 
 import { ConfigMap, PayloadValidationOptions, SentryModuleOptions } from '@app/utils';
@@ -95,20 +95,20 @@ import { AsyncQueues } from '@app/async';
         ValidatorsController,
     ],
     providers: [
+        AssetService,
         BeamService,
         BlockService,
         ChainService,
+        DfractService,
+        GatewayWebsocket,
+        LumNetworkIndicator,
+        LumNetworkService,
+        ProposalVoteService,
+        ProposalDepositService,
         StatService,
         TransactionService,
         ValidatorService,
-        ProposalVoteService,
-        ProposalDepositService,
         ValidatorDelegationService,
-        LumNetworkIndicator,
-        GatewayWebsocket,
-        LumNetworkService,
-        DfractService,
-        AssetService,
         { provide: APP_FILTER, useClass: HttpExceptionFilter },
         { provide: APP_INTERCEPTOR, useClass: PaginationInterceptor },
         { provide: APP_INTERCEPTOR, useClass: ResponseInterceptor },
@@ -134,7 +134,7 @@ import { AsyncQueues } from '@app/async';
 export class ApiModule implements OnModuleInit, OnApplicationBootstrap {
     private readonly _logger: Logger = new Logger(ApiModule.name);
 
-    constructor(private readonly _lumNetworkService: LumNetworkService, private readonly _chainService: ChainService) {}
+    constructor(private readonly _chainService: ChainService, private readonly _lumNetworkService: LumNetworkService) {}
 
     async onModuleInit() {
         // We want first LUM to be initialized before intializing the other chains

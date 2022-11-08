@@ -4,6 +4,8 @@ import { ConfigService } from '@nestjs/config';
 
 import { LumClient, LumUtils } from '@lum-network/sdk-javascript';
 import { lastValueFrom, map } from 'rxjs';
+import * as Sentry from '@sentry/node';
+
 import {
     apy,
     CHAIN_ENV_CONFIG,
@@ -47,6 +49,8 @@ export class ChainService {
             }
         } catch (e) {
             console.error(e);
+
+            Sentry.captureException(e);
         }
     };
 
@@ -68,6 +72,9 @@ export class ChainService {
                 }));
         } catch (error) {
             this._logger.error(`Could not fetch Price Price...`, error);
+
+            Sentry.captureException(error);
+
             return null;
         }
     };
@@ -86,6 +93,9 @@ export class ChainService {
                 }));
         } catch (error) {
             this._logger.error(`Could not fetch Market Cap for External Chains...`, error);
+
+            Sentry.captureException(error);
+
             return null;
         }
     };
@@ -106,21 +116,18 @@ export class ChainService {
 
             // The value returned from Evmos on chain does not seem accurate to us.
             // Hence, we rely on their official documentation endpoint to retrieve the supply
-            const evmosSupply = [
-                {
-                    supply:
-                        Number(
-                            await lastValueFrom(
-                                this._httpService.get(`https://rest.bd.evmos.org:1317/evmos/inflation/v1/circulating_supply`).pipe(map((response) => response.data.circulating_supply.amount)),
-                            ),
-                        ) / CLIENT_PRECISION,
-                    symbol: AssetSymbol.EVMOS,
-                },
-            ];
+            const supplyEvmos =
+                Number(
+                    await lastValueFrom(this._httpService.get(`https://rest.bd.evmos.org:1317/evmos/inflation/v1/circulating_supply`).pipe(map((response) => response.data.circulating_supply.amount))),
+                ) / CLIENT_PRECISION;
 
-            return chainSupply.map((el) => evmosSupply.find((o) => o.symbol === el.symbol) || el);
+            // We map the token supply from the other chains with the one from evmos
+            return chainSupply.map((el) => [{ supply: supplyEvmos, symbol: AssetSymbol.EVMOS }].find((o) => o.symbol === el.symbol) || el);
         } catch (error) {
             this._logger.error(`Could not fetch Token Supply for External Chains...`, error);
+
+            Sentry.captureException(error);
+
             return null;
         }
     };
@@ -168,17 +175,25 @@ export class ChainService {
             ];
         } catch (error) {
             this._logger.error(`Could not fetch Token Apy for External Chains...`, error);
+
+            Sentry.captureException(error);
+
             return null;
         }
     };
 
     getAssetInfo = async (): Promise<AssetInfo[]> => {
         try {
-            return await Promise.all([await this.getPrice(), await this.getMcap(), await this.getTokenSupply(), await this.getApy()]).then(([unit_price_usd, total_value_usd, supply, apy]) =>
-                [unit_price_usd, total_value_usd, supply, apy].flat(),
-            );
+            // In order to get the asset info we need to get the following info from all chains:
+            // {unit_price_usd, total_value_usd (mcap), supply, apy}
+            const assetInfo = [this.getPrice(), this.getMcap(), this.getTokenSupply(), this.getApy()];
+
+            return await Promise.all(assetInfo).then(([unit_price_usd, total_value_usd, supply, apy]) => [unit_price_usd, total_value_usd, supply, apy].flat());
         } catch (error) {
             this._logger.error('Failed to compute Asset Info for External Chain...', error);
+
+            Sentry.captureException(error);
+
             return null;
         }
     };
@@ -220,6 +235,9 @@ export class ChainService {
                 }));
         } catch (error) {
             this._logger.error('Failed to compute TVL for External Chain...', error);
+
+            Sentry.captureException(error);
+
             return null;
         }
     };

@@ -11,5 +11,5 @@ export class AssetRequest {
     @ApiProperty()
     @IsNotEmpty()
     @IsDateString()
-    since: string;
+    since: Date;
 }

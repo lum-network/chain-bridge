@@ -11,7 +11,7 @@ import { AssetInfo } from '@app/http';
 export class AssetService {
     constructor(@InjectRepository(AssetEntity) private readonly _repository: Repository<AssetEntity>) {}
 
-    getByCompositeKey = async (compositeKey: string): Promise<AssetEntity> => {
+    getById = async (compositeKey: string): Promise<AssetEntity> => {
         return this._repository.findOne({
             where: {
                 id: compositeKey,
@@ -20,12 +20,11 @@ export class AssetService {
     };
 
     getExtra = async (): Promise<{ id: string; extra: [] }[]> => {
-        const extra = this._repository.createQueryBuilder('assets').select(['id', 'extra']);
-        return await extra.getRawMany();
+        return await this._repository.createQueryBuilder('assets').select(['id', 'extra']).getRawMany();
     };
 
     createOrUpdateAssetValue = async (compositeKey: string, value: any): Promise<AssetEntity> => {
-        let entity = await this.getByCompositeKey(compositeKey);
+        let entity = await this.getById(compositeKey);
 
         // If entity does not exists, we create with a new one
         if (!entity) {
@@ -39,8 +38,7 @@ export class AssetService {
             entity.value = value;
         }
 
-        await this._repository.save(entity);
-        return entity;
+        return this._repository.save(entity);
     };
 
     chainAssetCreateOrUpdateValue = async (getAssetInfo: AssetInfo[]): Promise<void> => {
@@ -68,7 +66,7 @@ export class AssetService {
 
     createOrUpdateAssetExtra = async (compositeKey: string): Promise<GenericValueEntity> => {
         // Helper function to append historical data to the extra column
-        const entity = await this.getByCompositeKey(compositeKey);
+        const entity = await this.getById(compositeKey);
 
         const query = await this._repository.query(`
             UPDATE assets
@@ -85,7 +83,7 @@ export class AssetService {
 
         for (const key of record) {
             if (key) {
-                const entity = await this.getByCompositeKey(key.id);
+                const entity = await this.getById(key.id);
 
                 if (entity) await this.createOrUpdateAssetExtra(key.id);
             }
@@ -103,7 +101,7 @@ export class AssetService {
             return { symbol: el.id.substring(0, id.indexOf('_')), ...rest.value };
         });
 
-        data.forEach((el) => (assetInfo[el.symbol] = { ...assetInfo[el.symbol], ...el }));
+        Promise.all(data.map((el) => (assetInfo[el.symbol] = { ...assetInfo[el.symbol], ...el })));
 
         // Return the length and the values
         return [Object.values(assetInfo), Object.values(assetInfo).length];
@@ -117,7 +115,7 @@ export class AssetService {
         // We return data that has been request since the start of the requested month
         return query.map((el) => ({
             id: el.id,
-            extra: el.extra.filter((el) => new Date(el.last_updated_at).getTime() >= date.getTime() && new Date(el.last_updated_at).getTime() < new Date().getTime()),
+            extra: el.extra.filter((el) => new Date(el.last_updated_at).getTime() >= new Date(date).getTime() && new Date(el.last_updated_at).getTime() < new Date().getTime()),
         }));
     };
 }

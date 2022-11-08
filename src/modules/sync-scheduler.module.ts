@@ -15,17 +15,17 @@ import * as parseRedisUrl from 'parse-redis-url-simple';
 import { AsyncQueues, BlockScheduler, GovernanceScheduler, ValidatorScheduler, AssetScheduler } from '@app/async';
 
 import {
+    AssetService,
     BeamService,
     BlockService,
     ChainService,
+    DfractService,
     LumNetworkService,
     ProposalDepositService,
     ProposalVoteService,
     TransactionService,
     ValidatorDelegationService,
     ValidatorService,
-    AssetService,
-    DfractService,
 } from '@app/services';
 import { ConfigMap, QueueJobs, Queues, SentryModuleOptions } from '@app/utils';
 import { DatabaseConfig, DatabaseFeatures } from '@app/database';
@@ -63,21 +63,21 @@ import { DatabaseConfig, DatabaseFeatures } from '@app/database';
     ],
     controllers: [],
     providers: [
+        AssetScheduler,
+        AssetService,
         BeamService,
+        BlockScheduler,
         BlockService,
         ChainService,
-        TransactionService,
+        DfractService,
+        GovernanceScheduler,
+        LumNetworkService,
         ProposalDepositService,
         ProposalVoteService,
+        TransactionService,
         ValidatorService,
         ValidatorDelegationService,
-        BlockScheduler,
-        GovernanceScheduler,
         ValidatorScheduler,
-        AssetScheduler,
-        LumNetworkService,
-        DfractService,
-        AssetService,
     ],
     exports: [ChainService, LumNetworkService, DfractService],
 })
@@ -86,9 +86,9 @@ export class SyncSchedulerModule implements OnModuleInit, OnApplicationBootstrap
 
     constructor(
         @InjectQueue(Queues.BLOCKS) private readonly _queue: Queue,
+        private readonly _chainService: ChainService,
         private readonly _configService: ConfigService,
         private readonly _lumNetworkService: LumNetworkService,
-        private readonly _chainService: ChainService,
     ) {}
 
     async onModuleInit() {
