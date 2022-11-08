@@ -47,7 +47,7 @@ import {
     ValidatorDelegationService,
 } from '@app/services';
 
-import { metrics, ConfigMap, PayloadValidationOptions, SentryModuleOptions } from '@app/utils';
+import { ConfigMap, metrics, PayloadValidationOptions, SentryModuleOptions } from '@app/utils';
 
 import { GatewayWebsocket } from '@app/websocket';
 import { DatabaseConfig, DatabaseFeatures } from '@app/database';
@@ -105,16 +105,13 @@ import { AsyncQueues } from '@app/async';
         GatewayWebsocket,
         LumNetworkIndicator,
         LumNetworkService,
+        ...metrics,
         ProposalVoteService,
         ProposalDepositService,
         StatService,
         TransactionService,
         ValidatorService,
         ValidatorDelegationService,
-        LumNetworkIndicator,
-        GatewayWebsocket,
-        LumNetworkService,
-        ...metrics,
         { provide: APP_FILTER, useClass: HttpExceptionFilter },
         { provide: APP_INTERCEPTOR, useClass: PaginationInterceptor },
         { provide: APP_INTERCEPTOR, useClass: ResponseInterceptor },

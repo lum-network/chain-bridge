@@ -97,6 +97,9 @@ export class LumNetworkService {
             return await lastValueFrom(this._httpService.get(`https://api.coingecko.com/api/v3/coins/lum-network`).pipe(map((response) => response.data)));
         } catch (error) {
             this._logger.error(`Could not fetch price for Lum Network...`, error);
+
+            Sentry.captureException(error);
+
             return null;
         }
     };

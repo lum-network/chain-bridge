@@ -2,8 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 
 import { Cron, CronExpression } from '@nestjs/schedule';
 
-import { ChainService, DfractService, LumNetworkService } from '@app/services';
-import { AssetService } from '@app/services/asset.service';
+import { AssetService, ChainService, DfractService, LumNetworkService } from '@app/services';
 import { AssetSymbol } from '@app/utils';
 
 @Injectable()
