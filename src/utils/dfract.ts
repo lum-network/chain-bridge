@@ -60,6 +60,7 @@ export const computeTotalApy = async (
     // The staking ratio represents the bonded token divided by the supply
     const stakingRatio = Number(bonding) / Number(supply);
 
+    // CommunityTax is a value set in genesis for each Cosmos network and defined as a percentage that is applied to the fees collected in each block
     const communityTaxRate = Number((await client.queryClient.distribution.params()).params.communityTax) / applyClientPrecision;
 
     return {
