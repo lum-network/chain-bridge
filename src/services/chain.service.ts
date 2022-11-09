@@ -8,19 +8,20 @@ import * as Sentry from '@sentry/node';
 import { lastValueFrom, map } from 'rxjs';
 
 import {
+    ApiUrl,
     apy,
+    AssetPrefix,
+    AssetSymbol,
+    AssetMicroDenum,
     CHAIN_ENV_CONFIG,
     CLIENT_PRECISION,
+    EVMOS_STAKING_ADDRESS,
     computeTotalApy,
     computeTotalTokenAmount,
     DfractOnChainApy,
-    AssetSymbol,
-    AssetMicroDenum,
-    TEN_EXPONENT_SIX,
-    PERCENTAGE,
-    AssetPrefix,
     LUM_STAKING_ADDRESS,
-    EVMOS_STAKING_ADDRESS,
+    PERCENTAGE,
+    TEN_EXPONENT_SIX,
 } from '@app/utils';
 
 import { AssetInfo } from '@app/http';
@@ -65,7 +66,7 @@ export class ChainService {
     getPrice = async (): Promise<{ unit_price_usd: number; symbol: string }[]> => {
         try {
             // Observable to get the prices and filter with the one we represent in the index
-            const price = await lastValueFrom(this._httpService.get(`https://api-osmosis.imperator.co/tokens/v2/all`).pipe(map((response) => response.data)));
+            const price = await lastValueFrom(this._httpService.get(`${ApiUrl.GET_CHAIN_TOKENS_ALL}`).pipe(map((response) => response.data)));
 
             // We exclude LUM's price as we have our seperate service for that
             return price
@@ -86,7 +87,7 @@ export class ChainService {
     getMcap = async (): Promise<{ total_value_usd: number; symbol: string }[]> => {
         try {
             // Observable to get the mcap and filter with the one we represent in the index
-            const getMktCap = await lastValueFrom(this._httpService.get(`https://api-osmosis.imperator.co/tokens/v2/mcap`).pipe(map((response) => response.data)));
+            const getMktCap = await lastValueFrom(this._httpService.get(`${ApiUrl.GET_CHAIN_TOKENS_MCAP}`).pipe(map((response) => response.data)));
 
             // We exclude LUM's mcap as we have our seperate service for that
             return getMktCap
@@ -120,10 +121,7 @@ export class ChainService {
 
             // The value returned from Evmos on chain does not seem accurate to us.
             // Hence, we rely on their official documentation endpoint to retrieve the supply
-            const evmosSupply =
-                Number(
-                    await lastValueFrom(this._httpService.get(`https://rest.bd.evmos.org:1317/evmos/inflation/v1/circulating_supply`).pipe(map((response) => response.data.circulating_supply.amount))),
-                ) / CLIENT_PRECISION;
+            const evmosSupply = Number(await lastValueFrom(this._httpService.get(`${ApiUrl.GET_EVMOS_SUPPLY}`).pipe(map((response) => response.data.circulating_supply.amount)))) / CLIENT_PRECISION;
 
             // We map the token supply from the other chains with the one from evmos
             return chainSupply.map((el) => [{ supply: evmosSupply, symbol: AssetSymbol.EVMOS }].find((o) => o.symbol === el.symbol) || el);
@@ -157,18 +155,16 @@ export class ChainService {
             // Evmos manual inflation calculation
             // We use their official endpoint to retrieve the inflation rate
             const evmosIndex = CHAIN_ENV_CONFIG.findIndex((el) => el === `${AssetSymbol.EVMOS}_NETWORK_ENDPOINT`);
-            const evmosInflation =
-                Number(await lastValueFrom(this._httpService.get(`https://rest.bd.evmos.dev:1317/evmos/inflation/v1/inflation_rate`).pipe(map((response) => response.data.inflation_rate)))) /
-                PERCENTAGE;
+            const evmosInflation = Number(await lastValueFrom(this._httpService.get(`${ApiUrl.GET_EVMOS_INFLATION}`).pipe(map((response) => response.data.inflation_rate)))) / PERCENTAGE;
 
             const metrics = await computeTotalApy(this._client[evmosIndex], Number((await this.getTokenSupply())[evmosIndex].supply), evmosInflation, CLIENT_PRECISION, CLIENT_PRECISION);
 
             const getEvmosApy = { apy: apy(metrics.inflation, metrics.communityTaxRate, metrics.stakingRatio), symbol: this._assetSymbol[evmosIndex] };
 
             // Chains for which inflation is not retrievable via the mint module. Hence, we rely on other rpc endpoints to retrieve it.
-            const getOsmosisApy = Number(await lastValueFrom(this._httpService.get(`https://api-osmosis.imperator.co/apr/v2/staking`).pipe(map((response) => response.data)))) / PERCENTAGE;
-            const getJunoApy = Number(await lastValueFrom(this._httpService.get(`https://supply-api.junonetwork.io/apr`).pipe(map((response) => response.data)))) / PERCENTAGE;
-            const getStargazeApy = Number(await lastValueFrom(this._httpService.get(`https://supply-api.publicawesome.dev/apr`).pipe(map((response) => response.data)))) / PERCENTAGE;
+            const getOsmosisApy = Number(await lastValueFrom(this._httpService.get(`${ApiUrl.GET_OSMOSIS_APY}`).pipe(map((response) => response.data)))) / PERCENTAGE;
+            const getJunoApy = Number(await lastValueFrom(this._httpService.get(`${ApiUrl.GET_JUNO_APY}`).pipe(map((response) => response.data)))) / PERCENTAGE;
+            const getStargazeApy = Number(await lastValueFrom(this._httpService.get(`${ApiUrl.GET_STARGAZE_APY}`).pipe(map((response) => response.data)))) / PERCENTAGE;
 
             return [
                 ...getChainApy,
@@ -190,9 +186,9 @@ export class ChainService {
         try {
             // In order to get the asset info we need to get the following info from all chains:
             // {unit_price_usd, total_value_usd (mcap), supply, apy}
-            const getMetricsToComputeInfo = [this.getPrice(), this.getMcap(), this.getTokenSupply(), this.getApy()];
+            const [unit_price_usd, total_value_usd, supply, apy] = await Promise.all([this.getPrice(), this.getMcap(), this.getTokenSupply(), this.getApy()]);
 
-            return await Promise.all(getMetricsToComputeInfo).then(([unit_price_usd, total_value_usd, supply, apy]) => [unit_price_usd, total_value_usd, supply, apy].flat());
+            return [unit_price_usd, total_value_usd, supply, apy].flat();
         } catch (error) {
             this._logger.error('Failed to compute Asset Info for External Chain...', error);
 
@@ -226,9 +222,10 @@ export class ChainService {
                 symbol: this._assetSymbol[evmosIndex],
             };
 
+            // Get price from each chain and sort by symbol
             const getTotalPrice = (await this.getPrice()).sort((a, b) => a.symbol.localeCompare(b.symbol));
 
-            // Merge evmos and the other total computed tokens
+            // Merge evmos and the other total computed tokens and sort by symbol
             const totalComputedToken = [...computedTotalToken, evmosTotalToken].sort((a, b) => a.symbol.localeCompare(b.symbol));
 
             return totalComputedToken

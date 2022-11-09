@@ -18,7 +18,21 @@ import { lastValueFrom, map } from 'rxjs';
 
 import { AssetInfo } from '@app/http';
 
-import { MODULE_NAMES, QueueJobs, QueuePriority, Queues, apy, TEN_EXPONENT_SIX, CLIENT_PRECISION, computeTotalTokenAmount, computeTotalApy, LUM_STAKING_ADDRESS, AssetSymbol } from '@app/utils';
+import {
+    MODULE_NAMES,
+    QueueJobs,
+    QueuePriority,
+    Queues,
+    apy,
+    TEN_EXPONENT_SIX,
+    CLIENT_PRECISION,
+    computeTotalTokenAmount,
+    computeTotalApy,
+    LUM_STAKING_ADDRESS,
+    AssetSymbol,
+    ApiUrl,
+    LUM_ENV_CONFIG,
+} from '@app/utils';
 
 @Injectable()
 export class LumNetworkService {
@@ -44,9 +58,9 @@ export class LumNetworkService {
 
     initialize = async () => {
         try {
-            this._client = await LumClient.connect(this._configService.get<string>('LUM_NETWORK_ENDPOINT').replace('https://', 'wss://').replace('http://', 'ws://'));
+            this._client = await LumClient.connect(this._configService.get<string>(LUM_ENV_CONFIG).replace('https://', 'wss://').replace('http://', 'ws://'));
             const chainId = await this._client.getChainId();
-            this._logger.log(`Connection established to Lum Network on ${this._configService.get<string>('LUM_NETWORK_ENDPOINT')} = ${chainId}`);
+            this._logger.log(`Connection established to Lum Network on ${this._configService.get<string>(LUM_ENV_CONFIG)} = ${chainId}`);
 
             // We only set the block listener in case of the sync scheduler module
             if (this._currentModuleName === 'SyncSchedulerModule') {
@@ -94,7 +108,7 @@ export class LumNetworkService {
 
     getPrice = async (): Promise<any> => {
         try {
-            return await lastValueFrom(this._httpService.get(`https://api.coingecko.com/api/v3/coins/lum-network`).pipe(map((response) => response.data)));
+            return lastValueFrom(this._httpService.get(`${ApiUrl.GET_LUM_PRICE}`).pipe(map((response) => response.data)));
         } catch (error) {
             this._logger.error(`Could not fetch price for Lum Network...`, error);
 
@@ -106,7 +120,7 @@ export class LumNetworkService {
 
     getPriceHistory = async (startAt: number, endAt: number): Promise<any> => {
         try {
-            const res = await this._httpService.get(`https://api.coingecko.com/api/v3/coins/lum-network/market_chart/range?vs_currency=usd&from=${startAt}&to=${endAt}`).toPromise();
+            const res = await this._httpService.get(`${ApiUrl.GET_LUM_PRICE}/market_chart/range?vs_currency=usd&from=${startAt}&to=${endAt}`).toPromise();
             return res.data.prices.map((price) => {
                 return {
                     key: String(price[0]),
@@ -180,9 +194,9 @@ export class LumNetworkService {
     getMcap = async (): Promise<number> => {
         try {
             // We multiply the price by the supply to get the mcap
-            const getMetricsToComputeMcap = [await this.getTokenSupply(), (await this.getPrice())?.market_data.current_price.usd];
+            const [supply, unit_price_usd] = await Promise.all([this.getTokenSupply(), this.getPrice()]);
 
-            return Promise.all(getMetricsToComputeMcap).then(([supply, unit_price_usd]) => Number(supply) * Number(unit_price_usd));
+            return supply * unit_price_usd.market_data.current_price.usd;
         } catch (error) {
             this._logger.error(`Could not fetch Market Cap for Lum Network...`, error);
 
@@ -212,14 +226,14 @@ export class LumNetworkService {
     getAssetInfo = async (): Promise<AssetInfo> => {
         try {
             // To compute metrics info we need lum's {unit_price_usd, total_value_usd, supply and apy}
-            const getMetricsToComputeInfo = [(await this.getPrice())?.market_data.current_price.usd, await this.getMcap(), await this.getTokenSupply(), (await this.getApy()).apy];
+            const [price, total_value_usd, supply, percentagYield] = await Promise.all([this.getPrice(), this.getMcap(), this.getTokenSupply(), this.getApy()]);
 
-            return Promise.all(getMetricsToComputeInfo).then(([unit_price_usd, total_value_usd, supply, apy]) => ({
-                unit_price_usd,
+            return {
+                unit_price_usd: price.market_data.current_price.usd,
                 total_value_usd,
                 supply,
-                apy,
-            }));
+                apy: percentagYield.apy,
+            };
         } catch (error) {
             this._logger.error('Failed to compute Token Info for Lum Network...', error);
 
@@ -231,9 +245,10 @@ export class LumNetworkService {
 
     getTvl = async (): Promise<{ symbol: string; tvl: number }> => {
         try {
-            const totalToken = await computeTotalTokenAmount(LUM_STAKING_ADDRESS, this.client, LumConstants.MicroLumDenom, CLIENT_PRECISION, TEN_EXPONENT_SIX);
+            // We compute the total token of lum based on the microdenum and staking address and get the current market price to calculate the tvl
+            const [totalToken, price] = await Promise.all([computeTotalTokenAmount(LUM_STAKING_ADDRESS, this.client, LumConstants.MicroLumDenom, CLIENT_PRECISION, TEN_EXPONENT_SIX), this.getPrice()]);
 
-            return { tvl: Number(totalToken) * Number((await this.getPrice())?.market_data.current_price.usd), symbol: AssetSymbol.LUM };
+            return { tvl: totalToken * price.market_data.current_price.usd, symbol: AssetSymbol.LUM };
         } catch (error) {
             this._logger.error('Failed to compute TVL for Lum Network...', error);
 

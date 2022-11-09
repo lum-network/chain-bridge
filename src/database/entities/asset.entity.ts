@@ -1,5 +1,6 @@
-import { GenericValueEntity } from '@app/utils';
 import { Column, Entity, PrimaryColumn } from 'typeorm';
+
+import { GenericValueEntity } from '@app/utils';
 
 @Entity({ name: 'assets' })
 export class AssetEntity {

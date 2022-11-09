@@ -18,7 +18,7 @@ export class DfractController {
         const [result, total] = await this._assetService.fetchLatestMetrics(request.pagination.skip);
 
         return new DataResponse({
-            result: result,
+            result,
             metadata: new DataResponseMetadata({
                 page: request.pagination.page,
                 limit: request.pagination.limit,

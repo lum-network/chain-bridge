@@ -80,7 +80,6 @@ import { DatabaseConfig, DatabaseFeatures } from '@app/database';
         ValidatorDelegationService,
         ValidatorScheduler,
     ],
-    exports: [ChainService, DfractService, LumNetworkService],
 })
 export class SyncSchedulerModule implements OnModuleInit, OnApplicationBootstrap {
     private readonly _logger: Logger = new Logger(SyncSchedulerModule.name);

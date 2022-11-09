@@ -52,7 +52,7 @@ export class AssetService {
         }
     };
 
-    owneAssetCreateOrUpdateValue = async (getAssetInfo: any, name: string): Promise<void> => {
+    ownAssetCreateOrUpdateValue = async (getAssetInfo: any, name: string): Promise<void> => {
         for (const key in filterFalsy(getAssetInfo)) {
             if (key) {
                 const compositeKey = `${name.toLowerCase()}_${key}`;
@@ -64,16 +64,21 @@ export class AssetService {
         }
     };
 
+    // Helper function to append historical data to the extra column
     createOrUpdateAssetExtra = async (compositeKey: string): Promise<GenericValueEntity> => {
-        // Helper function to append historical data to the extra column
+        // We first query the entity by passing the id
         const entity = await this.getById(compositeKey);
 
+        // We update the assets table by passing the latest entity.value column to the extra column
+        // We append extra column array by making sure to only update for the given id
+        // This allows to have historical data for each metrics
         const query = await this._repository.query(`
             UPDATE assets
             SET extra = extra || '${JSON.stringify(entity.value)}'::jsonb
             WHERE id = '${compositeKey}'
         `);
 
+        // We return the value of the query
         return query;
     };
 
@@ -85,7 +90,9 @@ export class AssetService {
             if (key) {
                 const entity = await this.getById(key.id);
 
-                if (entity) await this.createOrUpdateAssetExtra(key.id);
+                if (entity) {
+                    await this.createOrUpdateAssetExtra(key.id);
+                }
             }
         }
     };
@@ -101,7 +108,7 @@ export class AssetService {
             return { symbol: el.id.substring(0, id.indexOf('_')), ...rest.value };
         });
 
-        await Promise.all(data.map((el) => (assetInfo[el.symbol] = { ...assetInfo[el.symbol], ...el })));
+        data.map((el) => (assetInfo[el.symbol] = { ...assetInfo[el.symbol], ...el }));
 
         // Return the length and the values
         return [Object.values(assetInfo), Object.values(assetInfo).length];
@@ -113,11 +120,9 @@ export class AssetService {
         const query = await this._repository.createQueryBuilder('assets').select(['id', 'extra']).where('id = :metrics', { metrics: metrics }).getRawMany();
 
         // We return data that has been request since the start of the requested month
-        return await Promise.all(
-            query.map((el) => ({
-                id: el.id,
-                extra: el.extra.filter((el) => new Date(el.last_updated_at).getTime() >= new Date(date).getTime() && new Date(el.last_updated_at).getTime() < new Date().getTime()),
-            })),
-        );
+        return query.map((el) => ({
+            id: el.id,
+            extra: el.extra.filter((el) => new Date(el.last_updated_at).getTime() >= new Date(date).getTime() && new Date(el.last_updated_at).getTime() < new Date().getTime()),
+        }));
     };
 }

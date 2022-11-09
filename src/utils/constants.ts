@@ -73,6 +73,17 @@ export enum NotificationEvents {
     NEW_TRANSACTION = 'new-transaction',
 }
 
+export enum ApiUrl {
+    GET_EVMOS_INFLATION = 'https://rest.bd.evmos.dev:1317/evmos/inflation/v1/inflation_rate',
+    GET_EVMOS_SUPPLY = 'https://rest.bd.evmos.org:1317/evmos/inflation/v1/circulating_supply',
+    GET_CHAIN_TOKENS_MCAP = 'https://api-osmosis.imperator.co/tokens/v2/mcap',
+    GET_CHAIN_TOKENS_ALL = 'https://api-osmosis.imperator.co/tokens/v2/all',
+    GET_LUM_PRICE = 'https://api.coingecko.com/api/v3/coins/lum-network',
+    GET_JUNO_APY = 'https://supply-api.junonetwork.io/apr',
+    GET_OSMOSIS_APY = 'https://api-osmosis.imperator.co/apr/v2/staking',
+    GET_STARGAZE_APY = 'https://supply-api.publicawesome.dev/apr',
+}
+
 export enum AssetSymbol {
     COSMOS = 'ATOM',
     AKASH_NETWORK = 'AKT',
@@ -139,3 +150,6 @@ export const CHAIN_ENV_CONFIG = [
     'STARGAZE_NETWORK_ENDPOINT',
     'EVMOS_NETWORK_ENDPOINT',
 ];
+
+// Lum endpoint
+export const LUM_ENV_CONFIG = 'LUM_NETWORK_ENDPOINT';
