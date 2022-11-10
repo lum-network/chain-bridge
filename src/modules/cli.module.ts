@@ -31,7 +31,7 @@ import { ConfigMap } from '@app/utils';
                     password: parsed[0].password,
                     ttl: 10,
                     max: 50,
-                }
+                };
             },
             inject: [ConfigService],
         }),
@@ -58,6 +58,6 @@ export class CliModule implements OnModuleInit {
     constructor(private readonly _lumService: LumNetworkService) {}
 
     async onModuleInit(): Promise<void> {
-        await this._lumService.initialise();
+        await this._lumService.initialize();
     }
 }

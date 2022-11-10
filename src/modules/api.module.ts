@@ -6,6 +6,7 @@ import { APP_FILTER, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { TerminusModule } from '@nestjs/terminus';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
+import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 import * as redisStore from 'cache-manager-redis-store';
 import { SentryInterceptor, SentryModule } from '@ntegral/nestjs-sentry';
 import * as parseRedisUrl from 'parse-redis-url-simple';
@@ -17,6 +18,7 @@ import {
     BeamsController,
     BlocksController,
     CoreController,
+    DfractController,
     FaucetController,
     GovernanceController,
     HealthController,
@@ -31,18 +33,21 @@ import {
 } from '@app/http';
 
 import {
-    LumNetworkService,
+    AssetService,
+    BeamService,
     BlockService,
+    ChainService,
+    DfractService,
+    LumNetworkService,
+    ProposalDepositService,
+    ProposalVoteService,
+    StatService,
     TransactionService,
     ValidatorService,
-    BeamService,
     ValidatorDelegationService,
-    StatService,
-    ProposalVoteService,
-    ProposalDepositService,
 } from '@app/services';
 
-import { ConfigMap, PayloadValidationOptions, SentryModuleOptions } from '@app/utils';
+import { ConfigMap, metrics, PayloadValidationOptions, SentryModuleOptions } from '@app/utils';
 
 import { GatewayWebsocket } from '@app/websocket';
 import { DatabaseConfig, DatabaseFeatures } from '@app/database';
@@ -73,6 +78,7 @@ import { AsyncQueues } from '@app/async';
         SentryModule.forRootAsync(SentryModuleOptions),
         TerminusModule,
         HttpModule,
+        PrometheusModule.register(),
         TypeOrmModule.forRootAsync(DatabaseConfig),
         TypeOrmModule.forFeature(DatabaseFeatures),
     ],
@@ -80,6 +86,7 @@ import { AsyncQueues } from '@app/async';
         AccountsController,
         BeamsController,
         BlocksController,
+        DfractController,
         CoreController,
         FaucetController,
         GovernanceController,
@@ -90,17 +97,21 @@ import { AsyncQueues } from '@app/async';
         ValidatorsController,
     ],
     providers: [
+        AssetService,
         BeamService,
         BlockService,
+        ChainService,
+        DfractService,
+        GatewayWebsocket,
+        LumNetworkIndicator,
+        LumNetworkService,
+        ...metrics,
+        ProposalVoteService,
+        ProposalDepositService,
         StatService,
         TransactionService,
         ValidatorService,
-        ProposalVoteService,
-        ProposalDepositService,
         ValidatorDelegationService,
-        LumNetworkIndicator,
-        GatewayWebsocket,
-        LumNetworkService,
         { provide: APP_FILTER, useClass: HttpExceptionFilter },
         { provide: APP_INTERCEPTOR, useClass: PaginationInterceptor },
         { provide: APP_INTERCEPTOR, useClass: ResponseInterceptor },
@@ -122,17 +133,22 @@ import { AsyncQueues } from '@app/async';
 export class ApiModule implements OnModuleInit, OnApplicationBootstrap {
     private readonly _logger: Logger = new Logger(ApiModule.name);
 
-    constructor(private readonly _lumNetworkService: LumNetworkService) {}
+    constructor(private readonly _chainService: ChainService, private readonly _lumNetworkService: LumNetworkService) {}
 
     async onModuleInit() {
-        // Make sure to initialize the lum network service
-        await this._lumNetworkService.initialise();
+        // We want first LUM to be initialized before intializing the other chains
+        await this._lumNetworkService.initialize();
+        await this._chainService.initialize();
     }
 
     async onApplicationBootstrap() {
         // If we weren't able to initialize connection with Lum Network, exit the project
         if (!this._lumNetworkService.isInitialized()) {
             throw new Error(`Cannot initialize the Lum Network Service, exiting...`);
+        }
+
+        if (!this._chainService.isInitialized()) {
+            throw new Error(`Cannot initialize the External Service, exiting...`);
         }
     }
 }

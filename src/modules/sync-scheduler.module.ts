@@ -7,13 +7,26 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
 import * as Joi from 'joi';
+
 import { Queue } from 'bull';
 import { SentryModule } from '@ntegral/nestjs-sentry';
 import * as parseRedisUrl from 'parse-redis-url-simple';
 
-import { AsyncQueues, BlockScheduler, GovernanceScheduler, ValidatorScheduler } from '@app/async';
+import { AssetScheduler, AsyncQueues, BlockScheduler, GovernanceScheduler, MetricScheduler, ValidatorScheduler } from '@app/async';
 
-import { BeamService, BlockService, LumNetworkService, ProposalDepositService, ProposalVoteService, TransactionService, ValidatorDelegationService, ValidatorService } from '@app/services';
+import {
+    AssetService,
+    BeamService,
+    BlockService,
+    ChainService,
+    DfractService,
+    LumNetworkService,
+    ProposalDepositService,
+    ProposalVoteService,
+    TransactionService,
+    ValidatorDelegationService,
+    ValidatorService,
+} from '@app/services';
 import { ConfigMap, QueueJobs, Queues, SentryModuleOptions } from '@app/utils';
 import { DatabaseConfig, DatabaseFeatures } from '@app/database';
 
@@ -50,37 +63,52 @@ import { DatabaseConfig, DatabaseFeatures } from '@app/database';
     ],
     controllers: [],
     providers: [
+        AssetScheduler,
+        AssetService,
         BeamService,
+        BlockScheduler,
         BlockService,
-        TransactionService,
+        ChainService,
+        DfractService,
+        GovernanceScheduler,
+        LumNetworkService,
+        MetricScheduler,
         ProposalDepositService,
         ProposalVoteService,
+        TransactionService,
         ValidatorService,
         ValidatorDelegationService,
-        BlockScheduler,
-        GovernanceScheduler,
         ValidatorScheduler,
-        LumNetworkService,
     ],
 })
 export class SyncSchedulerModule implements OnModuleInit, OnApplicationBootstrap {
     private readonly _logger: Logger = new Logger(SyncSchedulerModule.name);
 
-    constructor(@InjectQueue(Queues.BLOCKS) private readonly _queue: Queue, private readonly _configService: ConfigService, private readonly _lumNetworkService: LumNetworkService) {}
+    constructor(
+        @InjectQueue(Queues.BLOCKS) private readonly _queue: Queue,
+        private readonly _chainService: ChainService,
+        private readonly _configService: ConfigService,
+        private readonly _lumNetworkService: LumNetworkService,
+    ) {}
 
     async onModuleInit() {
         // Log out
         const ingestEnabled = this._configService.get<boolean>('INGEST_ENABLED') ? 'enabled' : 'disabled';
         this._logger.log(`AppModule ingestion: ${ingestEnabled}`);
 
-        // Make sure to initialize the lum network service
-        await this._lumNetworkService.initialise();
+        // We want to intitiliaze lum network first
+        await this._lumNetworkService.initialize();
+        await this._chainService.initialize();
     }
 
     async onApplicationBootstrap() {
         // If we weren't able to initialize connection with Lum Network, exit the project
         if (!this._lumNetworkService.isInitialized()) {
             throw new Error(`Cannot initialize the Lum Network Service, exiting...`);
+        }
+
+        if (!this._chainService.isInitialized()) {
+            throw new Error(`Cannot initialize the External Chain Service, exiting...`);
         }
 
         // Trigger block backward ingestion at startup

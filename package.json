@@ -29,7 +29,7 @@
         "test:watch": "jest --watch",
         "test:cov": "jest --coverage",
         "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-        "test:e2e": "yarn run seed:test:db && jest --config ./test/jest-e2e.json --detectOpenHandles --runInBand"
+        "test:e2e": "yarn run seed:test:db && jest --config ./test/jest-e2e.json --detectOpenHandles --runInBand --forceExit"
     },
     "dependencies": {
         "@lum-network/sdk-javascript": "^0.7.11",
@@ -49,6 +49,7 @@
         "@ntegral/nestjs-sentry": "^4.0.0",
         "@sentry/node": "^7.17.4",
         "@sentry/tracing": "^7.17.4",
+        "@willsoto/nestjs-prometheus": "^4.7.0",
         "bull": "^4.10.0",
         "cache-manager": "^4.0.0",
         "cache-manager-redis-store": "^2.0.0",
@@ -64,6 +65,7 @@
         "node-notifier": "^10.0.1",
         "parse-redis-url-simple": "^1.0.2",
         "pg": "^8.8.0",
+        "prom-client": "^14.1.0",
         "reflect-metadata": "^0.1.13",
         "rimraf": "^3.0.2",
         "rxjs": "^7.5.7",
