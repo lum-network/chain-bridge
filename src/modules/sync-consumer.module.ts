@@ -66,7 +66,7 @@ export class SyncConsumerModule implements OnModuleInit, OnApplicationBootstrap 
 
     async onModuleInit() {
         // Make sure to initialize the lum network service
-        await this._lumNetworkService.initialise();
+        await this._lumNetworkService.initialize();
     }
 
     async onApplicationBootstrap() {

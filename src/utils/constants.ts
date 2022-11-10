@@ -1,7 +1,12 @@
 export const MODULE_NAMES = ['SyncConsumerModule', 'SyncSchedulerModule', 'ApiModule'];
 
 export const CLIENT_PRECISION = 1_000_000_000_000_000_000;
+export const TEN_EXPONENT_SIX = 1_000_000;
 export const SIGNED_BLOCK_WINDOW = 10000;
+export const PERCENTAGE = 100;
+
+export const LUM_STAKING_ADDRESS = 'lum1euhszjasgkeskujz6zr42r3lsxv58mfgsmlps0';
+export const EVMOS_STAKING_ADDRESS = 'evmos1evap49dune5ffh6w3h6ueqv9hyyyyeargtp6gw';
 
 export enum BeamStatus {
     UNSPECIFIED,
@@ -67,3 +72,84 @@ export enum NotificationEvents {
     NEW_BLOCK = 'new-block',
     NEW_TRANSACTION = 'new-transaction',
 }
+
+export enum ApiUrl {
+    GET_EVMOS_INFLATION = 'https://rest.bd.evmos.dev:1317/evmos/inflation/v1/inflation_rate',
+    GET_EVMOS_SUPPLY = 'https://rest.bd.evmos.org:1317/evmos/inflation/v1/circulating_supply',
+    GET_CHAIN_TOKENS_MCAP = 'https://api-osmosis.imperator.co/tokens/v2/mcap',
+    GET_CHAIN_TOKENS_ALL = 'https://api-osmosis.imperator.co/tokens/v2/all',
+    GET_LUM_PRICE = 'https://api.coingecko.com/api/v3/coins/lum-network',
+    GET_JUNO_APY = 'https://supply-api.junonetwork.io/apr',
+    GET_OSMOSIS_APY = 'https://api-osmosis.imperator.co/apr/v2/staking',
+    GET_STARGAZE_APY = 'https://supply-api.publicawesome.dev/apr',
+}
+
+export enum AssetSymbol {
+    COSMOS = 'ATOM',
+    AKASH_NETWORK = 'AKT',
+    COMDEX = 'CMDX',
+    SENTINEL = 'DVPN',
+    KI = 'XKI',
+    OSMOSIS = 'OSMO',
+    JUNO = 'JUNO',
+    STARGAZE = 'STARS',
+    EVMOS = 'EVMOS',
+    LUM = 'LUM',
+    DFR = 'DFR',
+}
+
+export enum AssetPrefix {
+    COSMOS = 'cosmos',
+    AKASH_NETWORK = 'akash',
+    COMDEX = 'comdex',
+    SENTINEL = 'sent',
+    KI = 'ki',
+    OSMOSIS = 'osmo',
+    JUNO = 'juno',
+    STARGAZE = 'stars',
+    EVMOS = 'evmos',
+    LUM = 'lum',
+    DFR = 'dfr',
+}
+
+export enum AssetMicroDenum {
+    COSMOS = 'uatom',
+    AKASH_NETWORK = 'uakt',
+    COMDEX = 'ucmdx',
+    SENTINEL = 'udvpn',
+    KI = 'uxki',
+    OSMOSIS = 'uosmo',
+    JUNO = 'ujuno',
+    STARGAZE = 'ustars',
+    EVMOS = 'aevmos',
+    DFR = 'udfr',
+}
+
+export enum AssetDenum {
+    DFR = 'dfr',
+}
+
+export enum DfractOnChainApy {
+    COSMOS = 'atom',
+    AKASH_NETWORK = 'akt',
+    COMDEX = 'ucmdx',
+    SENTINEL = 'dvpn',
+    KI = 'xki',
+}
+
+// If we map the enums first, we encounter an error on the initialization onModuleInit
+// Hence, we hardcod the endpoint env
+export const CHAIN_ENV_CONFIG = [
+    'COSMOS_NETWORK_ENDPOINT',
+    'AKASH_NETWORK_ENDPOINT',
+    'COMDEX_NETWORK_ENDPOINT',
+    'SENTINEL_NETWORK_ENDPOINT',
+    'KICHAIN_NETWORK_ENDPOINT',
+    'OSMOSIS_NETWORK_ENDPOINT',
+    'JUNO_NETWORK_ENDPOINT',
+    'STARGAZE_NETWORK_ENDPOINT',
+    'EVMOS_NETWORK_ENDPOINT',
+];
+
+// Lum endpoint
+export const LUM_ENV_CONFIG = 'LUM_NETWORK_ENDPOINT';

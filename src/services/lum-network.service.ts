@@ -5,20 +5,41 @@ import { ModulesContainer } from '@nestjs/core';
 import { InjectQueue } from '@nestjs/bull';
 
 import { NewBlockEvent } from '@cosmjs/tendermint-rpc';
-import { LumClient } from '@lum-network/sdk-javascript';
+import { LumClient, LumConstants } from '@lum-network/sdk-javascript';
+import { convertUnit } from '@lum-network/sdk-javascript/build/utils';
 import { ProposalStatus } from '@lum-network/sdk-javascript/build/codec/cosmos/gov/v1beta1/gov';
+
+import * as Sentry from '@sentry/node';
+
 import moment from 'moment';
 import { Stream } from 'xstream';
 import { Queue } from 'bull';
+import { lastValueFrom, map } from 'rxjs';
 
-import { MODULE_NAMES, QueueJobs, QueuePriority, Queues } from '@app/utils';
+import { AssetInfo } from '@app/http';
+
+import {
+    MODULE_NAMES,
+    QueueJobs,
+    QueuePriority,
+    Queues,
+    apy,
+    TEN_EXPONENT_SIX,
+    CLIENT_PRECISION,
+    computeTotalTokenAmount,
+    computeTotalApy,
+    LUM_STAKING_ADDRESS,
+    AssetSymbol,
+    ApiUrl,
+    LUM_ENV_CONFIG,
+} from '@app/utils';
 
 @Injectable()
 export class LumNetworkService {
-    private _client: LumClient = null;
-    private _clientStream: Stream<NewBlockEvent> = null;
-    private readonly _currentModuleName: string = null;
     private readonly _logger: Logger = new Logger(LumNetworkService.name);
+    private readonly _currentModuleName: string = null;
+    private _clientStream: Stream<NewBlockEvent> = null;
+    private _client: LumClient = null;
 
     constructor(
         @InjectQueue(Queues.BLOCKS) private readonly _queue: Queue,
@@ -35,11 +56,11 @@ export class LumNetworkService {
         }
     }
 
-    initialise = async () => {
+    initialize = async () => {
         try {
-            this._client = await LumClient.connect(this._configService.get<string>('LUM_NETWORK_ENDPOINT').replace('https://', 'wss://').replace('http://', 'ws://'));
+            this._client = await LumClient.connect(this._configService.get<string>(LUM_ENV_CONFIG).replace('https://', 'wss://').replace('http://', 'ws://'));
             const chainId = await this._client.getChainId();
-            this._logger.log(`Connection established to Lum Network on ${this._configService.get<string>('LUM_NETWORK_ENDPOINT')} = ${chainId}`);
+            this._logger.log(`Connection established to Lum Network on ${this._configService.get<string>(LUM_ENV_CONFIG)} = ${chainId}`);
 
             // We only set the block listener in case of the sync scheduler module
             if (this._currentModuleName === 'SyncSchedulerModule') {
@@ -85,13 +106,21 @@ export class LumNetworkService {
         return this._client;
     }
 
-    getPrice = (): Promise<any> => {
-        return this._httpService.get(`https://api.coingecko.com/api/v3/coins/lum-network`).toPromise();
+    getPrice = async (): Promise<any> => {
+        try {
+            return lastValueFrom(this._httpService.get(`${ApiUrl.GET_LUM_PRICE}`).pipe(map((response) => response.data)));
+        } catch (error) {
+            this._logger.error(`Could not fetch price for Lum Network...`, error);
+
+            Sentry.captureException(error);
+
+            return null;
+        }
     };
 
     getPriceHistory = async (startAt: number, endAt: number): Promise<any> => {
         try {
-            const res = await this._httpService.get(`https://api.coingecko.com/api/v3/coins/lum-network/market_chart/range?vs_currency=usd&from=${startAt}&to=${endAt}`).toPromise();
+            const res = await this._httpService.get(`${ApiUrl.GET_LUM_PRICE}/market_chart/range?vs_currency=usd&from=${startAt}&to=${endAt}`).toPromise();
             return res.data.prices.map((price) => {
                 return {
                     key: String(price[0]),
@@ -149,4 +178,83 @@ export class LumNetworkService {
             this._logger.error(`Failed to sync proposalsById...`, error);
         }
     }
+
+    getTokenSupply = async (): Promise<number> => {
+        try {
+            return Number(convertUnit(await this.client.getSupply(LumConstants.MicroLumDenom), LumConstants.LumDenom));
+        } catch (error) {
+            this._logger.error(`Could not fetch Token Supply for Lum Network...`, error);
+
+            Sentry.captureException(error);
+
+            return null;
+        }
+    };
+
+    getMcap = async (): Promise<number> => {
+        try {
+            // We multiply the price by the supply to get the mcap
+            const [supply, unit_price_usd] = await Promise.all([this.getTokenSupply(), this.getPrice()]);
+
+            return supply * unit_price_usd.market_data.current_price.usd;
+        } catch (error) {
+            this._logger.error(`Could not fetch Market Cap for Lum Network...`, error);
+
+            Sentry.captureException(error);
+
+            return null;
+        }
+    };
+
+    getApy = async (): Promise<{ apy: number; symbol: string }> => {
+        try {
+            const inflation = Number(await this._client.queryClient.mint.inflation()) / CLIENT_PRECISION;
+            const metrics = await computeTotalApy(this.client, Number(await this.getTokenSupply()), inflation, CLIENT_PRECISION, TEN_EXPONENT_SIX);
+
+            // See util files src/utils/dfract to see how we compute inflation
+
+            return { apy: apy(metrics.inflation, metrics.communityTaxRate, metrics.stakingRatio), symbol: AssetSymbol.LUM };
+        } catch (error) {
+            this._logger.error(`Could not fetch Apy for Lum Network...`, error);
+
+            Sentry.captureException(error);
+
+            return null;
+        }
+    };
+
+    getAssetInfo = async (): Promise<AssetInfo> => {
+        try {
+            // To compute metrics info we need lum's {unit_price_usd, total_value_usd, supply and apy}
+            const [price, total_value_usd, supply, percentagYield] = await Promise.all([this.getPrice(), this.getMcap(), this.getTokenSupply(), this.getApy()]);
+
+            return {
+                unit_price_usd: price.market_data.current_price.usd,
+                total_value_usd,
+                supply,
+                apy: percentagYield.apy,
+            };
+        } catch (error) {
+            this._logger.error('Failed to compute Token Info for Lum Network...', error);
+
+            Sentry.captureException(error);
+
+            return null;
+        }
+    };
+
+    getTvl = async (): Promise<{ symbol: string; tvl: number }> => {
+        try {
+            // We compute the total token of lum based on the microdenum and staking address and get the current market price to calculate the tvl
+            const [totalToken, price] = await Promise.all([computeTotalTokenAmount(LUM_STAKING_ADDRESS, this.client, LumConstants.MicroLumDenom, CLIENT_PRECISION, TEN_EXPONENT_SIX), this.getPrice()]);
+
+            return { tvl: totalToken * price.market_data.current_price.usd, symbol: AssetSymbol.LUM };
+        } catch (error) {
+            this._logger.error('Failed to compute TVL for Lum Network...', error);
+
+            Sentry.captureException(error);
+
+            return null;
+        }
+    };
 }

@@ -1,6 +1,7 @@
 export * from './beams';
 export * from './config';
 export * from './constants';
+export * from './dfract';
 export * from './gov';
 export * from './http';
 export * from './metadata';
