@@ -102,10 +102,6 @@ export class ValidatorResponse {
 
     @ApiProperty()
     @Expose()
-    self_bonded: number;
-
-    @ApiProperty()
-    @Expose()
     jailed: boolean;
 
     @ApiProperty()
@@ -131,6 +127,10 @@ export class ValidatorResponse {
     @ApiProperty()
     @Expose()
     bonded_height: number;
+
+    @ApiProperty()
+    @Expose()
+    self_bonded: number;
 
     @ApiProperty()
     @Expose()
