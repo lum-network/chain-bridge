@@ -31,6 +31,15 @@ You should have a .env file at the root level with the following entries (and th
 # Must be any of development, mainnet, testnet
 ENV=development
 LUM_NETWORK_ENDPOINT=http://127.0.0.1:26657
+COSMOS_NETWORK_ENDPOINT=https://rpc-cosmos.imperator.co
+AKASH_NETWORK_ENDPOINT=https://rpc-akash.imperator.co
+COMDEX_NETWORK_ENDPOINT=https://rpc-comdex.imperator.co
+SENTINEL_NETWORK_ENDPOINT=https://rpc-sentinel.imperator.co
+KICHAIN_NETWORK_ENDPOINT=https://rpc-kichain.imperator.co
+OSMOSIS_NETWORK_ENDPOINT=https://rpc-osmosis.imperator.co
+JUNO_NETWORK_ENDPOINT=https://rpc-juno.imperator.co
+EVMOS_NETWORK_ENDPOINT=https://rpc-evmos.imperator.co
+STARGAZE_NETWORK_ENDPOINT=https://rpc-stargaze.imperator.co
 
 DATABASE_URL=postgresql://postgres:emulator@127.0.0.1:5432/postgres
 REDIS_URL=redis://127.0.0.1:6379
@@ -50,9 +59,10 @@ If you don't know what these params mean, leave them like this, they are preconf
 ### Launch required third party services
 
 The following services are required to run the service:
-- Elasticsearch 7+
-- Redis 5+
-- Lum Network node (RPC endpoint)
+
+-   Elasticsearch 7+
+-   Redis 5+
+-   Lum Network node (RPC endpoint)
 
 You can use the official Lum Network's testnet along the provided [docker-compose](tools/docker-compose.yml) file to run both Elasticsearch and Redis and get started in a minute:
 
