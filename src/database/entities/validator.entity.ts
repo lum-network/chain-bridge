@@ -54,6 +54,9 @@ export class ValidatorEntity {
     @Column('integer', { default: 0 })
     bonded_height: number;
 
+    @Column('bigint')
+    self_bonded: number;
+
     @Column('boolean', { default: false })
     tombstoned: boolean;
 

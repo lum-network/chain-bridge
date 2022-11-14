@@ -18,7 +18,7 @@ describe('Governance (e2e)', () => {
 
                 // Use the e2e_test database to run the tests
 
-                TypeOrmModule.forRootAsync({ ...DatabaseConfig }),
+                TypeOrmModule.forRootAsync(DatabaseConfig),
             ],
         }).compile();
         app = moduleFixture.createNestApplication();
@@ -26,15 +26,15 @@ describe('Governance (e2e)', () => {
     });
 
     it('[GET] Depositors - should return the depositors for proposalId 21', () => {
-        return request(app.getHttpServer()).get('/governance/proposals/21/depositors').expect(200).expect(mockResponseDepositors);
+        return request(app.getHttpServer()).get('/governance/proposals/21/depositors').expect(mockResponseDepositors);
     });
 
     it('[GET] Voters - should the first 5 voters for proposalId 21', () => {
-        return request(app.getHttpServer()).get('/governance/proposals/21/voters').expect(200).expect(mockResponseVotersPage0);
+        return request(app.getHttpServer()).get('/governance/proposals/21/voters').expect(mockResponseVotersPage0);
     });
 
     it('[GET] Voters - should the first 5 voters of paginated page 1 for proposalId 21', () => {
-        return request(app.getHttpServer()).get('/governance/proposals/21/voters?page=1').expect(200).expect(mockResponseVotersPage1);
+        return request(app.getHttpServer()).get('/governance/proposals/21/voters?page=1').expect(mockResponseVotersPage1);
     });
 
     afterAll(async () => {

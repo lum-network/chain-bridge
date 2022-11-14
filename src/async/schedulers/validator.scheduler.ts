@@ -6,7 +6,7 @@ import { LumConstants, LumTypes, LumUtils, LumRegistry } from '@lum-network/sdk-
 
 import { LumNetworkService, ValidatorDelegationService, ValidatorService } from '@app/services';
 import { ValidatorEntity } from '@app/database';
-import { CLIENT_PRECISION, SIGNED_BLOCK_WINDOW } from '@app/utils';
+import { AssetPrefix, CLIENT_PRECISION, SIGNED_BLOCK_WINDOW } from '@app/utils';
 
 @Injectable()
 export class ValidatorScheduler {
@@ -70,10 +70,12 @@ export class ValidatorScheduler {
             // Go through all staking validators to match them with tendermint ones
             const statuses = ['BOND_STATUS_BONDED', 'BOND_STATUS_UNBONDED', 'BOND_STATUS_UNBONDING'];
             let page: Uint8Array | undefined = undefined;
+
             for (const s of statuses) {
                 page = undefined;
                 while (true) {
                     const stakingValidators = await this._lumNetworkService.client.queryClient.staking.validators(s as any, page);
+
                     for (const val of stakingValidators.validators) {
                         const pubKey = LumRegistry.decode(val.consensusPubkey) as LumTypes.PubKey;
                         const consensus_pubkey = LumUtils.Bech32.encode(LumConstants.LumBech32PrefixConsPub, pubKey.key);
@@ -81,12 +83,18 @@ export class ValidatorScheduler {
                         // Find the tendermint validator and add the operator address to it
                         for (let v = 0; v < validators.length; v++) {
                             if (validators[v].consensus_pubkey === consensus_pubkey) {
-                                // Fetch the signing infos
-                                const signingInfos = await this._lumNetworkService.client.queryClient.slashing.signing_info(validators[v].consensus_address);
+                                // Get the account address from the validators operatorAddress
+                                const getDecodedAccountAddress = LumUtils.Bech32.encode(AssetPrefix.LUM, LumUtils.Bech32.decode(val.operatorAddress).data);
+
+                                // Fetch the signing infos and self bonded for validators
+                                const [signingInfos, selfBonded] = await Promise.all([
+                                    this._lumNetworkService.client.queryClient.slashing.signing_info(validators[v].consensus_address),
+                                    this._lumNetworkService.client.queryClient.staking.delegatorDelegations(getDecodedAccountAddress),
+                                ]);
 
                                 // Set the required informations
                                 validators[v].operator_address = val.operatorAddress;
-                                validators[v].account_address = LumUtils.Bech32.encode(LumConstants.LumBech32PrefixAccAddr, LumUtils.Bech32.decode(val.operatorAddress).data);
+                                validators[v].account_address = getDecodedAccountAddress;
                                 validators[v].description = {
                                     moniker: val.description.moniker,
                                     identity: val.description.identity,
@@ -108,6 +116,9 @@ export class ValidatorScheduler {
                                     last_updated_at: val.commission.updateTime,
                                 };
                                 validators[v].bonded_height = signingInfos.valSigningInfo.startHeight.low;
+                                // We may receive falsy values from delegation responses (NaN, null)
+                                // Hence we convert falsy values in case we receive them
+                                validators[v].self_bonded = Number(selfBonded.delegationResponses.map((el) => el.balance.amount)[0]) || 0;
                                 validators[v].tombstoned = signingInfos.valSigningInfo.tombstoned;
                                 validators[v].uptime = ((SIGNED_BLOCK_WINDOW - signingInfos.valSigningInfo.missedBlocksCounter.low) / SIGNED_BLOCK_WINDOW) * 100;
                                 break;
