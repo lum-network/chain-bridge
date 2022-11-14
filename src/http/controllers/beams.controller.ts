@@ -1,4 +1,4 @@
-import { CacheInterceptor, Controller, Get, Param, Req, UseInterceptors } from '@nestjs/common';
+import {CacheInterceptor, Controller, Get, NotFoundException, Param, Req, UseInterceptors} from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 
 import { plainToInstance } from 'class-transformer';
@@ -36,6 +36,13 @@ export class BeamsController {
     @Get(':id')
     async get(@Param('id') id: string): Promise<DataResponse> {
         const beam = await this._beamService.get(id);
+
+        if (!beam) {
+            this._beamService.failSafeIngest(id).finally(() => null);
+
+            throw new NotFoundException('beam_not_found');
+        }
+
         return {
             result: plainToInstance(BeamResponse, beam),
         };

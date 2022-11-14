@@ -177,4 +177,8 @@ export class BeamService {
     save = async (entity: Partial<BeamEntity>): Promise<BeamEntity> => {
         return this._repository.save(entity);
     };
+
+    failSafeIngest = async (id: string) => {
+
+    }
 }
