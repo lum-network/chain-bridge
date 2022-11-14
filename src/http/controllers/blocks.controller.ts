@@ -55,7 +55,7 @@ export class BlocksController {
         const block = await this._blockService.get(height);
 
         if (!block) {
-            this._blockService.failSafeIngest(Number(height)).finally(() => null);
+            await this._blockService.failSafeIngest(Number(height));
 
             throw new NotFoundException('block_not_found');
         }
