@@ -76,7 +76,7 @@ export class ChainService {
                     symbol: el.symbol,
                 }));
         } catch (error) {
-            this._logger.error(`Could not fetch Price Price...`, error);
+            this._logger.error(`Could not fetch Price...`, error);
 
             Sentry.captureException(error);
 
