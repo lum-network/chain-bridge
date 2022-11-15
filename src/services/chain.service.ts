@@ -12,7 +12,7 @@ import {
     apy,
     AssetPrefix,
     AssetSymbol,
-    AssetMicroDenum,
+    AssetMicroDenom,
     CHAIN_ENV_CONFIG,
     CLIENT_PRECISION,
     EVMOS_STAKING_ADDRESS,
@@ -33,7 +33,7 @@ export class ChainService {
     private _client: LumClient[] = [];
 
     private _assetSymbol = Object.values(AssetSymbol).map((key) => key);
-    private _assetMicroDenum = Object.values(AssetMicroDenum).map((key) => key);
+    private _assetMicroDenom = Object.values(AssetMicroDenom).map((key) => key);
     private _dfractOnChainApy = Object.values(DfractOnChainApy).map((key) => key);
     private _dfractPrefix = Object.values(AssetPrefix).map((key) => key);
 
@@ -113,7 +113,7 @@ export class ChainService {
             // Return token supply based on the microDenum and denum from assets in the index
             const chainSupply = await Promise.all(
                 this._client.map(async (el, index) => {
-                    const supply = Number((await el.getSupply(this._assetMicroDenum[index])).amount) / TEN_EXPONENT_SIX;
+                    const supply = Number((await el.getSupply(this._assetMicroDenom[index])).amount) / TEN_EXPONENT_SIX;
 
                     return { supply, symbol: this._assetSymbol[index] };
                 }),
@@ -159,7 +159,13 @@ export class ChainService {
 
             const metrics = await computeTotalApy(this._client[evmosIndex], Number((await this.getTokenSupply())[evmosIndex].supply), evmosInflation, CLIENT_PRECISION, CLIENT_PRECISION);
 
-            const getEvmosApy = { apy: apy(metrics.inflation, metrics.communityTaxRate, metrics.stakingRatio), symbol: this._assetSymbol[evmosIndex] };
+            // To calculate evmos community tax we need to sum-up the usage_incentive and the community_pool
+            const inflationParams = await lastValueFrom(this._httpService.get(`${ApiUrl.GET_EVMOS_INFLATION_PARAMS}`).pipe(map((response) => response.data.params.inflation_distribution)));
+
+            const getEvmosApy = {
+                apy: apy(metrics.inflation, Number(inflationParams.usage_incentives) + Number(inflationParams.community_pool), metrics.stakingRatio),
+                symbol: this._assetSymbol[evmosIndex],
+            };
 
             // Chains for which inflation is not retrievable via the mint module. Hence, we rely on other rpc endpoints to retrieve it.
             const getOsmosisApy = Number(await lastValueFrom(this._httpService.get(`${ApiUrl.GET_OSMOSIS_APY}`).pipe(map((response) => response.data)))) / PERCENTAGE;
@@ -210,7 +216,7 @@ export class ChainService {
                     const decode = LumUtils.Bech32.decode(LUM_STAKING_ADDRESS);
                     const getDecodedAddress = LumUtils.Bech32.encode(this._dfractPrefix[index], decode.data);
                     return {
-                        total_token: Number(await computeTotalTokenAmount(getDecodedAddress, el, this._assetMicroDenum[index], CLIENT_PRECISION, TEN_EXPONENT_SIX)),
+                        total_token: Number(await computeTotalTokenAmount(getDecodedAddress, el, this._assetMicroDenom[index], CLIENT_PRECISION, TEN_EXPONENT_SIX)),
                         symbol: this._assetSymbol[index],
                     };
                 }),
@@ -218,7 +224,7 @@ export class ChainService {
 
             // We calculate the total token amount for evmos
             const evmosTotalToken = {
-                total_token: Number(await computeTotalTokenAmount(EVMOS_STAKING_ADDRESS, this._client[evmosIndex], this._assetMicroDenum[evmosIndex], CLIENT_PRECISION, CLIENT_PRECISION)),
+                total_token: Number(await computeTotalTokenAmount(EVMOS_STAKING_ADDRESS, this._client[evmosIndex], this._assetMicroDenom[evmosIndex], CLIENT_PRECISION, CLIENT_PRECISION)),
                 symbol: this._assetSymbol[evmosIndex],
             };
 

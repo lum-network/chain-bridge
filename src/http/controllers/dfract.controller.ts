@@ -1,10 +1,12 @@
-import { Body, CacheInterceptor, Controller, Get, Post, Req, UseInterceptors } from '@nestjs/common';
+import { Body, CacheInterceptor, Controller, Get, Param, Post, Req, UseInterceptors } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { plainToInstance } from 'class-transformer';
 
 import { AssetService } from '@app/services';
-import { DataResponse, DataResponseMetadata, AssetInfo, AssetHistorical } from '@app/http/responses/';
+import { AssetInfoResponse, AssetHistoricalResponse, DataResponse, DataResponseMetadata } from '@app/http/responses';
 import { ExplorerRequest } from '@app/utils';
-import { AssetRequest } from '@app/http/requests';
+import { AssetDenomParams, AssetRequest } from '@app/http/requests';
+import { DefaultTake } from '@app/http/decorators';
 
 @ApiTags('dfract')
 @Controller('dfract')
@@ -12,13 +14,14 @@ import { AssetRequest } from '@app/http/requests';
 export class DfractController {
     constructor(private readonly _assetService: AssetService) {}
 
-    @ApiOkResponse({ status: 200, type: AssetInfo })
+    @ApiOkResponse({ status: 200, type: AssetInfoResponse })
+    @DefaultTake(50)
     @Get('assets/latest')
     async getLatestAsset(@Req() request: ExplorerRequest): Promise<DataResponse> {
-        const [result, total] = await this._assetService.fetchLatestMetrics(request.pagination.skip);
+        const [result, total] = await this._assetService.fetchLatestMetrics(request.pagination.skip, request.pagination.limit);
 
         return new DataResponse({
-            result,
+            result: result.map((el) => plainToInstance(AssetInfoResponse, el)),
             metadata: new DataResponseMetadata({
                 page: request.pagination.page,
                 limit: request.pagination.limit,
@@ -28,10 +31,20 @@ export class DfractController {
         });
     }
 
-    @ApiOkResponse({ status: 200, type: AssetHistorical })
+    @ApiOkResponse({ status: 200, type: AssetHistoricalResponse })
     @Post('assets/since')
     async getHistoricalData(@Body() body: AssetRequest): Promise<DataResponse> {
         const result = await this._assetService.fetchMetricsSince(body.metrics, body.since);
+
+        return new DataResponse({
+            result,
+        });
+    }
+
+    @ApiOkResponse({ status: 200, type: AssetInfoResponse })
+    @Get('assets/:denom')
+    async getAssetsByDenom(@Param() denomParams: AssetDenomParams): Promise<DataResponse> {
+        const result = await this._assetService.fetchLatestAsset(denomParams.denom);
 
         return new DataResponse({
             result,

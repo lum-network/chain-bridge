@@ -1,18 +1,44 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Exclude, Expose, Type } from 'class-transformer';
 
 export class AssetInfo {
     @ApiProperty()
-    readonly symbol?: string;
+    @Expose()
+    last_updated_at?: Date;
 
     @ApiProperty()
-    readonly unit_price_usd?: number;
+    @Expose()
+    unit_price_usd?: number;
 
     @ApiProperty()
-    readonly total_value_usd?: number;
+    @Expose()
+    total_value_usd?: number;
 
     @ApiProperty()
-    readonly supply?: number;
+    @Expose()
+    supply?: number;
 
     @ApiProperty()
-    readonly apy?: number;
+    @Expose()
+    apy?: number;
+}
+
+export class AssetInfoResponse {
+    @ApiProperty()
+    @Expose()
+    id: string;
+
+    @ApiProperty({ type: () => AssetInfo })
+    @Expose()
+    @Type(() => AssetInfo)
+    value: AssetInfo;
+
+    @ApiProperty({ type: () => AssetInfo })
+    @Exclude()
+    @Type(() => AssetInfo)
+    extra: AssetInfo[];
+
+    constructor(data: Partial<AssetInfoResponse>) {
+        Object.assign(this, data);
+    }
 }

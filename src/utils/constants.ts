@@ -76,6 +76,7 @@ export enum NotificationEvents {
 export enum ApiUrl {
     GET_EVMOS_INFLATION = 'https://rest.bd.evmos.org:1317/evmos/inflation/v1/inflation_rate',
     GET_EVMOS_SUPPLY = 'https://rest.bd.evmos.org:1317/evmos/inflation/v1/circulating_supply',
+    GET_EVMOS_INFLATION_PARAMS = 'https://rest.bd.evmos.org:1317/evmos/inflation/v1/params',
     GET_CHAIN_TOKENS_MCAP = 'https://api-osmosis.imperator.co/tokens/v2/mcap',
     GET_CHAIN_TOKENS_ALL = 'https://api-osmosis.imperator.co/tokens/v2/all',
     GET_LUM_PRICE = 'https://api.coingecko.com/api/v3/coins/lum-network',
@@ -112,7 +113,7 @@ export enum AssetPrefix {
     DFR = 'dfr',
 }
 
-export enum AssetMicroDenum {
+export enum AssetMicroDenom {
     COSMOS = 'uatom',
     AKASH_NETWORK = 'uakt',
     COMDEX = 'ucmdx',
@@ -125,7 +126,17 @@ export enum AssetMicroDenum {
     DFR = 'udfr',
 }
 
-export enum AssetDenum {
+export enum AssetDenom {
+    COSMOS = 'atom',
+    AKASH_NETWORK = 'akt',
+    COMDEX = 'cmdx',
+    SENTINEL = 'dvpn',
+    KI = 'xki',
+    OSMOSIS = 'osmo',
+    JUNO = 'juno',
+    STARGAZE = 'stars',
+    EVMOS = 'evmos',
+    LUM = 'lum',
     DFR = 'dfr',
 }
 

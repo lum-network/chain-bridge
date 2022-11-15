@@ -1,4 +1,4 @@
-import { AssetDenum, AssetMicroDenum, TEN_EXPONENT_SIX } from '@app/utils';
+import { AssetDenom, AssetMicroDenom, TEN_EXPONENT_SIX } from '@app/utils';
 import { convertUnit } from '@lum-network/sdk-javascript/build/utils';
 import { Injectable, Logger } from '@nestjs/common';
 import * as Sentry from '@sentry/node';
@@ -15,7 +15,7 @@ export class DfractService {
     getTokenSupply = async (): Promise<number> => {
         try {
             // Total current circulating dfr token
-            return Number(convertUnit(await this._lumNetworkService.client.getSupply(AssetMicroDenum.DFR), AssetDenum.DFR));
+            return Number(convertUnit(await this._lumNetworkService.client.getSupply(AssetMicroDenom.DFR), AssetDenom.DFR));
         } catch (error) {
             this._logger.error(`Could not fetch Token Supply for DFR on Lum Network...`, error);
 
@@ -25,7 +25,7 @@ export class DfractService {
         }
     };
 
-    getTotalComputedTvl = async (): Promise<any> => {
+    getTotalComputedTvl = async (): Promise<number> => {
         try {
             // Tvl from all external chains with the tvl of lumNetwork summed up together
             const [chainTvl, lumTvl] = await Promise.all([this._chainService.getTvl(), this._lumNetworkService.getTvl()]);
@@ -43,7 +43,7 @@ export class DfractService {
         }
     };
 
-    getTotalComputedApy = async (): Promise<any> => {
+    getTotalComputedApy = async (): Promise<number> => {
         try {
             // Apy from all external chains with the apy of lumNetwork summed up together
             const [chainApy, lumApy] = await Promise.all([this._chainService.getApy(), this._lumNetworkService.getApy()]);

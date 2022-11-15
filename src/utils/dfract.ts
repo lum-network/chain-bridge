@@ -71,6 +71,8 @@ export const computeTotalApy = async (
 };
 
 export interface GenericValueEntity {
+    [key: string]: number | Date;
+    last_updated_at?: Date;
     apy?: number;
     supply?: number;
     total_value_usd?: number;
