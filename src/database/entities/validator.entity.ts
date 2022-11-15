@@ -54,7 +54,7 @@ export class ValidatorEntity {
     @Column('integer', { default: 0 })
     bonded_height: number;
 
-    @Column('bigint')
+    @Column('bigint', { nullable: true })
     self_bonded: number;
 
     @Column('boolean', { default: false })

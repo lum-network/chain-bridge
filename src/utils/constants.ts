@@ -74,7 +74,7 @@ export enum NotificationEvents {
 }
 
 export enum ApiUrl {
-    GET_EVMOS_INFLATION = 'https://rest.bd.evmos.dev:1317/evmos/inflation/v1/inflation_rate',
+    GET_EVMOS_INFLATION = 'https://rest.bd.evmos.org:1317/evmos/inflation/v1/inflation_rate',
     GET_EVMOS_SUPPLY = 'https://rest.bd.evmos.org:1317/evmos/inflation/v1/circulating_supply',
     GET_CHAIN_TOKENS_MCAP = 'https://api-osmosis.imperator.co/tokens/v2/mcap',
     GET_CHAIN_TOKENS_ALL = 'https://api-osmosis.imperator.co/tokens/v2/all',
