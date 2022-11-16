@@ -12,7 +12,7 @@ export const metrics = [
         help: 'Current supply of ulum',
     }),
     makeGaugeProvider({
-        name: MetricNames.COMMUNITY_POOL_SUPPLY,
+        name: MetricNames.LUM_COMMUNITY_POOL_SUPPLY,
         help: 'Current supply of community pool',
     }),
     makeGaugeProvider({
@@ -24,7 +24,7 @@ export const metrics = [
         help: 'Current price of LUM in EUR',
     }),
     makeGaugeProvider({
-        name: MetricNames.MARKET_CAP,
+        name: MetricNames.LUM_MARKET_CAP,
         help: 'Current market cap of LUM',
     }),
     makeGaugeProvider({
@@ -46,5 +46,17 @@ export const metrics = [
     makeGaugeProvider({
         name: MetricNames.DFRACT_NEW_DFR_TO_MINT,
         help: 'Current number of DFR to mint',
+    }),
+    makeGaugeProvider({
+        name: MetricNames.DFRACT_MINT_RATIO,
+        help: 'Current Dfract mint ratio',
+    }),
+    makeGaugeProvider({
+        name: MetricNames.DFRACT_BACKING_PRICE,
+        help: 'Current dfr backing price in USD',
+    }),
+    makeGaugeProvider({
+        name: MetricNames.DFRACT_MARKET_CAP,
+        help: 'Current dfr market cap in USD',
     }),
 ];
