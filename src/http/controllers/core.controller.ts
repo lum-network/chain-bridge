@@ -28,6 +28,8 @@ export class CoreController {
         @InjectMetric(MetricNames.LUM_PRICE_EUR) private readonly _lumPriceEUR: Gauge<string>,
         @InjectMetric(MetricNames.MARKET_CAP) private readonly _marketCap: Gauge<string>,
         @InjectMetric(MetricNames.TWITTER_FOLLOWERS) private readonly _twitterFollowers: Gauge<string>,
+        @InjectMetric(MetricNames.DFRACT_APY) private readonly _dfractApy: Gauge<string>,
+        @InjectMetric(MetricNames.DFRACT_NEW_DFR_TO_MINT) private readonly _newDfrToMint: Gauge<string>,
         private readonly _blockService: BlockService,
         private readonly _configService: ConfigService,
         private readonly _lumNetworkService: LumNetworkService,
@@ -186,6 +188,10 @@ export class CoreController {
             await this._marketCap.set(data.value);
         } else if (data.name == MetricNames.TWITTER_FOLLOWERS) {
             await this._twitterFollowers.set(data.value);
+        } else if (data.name == MetricNames.DFRACT_APY) {
+            await this._dfractApy.set(data.value);
+        } else if (data.name == MetricNames.DFRACT_NEW_DFR_TO_MINT) {
+            await this._newDfrToMint.set(data.value);
         }
     }
 }

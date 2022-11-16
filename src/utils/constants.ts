@@ -28,6 +28,8 @@ export enum ChartTypes {
 export enum MetricNames {
     DFRACT_CURRENT_SUPPLY = 'dfract_current_supply',
     DFRACT_MA_BALANCE = 'dfract_ma_balance',
+    DFRACT_APY = 'dfract_apy',
+    DFRACT_NEW_DFR_TO_MINT = 'dfract_new_dfr_to_mint',
     LUM_CURRENT_SUPPLY = 'lum_current_supply',
     COMMUNITY_POOL_SUPPLY = 'community_pool_supply',
     MARKET_CAP = 'market_cap',

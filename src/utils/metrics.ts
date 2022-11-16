@@ -39,4 +39,12 @@ export const metrics = [
         name: MetricNames.DFRACT_MA_BALANCE,
         help: 'Current balance of dfract Module Account',
     }),
+    makeGaugeProvider({
+        name: MetricNames.DFRACT_APY,
+        help: 'Current apy for Dfract in USD',
+    }),
+    makeGaugeProvider({
+        name: MetricNames.DFRACT_NEW_DFR_TO_MINT,
+        help: 'Current number of DFR to mint',
+    }),
 ];
