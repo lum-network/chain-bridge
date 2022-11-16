@@ -20,14 +20,15 @@ export class CoreController {
 
     constructor(
         // Lum metrics constructors
-        @InjectMetric(MetricNames.LUM_PRICE_USD) private readonly _lumPriceUSD: Gauge<string>,
-        @InjectMetric(MetricNames.LUM_PRICE_EUR) private readonly _lumPriceEUR: Gauge<string>,
         @InjectMetric(MetricNames.LUM_COMMUNITY_POOL_SUPPLY) private readonly _lumCommunityPoolSupply: Gauge<string>,
-        @InjectMetric(MetricNames.LUM_MARKET_CAP) private readonly _lumMarketCap: Gauge<string>,
         @InjectMetric(MetricNames.LUM_CURRENT_SUPPLY) private readonly _lumCurrentSupply: Gauge<string>,
+        @InjectMetric(MetricNames.LUM_MARKET_CAP) private readonly _lumMarketCap: Gauge<string>,
+        @InjectMetric(MetricNames.LUM_PRICE_EUR) private readonly _lumPriceEUR: Gauge<string>,
+        @InjectMetric(MetricNames.LUM_PRICE_USD) private readonly _lumPriceUSD: Gauge<string>,
+
         // Dfr metrics constructors
-        @InjectMetric(MetricNames.DFRACT_CURRENT_SUPPLY) private readonly _dfrCurrentSupply: Gauge<string>,
-        @InjectMetric(MetricNames.DFRACT_MA_BALANCE) private readonly _dfrMaBalance: Gauge<string>,
+        @InjectMetric(MetricNames.DFRACT_CURRENT_SUPPLY) private readonly _dfractCurrentSupply: Gauge<string>,
+        @InjectMetric(MetricNames.DFRACT_MA_BALANCE) private readonly _dfractMaBalance: Gauge<string>,
         @InjectMetric(MetricNames.DFRACT_APY) private readonly _dfractApy: Gauge<string>,
         @InjectMetric(MetricNames.DFRACT_NEW_DFR_TO_MINT) private readonly _dfractNewDfrToMint: Gauge<string>,
         @InjectMetric(MetricNames.DFRACT_BACKING_PRICE) private readonly _dfractBackingPrice: Gauge<string>,
@@ -175,34 +176,34 @@ export class CoreController {
 
     @MessagePattern('updateMetric')
     async updateMetric(@Payload() data: { name: string; value: number }): Promise<void> {
-        if (data.name == MetricNames.LUM_CURRENT_SUPPLY) {
+        if (data.name === MetricNames.LUM_COMMUNITY_POOL_SUPPLY) {
             // Lum metrics
-            await this._lumCurrentSupply.set(data.value);
-        } else if (data.name == MetricNames.LUM_COMMUNITY_POOL_SUPPLY) {
             await this._lumCommunityPoolSupply.set(data.value);
-        } else if (data.name == MetricNames.LUM_PRICE_USD) {
-            await this._lumPriceUSD.set(data.value);
-        } else if (data.name == MetricNames.LUM_PRICE_EUR) {
-            await this._lumPriceEUR.set(data.value);
-        } else if (data.name == MetricNames.LUM_MARKET_CAP) {
+        } else if (data.name === MetricNames.LUM_CURRENT_SUPPLY) {
+            await this._lumCurrentSupply.set(data.value);
+        } else if (data.name === MetricNames.LUM_MARKET_CAP) {
             await this._lumMarketCap.set(data.value);
-            // DFR metrics
-        } else if (data.name == MetricNames.DFRACT_CURRENT_SUPPLY) {
-            await this._dfrCurrentSupply.set(data.value);
-        } else if (data.name == MetricNames.DFRACT_MA_BALANCE) {
-            await this._dfrMaBalance.set(data.value);
-        } else if (data.name == MetricNames.DFRACT_APY) {
+        } else if (data.name === MetricNames.LUM_PRICE_EUR) {
+            await this._lumPriceEUR.set(data.value);
+        } else if (data.name === MetricNames.LUM_PRICE_USD) {
+            await this._lumPriceUSD.set(data.value);
+            // Dfr metrics
+        } else if (data.name === MetricNames.DFRACT_APY) {
             await this._dfractApy.set(data.value);
-        } else if (data.name == MetricNames.DFRACT_NEW_DFR_TO_MINT) {
-            await this._dfractNewDfrToMint.set(data.value);
-        } else if (data.name == MetricNames.DFRACT_BACKING_PRICE) {
+        } else if (data.name === MetricNames.DFRACT_BACKING_PRICE) {
             await this._dfractBackingPrice.set(data.value);
-        } else if (data.name == MetricNames.DFRACT_MINT_RATIO) {
-            await this._dfractMintRatio.set(data.value);
-        } else if (data.name == MetricNames.DFRACT_MARKET_CAP) {
+        } else if (data.name === MetricNames.DFRACT_CURRENT_SUPPLY) {
+            await this._dfractCurrentSupply.set(data.value);
+        } else if (data.name === MetricNames.DFRACT_MARKET_CAP) {
             await this._dfractMarketCap.set(data.value);
+        } else if (data.name === MetricNames.DFRACT_MA_BALANCE) {
+            await this._dfractMaBalance.set(data.value);
+        } else if (data.name === MetricNames.DFRACT_MINT_RATIO) {
+            await this._dfractMintRatio.set(data.value);
+        } else if (data.name === MetricNames.DFRACT_NEW_DFR_TO_MINT) {
+            await this._dfractNewDfrToMint.set(data.value);
             // General metrics
-        } else if (data.name == MetricNames.TWITTER_FOLLOWERS) {
+        } else if (data.name === MetricNames.TWITTER_FOLLOWERS) {
             await this._twitterFollowers.set(data.value);
         }
     }

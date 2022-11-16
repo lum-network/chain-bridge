@@ -26,23 +26,23 @@ export enum ChartTypes {
 }
 
 export enum MetricNames {
+    // LUM enums
+    LUM_COMMUNITY_POOL_SUPPLY = 'lum_community_pool_supply',
+    LUM_CURRENT_SUPPLY = 'lum_current_supply',
+    LUM_MARKET_CAP = 'lum_market_cap',
+    LUM_PRICE_EUR = 'lum_price_eur',
+    LUM_PRICE_USD = 'lum_price_usd',
     // DFR enums
+    DFRACT_APY = 'dfract_apy',
     DFRACT_BACKING_PRICE = 'dfract_backing_price',
     DFRACT_CURRENT_SUPPLY = 'dfract_current_supply',
-    DFRACT_MA_BALANCE = 'dfract_ma_balance',
     DFRACT_MARKET_CAP = 'dfract_market_cap',
+    DFRACT_MA_BALANCE = 'dfract_ma_balance',
     DFRACT_MINT_RATIO = 'dfract_mint_ratio',
-    DFRACT_APY = 'dfract_apy',
     DFRACT_NEW_DFR_TO_MINT = 'dfract_new_dfr_to_mint',
-    // LUM enums
-    LUM_CURRENT_SUPPLY = 'lum_current_supply',
-    LUM_COMMUNITY_POOL_SUPPLY = 'LUM_COMMUNITY_POOL_SUPPLY',
-    LUM_MARKET_CAP = 'lum_market_cap',
-    LUM_PRICE_USD = 'lum_price_usd',
-    LUM_PRICE_EUR = 'lum_price_eur',
     // General metrics enums
-    TWITTER_FOLLOWERS = 'twitter_followers',
     DISCORD_MEMBERS = 'discord_members',
+    TWITTER_FOLLOWERS = 'twitter_followers',
 }
 
 export enum ChartGroupType {
