@@ -34,7 +34,7 @@ export class BlockConsumer {
         }
 
         try {
-            // Ignore blocks already in elastic
+            // Ignore blocks already in db
             if (await this._blockService.get(job.data.blockHeight)) {
                 return;
             }

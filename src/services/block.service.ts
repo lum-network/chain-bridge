@@ -4,10 +4,18 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Between, Repository } from 'typeorm';
 
 import { BlockEntity } from '@app/database';
+import { InjectQueue } from '@nestjs/bull';
+import { QueueJobs, QueuePriority, Queues } from '@app/utils';
+import { Job, Queue } from 'bull';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class BlockService {
-    constructor(@InjectRepository(BlockEntity) private readonly _repository: Repository<BlockEntity>) {}
+    constructor(
+        @InjectRepository(BlockEntity) private readonly _repository: Repository<BlockEntity>,
+        @InjectQueue(Queues.BLOCKS) private readonly _queue: Queue,
+        private readonly _configService: ConfigService,
+    ) {}
 
     get repository(): Repository<BlockEntity> {
         return this._repository;
@@ -55,5 +63,22 @@ export class BlockService {
 
     save = async (entity: Partial<BlockEntity>): Promise<BlockEntity> => {
         return this._repository.save(entity);
+    };
+
+    failSafeIngest = async (height: number): Promise<Job> => {
+        if (height < this._configService.get<number>('STARTING_HEIGHT')) {
+            return null;
+        }
+
+        return this._queue.add(
+            QueueJobs.INGEST,
+            {
+                blockHeight: height,
+                notify: false,
+            },
+            {
+                priority: QueuePriority.HIGH,
+            },
+        );
     };
 }

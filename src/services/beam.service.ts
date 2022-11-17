@@ -4,11 +4,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { BeamEntity } from '@app/database';
-import { BeamStatus, groupTypeToChar, formatDate, groupTypeInterval } from '@app/utils';
+import { BeamStatus, groupTypeToChar, formatDate, groupTypeInterval, Queues, QueuePriority, QueueJobs } from '@app/utils';
+import { InjectQueue } from '@nestjs/bull';
+import { Job, Queue } from 'bull';
 
 @Injectable()
 export class BeamService {
-    constructor(@InjectRepository(BeamEntity) private readonly _repository: Repository<BeamEntity>) {}
+    constructor(@InjectRepository(BeamEntity) private readonly _repository: Repository<BeamEntity>, @InjectQueue(Queues.BEAMS) private readonly _queue: Queue) {}
 
     countTotal = async (): Promise<number> => {
         return this._repository.count();
@@ -176,5 +178,15 @@ export class BeamService {
 
     save = async (entity: Partial<BeamEntity>): Promise<BeamEntity> => {
         return this._repository.save(entity);
+    };
+
+    failSafeIngest = async (id: string): Promise<Job> => {
+        return this._queue.add(
+            QueueJobs.INGEST,
+            { id },
+            {
+                priority: QueuePriority.HIGH,
+            },
+        );
     };
 }

@@ -53,7 +53,10 @@ export class BlocksController {
     @Get(':height')
     async show(@Param('height') height: number): Promise<DataResponse> {
         const block = await this._blockService.get(height);
+
         if (!block) {
+            await this._blockService.failSafeIngest(Number(height));
+
             throw new NotFoundException('block_not_found');
         }
 
