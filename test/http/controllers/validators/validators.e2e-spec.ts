@@ -33,11 +33,13 @@ describe('Validators (e2e)', () => {
         return request(app.getHttpServer()).get('/validators/lumvaloper1qx2dts3tglxcu0jh47k7ghstsn4nactufgmmlk').expect(mockAddressValidatorResponse);
     });
 
-    it('[GET] - should return information on blocks for a specific validator (Lum Foundation)', () => {
+    // Todo create a dump for the blocks table
+    it.skip('[GET] - should return information on blocks for a specific validator (Lum Foundation)', () => {
         return request(app.getHttpServer()).get('/validators/lumvaloper1qx2dts3tglxcu0jh47k7ghstsn4nactufgmmlk/blocks').expect(mockValidatorBlockResponse);
     });
 
-    it('[GET] - should return information on delegations for a specific validator (Lum Foundation)', () => {
+    // Todo create a dump for the validator_delegations table
+    it.skip('[GET] - should return information on delegations for a specific validator (Lum Foundation)', () => {
         return request(app.getHttpServer()).get('/validators/lumvaloper1qx2dts3tglxcu0jh47k7ghstsn4nactufgmmlk/delegations').expect(mockValidatorDelegationsResponse);
     });
 
