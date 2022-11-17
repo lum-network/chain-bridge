@@ -27,9 +27,9 @@ export enum ChartTypes {
 
 export enum MetricNames {
     // LUM enums
-    LUM_COMMUNITY_POOL_SUPPLY = 'lum_community_pool_supply',
+    COMMUNITY_POOL_SUPPLY = 'community_pool_supply',
     LUM_CURRENT_SUPPLY = 'lum_current_supply',
-    LUM_MARKET_CAP = 'lum_market_cap',
+    MARKET_CAP = 'market_cap',
     LUM_PRICE_EUR = 'lum_price_eur',
     LUM_PRICE_USD = 'lum_price_usd',
     // DFR enums

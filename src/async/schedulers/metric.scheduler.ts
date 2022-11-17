@@ -12,8 +12,8 @@ export class MetricScheduler {
 
     constructor(@Inject('API') private readonly _client: ClientProxy, private readonly _dfrService: DfractService, private readonly _lumNetworkService: LumNetworkService) {}
 
-    // As we rely on external APIs to compute some DFR metrics we trigger the cron every 5 min to avoid rate limiting and error chaining
-    @Cron(CronExpression.EVERY_5_MINUTES)
+    // As we rely on external APIs to compute some DFR metrics we trigger the cron every min to avoid rate limiting and error chaining
+    @Cron(CronExpression.EVERY_MINUTE)
     async update() {
         try {
             // Acquire data
@@ -35,9 +35,9 @@ export class MetricScheduler {
 
             await Promise.all([
                 // LUM metrics
-                makeRequest(this._client, 'updateMetric', { name: MetricNames.LUM_COMMUNITY_POOL_SUPPLY, value: parseInt(communityPoolSupply.amount, 10) / CLIENT_PRECISION }),
+                makeRequest(this._client, 'updateMetric', { name: MetricNames.COMMUNITY_POOL_SUPPLY, value: parseInt(communityPoolSupply.amount, 10) / CLIENT_PRECISION }),
                 makeRequest(this._client, 'updateMetric', { name: MetricNames.LUM_CURRENT_SUPPLY, value: lumSupply }),
-                makeRequest(this._client, 'updateMetric', { name: MetricNames.LUM_MARKET_CAP, value: lumSupply * lumPrice.market_data.current_price.usd }),
+                makeRequest(this._client, 'updateMetric', { name: MetricNames.MARKET_CAP, value: lumSupply * lumPrice.market_data.current_price.usd }),
                 makeRequest(this._client, 'updateMetric', { name: MetricNames.LUM_PRICE_EUR, value: lumPrice.market_data.current_price.eur }),
                 makeRequest(this._client, 'updateMetric', { name: MetricNames.LUM_PRICE_USD, value: lumPrice.market_data.current_price.usd }),
 

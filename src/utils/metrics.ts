@@ -5,7 +5,7 @@ import { MetricNames } from '@app/utils/constants';
 export const metrics = [
     // LUM Metrics
     makeGaugeProvider({
-        name: MetricNames.LUM_COMMUNITY_POOL_SUPPLY,
+        name: MetricNames.COMMUNITY_POOL_SUPPLY,
         help: 'Current supply of community pool',
     }),
     makeGaugeProvider({
@@ -13,7 +13,7 @@ export const metrics = [
         help: 'Current supply of ulum',
     }),
     makeGaugeProvider({
-        name: MetricNames.LUM_MARKET_CAP,
+        name: MetricNames.MARKET_CAP,
         help: 'Current market cap of LUM',
     }),
     makeGaugeProvider({

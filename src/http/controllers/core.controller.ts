@@ -20,9 +20,9 @@ export class CoreController {
 
     constructor(
         // Lum metrics constructors
-        @InjectMetric(MetricNames.LUM_COMMUNITY_POOL_SUPPLY) private readonly _lumCommunityPoolSupply: Gauge<string>,
+        @InjectMetric(MetricNames.COMMUNITY_POOL_SUPPLY) private readonly _communityPoolSupply: Gauge<string>,
         @InjectMetric(MetricNames.LUM_CURRENT_SUPPLY) private readonly _lumCurrentSupply: Gauge<string>,
-        @InjectMetric(MetricNames.LUM_MARKET_CAP) private readonly _lumMarketCap: Gauge<string>,
+        @InjectMetric(MetricNames.MARKET_CAP) private readonly _marketCap: Gauge<string>,
         @InjectMetric(MetricNames.LUM_PRICE_EUR) private readonly _lumPriceEUR: Gauge<string>,
         @InjectMetric(MetricNames.LUM_PRICE_USD) private readonly _lumPriceUSD: Gauge<string>,
 
@@ -176,13 +176,13 @@ export class CoreController {
 
     @MessagePattern('updateMetric')
     async updateMetric(@Payload() data: { name: string; value: number }): Promise<void> {
-        if (data.name === MetricNames.LUM_COMMUNITY_POOL_SUPPLY) {
+        if (data.name === MetricNames.COMMUNITY_POOL_SUPPLY) {
             // Lum metrics
-            await this._lumCommunityPoolSupply.set(data.value);
+            await this._communityPoolSupply.set(data.value);
         } else if (data.name === MetricNames.LUM_CURRENT_SUPPLY) {
             await this._lumCurrentSupply.set(data.value);
-        } else if (data.name === MetricNames.LUM_MARKET_CAP) {
-            await this._lumMarketCap.set(data.value);
+        } else if (data.name === MetricNames.MARKET_CAP) {
+            await this._marketCap.set(data.value);
         } else if (data.name === MetricNames.LUM_PRICE_EUR) {
             await this._lumPriceEUR.set(data.value);
         } else if (data.name === MetricNames.LUM_PRICE_USD) {
