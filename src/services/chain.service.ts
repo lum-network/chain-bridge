@@ -25,6 +25,7 @@ import {
 } from '@app/utils';
 
 import { AssetInfo } from '@app/http';
+import { AssetService } from '@app/services';
 
 @Injectable()
 export class ChainService {
@@ -37,7 +38,7 @@ export class ChainService {
     private _dfractOnChainApy = Object.values(DfractOnChainApy).map((key) => key);
     private _dfractPrefix = Object.values(AssetPrefix).map((key) => key);
 
-    constructor(private readonly _configService: ConfigService, private readonly _httpService: HttpService) {}
+    constructor(private readonly _assetService: AssetService, private readonly _configService: ConfigService, private readonly _httpService: HttpService) {}
 
     // This service aims to initialize connection to different chains and compute various metrics for the assets we represent in our Dfract index
 
@@ -169,7 +170,9 @@ export class ChainService {
 
             // Chains for which inflation is not retrievable via the mint module. Hence, we rely on other rpc endpoints to retrieve it.
             const getOsmosisApy = Number(await lastValueFrom(this._httpService.get(`${ApiUrl.GET_OSMOSIS_APY}`).pipe(map((response) => response.data)))) / PERCENTAGE;
+
             const getJunoApy = Number(await lastValueFrom(this._httpService.get(`${ApiUrl.GET_JUNO_APY}`).pipe(map((response) => response.data)))) / PERCENTAGE;
+
             const getStargazeApy = Number(await lastValueFrom(this._httpService.get(`${ApiUrl.GET_STARGAZE_APY}`).pipe(map((response) => response.data)))) / PERCENTAGE;
 
             return [
@@ -228,18 +231,20 @@ export class ChainService {
                 symbol: this._assetSymbol[evmosIndex],
             };
 
-            // Get price from each chain and sort by symbol
-            const getTotalPrice = (await this.getPrice()).sort((a, b) => a.symbol.localeCompare(b.symbol));
+            // We get the price from the DB and sort by symbol as we don't need to make an additional call to a third party
+            const getTotalPriceDb = (await this._assetService.getChainServicePrice()).sort((a, b) => a.symbol.localeCompare(b.symbol));
 
             // Merge evmos and the other total computed tokens and sort by symbol
             const totalComputedToken = [...computedTotalToken, evmosTotalToken].sort((a, b) => a.symbol.localeCompare(b.symbol));
 
-            return totalComputedToken
-                .map((item, i) => Object.assign({}, item, getTotalPrice[i]))
-                .map((el) => ({
-                    tvl: Number(el.unit_price_usd) * Number(el.total_token),
-                    symbol: el.symbol,
-                }));
+            if (getTotalPriceDb && totalComputedToken) {
+                return totalComputedToken
+                    .map((item, i) => Object.assign({}, item, getTotalPriceDb[i]))
+                    .map((el) => ({
+                        tvl: Number(el.unit_price_usd) * Number(el.total_token),
+                        symbol: el.symbol,
+                    }));
+            }
         } catch (error) {
             this._logger.error('Failed to compute TVL for External Chain...', error);
 
