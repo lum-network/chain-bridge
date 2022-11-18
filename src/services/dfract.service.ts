@@ -3,14 +3,14 @@ import { convertUnit } from '@lum-network/sdk-javascript/build/utils';
 import { Injectable, Logger } from '@nestjs/common';
 import * as Sentry from '@sentry/node';
 
-import { ChainService, LumNetworkService } from '@app/services';
+import { AssetService, ChainService, LumNetworkService } from '@app/services';
 import { AssetInfo } from '@app/http';
 
 @Injectable()
 export class DfractService {
     private readonly _logger: Logger = new Logger(DfractService.name);
 
-    constructor(private readonly _chainService: ChainService, private readonly _lumNetworkService: LumNetworkService) {}
+    constructor(private readonly _assetService: AssetService, private readonly _chainService: ChainService, private readonly _lumNetworkService: LumNetworkService) {}
 
     getTokenSupply = async (): Promise<number> => {
         try {
@@ -30,30 +30,14 @@ export class DfractService {
             // Tvl from all external chains with the tvl of lumNetwork summed up together
             const [chainTvl, lumTvl] = await Promise.all([this._chainService.getTvl(), this._lumNetworkService.getTvl()]);
 
-            return [chainTvl, lumTvl]
-                .flat()
-                .map((el) => el.tvl)
-                .reduce((prev, next) => prev + next);
+            if (chainTvl && lumTvl) {
+                return [chainTvl, lumTvl]
+                    .flat()
+                    .map((el) => el.tvl)
+                    .reduce((prev, next) => prev + next);
+            }
         } catch (error) {
             this._logger.error(`Could not fetch Computed TVL for DFR on Lum Network...`, error);
-
-            Sentry.captureException(error);
-
-            return null;
-        }
-    };
-
-    getTotalComputedApy = async (): Promise<number> => {
-        try {
-            // Apy from all external chains with the apy of lumNetwork summed up together
-            const [chainApy, lumApy] = await Promise.all([this._chainService.getApy(), this._lumNetworkService.getApy()]);
-
-            return [chainApy, lumApy]
-                .flat()
-                .map((el) => el.apy)
-                .reduce((prev, next) => prev + next);
-        } catch (error) {
-            this._logger.error(`Could not fetch Computed APY for DFR on Lum Network...`, error);
 
             Sentry.captureException(error);
 
@@ -137,12 +121,11 @@ export class DfractService {
             // We compute the apy from DFR based on the following formula
             // (token tvl (price * token amount) * token apy) / total computed tvl
             // We first aggregate the tvl from lum and the other chains, then the apy
-            const [chainServiceTvl, lumTvl, chainServiceApy, lumApy, computedTvl] = await Promise.all([
+            const [chainServiceTvl, lumTvl, chainServiceApy, lumApy] = await Promise.all([
                 this._chainService.getTvl(),
                 this._lumNetworkService.getTvl(),
-                this._chainService.getApy(),
+                this._assetService.getChainServiceApy(),
                 this._lumNetworkService.getApy(),
-                this.getTotalComputedTvl(),
             ]);
 
             // We compute the tvl for external chains and lum
@@ -152,13 +135,21 @@ export class DfractService {
             const apy = [...chainServiceApy, lumApy];
 
             // Aggregate both tvl and apy from both chains to multiply tvl * token apy
+
             const merged = tvl
                 .map((item, i) => Object.assign({}, item, apy[i]))
                 .map((el) => Number(el.apy) * Number(el.tvl))
                 .reduce((prev, next) => prev + next);
 
-            // We divide the aggregation by the computedTvl to get DFR apy
-            return merged / computedTvl;
+            const totalComputedTvl = [chainServiceTvl, lumTvl]
+                .flat()
+                .map((el) => el.tvl)
+                .reduce((prev, next) => prev + next);
+
+            if (merged && totalComputedTvl) {
+                // We divide the aggregation by the computedTvl to get DFR apy
+                return merged / totalComputedTvl;
+            }
         } catch (error) {
             this._logger.error(`Could not fetch Apy for Dfract...`, error);
 

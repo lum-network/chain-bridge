@@ -126,4 +126,26 @@ export class AssetService {
 
         return query;
     };
+
+    getChainServiceApy = async (): Promise<any> => {
+        const query = await this._repository.createQueryBuilder('assets').select(['id', 'value']).where('id like :id', { id: `%apy%` }).getRawMany();
+
+        const filteredQuery = query.filter((el) => el.id !== 'dfr_apy' && el.id !== 'lum_apy');
+
+        return filteredQuery.map((el) => ({
+            symbol: el.id.substring(0, el.id.indexOf('_')).toUpperCase(),
+            apy: el?.value.apy,
+        }));
+    };
+
+    getChainServicePrice = async (): Promise<any> => {
+        const query = await this._repository.createQueryBuilder('assets').select(['id', 'value']).where('id like :id', { id: `%unit_price_usd%` }).getRawMany();
+
+        const filteredQuery = query.filter((el) => el.id !== 'dfr_unit_price_usd' && el.id !== 'lum_unit_price_usd');
+
+        return filteredQuery.map((el) => ({
+            symbol: el.id.substring(0, el.id.indexOf('_')).toUpperCase(),
+            unit_price_usd: el?.value.unit_price_usd,
+        }));
+    };
 }
