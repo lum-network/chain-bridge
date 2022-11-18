@@ -117,7 +117,7 @@ export class AssetService {
     };
 
     fetchLatestAsset = async (denom: string): Promise<GenericValueEntity[]> => {
-        // Fetch assets by symbol
+        // Fetch assets by denom
         const query = await this._repository
             .createQueryBuilder('assets')
             .select(['id', 'value'])
