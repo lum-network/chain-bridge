@@ -97,21 +97,11 @@ export class AssetService {
         }
     };
 
-    fetchLatestMetrics = async (skip: number): Promise<[AssetInfo[], number]> => {
-        const assetInfo = {};
+    fetchLatestMetrics = async (skip: number, take: number): Promise<[AssetEntity[], number]> => {
+        const query = this._repository.createQueryBuilder('assets').skip(skip).take(take).orderBy('id', 'ASC');
 
-        const query = await this._repository.createQueryBuilder('assets').select(['id', 'value']).skip(skip).orderBy('id', 'ASC').getRawMany();
-
-        // For every compositeKey we group by symbol to get the {unit_price_usd, total_value_usd, apy, supply}
-        const data = query.map((el) => {
-            const { id, ...rest } = el;
-            return { symbol: el.id.substring(0, id.indexOf('_')), ...rest.value };
-        });
-
-        data.map((el) => (assetInfo[el.symbol] = { ...assetInfo[el.symbol], ...el }));
-
-        // Return the length and the values
-        return [Object.values(assetInfo), Object.values(assetInfo).length];
+        // Return the values and the length
+        return query.getManyAndCount();
     };
 
     fetchMetricsSince = async (metrics: string, date: Date): Promise<{ id: string; extra: [] }[]> => {
@@ -124,5 +114,16 @@ export class AssetService {
             id: el.id,
             extra: el.extra.filter((el) => new Date(el.last_updated_at).getTime() >= new Date(date).getTime() && new Date(el.last_updated_at).getTime() < new Date().getTime()),
         }));
+    };
+
+    fetchLatestAsset = async (denom: string): Promise<GenericValueEntity[]> => {
+        // Fetch assets by denom
+        const query = await this._repository
+            .createQueryBuilder('assets')
+            .select(['id', 'value'])
+            .where('id like :id', { id: `%${denom}%` })
+            .getRawMany();
+
+        return query;
     };
 }

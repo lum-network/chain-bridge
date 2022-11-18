@@ -1,9 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Exclude, Expose } from 'class-transformer';
+import { AssetInfo } from './asset-info.response';
 
-export class AssetHistorical {
+@Exclude()
+export class AssetHistoricalResponse {
     @ApiProperty()
-    readonly id?: string;
+    @Expose()
+    id: string;
 
     @ApiProperty()
-    readonly extra?: any[];
+    @Expose()
+    extra: AssetInfo[];
 }
