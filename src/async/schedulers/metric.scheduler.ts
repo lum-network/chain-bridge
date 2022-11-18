@@ -13,7 +13,6 @@ export class MetricScheduler {
     constructor(@Inject('API') private readonly _client: ClientProxy, private readonly _dfrService: DfractService, private readonly _lumNetworkService: LumNetworkService) {}
 
     // As we rely on external APIs to compute some DFR metrics we trigger the cron every min to avoid rate limiting and error chaining
-    // @Cron('0 */2 * * * *')
     @Cron(CronExpression.EVERY_MINUTE)
     async update() {
         try {
