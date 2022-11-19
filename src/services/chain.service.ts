@@ -24,7 +24,6 @@ import {
     TEN_EXPONENT_SIX,
 } from '@app/utils';
 
-import { AssetInfo } from '@app/http';
 import { AssetService } from '@app/services';
 
 @Injectable()
@@ -191,13 +190,56 @@ export class ChainService {
         }
     };
 
-    getAssetInfo = async (): Promise<AssetInfo[]> => {
+    getTotalAllocatedToken = async (): Promise<{ total_allocated_token: number; symbol: string }[]> => {
+        try {
+            // We compute the total allocated token that will serve to calculate the tvl
+            // Evmos as a different rounding precision. Hence for precision purposes we exclude it from first client iteration batch
+            const evmosIndex = CHAIN_ENV_CONFIG.findIndex((el) => el === `${AssetSymbol.EVMOS}_NETWORK_ENDPOINT`);
+            // We exclude evmos from the first computation batch
+            const client = this._client.slice(0, evmosIndex);
+
+            const computedTotalToken = await Promise.all(
+                client.map(async (el, index) => {
+                    const decode = LumUtils.Bech32.decode(LUM_STAKING_ADDRESS);
+                    const getDecodedAddress = LumUtils.Bech32.encode(this._dfractPrefix[index], decode.data);
+                    return {
+                        total_allocated_token: Number(await computeTotalTokenAmount(getDecodedAddress, el, this._assetMicroDenom[index], CLIENT_PRECISION, TEN_EXPONENT_SIX)),
+                        symbol: this._assetSymbol[index],
+                    };
+                }),
+            );
+
+            // We calculate the total token amount for evmos
+            const evmosTotalToken = {
+                total_allocated_token: Number(await computeTotalTokenAmount(EVMOS_STAKING_ADDRESS, this._client[evmosIndex], this._assetMicroDenom[evmosIndex], CLIENT_PRECISION, CLIENT_PRECISION)),
+                symbol: this._assetSymbol[evmosIndex],
+            };
+
+            const totalComputedToken = [...computedTotalToken, evmosTotalToken].sort((a, b) => a.symbol.localeCompare(b.symbol));
+
+            return totalComputedToken;
+        } catch (error) {
+            this._logger.error('Failed to compute total allocated token for External Chain...', error);
+
+            Sentry.captureException(error);
+
+            return null;
+        }
+    };
+
+    getAssetInfo = async (): Promise<any[]> => {
         try {
             // In order to get the asset info we need to get the following info from all chains:
             // {unit_price_usd, total_value_usd (mcap), supply, apy}
-            const [unit_price_usd, total_value_usd, supply, apy] = await Promise.all([this.getPrice(), this.getMcap(), this.getTokenSupply(), this.getApy()]);
+            const [unit_price_usd, total_value_usd, supply, apy, totalToken] = await Promise.all([
+                this.getPrice(),
+                this.getMcap(),
+                this.getTokenSupply(),
+                this.getApy(),
+                this.getTotalAllocatedToken(),
+            ]);
 
-            return [unit_price_usd, total_value_usd, supply, apy].flat();
+            return [unit_price_usd, total_value_usd, supply, apy, totalToken].flat();
         } catch (error) {
             this._logger.error('Failed to compute Asset Info for External Chain...', error);
 
@@ -210,38 +252,17 @@ export class ChainService {
     getTvl = async (): Promise<{ tvl: number; symbol: string }[]> => {
         try {
             // We need to compute the tvl differently for evmos as don't decode the evmos address via the Lum.decode utils
-            const evmosIndex = CHAIN_ENV_CONFIG.findIndex((el) => el === `${AssetSymbol.EVMOS}_NETWORK_ENDPOINT`);
-            // We exclude evmos from the first computation batch
-            const client = this._client.slice(0, evmosIndex);
-
-            const computedTotalToken = await Promise.all(
-                client.map(async (el, index) => {
-                    const decode = LumUtils.Bech32.decode(LUM_STAKING_ADDRESS);
-                    const getDecodedAddress = LumUtils.Bech32.encode(this._dfractPrefix[index], decode.data);
-                    return {
-                        total_token: Number(await computeTotalTokenAmount(getDecodedAddress, el, this._assetMicroDenom[index], CLIENT_PRECISION, TEN_EXPONENT_SIX)),
-                        symbol: this._assetSymbol[index],
-                    };
-                }),
-            );
-
-            // We calculate the total token amount for evmos
-            const evmosTotalToken = {
-                total_token: Number(await computeTotalTokenAmount(EVMOS_STAKING_ADDRESS, this._client[evmosIndex], this._assetMicroDenom[evmosIndex], CLIENT_PRECISION, CLIENT_PRECISION)),
-                symbol: this._assetSymbol[evmosIndex],
-            };
 
             // We get the price from the DB and sort by symbol as we don't need to make an additional call to a third party
-            const getTotalPriceDb = (await this._assetService.getChainServicePrice()).sort((a, b) => a.symbol.localeCompare(b.symbol));
 
-            // Merge evmos and the other total computed tokens and sort by symbol
-            const totalComputedToken = [...computedTotalToken, evmosTotalToken].sort((a, b) => a.symbol.localeCompare(b.symbol));
+            const [getTotalPriceDb, getTotalTokenDb] = await Promise.all([this._assetService.getChainServicePrice(), this._assetService.getChainServiceTotalAllocatedToken()]);
 
-            if (getTotalPriceDb && totalComputedToken) {
-                return totalComputedToken
+            if (getTotalPriceDb && getTotalTokenDb) {
+                return getTotalTokenDb
+                    .sort((a, b) => a.symbol.localeCompare(b.symbol))
                     .map((item, i) => Object.assign({}, item, getTotalPriceDb[i]))
                     .map((el) => ({
-                        tvl: Number(el.unit_price_usd) * Number(el.total_token),
+                        tvl: Number(el.unit_price_usd) * Number(el.total_allocated_token),
                         symbol: el.symbol,
                     }));
             }

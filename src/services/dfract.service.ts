@@ -121,6 +121,9 @@ export class DfractService {
             // We compute the apy from DFR based on the following formula
             // (token tvl (price * token amount) * token apy) / total computed tvl
             // We first aggregate the tvl from lum and the other chains, then the apy
+            let tvl = null;
+            let apy = null;
+
             const [chainServiceTvl, lumTvl, chainServiceApy, lumApy] = await Promise.all([
                 this._chainService.getTvl(),
                 this._lumNetworkService.getTvl(),
@@ -129,19 +132,23 @@ export class DfractService {
             ]);
 
             // We compute the tvl for external chains and lum
-            const tvl = [...chainServiceTvl, lumTvl];
+            if (chainServiceTvl && lumTvl) {
+                tvl = [...chainServiceTvl, lumTvl];
+            }
 
+            if (chainServiceApy && lumApy) {
+                apy = [...chainServiceApy, lumApy];
+            }
             // We compute the apy for external chains and lum
-            const apy = [...chainServiceApy, lumApy];
 
             // Aggregate both tvl and apy from both chains to multiply tvl * token apy
-
             const merged = tvl
                 .map((item, i) => Object.assign({}, item, apy[i]))
                 .map((el) => Number(el.apy) * Number(el.tvl))
                 .reduce((prev, next) => prev + next);
 
-            const totalComputedTvl = [chainServiceTvl, lumTvl]
+            // chain tvl and lum tvl sumed up together
+            const totalComputedTvl = tvl
                 .flat()
                 .map((el) => el.tvl)
                 .reduce((prev, next) => prev + next);

@@ -223,16 +223,38 @@ export class LumNetworkService {
         }
     };
 
+    getAllocatedToken = async () => {
+        try {
+            // Compute total allocated token for Lum Network
+            const token = await computeTotalTokenAmount(LUM_STAKING_ADDRESS, this.client, LumConstants.MicroLumDenom, CLIENT_PRECISION, TEN_EXPONENT_SIX);
+
+            return token;
+        } catch (error) {
+            this._logger.error('Failed to compute total allocated token for Lum...', error);
+
+            Sentry.captureException(error);
+
+            return null;
+        }
+    };
+
     getAssetInfo = async (): Promise<AssetInfo> => {
         try {
             // To compute metrics info we need lum's {unit_price_usd, total_value_usd, supply and apy}
-            const [price, total_value_usd, supply, percentagYield] = await Promise.all([this.getPrice(), this.getMcap(), this.getTokenSupply(), this.getApy()]);
+            const [price, total_value_usd, supply, percentagYield, totalAllocatedToken] = await Promise.all([
+                this.getPrice(),
+                this.getMcap(),
+                this.getTokenSupply(),
+                this.getApy(),
+                this.getAllocatedToken(),
+            ]);
 
             return {
                 unit_price_usd: price.market_data.current_price.usd,
                 total_value_usd,
                 supply,
                 apy: percentagYield.apy,
+                total_allocated_token: totalAllocatedToken,
             };
         } catch (error) {
             this._logger.error('Failed to compute Token Info for Lum Network...', error);
@@ -246,9 +268,9 @@ export class LumNetworkService {
     getTvl = async (): Promise<{ symbol: string; tvl: number }> => {
         try {
             // We compute the total token of lum based on the microdenum and staking address and get the current market price to calculate the tvl
-            const [totalToken, price] = await Promise.all([computeTotalTokenAmount(LUM_STAKING_ADDRESS, this.client, LumConstants.MicroLumDenom, CLIENT_PRECISION, TEN_EXPONENT_SIX), this.getPrice()]);
+            const [totalAllocatedToken, price] = await Promise.all([this.getAllocatedToken(), this.getPrice()]);
 
-            return { tvl: totalToken * price.market_data.current_price.usd, symbol: AssetSymbol.LUM };
+            return { tvl: totalAllocatedToken * price.market_data.current_price.usd, symbol: AssetSymbol.LUM };
         } catch (error) {
             this._logger.error('Failed to compute TVL for Lum Network...', error);
 

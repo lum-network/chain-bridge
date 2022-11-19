@@ -23,7 +23,7 @@ export class AssetService {
         return await this._repository.createQueryBuilder('assets').select(['id', 'extra']).getRawMany();
     };
 
-    createOrUpdateAssetValue = async (compositeKey: string, value: any): Promise<AssetEntity> => {
+    createOrUpdateAssetValue = async (compositeKey: string, value: GenericValueEntity): Promise<AssetEntity> => {
         let entity = await this.getById(compositeKey);
 
         // If entity does not exists, we create with a new one
@@ -127,25 +127,42 @@ export class AssetService {
         return query;
     };
 
-    getChainServiceApy = async (): Promise<any> => {
+    getChainServiceApy = async (): Promise<{ symbol: string; apy: number }[]> => {
         const query = await this._repository.createQueryBuilder('assets').select(['id', 'value']).where('id like :id', { id: `%apy%` }).getRawMany();
 
         const filteredQuery = query.filter((el) => el.id !== 'dfr_apy' && el.id !== 'lum_apy');
 
-        return filteredQuery.map((el) => ({
-            symbol: el.id.substring(0, el.id.indexOf('_')).toUpperCase(),
-            apy: el?.value.apy,
-        }));
+        return filteredQuery
+            .map((el) => ({
+                symbol: el.id.substring(0, el.id.indexOf('_')).toUpperCase(),
+                apy: el.value.apy,
+            }))
+            .sort((a, b) => a.symbol.localeCompare(b.symbol));
     };
 
-    getChainServicePrice = async (): Promise<any> => {
+    getChainServicePrice = async (): Promise<{ symbol: string; unit_price_usd: number }[]> => {
         const query = await this._repository.createQueryBuilder('assets').select(['id', 'value']).where('id like :id', { id: `%unit_price_usd%` }).getRawMany();
 
         const filteredQuery = query.filter((el) => el.id !== 'dfr_unit_price_usd' && el.id !== 'lum_unit_price_usd');
 
-        return filteredQuery.map((el) => ({
-            symbol: el.id.substring(0, el.id.indexOf('_')).toUpperCase(),
-            unit_price_usd: el?.value.unit_price_usd,
-        }));
+        return filteredQuery
+            .map((el) => ({
+                symbol: el.id.substring(0, el.id.indexOf('_')).toUpperCase(),
+                unit_price_usd: el.value.unit_price_usd,
+            }))
+            .sort((a, b) => a.symbol.localeCompare(b.symbol));
+    };
+
+    getChainServiceTotalAllocatedToken = async (): Promise<{ symbol: string; total_allocated_token: number }[]> => {
+        const query = await this._repository.createQueryBuilder('assets').select(['id', 'value']).where('id like :id', { id: `%total_allocated_token%` }).getRawMany();
+
+        const filteredQuery = query.filter((el) => el.id !== 'dfr_total_allocated_token' && el.id !== 'lum_total_allocated_token');
+
+        return filteredQuery
+            .map((el) => ({
+                symbol: el.id.substring(0, el.id.indexOf('_')).toUpperCase(),
+                total_allocated_token: el.value.total_allocated_token,
+            }))
+            .sort((a, b) => a.symbol.localeCompare(b.symbol));
     };
 }
