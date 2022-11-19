@@ -176,6 +176,7 @@ export class CoreController {
 
     @MessagePattern('updateMetric')
     async updateMetric(@Payload() data: { name: string; value: number }): Promise<void> {
+        console.log('data', data);
         if (data.name === MetricNames.COMMUNITY_POOL_SUPPLY) {
             // Lum metrics
             await this._communityPoolSupply.set(data.value);

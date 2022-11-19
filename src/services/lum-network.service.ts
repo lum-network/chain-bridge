@@ -240,7 +240,7 @@ export class LumNetworkService {
 
     getAssetInfo = async (): Promise<AssetInfo> => {
         try {
-            // To compute metrics info we need lum's {unit_price_usd, total_value_usd, supply and apy}
+            // To compute metrics info we need lum's {unit_price_usd, total_value_usd, supply and apy, totalk_allocated_token}
             const [price, total_value_usd, supply, percentagYield, totalAllocatedToken] = await Promise.all([
                 this.getPrice(),
                 this.getMcap(),

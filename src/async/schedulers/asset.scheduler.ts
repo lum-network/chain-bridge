@@ -21,7 +21,7 @@ export class AssetScheduler {
         try {
             this._logger.log(`Syncing latest assets info from chain...`);
             // We sync all values except DFR every hour by starting with LUM
-            // Data we get {unit_price_usd, total_value_usd, supply, apy}
+            // Data we get {unit_price_usd, total_value_usd, supply, apy, total_allocated_token}
             // We want to start syncing lum before moving to other chains
 
             const lumMetrics = await this._lumNetworkService.getAssetInfo();

@@ -169,6 +169,7 @@ export class DfractService {
     getAssetInfo = async (): Promise<AssetInfo> => {
         try {
             // DFR asset info representing the {unit_price_usd, total_value_usd, supply, apy}
+            // We don't have total_allocated_token for DFR
             const [unit_price_usd, total_value_usd, supply, apy] = await Promise.all([this.getDfrBackingPrice(), this.getMcap(), this.getTokenSupply(), this.getApy()]);
 
             return { unit_price_usd, total_value_usd, supply, apy };
