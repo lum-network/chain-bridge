@@ -53,7 +53,7 @@ export class AssetScheduler {
     }
 
     // Every 15 minutes, between 12:00 PM and 05:59 PM, only on Monday
-    @Cron('0 */15 12-17 * * 1')
+    @Cron('0 */15 08-17 * * 1')
     async syncDfr(): Promise<void> {
         try {
             this._logger.log(`Updating DFR token values from chain...`);
