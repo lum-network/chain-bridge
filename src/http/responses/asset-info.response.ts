@@ -23,7 +23,7 @@ export class AssetInfo {
     apy?: number;
 
     @ApiProperty()
-    @Expose({ name: 'totalAllocatedToken' })
+    @Expose()
     total_allocated_token?: number;
 }
 
