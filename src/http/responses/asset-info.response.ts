@@ -21,6 +21,10 @@ export class AssetInfo {
     @ApiProperty()
     @Expose()
     apy?: number;
+
+    @ApiProperty()
+    @Expose()
+    total_allocated_token?: number;
 }
 
 export class AssetInfoResponse {

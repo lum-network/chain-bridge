@@ -3,313 +3,353 @@ export const mockResponseLatestMetrics = {
         {
             id: 'akt_apy',
             value: {
-                apy: 0.14874159636195577,
-                last_updated_at: '2022-11-15T13:23:35.725Z',
+                apy: 0.14797697789834047,
+                last_updated_at: '2022-11-19T15:45:04.999Z',
             },
         },
         {
             id: 'akt_supply',
             value: {
-                supply: 203659116.294786,
-                last_updated_at: '2022-11-15T13:23:35.642Z',
+                supply: 203894001.466085,
+                last_updated_at: '2022-11-19T15:45:04.942Z',
+            },
+        },
+        {
+            id: 'akt_total_allocated_token',
+            value: {
+                last_updated_at: '2022-11-19T15:45:05.072Z',
             },
         },
         {
             id: 'akt_total_value_usd',
             value: {
-                last_updated_at: '2022-11-15T13:23:35.581Z',
-                total_value_usd: 39751149,
+                last_updated_at: '2022-11-19T15:45:04.904Z',
+                total_value_usd: 36809756,
             },
         },
         {
             id: 'akt_unit_price_usd',
             value: {
-                unit_price_usd: 0.2034413571,
-                last_updated_at: '2022-11-15T13:23:35.341Z',
+                unit_price_usd: 0.1884608309,
+                last_updated_at: '2022-11-19T15:45:04.819Z',
             },
         },
         {
             id: 'atom_apy',
             value: {
-                apy: 0.2008078905903272,
-                last_updated_at: '2022-11-15T13:23:35.719Z',
+                apy: 0.20953752416593893,
+                last_updated_at: '2022-11-19T15:45:04.994Z',
             },
         },
         {
             id: 'atom_supply',
             value: {
-                supply: 316086021.712116,
-                last_updated_at: '2022-11-15T13:23:35.634Z',
+                supply: 316598256.335233,
+                last_updated_at: '2022-11-19T15:45:04.938Z',
+            },
+        },
+        {
+            id: 'atom_total_allocated_token',
+            value: {
+                last_updated_at: '2022-11-19T15:45:05.077Z',
             },
         },
         {
             id: 'atom_total_value_usd',
             value: {
-                last_updated_at: '2022-11-15T13:23:35.538Z',
-                total_value_usd: 3109055998,
+                last_updated_at: '2022-11-19T15:45:04.882Z',
+                total_value_usd: 2905587562,
             },
         },
         {
             id: 'atom_unit_price_usd',
             value: {
-                unit_price_usd: 10.5492233317,
-                last_updated_at: '2022-11-15T13:23:35.425Z',
+                unit_price_usd: 9.8927115705,
+                last_updated_at: '2022-11-19T15:45:04.828Z',
             },
         },
         {
             id: 'cmdx_apy',
             value: {
-                apy: 0.3902980198853259,
-                last_updated_at: '2022-11-15T13:23:35.734Z',
+                apy: 0.40566748008721565,
+                last_updated_at: '2022-11-19T15:45:05.006Z',
             },
         },
         {
             id: 'cmdx_supply',
             value: {
-                supply: 133971453.615613,
-                last_updated_at: '2022-11-15T13:23:35.654Z',
+                supply: 134244782.875179,
+                last_updated_at: '2022-11-19T15:45:04.947Z',
+            },
+        },
+        {
+            id: 'cmdx_total_allocated_token',
+            value: {
+                last_updated_at: '2022-11-19T15:45:05.082Z',
             },
         },
         {
             id: 'cmdx_total_value_usd',
             value: {
-                last_updated_at: '2022-11-15T13:23:35.598Z',
-                total_value_usd: 5250298,
+                last_updated_at: '2022-11-19T15:45:04.922Z',
+                total_value_usd: 7383804,
             },
         },
         {
             id: 'cmdx_unit_price_usd',
             value: {
-                unit_price_usd: 0.1138677711,
-                last_updated_at: '2022-11-15T13:23:35.515Z',
+                unit_price_usd: 0.1590064618,
+                last_updated_at: '2022-11-19T15:45:04.867Z',
             },
         },
         {
             id: 'dfr_apy',
             value: {
-                apy: 0.3921566971363752,
-                last_updated_at: '2022-11-15T13:23:04.564Z',
+                apy: 0.41511645896856986,
+                last_updated_at: '2022-11-19T15:45:00.813Z',
             },
         },
         {
             id: 'dfr_supply',
             value: {
                 supply: 33159.249595,
-                last_updated_at: '2022-11-15T13:23:04.558Z',
+                last_updated_at: '2022-11-19T15:45:00.807Z',
             },
         },
         {
             id: 'dfr_total_value_usd',
             value: {
-                last_updated_at: '2022-11-15T13:23:04.532Z',
-                total_value_usd: 47607.79206014884,
+                last_updated_at: '2022-11-19T15:45:00.802Z',
+                total_value_usd: 35696.35283229742,
+            },
+        },
+        {
+            id: 'dfr_unit_price_usd',
+            value: {
+                unit_price_usd: 1.0765126855488305,
+                last_updated_at: '2022-11-19T15:45:00.797Z',
             },
         },
         {
             id: 'dvpn_apy',
             value: {
-                apy: 0.4631723532452629,
-                last_updated_at: '2022-11-15T13:23:35.768Z',
+                apy: 0.46580180204121197,
+                last_updated_at: '2022-11-19T15:45:05.013Z',
             },
         },
         {
             id: 'dvpn_supply',
             value: {
-                supply: 19081945675.06104,
-                last_updated_at: '2022-11-15T13:23:35.664Z',
+                supply: 19146401519.23176,
+                last_updated_at: '2022-11-19T15:45:04.951Z',
+            },
+        },
+        {
+            id: 'dvpn_total_allocated_token',
+            value: {
+                last_updated_at: '2022-11-19T15:45:05.088Z',
             },
         },
         {
             id: 'dvpn_total_value_usd',
             value: {
-                last_updated_at: '2022-11-15T13:23:35.620Z',
-                total_value_usd: 4492642,
+                last_updated_at: '2022-11-19T15:45:04.928Z',
+                total_value_usd: 4254129,
             },
         },
         {
             id: 'dvpn_unit_price_usd',
             value: {
-                unit_price_usd: 0.0003430903,
-                last_updated_at: '2022-11-15T13:23:35.451Z',
+                unit_price_usd: 0.0003250639,
+                last_updated_at: '2022-11-19T15:45:04.842Z',
             },
         },
         {
             id: 'evmos_apy',
             value: {
-                apy: 1.392341017457971,
-                last_updated_at: '2022-11-15T13:23:35.804Z',
+                apy: 1.371198314504047,
+                last_updated_at: '2022-11-19T15:45:05.030Z',
             },
         },
         {
             id: 'evmos_supply',
             value: {
-                supply: 348118102.6990544,
-                last_updated_at: '2022-11-15T13:23:35.711Z',
+                supply: 351506829.65795857,
+                last_updated_at: '2022-11-19T15:45:04.990Z',
+            },
+        },
+        {
+            id: 'evmos_total_allocated_token',
+            value: {
+                last_updated_at: '2022-11-19T15:45:05.097Z',
             },
         },
         {
             id: 'evmos_total_value_usd',
             value: {
-                last_updated_at: '2022-11-15T13:23:35.628Z',
-                total_value_usd: 428878503,
+                last_updated_at: '2022-11-19T15:45:04.934Z',
+                total_value_usd: 389764108,
             },
         },
         {
             id: 'evmos_unit_price_usd',
             value: {
-                unit_price_usd: 1.2358122086,
-                last_updated_at: '2022-11-15T13:23:35.441Z',
+                unit_price_usd: 1.0960193296,
+                last_updated_at: '2022-11-19T15:45:04.838Z',
             },
         },
         {
             id: 'juno_apy',
             value: {
-                apy: 0.7362982422609433,
-                last_updated_at: '2022-11-15T13:23:35.817Z',
+                apy: 0.7357289659875558,
+                last_updated_at: '2022-11-19T15:45:05.044Z',
             },
         },
         {
             id: 'juno_supply',
             value: {
-                supply: 92002595.951358,
-                last_updated_at: '2022-11-15T13:23:35.696Z',
+                supply: 92212905.322457,
+                last_updated_at: '2022-11-19T15:45:04.978Z',
+            },
+        },
+        {
+            id: 'juno_total_allocated_token',
+            value: {
+                last_updated_at: '2022-11-19T15:45:05.104Z',
             },
         },
         {
             id: 'juno_total_value_usd',
             value: {
-                last_updated_at: '2022-11-15T13:23:35.565Z',
-                total_value_usd: 151301936,
+                last_updated_at: '2022-11-19T15:45:04.895Z',
+                total_value_usd: 137276351,
             },
         },
         {
             id: 'juno_unit_price_usd',
             value: {
-                unit_price_usd: 2.3605043264,
-                last_updated_at: '2022-11-15T13:23:35.434Z',
+                unit_price_usd: 2.1160856257,
+                last_updated_at: '2022-11-19T15:45:04.832Z',
             },
         },
         {
             id: 'lum_apy',
             value: {
-                apy: 0.4730070510600752,
-                last_updated_at: '2022-11-15T13:23:00.461Z',
+                apy: 0.4717603164174032,
+                last_updated_at: '2022-11-19T15:45:00.570Z',
             },
         },
         {
             id: 'lum_supply',
             value: {
-                supply: 6121253059.098516,
-                last_updated_at: '2022-11-15T13:23:00.456Z',
+                supply: 6132935051.935084,
+                last_updated_at: '2022-11-19T15:45:00.563Z',
+            },
+        },
+        {
+            id: 'lum_total_allocated_token',
+            value: {
+                last_updated_at: '2022-11-19T15:45:00.576Z',
             },
         },
         {
             id: 'lum_total_value_usd',
             value: {
-                last_updated_at: '2022-11-15T13:23:00.448Z',
-                total_value_usd: 7468357.219814327,
+                last_updated_at: '2022-11-19T15:45:00.556Z',
+                total_value_usd: 6994183.121278328,
             },
         },
         {
             id: 'lum_unit_price_usd',
             value: {
-                unit_price_usd: 0.00122007,
-                last_updated_at: '2022-11-15T13:23:00.435Z',
+                unit_price_usd: 0.00114043,
+                last_updated_at: '2022-11-19T15:45:00.538Z',
             },
         },
         {
             id: 'osmo_apy',
             value: {
-                apy: 0.23203934012950117,
-                last_updated_at: '2022-11-15T13:23:35.811Z',
+                apy: 0.23236260431728897,
+                last_updated_at: '2022-11-19T15:45:05.036Z',
             },
         },
         {
             id: 'osmo_supply',
             value: {
-                supply: 481083912.614629,
-                last_updated_at: '2022-11-15T13:23:35.689Z',
+                supply: 483275693.436521,
+                last_updated_at: '2022-11-19T15:45:04.974Z',
+            },
+        },
+        {
+            id: 'osmo_total_allocated_token',
+            value: {
+                last_updated_at: '2022-11-19T15:45:05.111Z',
             },
         },
         {
             id: 'osmo_total_value_usd',
             value: {
-                last_updated_at: '2022-11-15T13:23:35.554Z',
-                total_value_usd: 567083842,
+                last_updated_at: '2022-11-19T15:45:04.890Z',
+                total_value_usd: 539803586,
             },
         },
         {
             id: 'osmo_unit_price_usd',
             value: {
-                unit_price_usd: 1.17007161,
-                last_updated_at: '2022-11-15T13:23:35.524Z',
+                unit_price_usd: 1.1115842,
+                last_updated_at: '2022-11-19T15:45:04.875Z',
             },
         },
         {
             id: 'stars_apy',
             value: {
-                apy: 0.4931774918658574,
-                last_updated_at: '2022-11-15T13:23:35.823Z',
+                apy: 0.4905661624816651,
+                last_updated_at: '2022-11-19T15:45:05.068Z',
             },
         },
         {
             id: 'stars_supply',
             value: {
-                supply: 1854432849.78008,
-                last_updated_at: '2022-11-15T13:23:35.703Z',
+                supply: 1865858814.391786,
+                last_updated_at: '2022-11-19T15:45:04.984Z',
+            },
+        },
+        {
+            id: 'stars_total_allocated_token',
+            value: {
+                last_updated_at: '2022-11-19T15:45:05.116Z',
             },
         },
         {
             id: 'stars_total_value_usd',
             value: {
-                last_updated_at: '2022-11-15T13:23:35.573Z',
-                total_value_usd: 59026034,
+                last_updated_at: '2022-11-19T15:45:04.900Z',
+                total_value_usd: 55607969,
             },
         },
         {
             id: 'stars_unit_price_usd',
             value: {
-                unit_price_usd: 0.0463491024,
-                last_updated_at: '2022-11-15T13:23:35.462Z',
+                unit_price_usd: 0.0436477598,
+                last_updated_at: '2022-11-19T15:45:04.846Z',
             },
         },
         {
             id: 'xki_apy',
             value: {
-                apy: 0.22810891170055778,
-                last_updated_at: '2022-11-15T13:23:35.795Z',
-            },
-        },
-        {
-            id: 'xki_supply',
-            value: {
-                supply: 1030475325.821488,
-                last_updated_at: '2022-11-15T13:23:35.682Z',
-            },
-        },
-        {
-            id: 'xki_total_value_usd',
-            value: {
-                last_updated_at: '2022-11-15T13:23:35.591Z',
-                total_value_usd: 22610895,
-            },
-        },
-        {
-            id: 'xki_unit_price_usd',
-            value: {
-                unit_price_usd: 0.053601287,
-                last_updated_at: '2022-11-15T13:23:35.502Z',
+                apy: 0.2282165376158316,
+                last_updated_at: '2022-11-19T15:45:05.024Z',
             },
         },
     ],
     metadata: {
         page: 0,
         limit: 50,
-        items_count: 43,
-        items_total: 43,
-        pages_total: 1,
+        items_count: 50,
+        items_total: 54,
+        pages_total: 2,
         has_previous_page: false,
-        has_next_page: false,
+        has_next_page: true,
     },
     code: 200,
     message: '',
@@ -320,71 +360,69 @@ export const mockResponseLatestMetricsPaginated = {
         {
             id: 'akt_apy',
             value: {
-                apy: 0.14874159636195577,
-                last_updated_at: '2022-11-15T13:23:35.725Z',
+                apy: 0.14797697789834047,
+                last_updated_at: '2022-11-19T15:45:04.999Z',
             },
         },
         {
             id: 'akt_supply',
             value: {
-                supply: 203659116.294786,
-                last_updated_at: '2022-11-15T13:23:35.642Z',
+                supply: 203894001.466085,
+                last_updated_at: '2022-11-19T15:45:04.942Z',
+            },
+        },
+        {
+            id: 'akt_total_allocated_token',
+            value: {
+                last_updated_at: '2022-11-19T15:45:05.072Z',
             },
         },
         {
             id: 'akt_total_value_usd',
             value: {
-                last_updated_at: '2022-11-15T13:23:35.581Z',
-                total_value_usd: 39751149,
+                last_updated_at: '2022-11-19T15:45:04.904Z',
+                total_value_usd: 36809756,
             },
         },
         {
             id: 'akt_unit_price_usd',
             value: {
-                unit_price_usd: 0.2034413571,
-                last_updated_at: '2022-11-15T13:23:35.341Z',
+                unit_price_usd: 0.1884608309,
+                last_updated_at: '2022-11-19T15:45:04.819Z',
             },
         },
         {
             id: 'atom_apy',
             value: {
-                apy: 0.2008078905903272,
-                last_updated_at: '2022-11-15T13:23:35.719Z',
+                apy: 0.20953752416593893,
+                last_updated_at: '2022-11-19T15:45:04.994Z',
             },
         },
         {
             id: 'atom_supply',
             value: {
-                supply: 316086021.712116,
-                last_updated_at: '2022-11-15T13:23:35.634Z',
+                supply: 316598256.335233,
+                last_updated_at: '2022-11-19T15:45:04.938Z',
+            },
+        },
+        {
+            id: 'atom_total_allocated_token',
+            value: {
+                last_updated_at: '2022-11-19T15:45:05.077Z',
             },
         },
         {
             id: 'atom_total_value_usd',
             value: {
-                last_updated_at: '2022-11-15T13:23:35.538Z',
-                total_value_usd: 3109055998,
+                last_updated_at: '2022-11-19T15:45:04.882Z',
+                total_value_usd: 2905587562,
             },
         },
         {
             id: 'atom_unit_price_usd',
             value: {
-                unit_price_usd: 10.5492233317,
-                last_updated_at: '2022-11-15T13:23:35.425Z',
-            },
-        },
-        {
-            id: 'cmdx_apy',
-            value: {
-                apy: 0.3902980198853259,
-                last_updated_at: '2022-11-15T13:23:35.734Z',
-            },
-        },
-        {
-            id: 'cmdx_supply',
-            value: {
-                supply: 133971453.615613,
-                last_updated_at: '2022-11-15T13:23:35.654Z',
+                unit_price_usd: 9.8927115705,
+                last_updated_at: '2022-11-19T15:45:04.828Z',
             },
         },
     ],
@@ -392,8 +430,8 @@ export const mockResponseLatestMetricsPaginated = {
         page: 0,
         limit: 10,
         items_count: 10,
-        items_total: 43,
-        pages_total: 5,
+        items_total: 54,
+        pages_total: 6,
         has_previous_page: false,
         has_next_page: true,
     },
@@ -407,12 +445,8 @@ export const mockResponseHistoricalMetrics = {
             id: 'atom_apy',
             extra: [
                 {
-                    apy: 0.20080775892952807,
-                    last_updated_at: '2022-11-15T13:21:36.010Z',
-                },
-                {
-                    apy: 0.20080784434636736,
-                    last_updated_at: '2022-11-15T13:22:04.217Z',
+                    apy: 0.2095363944596216,
+                    last_updated_at: '2022-11-19T15:40:05.137Z',
                 },
             ],
         },
@@ -426,29 +460,36 @@ export const mockResponseLatestAsset = {
         {
             id: 'atom_apy',
             value: {
-                apy: 0.2008078905903272,
-                last_updated_at: '2022-11-15T13:23:35.719Z',
+                apy: 0.20953752416593893,
+                last_updated_at: '2022-11-19T15:45:04.994Z',
             },
         },
         {
             id: 'atom_supply',
             value: {
-                supply: 316086021.712116,
-                last_updated_at: '2022-11-15T13:23:35.634Z',
+                supply: 316598256.335233,
+                last_updated_at: '2022-11-19T15:45:04.938Z',
+            },
+        },
+        {
+            id: 'atom_total_allocated_token',
+            value: {
+                last_updated_at: '2022-11-19T15:45:05.077Z',
+                total_allocated_token: 1381.0761771938794,
             },
         },
         {
             id: 'atom_total_value_usd',
             value: {
-                last_updated_at: '2022-11-15T13:23:35.538Z',
-                total_value_usd: 3109055998,
+                last_updated_at: '2022-11-19T15:45:04.882Z',
+                total_value_usd: 2905587562,
             },
         },
         {
             id: 'atom_unit_price_usd',
             value: {
-                unit_price_usd: 10.5492233317,
-                last_updated_at: '2022-11-15T13:23:35.425Z',
+                unit_price_usd: 9.8927115705,
+                last_updated_at: '2022-11-19T15:45:04.828Z',
             },
         },
     ],
