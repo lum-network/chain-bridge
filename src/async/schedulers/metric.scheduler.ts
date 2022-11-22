@@ -1,20 +1,30 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { ClientProxy } from '@nestjs/microservices';
+import { ConfigService } from '@nestjs/config';
+
+import { LumConstants } from '@lum-network/sdk-javascript';
 
 import { CLIENT_PRECISION, makeRequest, MetricNames } from '@app/utils';
 import { DfractService, LumNetworkService } from '@app/services';
-import { LumConstants } from '@lum-network/sdk-javascript';
 
 @Injectable()
 export class MetricScheduler {
     private _logger: Logger = new Logger(MetricScheduler.name);
 
-    constructor(@Inject('API') private readonly _client: ClientProxy, private readonly _dfrService: DfractService, private readonly _lumNetworkService: LumNetworkService) {}
+    constructor(
+        @Inject('API') private readonly _client: ClientProxy,
+        private readonly _configService: ConfigService,
+        private readonly _dfrService: DfractService,
+        private readonly _lumNetworkService: LumNetworkService,
+    ) {}
 
     // As we rely on external APIs to compute some DFR metrics we trigger the cron every min to avoid rate limiting and error chaining
     @Cron(CronExpression.EVERY_MINUTE)
     async update() {
+        if (!this._configService.get<boolean>('METRIC_SYNC_ENABLED')) {
+            return;
+        }
         try {
             // Acquire data
             const [lumCommunityPool, lumSupply, lumPrice, dfrApy, dfrBackingPrice, dfrSupply, dfrMcap, dfrBalance, newDfrToMint, dfrMintRatio] = await Promise.all([

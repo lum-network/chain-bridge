@@ -21,6 +21,10 @@ export class ValidatorScheduler {
 
     @Cron(CronExpression.EVERY_5_MINUTES)
     async delegationSync() {
+        if (!this._configService.get<boolean>('VALIDATOR_SYNC_ENABLED')) {
+            return;
+        }
+
         this._logger.log(`Syncing validator delegations from chain...`);
         const validators = await this._validatorService.fetchAll();
         this._logger.debug(`Found ${validators.length} validators to sync`);
@@ -53,6 +57,10 @@ export class ValidatorScheduler {
 
     @Cron(CronExpression.EVERY_10_SECONDS, { name: 'validators_live_ingest' })
     async basicSync() {
+        if (!this._configService.get<boolean>('VALIDATOR_SYNC_ENABLED')) {
+            return;
+        }
+
         try {
             // Fetch tendermint validators
             const tmValidators = await this._lumNetworkService.client.tmClient.validatorsAll(this._configService.get<number>('STARTING_HEIGHT'));

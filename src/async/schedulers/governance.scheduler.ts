@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-
+import { ConfigService } from '@nestjs/config';
 import { Cron, CronExpression } from '@nestjs/schedule';
 
 import { ProposalVoteService, ProposalDepositService, LumNetworkService } from '@app/services';
@@ -9,6 +9,7 @@ export class GovernanceScheduler {
     private _logger: Logger = new Logger(GovernanceScheduler.name);
 
     constructor(
+        private readonly _configService: ConfigService,
         private readonly _lumNetworkService: LumNetworkService,
         private readonly _governanceProposalVoteService: ProposalVoteService,
         private readonly _governanceProposalDepositService: ProposalDepositService,
@@ -16,6 +17,9 @@ export class GovernanceScheduler {
 
     @Cron(CronExpression.EVERY_30_SECONDS)
     async voteSync() {
+        if (!this._configService.get<boolean>('GOVERNANCE_SYNC_ENABLED')) {
+            return;
+        }
         try {
             this._logger.log(`Syncing votes from chain...`);
 
@@ -55,6 +59,9 @@ export class GovernanceScheduler {
 
     @Cron(CronExpression.EVERY_30_SECONDS)
     async depositSync() {
+        if (!this._configService.get<boolean>('GOVERNANCE_SYNC_ENABLED')) {
+            return;
+        }
         try {
             this._logger.log(`Syncing deposits from chain...`);
 

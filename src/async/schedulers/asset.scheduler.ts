@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-
+import { ConfigService } from '@nestjs/config';
 import { Cron, CronExpression } from '@nestjs/schedule';
 
 import { AssetService, ChainService, DfractService, LumNetworkService } from '@app/services';
@@ -10,14 +10,18 @@ export class AssetScheduler {
     private _logger: Logger = new Logger(AssetScheduler.name);
 
     constructor(
-        private readonly _lumNetworkService: LumNetworkService,
         private readonly _assetService: AssetService,
-        private readonly _dfractService: DfractService,
         private readonly _chainService: ChainService,
+        private readonly _configService: ConfigService,
+        private readonly _dfractService: DfractService,
+        private readonly _lumNetworkService: LumNetworkService,
     ) {}
 
     @Cron(CronExpression.EVERY_5_MINUTES)
     async syncValue(): Promise<void> {
+        if (!this._configService.get<boolean>('DFRACT_SYNC_ENABLED')) {
+            return;
+        }
         try {
             this._logger.log(`Syncing latest assets info from chain...`);
             // We sync all values except DFR every hour by starting with LUM
@@ -26,12 +30,12 @@ export class AssetScheduler {
 
             const lumMetrics = await this._lumNetworkService.getAssetInfo();
             if (lumMetrics) {
-                this._assetService.ownAssetCreateOrUpdateValue(lumMetrics, AssetSymbol.LUM);
+                await this._assetService.ownAssetCreateOrUpdateValue(lumMetrics, AssetSymbol.LUM);
             }
 
             const chainMetrics = await this._chainService.getAssetInfo();
             if (chainMetrics) {
-                this._assetService.chainAssetCreateOrUpdateValue(chainMetrics);
+                await this._assetService.chainAssetCreateOrUpdateValue(chainMetrics);
             }
         } catch (error) {
             this._logger.error(`Failed to update hourly asset info...`, error);
@@ -40,6 +44,10 @@ export class AssetScheduler {
 
     @Cron(CronExpression.EVERY_WEEK)
     async syncExtraWeekly(): Promise<void> {
+        if (!this._configService.get<boolean>('DFRACT_SYNC_ENABLED')) {
+            return;
+        }
+
         try {
             // We only update chain values other than DFR once a week
 
@@ -55,6 +63,10 @@ export class AssetScheduler {
     // Every 15 minutes, between 08:00 am and 05:59 PM, only on Monday
     @Cron('0 */15 08-17 * * 1')
     async syncDfr(): Promise<void> {
+        if (!this._configService.get<boolean>('DFRACT_SYNC_ENABLED')) {
+            return;
+        }
+
         try {
             this._logger.log(`Updating DFR token values from chain...`);
 
@@ -73,6 +85,10 @@ export class AssetScheduler {
     // Runs every 2 hours
     @Cron(CronExpression.EVERY_2_HOURS)
     async retrySync(): Promise<void> {
+        if (!this._configService.get<boolean>('DFRACT_SYNC_ENABLED')) {
+            return;
+        }
+
         try {
             this._logger.log(`Verifying missing historical data...`);
             const arr = [];

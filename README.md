@@ -50,6 +50,11 @@ INGEST_BACKWARD_ENABLED=true
 
 PUSH_NOTIF_ENABLED=true
 
+DFRACT_SYNC_ENABLED=true
+GOVERNANCE_SYNC_ENABLED=true
+METRIC_SYNC_ENABLED=true
+VALIDATOR_SYNC_ENABLED=true
+
 # To enable faucet in testnet environment
 FAUCET_MNEMONIC="my mnemonic phrase"
 ```
