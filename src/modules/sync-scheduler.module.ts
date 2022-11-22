@@ -27,7 +27,7 @@ import {
     ValidatorDelegationService,
     ValidatorService,
 } from '@app/services';
-import { ConfigMap, QueueJobs, Queues, SentryModuleOptions } from '@app/utils';
+import {ConfigMap, QueueJobs, QueuePriority, Queues, SentryModuleOptions} from '@app/utils';
 import { DatabaseConfig, DatabaseFeatures } from '@app/database';
 
 @Module({
@@ -122,7 +122,7 @@ export class SyncSchedulerModule implements OnModuleInit, OnApplicationBootstrap
                 toBlock: blockHeight,
             },
             {
-                delay: 120000, // Delayed by 2 minutes to avoid some eventual concurrency issues
+                priority: QueuePriority.URGENT,
             },
         );
         this._logger.log(`Dispatched the backward blocks ingest`);
