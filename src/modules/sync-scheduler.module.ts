@@ -27,7 +27,7 @@ import {
     ValidatorDelegationService,
     ValidatorService,
 } from '@app/services';
-import {ConfigMap, QueueJobs, QueuePriority, Queues, SentryModuleOptions} from '@app/utils';
+import { ConfigMap, QueueJobs, QueuePriority, Queues, SentryModuleOptions } from '@app/utils';
 import { DatabaseConfig, DatabaseFeatures } from '@app/database';
 
 @Module({

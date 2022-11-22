@@ -25,4 +25,5 @@ export const ConfigMap = {
     SENTRY_DSN: Joi.string().optional(),
     FAUCET_MNEMONIC: Joi.string().optional(),
     STARTING_HEIGHT: Joi.number().required(),
+    BULLBOARD_PASSWORD: Joi.string().required()
 };

@@ -40,7 +40,7 @@ OSMOSIS_NETWORK_ENDPOINT=https://rpc-osmosis.imperator.co
 JUNO_NETWORK_ENDPOINT=https://rpc-juno.imperator.co
 EVMOS_NETWORK_ENDPOINT=https://rpc-evmos.imperator.co
 STARGAZE_NETWORK_ENDPOINT=https://rpc-stargaze.imperator.co
-
+STARTING_HEIGHT=1
 DATABASE_URL=postgresql://postgres:emulator@127.0.0.1:5432/postgres
 REDIS_URL=redis://127.0.0.1:6379
 
@@ -57,6 +57,10 @@ VALIDATOR_SYNC_ENABLED=true
 
 # To enable faucet in testnet environment
 FAUCET_MNEMONIC="my mnemonic phrase"
+
+API_PORT=3000
+
+BULLBOARD_PASSWORD=test
 ```
 
 If you don't know what these params mean, leave them like this, they are preconfigured.
