@@ -82,7 +82,7 @@ export class AssetScheduler {
             // Check the last proposal
             const proposal = proposalResults.proposals.pop();
             // Verify that the last proposal is a DFR Allocation Proposal
-            const isGovPropDfract = proposal.content.typeUrl.includes(LUM_DFR_ALLOCATION);
+            const isGovPropDfract = proposal.content.typeUrl === LUM_DFR_ALLOCATION;
             // Verify that the status is ongoing
             const isGovPropDfractOngoing = proposal.status === ProposalStatus.PROPOSAL_STATUS_VOTING_PERIOD;
 
