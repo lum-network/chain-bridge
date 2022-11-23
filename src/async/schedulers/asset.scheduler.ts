@@ -1,9 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { plainToInstance } from 'class-transformer';
 
 import { AssetService, ChainService, DfractService, LumNetworkService } from '@app/services';
-import { AssetSymbol } from '@app/utils';
+import { AssetSymbol, decodeContent, LUM_DFR_ALLOCATION } from '@app/utils';
+import { ProposalResponse } from '@app/http';
 
 @Injectable()
 export class AssetScheduler {
@@ -73,8 +75,21 @@ export class AssetScheduler {
             // We only update DFR values once every epoch
             const [dfractMetrics, availableBalance] = await Promise.all([this._dfractService.getAssetInfo(), this._dfractService.getCashInVault()]);
 
-            if (dfractMetrics && availableBalance > 0) {
-                this._assetService.ownAssetCreateOrUpdateValue(dfractMetrics, AssetSymbol.DFR);
+            // To avoid edge cases we verify that the last gov prop is a Dfract allocation one and that the voting period is still ongoing
+            const proposalResults = await this._lumNetworkService.getProposals();
+            // Check the last proposal
+            const proposal = proposalResults.proposals.map((proposal) => plainToInstance(ProposalResponse, decodeContent(proposal))).pop();
+            // Verify that the last proposal is a DFR Allocation Proposal
+            const isGovPropDfract = proposal.content.title.includes(LUM_DFR_ALLOCATION);
+            // Verify that the current date time is still below the end of the voting period
+            const isGovPropDfractOngoing = new Date().getTime() < new Date(proposal.voting_end_time).getTime();
+
+            // We only consider the cron if the last gov prop is a DFR gov prop
+            if (isGovPropDfract) {
+                // If there is cash in the account balance, non-falsy dfractMetrics and an ongoing dfr gov prop, we update the records
+                if (dfractMetrics && availableBalance > 0 && isGovPropDfractOngoing) {
+                    this._assetService.ownAssetCreateOrUpdateValue(dfractMetrics, AssetSymbol.DFR);
+                }
             }
         } catch (error) {
             this._logger.error(`Failed to update DFR token values from chain...`, error);

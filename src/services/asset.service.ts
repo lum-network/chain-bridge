@@ -116,7 +116,7 @@ export class AssetService {
         }));
     };
 
-    fetchLatestAsset = async (denom: string): Promise<GenericValueEntity[]> => {
+    fetchLatestAsset = async (denom: string): Promise<{ id: string; value: GenericValueEntity }[]> => {
         // Fetch assets by denom
         const query = await this._repository
             .createQueryBuilder('assets')
