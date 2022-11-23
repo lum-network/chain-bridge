@@ -80,7 +80,7 @@ export class AssetScheduler {
             const proposal = proposalResults.proposals.pop();
             // Verify that the last proposal is a DFR Allocation Proposal
             const isGovPropDfract = proposal.content.typeUrl.includes(LUM_DFR_ALLOCATION);
-            // Verify that the current date time is still below the end of the voting period
+            // Verify that the status is ongoing
             const isGovPropDfractOngoing = proposal.status === ProposalStatus.PROPOSAL_STATUS_VOTING_PERIOD;
 
             // We only consider the cron if the last gov prop is a DFR gov prop
