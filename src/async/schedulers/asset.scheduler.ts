@@ -72,10 +72,13 @@ export class AssetScheduler {
             this._logger.log(`Updating DFR token values from chain...`);
 
             // We only update DFR values once every epoch
-            const [dfractMetrics, availableBalance] = await Promise.all([this._dfractService.getAssetInfo(), this._dfractService.getCashInVault()]);
+            const [dfractMetrics, availableBalance, proposalResults] = await Promise.all([
+                this._dfractService.getAssetInfo(),
+                this._dfractService.getCashInVault(),
+                this._lumNetworkService.getProposals(),
+            ]);
 
             // To avoid edge cases we verify that the last gov prop is a Dfract allocation one and that the voting period is still ongoing
-            const proposalResults = await this._lumNetworkService.getProposals();
             // Check the last proposal
             const proposal = proposalResults.proposals.pop();
             // Verify that the last proposal is a DFR Allocation Proposal
