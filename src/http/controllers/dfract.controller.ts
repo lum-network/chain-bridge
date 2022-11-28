@@ -15,7 +15,7 @@ export class DfractController {
     constructor(private readonly _assetService: AssetService) {}
 
     @ApiOkResponse({ status: 200, type: AssetInfoResponse })
-    @DefaultTake(50)
+    @DefaultTake(100)
     @Get('assets/latest')
     async getLatestAsset(@Req() request: ExplorerRequest): Promise<DataResponse> {
         const [result, total] = await this._assetService.fetchLatestMetrics(request.pagination.skip, request.pagination.limit);

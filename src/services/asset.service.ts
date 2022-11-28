@@ -165,4 +165,16 @@ export class AssetService {
             }))
             .sort((a, b) => a.symbol.localeCompare(b.symbol));
     };
+
+    getDfrAccountBalance = async (): Promise<{ symbol: string; account_balance: number }[]> => {
+        const query = await this._repository.createQueryBuilder('assets').select(['id', 'value']).where('id like :id', { id: `%dfr_account_balance%` }).getRawMany();
+
+        return query.map((el) => el.value.account_balance);
+    };
+
+    getDfrTotalComputedTvl = async (): Promise<{ symbol: string; tvl: number }[]> => {
+        const query = await this._repository.createQueryBuilder('assets').select(['id', 'value']).where('id like :id', { id: `%dfr_tvl%` }).getRawMany();
+
+        return query.map((el) => el.value.tvl);
+    };
 }
