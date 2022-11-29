@@ -77,6 +77,8 @@ export interface GenericValueEntity {
     total_value_usd?: number;
     unit_price_usd?: number;
     total_allocated_token?: number;
+    account_balance?: number;
+    tvl?: number;
 }
 
 // Eliminate falsy values to be inserted in DB
