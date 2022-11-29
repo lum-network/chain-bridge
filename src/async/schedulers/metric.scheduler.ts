@@ -35,7 +35,7 @@ export class MetricScheduler {
                 this._dfrService.getDfrBackingPrice(),
                 this._dfrService.getTokenSupply(),
                 this._dfrService.getMcap(),
-                this._dfrService.getCashInVault(),
+                this._dfrService.getAccountBalance(),
                 this._dfrService.getNewDfrToMint(),
                 this._dfrService.getDfrMintRatio(),
             ]);

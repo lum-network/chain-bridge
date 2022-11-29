@@ -15,6 +15,7 @@ export class DfractService {
     getTokenSupply = async (): Promise<number> => {
         try {
             // Total current circulating dfr token
+            // Will be computed post gov prop
             return Number(convertUnit(await this._lumNetworkService.client.getSupply(AssetMicroDenom.DFR), AssetDenom.DFR));
         } catch (error) {
             this._logger.error(`Could not fetch Token Supply for DFR on Lum Network...`, error);
@@ -28,6 +29,7 @@ export class DfractService {
     getTotalComputedTvl = async (): Promise<number> => {
         try {
             // Tvl from all external chains with the tvl of lumNetwork summed up together
+            // Will be persisted pre gov prop
             const [chainTvl, lumTvl] = await Promise.all([this._chainService.getTvl(), this._lumNetworkService.getTvl()]);
 
             if (chainTvl && lumTvl) {
@@ -45,9 +47,23 @@ export class DfractService {
         }
     };
 
-    getCashInVault = async (): Promise<number> => {
+    getPersistedTotalComputedTvl = async (): Promise<number> => {
+        try {
+            // Will serve to compute the new dfr to mint computed post gov prop
+            return Number(await this._assetService.getDfrTotalComputedTvl());
+        } catch (error) {
+            this._logger.error(`Could not fetch persisted tvl...`, error);
+
+            Sentry.captureException(error);
+
+            return null;
+        }
+    };
+
+    getAccountBalance = async (): Promise<number> => {
         try {
             // Represents the available deposited cash in our account balance
+            // Will be persisted pre gov prop
             return Number((await this._lumNetworkService.client.queryClient.dfract.getAccountBalance()).map((el) => el.amount)) / TEN_EXPONENT_SIX || 0;
         } catch (error) {
             this._logger.error(`Could not compute cash available in vault for DFR on Lum Network...`, error);
@@ -58,12 +74,27 @@ export class DfractService {
         }
     };
 
+    getPersistedAccountBalance = async (): Promise<number> => {
+        try {
+            // Represents the available persisted cash in our account balance that serves to calculate the backing price
+            // Computed post gov prop
+            return Number(await this._assetService.getDfrAccountBalance());
+        } catch (error) {
+            this._logger.error(`Could not fetch persisted account balance...`, error);
+
+            Sentry.captureException(error);
+
+            return null;
+        }
+    };
+
     getNewDfrToMint = async (): Promise<number> => {
         try {
-            // The new dfr to be minted is calculated by (dfr supply * cash in vault (balance)) / (total computed tvl)
-            const [supply, accountBalance, computedTvl] = await Promise.all([this.getTokenSupply(), this.getCashInVault(), this.getTotalComputedTvl()]);
+            // The new chain dfr to be minted is calculated by (dfr supply * cash in vault (balance)) / (total computed tvl)
+            // Computed post gov prop
+            const [supply, persistedAccountBalance, persistedComputedTvl] = await Promise.all([this.getTokenSupply(), this.getPersistedAccountBalance(), this.getPersistedTotalComputedTvl()]);
 
-            return (supply * accountBalance) / computedTvl;
+            return (supply * persistedAccountBalance) / persistedComputedTvl;
         } catch (error) {
             this._logger.error(`Could not compute new Dfr To Mint for DFR on Lum Network...`, error);
 
@@ -75,12 +106,13 @@ export class DfractService {
 
     getDfrMintRatio = async (): Promise<number> => {
         try {
-            // To get the MinRatio we do (DFR to Mint + dfr token supply) / (total computed tvl across all assets we have the index)
-            const [dfrToMint, computedTvl, tokenSupply] = await Promise.all([this.getNewDfrToMint(), this.getTotalComputedTvl(), this.getTokenSupply()]);
+            // To get the MinRatio we do (dfrToMint / persistedAccountBalance)
+            // Computed post gov prop
+            const [dfrToMint, persistedAccountBalance] = await Promise.all([this.getNewDfrToMint(), this.getPersistedAccountBalance()]);
 
-            return (dfrToMint + tokenSupply) / computedTvl;
+            return dfrToMint / persistedAccountBalance;
         } catch (error) {
-            this._logger.error(`Could not compute Dfr To Mint Ratio for DFR on Lum Network...`, error);
+            this._logger.error(`Could not compute Dfr To Mint Ratio for DFR...`, error);
 
             Sentry.captureException(error);
 
@@ -91,9 +123,10 @@ export class DfractService {
     getDfrBackingPrice = async (): Promise<number> => {
         try {
             // To get dfr price we divide the mintRatio by 1
+            // Computed post gov prop
             return 1 / Number(await this.getDfrMintRatio());
         } catch (error) {
-            this._logger.error(`Could not compute new DFR backing price for DFR on Lum Network...`, error);
+            this._logger.error(`Could not compute new DFR backing price for DFR...`, error);
 
             Sentry.captureException(error);
 
@@ -104,11 +137,12 @@ export class DfractService {
     getMcap = async (): Promise<number> => {
         try {
             // We compute the market cap by multiplying the backing price by the dfr token supply
+            // Computed post gov prop
             const [dfrToMintPrice, supply] = await Promise.all([this.getDfrBackingPrice(), this.getTokenSupply()]);
 
             return dfrToMintPrice * supply;
         } catch (error) {
-            this._logger.error(`Could not compute new DFR Market Cap on Lum Network...`, error);
+            this._logger.error(`Could not compute new DFR Market Cap...`, error);
 
             Sentry.captureException(error);
 
@@ -121,6 +155,7 @@ export class DfractService {
             // We compute the apy from DFR based on the following formula
             // (token tvl (price * token amount) * token apy) / total computed tvl
             // We first aggregate the tvl from lum and the other chains, then the apy
+            // Computed post gov prop
             let tvl = null;
             let apy = null;
 
@@ -166,15 +201,30 @@ export class DfractService {
         }
     };
 
-    getAssetInfo = async (): Promise<AssetInfo> => {
+    getAssetInfoPreGovProp = async (): Promise<AssetInfo> => {
         try {
-            // DFR asset info representing the {unit_price_usd, total_value_usd, supply, apy}
-            // We don't have total_allocated_token for DFR
+            // Before the gov prop ends we want to save the account_balance, tvl
+            // These will serve as a basis to calculate the backing price post gov prop
+            const [account_balance, tvl] = await Promise.all([this.getAccountBalance(), this.getTotalComputedTvl()]);
+
+            return { account_balance, tvl };
+        } catch (error) {
+            this._logger.error('Failed to compute Token Info for Dfract Pre Gov Prop...', error);
+
+            Sentry.captureException(error);
+
+            return null;
+        }
+    };
+
+    getAssetInfoPostGovProp = async (): Promise<AssetInfo> => {
+        try {
+            // After the gov prop has passed and the circulating supply has been updated we want to save unit_price_usd, total_value_usd, supply, apy
             const [unit_price_usd, total_value_usd, supply, apy] = await Promise.all([this.getDfrBackingPrice(), this.getMcap(), this.getTokenSupply(), this.getApy()]);
 
             return { unit_price_usd, total_value_usd, supply, apy };
         } catch (error) {
-            this._logger.error('Failed to compute Token Info for Dfract...', error);
+            this._logger.error('Failed to compute Token Info for Dfract Post Gov Prop...', error);
 
             Sentry.captureException(error);
 

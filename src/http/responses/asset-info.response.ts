@@ -25,6 +25,14 @@ export class AssetInfo {
     @ApiProperty()
     @Expose()
     total_allocated_token?: number;
+
+    @ApiProperty()
+    @Expose()
+    account_balance?: number;
+
+    @ApiProperty()
+    @Expose()
+    tvl?: number;
 }
 
 export class AssetInfoResponse {
