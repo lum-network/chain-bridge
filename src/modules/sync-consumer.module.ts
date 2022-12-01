@@ -9,7 +9,7 @@ import * as Joi from 'joi';
 import { SentryModule } from '@ntegral/nestjs-sentry';
 import * as parseRedisUrl from 'parse-redis-url-simple';
 
-import { AsyncQueues, BeamConsumer, BlockConsumer, CoreConsumer, NotificationConsumer } from '@app/async';
+import { AsyncQueues, BeamConsumer, BlockConsumer, NotificationConsumer } from '@app/async';
 
 import { BeamService, BlockService, LumNetworkService, ProposalDepositService, ProposalVoteService, TransactionService, ValidatorDelegationService, ValidatorService } from '@app/services';
 import { ConfigMap, SentryModuleOptions } from '@app/utils';
@@ -57,7 +57,6 @@ import { DatabaseConfig, DatabaseFeatures } from '@app/database';
         ValidatorDelegationService,
         BeamConsumer,
         BlockConsumer,
-        CoreConsumer,
         NotificationConsumer,
     ],
 })

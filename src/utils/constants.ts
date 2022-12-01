@@ -54,7 +54,6 @@ export enum ChartGroupType {
 export enum Queues {
     BEAMS = 'beams',
     BLOCKS = 'blocks',
-    FAUCET = 'faucet',
     NOTIFICATIONS = 'notifications',
 }
 
@@ -62,7 +61,6 @@ export enum QueueJobs {
     INGEST = 'ingest',
     TRIGGER_VERIFY_BLOCKS_BACKWARD = 'trigger_verify_blocks_backward',
     NOTIFICATION_SOCKET = 'push_notification',
-    MINT_FAUCET_REQUEST = 'mint_faucet_request',
 }
 
 export enum QueuePriority {
