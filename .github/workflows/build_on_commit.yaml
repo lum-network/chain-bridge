@@ -17,7 +17,7 @@ env:
 
 jobs:
   build:
-    name: Build the docker image and deploy over image registry
+    name: Build the docker image and send to the image registry
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
