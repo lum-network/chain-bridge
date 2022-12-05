@@ -49,6 +49,9 @@ export class BeamEntity {
     @Column({ type: 'timestamp', nullable: true })
     dispatched_at: Date;
 
+    @Column({ type: 'integer', default: 0 })
+    dispatched_at_block: number;
+
     @Column({ type: 'timestamp', nullable: true })
     closed_at: Date = null;
 
