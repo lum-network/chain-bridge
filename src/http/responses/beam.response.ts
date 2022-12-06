@@ -259,4 +259,8 @@ export class BeamResponse {
     @ApiProperty()
     @Expose()
     dispatched_at: Date;
+
+    @ApiProperty()
+    @Expose()
+    dispatched_at_block: number;
 }
