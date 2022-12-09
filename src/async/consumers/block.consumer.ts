@@ -162,7 +162,7 @@ export class BlockConsumer {
                     if (isBeam(message.type_url)) {
                         await this._beamQueue.add(
                             QueueJobs.INGEST,
-                            { id: message.value.id },
+                            { value: message.value, url: message.type_url, time: txDoc.time },
                             {
                                 jobId: `beam-${message.value.id}`,
                                 attempts: 5,
@@ -173,7 +173,7 @@ export class BlockConsumer {
                 }
             }
 
-            // If it's intended to notify frontend of incpming block
+            // If it's intended to notify frontend of incoming block
             if (job.data.notify) {
                 // Dispatch notification on websockets for frontend
                 await this._notificationQueue.add(QueueJobs.NOTIFICATION_SOCKET, {

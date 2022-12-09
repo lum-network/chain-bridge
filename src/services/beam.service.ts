@@ -4,9 +4,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { BeamEntity } from '@app/database';
-import { BeamStatus, groupTypeToChar, formatDate, groupTypeInterval, Queues, QueuePriority, QueueJobs } from '@app/utils';
+import { BeamStatus, groupTypeToChar, formatDate, groupTypeInterval, Queues, QueuePriority, QueueJobs, BeamEvent } from '@app/utils';
 import { InjectQueue } from '@nestjs/bull';
 import { Job, Queue } from 'bull';
+import { AmountModel } from '@app/database/entities/amount.model';
+import { BeamData } from '@lum-network/sdk-javascript/build/codec/beam/beam';
 
 @Injectable()
 export class BeamService {
@@ -178,6 +180,66 @@ export class BeamService {
 
     save = async (entity: Partial<BeamEntity>): Promise<BeamEntity> => {
         return this._repository.save(entity);
+    };
+
+    createOrUpdateBeamEntity = async (
+        beamId: string,
+        creatorAddress: string,
+        status: number,
+        claimAddress: string,
+        fundsWithdrawn: boolean,
+        claimed: boolean,
+        cancelReason: string,
+        hideContent: boolean,
+        schema: string,
+        claimExpiresAtBlock: number,
+        closesAtBlock: number,
+        amount: AmountModel,
+        data: BeamData,
+        createdAt: Date,
+        closedAt: Date,
+        event: BeamEvent,
+        updatedAt: Date,
+    ): Promise<BeamEntity> => {
+        let entity = await this.get(beamId);
+
+        // If entity does not exists, we create a new one for BeamEntity
+        if (!entity) {
+            entity = new BeamEntity({
+                creator_address: creatorAddress,
+                id: beamId,
+                status: status,
+                claim_address: claimAddress,
+                funds_withdrawn: fundsWithdrawn,
+                claimed: claimed,
+                cancel_reason: cancelReason,
+                hide_content: hideContent,
+                schema: schema,
+                claim_expires_at_block: claimExpiresAtBlock,
+                closes_at_block: closesAtBlock,
+                amount,
+                data,
+                dispatched_at: createdAt,
+                closed_at: closedAt,
+                event: [event],
+            });
+        } else {
+            // Otherwise, we just update some targeted properties
+            entity.status = status;
+            entity.claim_address = claimAddress;
+            entity.funds_withdrawn = fundsWithdrawn;
+            entity.claimed = claimed;
+            entity.cancel_reason = cancelReason;
+            entity.hide_content = hideContent;
+            entity.amount = amount;
+            entity.data = data;
+            entity.event.push(event);
+            entity.updated_at = updatedAt;
+        }
+
+        await this._repository.save(entity);
+
+        return entity;
     };
 
     failSafeIngest = async (id: string): Promise<Job> => {

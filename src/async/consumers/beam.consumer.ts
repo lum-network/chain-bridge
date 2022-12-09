@@ -3,9 +3,8 @@ import { Logger } from '@nestjs/common';
 
 import { Job } from 'bull';
 
-import { QueueJobs, Queues } from '@app/utils';
+import { BeamEventValue, QueueJobs, Queues } from '@app/utils';
 import { BeamService, LumNetworkService } from '@app/services';
-import { BeamEntity } from '@app/database';
 
 @Processor(Queues.BEAMS)
 export class BeamConsumer {
@@ -14,35 +13,41 @@ export class BeamConsumer {
     constructor(private readonly _beamService: BeamService, private readonly _lumNetworkService: LumNetworkService) {}
 
     @Process(QueueJobs.INGEST)
-    async ingestBeam(job: Job<{ id: string }>) {
-        if (await this._beamService.get(job.data.id)) {
-            return;
-        }
+    async ingestBeam(job: Job<{ value: BeamEventValue; url: string; time: Date }>) {
+        this._logger.debug(`Ingesting beam ${job.data.value.id}`);
 
-        this._logger.debug(`Ingesting beam ${job.data.id}`);
+        // Get beam by passing the id received by the tx dispatch in block consumer
+        const beam = await this._lumNetworkService.client.queryClient.beam.get(job.data.value.id);
 
-        const beam = await this._lumNetworkService.client.queryClient.beam.get(job.data.id);
-        const entity = new BeamEntity({
-            creator_address: beam.creatorAddress,
-            id: beam.id,
-            status: beam.status as number,
-            claim_address: beam.claimAddress,
-            funds_withdrawn: beam.fundsWithdrawn,
-            claimed: beam.claimed,
-            cancel_reason: beam.cancelReason,
-            hide_content: beam.hideContent,
-            schema: beam.schema,
-            claim_expires_at_block: beam.claimExpiresAtBlock,
-            closes_at_block: beam.closesAtBlock,
-            amount: {
+        // Event that will trace beam history
+        const event = {
+            time: job.data.time,
+            type: job.data.url,
+            value: job.data.value,
+        };
+
+        // Create or update beam entity
+        await this._beamService.createOrUpdateBeamEntity(
+            beam.id,
+            beam.creatorAddress,
+            beam.status,
+            beam.claimAddress,
+            beam.fundsWithdrawn,
+            beam.claimed,
+            beam.cancelReason,
+            beam.hideContent,
+            beam.schema,
+            beam.claimExpiresAtBlock,
+            beam.closesAtBlock,
+            {
                 amount: parseFloat(beam.amount.amount),
                 denom: beam.amount.denom,
             },
-            data: beam.data,
-            dispatched_at: beam.createdAt,
-            closed_at: beam.closedAt,
-        });
-
-        await this._beamService.save(entity);
+            beam.data,
+            beam.createdAt,
+            beam.closedAt,
+            event,
+            new Date(),
+        );
     }
 }
