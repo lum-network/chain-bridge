@@ -24,6 +24,7 @@ export class ValidatorsController {
     @Get('')
     async fetch(@Req() request: ExplorerRequest): Promise<DataResponse> {
         const [validators, total] = await this._validatorService.fetch(request.pagination.skip, request.pagination.limit);
+
         return new DataResponse({
             result: validators.map((validator) => plainToInstance(ValidatorResponse, validator)),
             metadata: new DataResponseMetadata({
@@ -39,6 +40,7 @@ export class ValidatorsController {
     @Get(':address')
     async show(@Param('address') address: string): Promise<DataResponse> {
         const result = await this._validatorService.getByOperatorAddress(address);
+
         return {
             result: plainToInstance(ValidatorResponse, result),
         };

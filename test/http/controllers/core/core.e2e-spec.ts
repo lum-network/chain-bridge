@@ -1,72 +1,53 @@
-import { INestApplication } from '@nestjs/common';
+import { HttpStatus, INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { ClientsModule, Transport, ClientProxy } from '@nestjs/microservices';
-
 import request from 'supertest';
-import { Observable } from 'rxjs';
 
 import { ApiModule } from '@app/modules';
-import { makeRequest, MetricNames } from '@app/utils';
-import { mockAssetResponse, mockLumPriceResponse, mockNotifySocketData, mockParamsResponse } from './mock.data';
+import { AssetSymbol } from '@app/utils';
 
 describe('Core (e2e)', () => {
     let app: INestApplication;
-    let client: ClientProxy;
 
-    beforeAll(async () => {
+    beforeEach(async () => {
         const moduleFixture: TestingModule = await Test.createTestingModule({
-            imports: [ApiModule, ClientsModule.register([{ name: 'API', transport: Transport.REDIS }])],
+            imports: [ApiModule],
         }).compile();
 
         app = moduleFixture.createNestApplication();
 
-        app.connectMicroservice({
-            transport: Transport.REDIS,
-        });
-
-        await app.startAllMicroservices();
         await app.init();
-
-        client = app.get('API');
-        await client.connect();
     });
 
-    describe('Metrics Scheduler - @messagePattern', () => {
-        it('Sends updateMetric to consumer', async () => {
-            const response: Promise<Observable<any>> = makeRequest(client, 'updateMetric', { name: MetricNames.DFRACT_CURRENT_SUPPLY, value: 33159.249595 });
-
-            expect(await response).toStrictEqual({ code: 200, message: '' });
-        });
-
-        it('Sends notifySocket to consumer', async () => {
-            const response: Promise<Observable<any>> = makeRequest(client, 'notifySocket', mockNotifySocketData);
-
-            expect(await response).toStrictEqual({ code: 200, message: '' });
-        });
+    afterEach(async () => {
+        app.close();
     });
 
-    describe('Endpoints', () => {
-        it('[GET] - should return lum price', async () => {
-            const http = request(app.getHttpServer());
-            const response = await http.get('/price');
-            expect(response.body).toEqual(mockLumPriceResponse);
-        });
-
-        it('[GET] - should return assets', async () => {
-            const http = request(app.getHttpServer());
-            const response = await http.get('/assets');
-            expect(response.body).toEqual(mockAssetResponse);
-        });
-
-        it('[GET] - should return params', async () => {
-            const http = request(app.getHttpServer());
-            const response = await http.get('/params');
-            expect(response.body).toEqual(mockParamsResponse);
-        });
+    jest.setTimeout(30000);
+    it('[GET] - should return lum price', async () => {
+        const response = await request(app.getHttpServer()).get('/price');
+        if (response.status === HttpStatus.OK) {
+            expect(response.body.result.price).toBeGreaterThan(0);
+            expect(response.body.result.symbol).toBe(AssetSymbol.LUM);
+        }
     });
 
-    afterAll(async () => {
-        await app.close();
-        client.close();
+    it('[GET] - should return assets', async () => {
+        const response = await request(app.getHttpServer()).get('/assets');
+        if (response.status === HttpStatus.OK) {
+            expect(response.body.result.length).toBeGreaterThan(0);
+            expect(response.body.result.some((asset: { denom: string; amount: string }) => asset.denom === 'ulum')).toBe(true);
+        }
+    });
+
+    it('[GET] - should return params', async () => {
+        const response = await request(app.getHttpServer()).get('/params');
+        if (response.status === HttpStatus.OK) {
+            expect('chain_id' in response.body.result).toBe(true);
+            expect('mint' in response.body.result).toBe(true);
+            expect('staking' in response.body.result).toBe(true);
+            expect('gov' in response.body.result).toBe(true);
+            expect('distribution' in response.body.result).toBe(true);
+            expect('slashing' in response.body.result).toBe(true);
+        }
     });
 });
