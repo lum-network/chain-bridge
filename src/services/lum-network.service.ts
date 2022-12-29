@@ -16,8 +16,6 @@ import { Stream } from 'xstream';
 import { Queue } from 'bull';
 import { lastValueFrom, map } from 'rxjs';
 
-import { AssetInfo } from '@app/http';
-
 import {
     MODULE_NAMES,
     QueueJobs,
@@ -238,7 +236,7 @@ export class LumNetworkService {
         }
     };
 
-    getAssetInfo = async (): Promise<AssetInfo> => {
+    getAssetInfo = async (): Promise<{ unit_price_usd: number; total_value_usd: number; supply: number; apy: number; total_allocated_token: number }> => {
         try {
             // To compute metrics info we need lum's {unit_price_usd, total_value_usd, supply and apy, totalk_allocated_token}
             const [price, total_value_usd, supply, percentagYield, totalAllocatedToken] = await Promise.all([

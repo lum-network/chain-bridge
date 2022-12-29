@@ -4,7 +4,6 @@ import { Injectable, Logger } from '@nestjs/common';
 import * as Sentry from '@sentry/node';
 
 import { AssetService, ChainService, LumNetworkService } from '@app/services';
-import { AssetInfo } from '@app/http';
 
 @Injectable()
 export class DfractService {
@@ -201,7 +200,7 @@ export class DfractService {
         }
     };
 
-    getAssetInfoPreGovProp = async (): Promise<AssetInfo> => {
+    getAssetInfoPreGovProp = async (): Promise<{ account_balance: number; tvl: number }> => {
         try {
             // Before the gov prop ends we want to save the account_balance, tvl
             // These will serve as a basis to calculate the backing price post gov prop
@@ -217,7 +216,7 @@ export class DfractService {
         }
     };
 
-    getAssetInfoPostGovProp = async (): Promise<AssetInfo> => {
+    getAssetInfoPostGovProp = async (): Promise<{ unit_price_usd: number; total_value_usd: number; supply: number; apy: number }> => {
         try {
             // After the gov prop has passed and the circulating supply has been updated we want to save unit_price_usd, total_value_usd, supply, apy
             const [unit_price_usd, total_value_usd, supply, apy] = await Promise.all([this.getDfrBackingPrice(), this.getMcap(), this.getTokenSupply(), this.getApy()]);

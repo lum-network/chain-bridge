@@ -43,15 +43,15 @@ export class AssetScheduler {
         }
     }
 
-    @Cron(CronExpression.EVERY_WEEK)
+    // Every Monday at 06:00pm
+    /* @Cron('0 18 * * MON') */
+    @Cron('17 15 * * MON')
     async syncExtraWeekly(): Promise<void> {
         if (!this._configService.get<boolean>('DFRACT_SYNC_ENABLED')) {
             return;
         }
 
         try {
-            // We only update chain values other than DFR once a week
-
             this._logger.log(`Updating historical info from index assets...`);
 
             // We append historical data to be able to compute trends
@@ -107,38 +107,31 @@ export class AssetScheduler {
 
     // Cron that makes sure that the weekly historical data gets properly populated in case of failure
     // Runs every 2 hours
-    @Cron(CronExpression.EVERY_2_HOURS)
+    @Cron(CronExpression.EVERY_5_MINUTES)
     async retrySync(): Promise<void> {
         if (!this._configService.get<boolean>('DFRACT_SYNC_ENABLED')) {
             return;
         }
 
         try {
+            // We retry sync missing historical values
             this._logger.log(`Verifying missing historical data...`);
-            const arr = [];
+            this._assetService.retryExtraSync();
+        } catch (error) {
+            this._logger.error(`Failed to resync weekly historical data...`, error);
+        }
+    }
 
-            const record = await this._assetService.getExtra();
+    @Cron(CronExpression.EVERY_DAY_AT_4AM)
+    async cleanupSync(): Promise<void> {
+        if (!this._configService.get<boolean>('DFRACT_SYNC_ENABLED')) {
+            return;
+        }
 
-            // For every metrics we want to check the last inserted extra value
-            for (const key of record) {
-                arr.push({ id: key?.id, extra: key?.extra?.pop() });
-            }
-
-            // As we update historical data one time per epoch we verify if the last updated record was inserted during that week time
-            // If not we retry
-            const today = new Date();
-            const firstWeekDay = new Date(today.setDate(today.getDate() - today.getDay())).toISOString();
-            const lastWeekDay = new Date(today.setDate(today.getDate() - today.getDay() + 7)).toISOString();
-
-            for (const el of arr) {
-                const isUpdated = new Date(el?.extra?.last_updated_at) >= new Date(firstWeekDay) && new Date(el?.extra?.last_updated_at) <= new Date(lastWeekDay);
-
-                if (!isUpdated) {
-                    // Wait for all the call to finish before createOrUpdateAssetExtra
-                    this._assetService.createOrUpdateAssetExtra(el.id);
-                    this._logger.log(`Updated failed sync historical data for ${el.id}`);
-                }
-            }
+        try {
+            // We cleanup historical data in case of duplicates
+            this._logger.log(`Verifying missing historical data...`);
+            this._assetService.cleanupSync();
         } catch (error) {
             this._logger.error(`Failed to resync weekly historical data...`, error);
         }

@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { isEqual } from 'lodash';
 
 import { Repository } from 'typeorm';
 
 import { AssetEntity } from '@app/database';
-import { filterFalsy, GenericValueEntity } from '@app/utils';
+import { filterFalsy, GenericExtraEntity, GenericValueEntity } from '@app/utils';
 import { AssetInfo } from '@app/http';
 
 @Injectable()
@@ -19,7 +20,7 @@ export class AssetService {
         });
     };
 
-    getExtra = async (): Promise<{ id: string; extra: [] }[]> => {
+    getExtra = async (): Promise<{ id: string; extra: GenericExtraEntity[] }[]> => {
         return await this._repository.createQueryBuilder('assets').select(['id', 'extra']).getRawMany();
     };
 
@@ -65,34 +66,112 @@ export class AssetService {
     };
 
     // Helper function to append historical data to the extra column
-    createOrUpdateAssetExtra = async (compositeKey: string): Promise<GenericValueEntity> => {
+    assetCreateOrAppendExtra = async (): Promise<void> => {
+        const records = await this.getExtra();
+
         // We first query the entity by passing the id
-        const entity = await this.getById(compositeKey);
+        for (const record of records) {
+            const entity = await this.getById(record.id);
 
-        // We update the assets table by passing the latest entity.value column to the extra column
-        // We append extra column array by making sure to only update for the given id
-        // This allows to have historical data for each metrics
-        const query = await this._repository.query(`
-            UPDATE assets
-            SET extra = extra || '${JSON.stringify(entity.value)}'::jsonb
-            WHERE id = '${compositeKey}'
-        `);
+            // Check if the value is already present in the extra array
+            if (!entity.extra.includes(entity.value)) {
+                // If the value is not present, append it to the extra array
+                entity.extra.push(entity.value);
 
-        // We return the value of the query
-        return query;
+                // Update the entity in the database
+                await this._repository.update(record.id, entity);
+            }
+        }
     };
 
-    assetCreateOrAppendExtra = async (): Promise<void> => {
-        // We ONLY append historical data to the extra column if there is a value record registered
-        const record = await this._repository.createQueryBuilder('assets').select(['id', 'value']).orderBy('id', 'ASC').getRawMany();
+    cleanupSync = async (): Promise<void> => {
+        const startTime = Date.now();
+        const records = await this.getExtra();
+        // We first verify if there are no duplicates in the extra entity
 
-        for (const key of record) {
-            if (key) {
-                const entity = await this.getById(key.id);
+        const sameDay = (date1: Date, date2: Date) => {
+            const d1 = new Date(date1);
+            const d2 = new Date(date2);
+            return d1.getDate() === d2.getDate();
+        };
 
-                if (entity) {
-                    await this.createOrUpdateAssetExtra(key.id);
-                }
+        const filteredExtra = records.map((item) => {
+            // Create an empty hash map
+            const map = new Map();
+
+            // Filter the extra array to only include values where the last_updated_at is different from the previous value's last_updated_at
+            const filteredExtra = item.extra
+                .filter((cur, index, arr) => !index || !sameDay(arr[index - 1].last_updated_at, cur.last_updated_at))
+                .reduce((acc, cur) => {
+                    // If the current value's last_updated_at is not in the map, add it to the map and the accumulator
+                    if (!map.has(cur.last_updated_at)) {
+                        map.set(cur.last_updated_at, cur);
+                        acc.push(cur);
+                    }
+                    return acc;
+                }, []);
+
+            // Return a new object with the filtered extra array
+            const endTime = Date.now();
+            const processingTime = endTime - startTime;
+            console.log(`Processing time: ${processingTime}ms`);
+            return {
+                id: item.id,
+                extra: filteredExtra,
+            };
+        });
+
+        // Before we update the extra entity we do a deepEquality comparison between the extra entity and filteredExtra
+        const deepEqual = records.every((record, index) => isEqual(record.extra, filteredExtra[index].extra));
+
+        // We only update the db if there are differences
+        if (!deepEqual) {
+            for (const el of filteredExtra) {
+                // we get the id
+                const entity = await this.getById(el.id);
+
+                // we reassign the entity
+                entity.extra = el.extra;
+
+                // we update the db
+                this._repository.update(el.id, entity);
+            }
+        }
+    };
+
+    retryExtraSync = async (): Promise<void> => {
+        const records = await this.getExtra();
+
+        const arr = [];
+
+        // For every metrics we want to check the last inserted extra value
+        for (const key of records) {
+            arr.push({ id: key?.id, extra: key?.extra.pop() });
+        }
+
+        // As we update historical data one time per epoch we verify if the last updated record was inserted during that week time
+        // If not we retry
+        // We make sure that the first day of the week is monday 00:00 and last day of the week sunday 23:59
+        const today = new Date();
+        const dayOfWeek = today.getDay();
+        const firstWeekDay = new Date(today.setDate(today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1))).setHours(0, 0, 0, 0);
+        const firstWeekDayISO = new Date(firstWeekDay).toISOString();
+
+        const lastWeekDay = new Date(today.getFullYear(), today.getMonth(), today.getDate() + (7 - dayOfWeek)).setHours(23, 59, 59, 999);
+        const lastWeekDayISO = new Date(lastWeekDay).toISOString();
+
+        for (const el of arr) {
+            const date = new Date(el?.extra?.last_updated_at);
+
+            if (date < new Date(firstWeekDayISO) && date < new Date(lastWeekDayISO)) {
+                // We get the id
+                const entity = await this.getById(el.id);
+
+                // we push the value to the entity
+                entity.extra.push(entity.value);
+
+                // we update the db
+                this._repository.update(el.id, entity);
             }
         }
     };
@@ -104,7 +183,7 @@ export class AssetService {
         return query.getManyAndCount();
     };
 
-    fetchMetricsSince = async (metrics: string, date: Date): Promise<{ id: string; extra: [] }[]> => {
+    fetchMetricsSince = async (metrics: string, date: Date): Promise<{ id: string; extra: GenericExtraEntity[] }[]> => {
         // Date will come as string format with month and year 'Jan-2022'
 
         const query = await this._repository.createQueryBuilder('assets').select(['id', 'extra']).where('id = :metrics', { metrics: metrics }).getRawMany();

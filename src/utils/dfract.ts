@@ -70,16 +70,30 @@ export const computeTotalApy = async (
     };
 };
 
-export interface GenericValueEntity {
-    last_updated_at?: Date;
-    apy?: number;
-    supply?: number;
-    total_value_usd?: number;
-    unit_price_usd?: number;
-    total_allocated_token?: number;
-    account_balance?: number;
-    tvl?: number;
-}
+export type AssetValue =
+    | {
+          apy?: number;
+      }
+    | { supply?: number }
+    | { total_value_usd?: number }
+    | { unit_price_usd?: number }
+    | { total_allocated_token?: number }
+    | { account_balance?: number }
+    | { tvl?: number };
+
+type ValueUnionProperties = keyof AssetValue;
+
+export type GenericValueEntity = {
+    last_updated_at: Date;
+} & {
+    [K in ValueUnionProperties]: AssetValue[K];
+};
+
+export type GenericExtraEntity = {
+    last_updated_at: Date;
+} & {
+    [K in ValueUnionProperties]: AssetValue[K];
+};
 
 // Eliminate falsy values to be inserted in DB
 export const filterFalsy = (obj) =>
