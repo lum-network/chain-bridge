@@ -162,7 +162,7 @@ export class BlockConsumer {
                     if (isBeam(message.type_url)) {
                         await this._beamQueue.add(
                             QueueJobs.INGEST,
-                            { value: message.value, url: message.type_url, time: txDoc.time },
+                            { id: message.value.id, value: message.value, url: message.type_url, time: txDoc.time },
                             {
                                 jobId: `beam-${message.value.id}`,
                                 attempts: 5,

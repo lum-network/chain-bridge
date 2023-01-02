@@ -1,14 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
-import { Repository } from 'typeorm';
+import { Repository, UpdateResult } from 'typeorm';
 
 import { BeamEntity } from '@app/database';
-import { BeamStatus, groupTypeToChar, formatDate, groupTypeInterval, Queues, QueuePriority, QueueJobs, BeamEvent } from '@app/utils';
+import { BeamEvent, BeamStatus, groupTypeToChar, formatDate, groupTypeInterval, Queues, QueuePriority, QueueJobs } from '@app/utils';
 import { InjectQueue } from '@nestjs/bull';
 import { Job, Queue } from 'bull';
-import { AmountModel } from '@app/database/entities/amount.model';
-import { BeamData } from '@lum-network/sdk-javascript/build/codec/beam/beam';
 
 @Injectable()
 export class BeamService {
@@ -178,68 +176,34 @@ export class BeamService {
         });
     };
 
-    save = async (entity: Partial<BeamEntity>): Promise<BeamEntity> => {
+    createBeam = async (beam: Partial<BeamEntity>, event: BeamEvent): Promise<BeamEntity> => {
+        const entity = new BeamEntity({ ...beam, event: [event] });
+
         return this._repository.save(entity);
     };
 
-    createOrUpdateBeamEntity = async (
-        beamId: string,
-        creatorAddress: string,
-        status: number,
-        claimAddress: string,
-        fundsWithdrawn: boolean,
-        claimed: boolean,
-        cancelReason: string,
-        hideContent: boolean,
-        schema: string,
-        claimExpiresAtBlock: number,
-        closesAtBlock: number,
-        amount: AmountModel,
-        data: BeamData,
-        createdAt: Date,
-        closedAt: Date,
-        event: BeamEvent,
-        updatedAt: Date,
-    ): Promise<BeamEntity> => {
-        let entity = await this.get(beamId);
+    updateBeam = async (beam: Partial<BeamEntity>): Promise<UpdateResult> => {
+        const entity = await this.get(beam.id);
 
-        // If entity does not exists, we create a new one for BeamEntity
-        if (!entity) {
-            entity = new BeamEntity({
-                creator_address: creatorAddress,
-                id: beamId,
-                status: status,
-                claim_address: claimAddress,
-                funds_withdrawn: fundsWithdrawn,
-                claimed: claimed,
-                cancel_reason: cancelReason,
-                hide_content: hideContent,
-                schema: schema,
-                claim_expires_at_block: claimExpiresAtBlock,
-                closes_at_block: closesAtBlock,
-                amount,
-                data,
-                dispatched_at: createdAt,
-                closed_at: closedAt,
-                event: [event],
-            });
-        } else {
-            // Otherwise, we just update some targeted properties
-            entity.status = status;
-            entity.claim_address = claimAddress;
-            entity.funds_withdrawn = fundsWithdrawn;
-            entity.claimed = claimed;
-            entity.cancel_reason = cancelReason;
-            entity.hide_content = hideContent;
-            entity.amount = amount;
-            entity.data = data;
-            entity.event.push(event);
-            entity.updated_at = updatedAt;
-        }
+        entity.status = beam.status && beam.status !== entity.status ? beam.status : entity.status;
+        entity.claim_address = beam.claim_address && beam.claim_address !== entity.claim_address ? beam.claim_address : entity.claim_address;
+        entity.funds_withdrawn = beam.funds_withdrawn && beam.funds_withdrawn !== entity.funds_withdrawn ? beam.funds_withdrawn : entity.funds_withdrawn;
+        entity.claimed = beam.claimed && beam.claimed !== entity.claimed ? beam.claimed : entity.claimed;
+        entity.cancel_reason = beam.cancel_reason && beam.cancel_reason !== entity.cancel_reason ? beam.cancel_reason : entity.cancel_reason;
+        entity.hide_content = beam.hide_content && beam.hide_content !== entity.hide_content ? beam.hide_content : entity.hide_content;
+        entity.amount = beam.amount && beam.amount !== entity.amount ? beam.amount : entity.amount;
+        entity.data = beam.data && beam.data !== entity.data ? beam.data : entity.data;
+        entity.updated_at = new Date();
 
-        await this._repository.save(entity);
+        return this._repository.update(entity.id, entity);
+    };
 
-        return entity;
+    updateBeamEvent = async (event: BeamEvent): Promise<UpdateResult> => {
+        const entity = await this.get(event.value.id);
+
+        entity.event.push(event);
+
+        return this._repository.update(entity.id, entity);
     };
 
     failSafeIngest = async (id: string): Promise<Job> => {
