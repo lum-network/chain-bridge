@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 
 import { Exclude, Expose, Type } from 'class-transformer';
 import { BalanceResponse } from '@app/http/responses/balance.response';
+import { BeamEvent } from '@app/utils';
 
 @Exclude()
 class ProductsReviewsContentResponse {
@@ -263,4 +264,8 @@ export class BeamResponse {
     @ApiProperty()
     @Expose()
     dispatched_at_block: number;
+
+    @ApiProperty()
+    @Expose()
+    event: BeamEvent[];
 }

@@ -3,7 +3,7 @@ import { Column, CreateDateColumn, Entity, PrimaryColumn, UpdateDateColumn, Vers
 import { BeamData } from '@lum-network/sdk-javascript/build/codec/beam/beam';
 
 import { AmountModel } from '@app/database/entities/amount.model';
-import { BeamStatus } from '@app/utils';
+import { BeamEvent, BeamStatus } from '@app/utils';
 
 @Entity({ name: 'beams' })
 export class BeamEntity {
@@ -63,6 +63,9 @@ export class BeamEntity {
 
     @VersionColumn({ type: 'integer', default: 0 })
     nonce?: number = 0;
+
+    @Column({ type: 'jsonb', nullable: false, default: () => "'[]'", array: false })
+    event: BeamEvent[] = [];
 
     constructor(data: Partial<BeamEntity>) {
         Object.assign(this, data);
