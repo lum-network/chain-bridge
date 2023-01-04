@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
-import { Repository } from 'typeorm';
+import { Repository, UpdateResult } from 'typeorm';
 
 import { BeamEntity } from '@app/database';
-import { BeamStatus, groupTypeToChar, formatDate, groupTypeInterval, Queues, QueuePriority, QueueJobs } from '@app/utils';
+import { BeamEvent, BeamStatus, groupTypeToChar, formatDate, groupTypeInterval, Queues, QueuePriority, QueueJobs } from '@app/utils';
 import { InjectQueue } from '@nestjs/bull';
 import { Job, Queue } from 'bull';
 
@@ -176,8 +176,34 @@ export class BeamService {
         });
     };
 
-    save = async (entity: Partial<BeamEntity>): Promise<BeamEntity> => {
+    createBeam = async (beam: Partial<BeamEntity>, event: BeamEvent): Promise<BeamEntity> => {
+        const entity = new BeamEntity({ ...beam, event: [event] });
+
         return this._repository.save(entity);
+    };
+
+    updateBeam = async (beam: Partial<BeamEntity>): Promise<UpdateResult> => {
+        const entity = await this.get(beam.id);
+
+        entity.status = beam.status && beam.status !== entity.status ? beam.status : entity.status;
+        entity.claim_address = beam.claim_address && beam.claim_address !== entity.claim_address ? beam.claim_address : entity.claim_address;
+        entity.funds_withdrawn = beam.funds_withdrawn && beam.funds_withdrawn !== entity.funds_withdrawn ? beam.funds_withdrawn : entity.funds_withdrawn;
+        entity.claimed = beam.claimed && beam.claimed !== entity.claimed ? beam.claimed : entity.claimed;
+        entity.cancel_reason = beam.cancel_reason && beam.cancel_reason !== entity.cancel_reason ? beam.cancel_reason : entity.cancel_reason;
+        entity.hide_content = beam.hide_content && beam.hide_content !== entity.hide_content ? beam.hide_content : entity.hide_content;
+        entity.amount = beam.amount && beam.amount !== entity.amount ? beam.amount : entity.amount;
+        entity.data = beam.data && beam.data !== entity.data ? beam.data : entity.data;
+        entity.updated_at = new Date();
+
+        return this._repository.update(entity.id, entity);
+    };
+
+    updateBeamEvent = async (event: BeamEvent): Promise<UpdateResult> => {
+        const entity = await this.get(event.value.id);
+
+        entity.event.push(event);
+
+        return this._repository.update(entity.id, entity);
     };
 
     failSafeIngest = async (id: string): Promise<Job> => {

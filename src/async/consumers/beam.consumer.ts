@@ -3,9 +3,8 @@ import { Logger } from '@nestjs/common';
 
 import { Job } from 'bull';
 
-import { QueueJobs, Queues } from '@app/utils';
+import { BeamEventValue, QueueJobs, Queues } from '@app/utils';
 import { BeamService, LumNetworkService } from '@app/services';
-import { BeamEntity } from '@app/database';
 
 @Processor(Queues.BEAMS)
 export class BeamConsumer {
@@ -14,35 +13,66 @@ export class BeamConsumer {
     constructor(private readonly _beamService: BeamService, private readonly _lumNetworkService: LumNetworkService) {}
 
     @Process(QueueJobs.INGEST)
-    async ingestBeam(job: Job<{ id: string }>) {
-        if (await this._beamService.get(job.data.id)) {
+    async ingestBeam(job: Job<{ id: string; value: BeamEventValue; url: string; time: Date }>) {
+        // If no id we exit
+        if (!job.data.id) {
+            this._logger.error('Failed to ingest beam as no job id was found');
             return;
         }
 
         this._logger.debug(`Ingesting beam ${job.data.id}`);
 
-        const beam = await this._lumNetworkService.client.queryClient.beam.get(job.data.id);
-        const entity = new BeamEntity({
-            creator_address: beam.creatorAddress,
-            id: beam.id,
-            status: beam.status as number,
-            claim_address: beam.claimAddress,
-            funds_withdrawn: beam.fundsWithdrawn,
-            claimed: beam.claimed,
-            cancel_reason: beam.cancelReason,
-            hide_content: beam.hideContent,
-            schema: beam.schema,
-            claim_expires_at_block: beam.claimExpiresAtBlock,
-            closes_at_block: beam.closesAtBlock,
-            amount: {
-                amount: parseFloat(beam.amount.amount),
-                denom: beam.amount.denom,
-            },
-            data: beam.data,
-            dispatched_at: beam.createdAt,
-            closed_at: beam.closedAt,
-        });
+        // Get beam by passing the id received by the tx dispatch in block consumer
+        const remoteBeam = await this._lumNetworkService.client.queryClient.beam.get(job.data.id);
 
-        await this._beamService.save(entity);
+        // We format the remote beam to match it against our schema
+        const formattedBeam = {
+            creator_address: remoteBeam.creatorAddress,
+            id: remoteBeam.id,
+            status: remoteBeam.status as number,
+            claim_address: remoteBeam.claimAddress,
+            funds_withdrawn: remoteBeam.fundsWithdrawn,
+            claimed: remoteBeam.claimed,
+            cancel_reason: remoteBeam.cancelReason,
+            hide_content: remoteBeam.hideContent,
+            schema: remoteBeam.schema,
+            claim_expires_at_block: remoteBeam.claimExpiresAtBlock,
+            closes_at_block: remoteBeam.closesAtBlock,
+            amount: {
+                amount: parseFloat(remoteBeam.amount.amount),
+                denom: remoteBeam.amount.denom,
+            },
+            data: remoteBeam.data,
+            dispatched_at: remoteBeam.createdAt,
+            closed_at: remoteBeam.closedAt,
+        };
+
+        // Event that will trace beam history
+        // Make sure it defaults if not present
+        const event = {
+            time: job.data.time || new Date(),
+            type: job.data.url || '',
+            value: job.data.value || { id: job.data.id },
+        };
+
+        // Check beam in db
+        const beam = await this._beamService.get(job.data.id);
+
+        if (!beam) {
+            // Save beam
+            await this._beamService.createBeam(formattedBeam, event);
+
+            this._logger.debug(`Persisted beam ${job.data.id}`);
+        } else {
+            // Update beam
+            await this._beamService.updateBeam(formattedBeam);
+
+            this._logger.debug(`Updated beam ${job.data.id}`);
+
+            // Update event
+            await this._beamService.updateBeamEvent(event);
+
+            this._logger.debug(`Updated beam event ${job.data.url}`);
+        }
     }
 }
