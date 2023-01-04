@@ -4,7 +4,7 @@ import request from 'supertest';
 
 import { ApiModule } from '@app/modules';
 import { BeamService } from '@app/services';
-import { beamSeed1, beamSeed2, beamSeed3 } from './seed';
+import { beamEvent1, beamEvent2, beamSeed1, beamSeed2 } from './seed';
 
 describe('Beams (e2e)', () => {
     let app: INestApplication;
@@ -20,9 +20,8 @@ describe('Beams (e2e)', () => {
 
         const beamsQueryExecutor = app.get<BeamService>(BeamService);
 
-        await beamsQueryExecutor.save(beamSeed1);
-        await beamsQueryExecutor.save(beamSeed2);
-        await beamsQueryExecutor.save(beamSeed3);
+        await beamsQueryExecutor.createBeam(beamSeed1, beamEvent1);
+        await beamsQueryExecutor.createBeam(beamSeed2, beamEvent2);
     });
 
     afterAll(async () => {

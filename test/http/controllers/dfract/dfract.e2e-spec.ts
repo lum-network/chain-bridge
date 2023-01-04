@@ -33,8 +33,7 @@ describe('Dfract (e2e)', () => {
         await app.close();
     });
 
-    jest.setTimeout(30000);
-    it('[GET] - should return the latest asset metrics for the seeded data', async () => {
+    it('[GET] - should return the latest asset metrics', async () => {
         const response = await request(app.getHttpServer()).get('/dfract/assets/latest');
         expect(response.body.code).toEqual(HttpStatus.OK);
         expect(response.body.result.length).toBeGreaterThan(0);

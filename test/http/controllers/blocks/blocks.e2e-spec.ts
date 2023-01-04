@@ -3,8 +3,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
 
 import { ApiModule } from '@app/modules';
-import { BlockService } from '@app/services';
-import { blockSeed1, blockSeed2 } from './seed';
 
 describe('Blocks (e2e)', () => {
     let app: INestApplication;
@@ -15,11 +13,6 @@ describe('Blocks (e2e)', () => {
         }).compile();
 
         app = moduleFixture.createNestApplication();
-
-        const blockQueryExecutor = app.get<BlockService>(BlockService);
-
-        await blockQueryExecutor.save(blockSeed1);
-        await blockQueryExecutor.save(blockSeed2);
 
         await app.init();
     });

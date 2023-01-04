@@ -10,5 +10,5 @@
         "@app/(.*)$": "<rootDir>/../src/$1"
     },
     "testSequencer": "./test-sequencer.ts",
-    "testTimeout": 20000
+    "testTimeout": 30000
 }

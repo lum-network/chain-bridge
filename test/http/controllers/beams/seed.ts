@@ -1,15 +1,15 @@
 export const beamSeed1 = {
     id: '00221810-9f4a-4fe8-8499-8590461fc169',
     creator_address: 'lum14vu2tyqt5jugrxup756w72fc83mug4akv6s6qr',
-    status: 2,
+    status: 1,
     claim_address: '',
     funds_withdrawn: false,
     claimed: false,
     cancel_reason: '',
     hide_content: false,
     schema: 'lum-network/review',
-    claim_expires_at_block: 3235629,
-    closes_at_block: 3235629,
+    claim_expires_at_block: 5564527,
+    closes_at_block: 5564527,
     amount: {
         denom: 'ulum',
         amount: 2012526642,
@@ -75,15 +75,15 @@ export const beamSeed1 = {
 export const beamSeed2 = {
     id: '00ae0884-bfd6-4c96-afc1-14355ebbced8',
     creator_address: 'lum14vu2tyqt5jugrxup756w72fc83mug4akv6s6qr',
-    status: 2,
+    status: 1,
     claim_address: '',
     funds_withdrawn: false,
     claimed: false,
     cancel_reason: '',
     hide_content: false,
     schema: 'lum-network/review',
-    claim_expires_at_block: 3290734,
-    closes_at_block: 3290734,
+    claim_expires_at_block: 5564527,
+    closes_at_block: 5564527,
     amount: {
         denom: 'ulum',
         amount: 1758738553,
@@ -146,76 +146,26 @@ export const beamSeed2 = {
     nonce: 0,
 };
 
-export const beamSeed3 = {
-    id: '05cab4fa-74dd-487f-b410-acb96cb24784',
-    creator_address: 'lum14vu2tyqt5jugrxup756w72fc83mug4akv6s6qr',
-    status: 2,
-    claim_address: '',
-    funds_withdrawn: false,
-    claimed: false,
-    cancel_reason: '',
-    hide_content: false,
-    schema: 'lum-network/review',
-    claim_expires_at_block: 3259333,
-    closes_at_block: 3259333,
-    amount: {
-        denom: 'ulum',
-        amount: 1799133656,
-    },
-    data: {
-        reward: {
-            amount: 2,
-            status: 'validated',
-            details: [
-                {
-                    type: 'overall',
-                    amount: 2,
-                    status: 'validated',
-                    maxAmount: 0,
-                },
-            ],
-            trigger: 'review',
-            currency: 'EUR',
-            maxAmount: 3,
+export const beamEvent1 = {
+    time: new Date('2022-11-04 17:00:44.743'),
+    type: '/lum.network.beam.MsgOpenBeam',
+    value: {
+        ...beamSeed1,
+        amount: {
+            denom: 'ulum',
+            amount: '2012526642',
         },
-        productsReviews: [
-            {
-                title: 'Paradisio+-+Friandises+en+Biscuit+Animaux+pour+Chien+-+500g',
-                medias: [],
-                content: {
-                    cons: '',
-                    pros: '',
-                    overall: '677d5daae1e0135597f4a82f3b3f673b',
-                },
-                orderId: 'cb38bb22-a05b-433b-bb46-4b77355c280a',
-                ratings: {
-                    overall: 5,
-                    quality: 0,
-                },
-                products: [
-                    {
-                        ids: {
-                            mpns: [],
-                            skus: [],
-                            asins: [],
-                            gtins: [],
-                        },
-                        url: '',
-                        name: '',
-                        urls: [],
-                    },
-                ],
-                reviewId: 'cb38bb22-a05b-433b-bb46-4b77355c280a:d09db142-111f-473a-aa07-b53c1b529e42',
-                ratingUrl: '',
-                reviewUrl: '',
-                timestamp: '2022-07-08 11:52:32',
-                collectionMethod: 'after_fulfillment',
-            },
-        ],
     },
-    dispatched_at: new Date('2022-07-15 02:52:29.421'),
-    closed_at: new Date('2022-07-29 05:30:08.364'),
-    created_at: new Date('2022-11-04 17:20:12.336'),
-    updated_at: null,
-    nonce: 0,
+};
+
+export const beamEvent2 = {
+    time: new Date('2022-11-04 17:42:11.343'),
+    type: '/lum.network.beam.MsgOpenBeam',
+    value: {
+        ...beamSeed2,
+        amount: {
+            denom: 'ulum',
+            amount: '1758738553',
+        },
+    },
 };

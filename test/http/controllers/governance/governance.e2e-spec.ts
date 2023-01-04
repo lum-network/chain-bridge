@@ -32,22 +32,25 @@ describe('Governance (e2e)', () => {
 
     it('[GET] - should return proposals', async () => {
         const response = await request(app.getHttpServer()).get('/governance/proposals');
-        if (response.status === HttpStatus.OK) {
-            expect(response.status).toEqual(HttpStatus.OK);
-        }
+        expect(response.status).toEqual(HttpStatus.OK);
+        expect(response.body.result.length).toBeGreaterThanOrEqual(0);
     });
 
-    it('[GET] - should return proposals by id', async () => {
-        const response = await request(app.getHttpServer()).get('/governance/proposals/21');
-        if (response.status === HttpStatus.OK) {
-            expect(response.body.result.proposal_id.low).toBe(21);
-            expect(response.body.result.status).toBeGreaterThanOrEqual(-1);
-            expect(response.body.result.status).toBeLessThanOrEqual(4);
-        }
+    it('[GET] - should return an error if the wrong proposal id is passed', async () => {
+        const response = await request(app.getHttpServer()).get('/governance/proposals/0');
+        expect(response.status).toEqual(HttpStatus.INTERNAL_SERVER_ERROR);
+    });
+
+    it('[GET] - should return a proposal by id', async () => {
+        const response = await request(app.getHttpServer()).get('/governance/proposals/10');
+        expect(response.status).toEqual(HttpStatus.OK);
+        expect(response.body.result.proposal_id.low).toEqual(10);
+        expect(response.body.result.status).toBeGreaterThanOrEqual(-1);
+        expect(response.body.result.status).toBeLessThanOrEqual(4);
     });
 
     it('[GET] - should return depositors by id', async () => {
-        const response = await request(app.getHttpServer()).get('/governance/proposals/21/depositors');
+        const response = await request(app.getHttpServer()).get('/governance/proposals/10/depositors');
         expect(response.status).toEqual(HttpStatus.OK);
         expect(response.body.result.length).toBeGreaterThan(0);
         expect(Number(response.body.result[0].amount.amount)).toBeGreaterThanOrEqual(100000000000);
@@ -58,7 +61,7 @@ describe('Governance (e2e)', () => {
     });
 
     it('[GET] - should return voters by id', async () => {
-        const response = await request(app.getHttpServer()).get('/governance/proposals/21/voters');
+        const response = await request(app.getHttpServer()).get('/governance/proposals/10/voters');
         expect(response.status).toEqual(HttpStatus.OK);
         expect(response.body.result.length).toBeGreaterThan(0);
         expect(response.body.result[0].vote_option).toBeGreaterThanOrEqual(-1);
