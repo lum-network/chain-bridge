@@ -95,6 +95,15 @@ export type GenericExtraEntity = {
     [K in ValueUnionProperties]: AssetValue[K];
 };
 
+export interface OwnAssetInfo {
+    unit_price_usd?: number;
+    total_value_usd?: number;
+    supply?: number;
+    apy?: number;
+    total_allocated_token?: number;
+    tvl?: number;
+}
+
 // Eliminate falsy values to be inserted in DB
 export const filterFalsy = (obj) =>
     Object.keys(obj).reduce((acc, key) => {

@@ -2,10 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { isEqual } from 'lodash';
 
-import { Repository } from 'typeorm';
+import { Repository, UpdateResult } from 'typeorm';
 
 import { AssetEntity } from '@app/database';
-import { filterFalsy, GenericExtraEntity, GenericValueEntity } from '@app/utils';
+import { filterFalsy, GenericExtraEntity, GenericValueEntity, OwnAssetInfo } from '@app/utils';
 import { AssetInfo } from '@app/http';
 
 @Injectable()
@@ -24,28 +24,28 @@ export class AssetService {
         return await this._repository.createQueryBuilder('assets').select(['id', 'extra']).getRawMany();
     };
 
-    createOrUpdateAssetValue = async (compositeKey: string, value: GenericValueEntity): Promise<AssetEntity> => {
-        let entity = await this.getById(compositeKey);
-
+    createOrUpdateAssetValue = async (compositeKey: string, value: GenericValueEntity): Promise<AssetEntity | UpdateResult> => {
+        const entity = await this.getById(compositeKey);
         // If entity does not exists, we create with a new one
         if (!entity) {
-            entity = new AssetEntity({
-                id: compositeKey,
-                value,
-            });
+            const createAssetValueEntity = new AssetEntity({ id: compositeKey, value });
+
+            return this._repository.save(createAssetValueEntity);
         } else {
             // Otherwise, we just update the propertiess
             entity.id = compositeKey;
             entity.value = value;
-        }
 
-        return this._repository.save(entity);
+            return this._repository.update(entity.id, entity);
+        }
     };
 
     chainAssetCreateOrUpdateValue = async (getAssetInfo: AssetInfo[]): Promise<void> => {
+        // We avoid falsy values being inserted in the db
         for (const key of filterFalsy(getAssetInfo)) {
             if (key) {
                 const compositeKey = `${key.symbol.toLowerCase()}_${Object.keys(key)[0]}`;
+
                 const value = { [Object.keys(key)[0]]: Object.values(key)[0], last_updated_at: new Date() };
 
                 await this.createOrUpdateAssetValue(compositeKey, value);
@@ -53,7 +53,8 @@ export class AssetService {
         }
     };
 
-    ownAssetCreateOrUpdateValue = async (getAssetInfo: any, name: string): Promise<void> => {
+    ownAssetCreateOrUpdateValue = async (getAssetInfo: OwnAssetInfo, name: string): Promise<void> => {
+        // We avoid falsy values being inserted in the db
         for (const key in filterFalsy(getAssetInfo)) {
             if (key) {
                 const compositeKey = `${name.toLowerCase()}_${key}`;
@@ -65,8 +66,8 @@ export class AssetService {
         }
     };
 
-    // Helper function to append historical data to the extra column
-    assetCreateOrAppendExtra = async (): Promise<void> => {
+    // We create or append extra values
+    createOrAppendExtra = async (): Promise<void> => {
         const records = await this.getExtra();
 
         // We first query the entity by passing the id
@@ -84,44 +85,51 @@ export class AssetService {
         }
     };
 
+    // Cleanup historical data by keeping only 1 asset value per week
     cleanupSync = async (): Promise<void> => {
-        const startTime = Date.now();
         const records = await this.getExtra();
-        // We first verify if there are no duplicates in the extra entity
 
-        const sameDay = (date1: Date, date2: Date) => {
-            const d1 = new Date(date1);
-            const d2 = new Date(date2);
-            return d1.getDate() === d2.getDate();
+        // Get the week of the current value's last_updated_at
+        const getWeek = (date: Date): number => {
+            // Set to midnight on the same day of the week
+            date.setHours(0, 0, 0, 0);
+            // Set to the first day of the week
+            date.setDate(date.getDate() - date.getDay());
+            // Return the week number
+            return Math.ceil((date.valueOf() - new Date(date.getFullYear(), 0, 1).valueOf()) / 604800000);
         };
 
         const filteredExtra = records.map((item) => {
             // Create an empty hash map
             const map = new Map();
 
-            // Filter the extra array to only include values where the last_updated_at is different from the previous value's last_updated_at
-            const filteredExtra = item.extra
-                .filter((cur, index, arr) => !index || !sameDay(arr[index - 1].last_updated_at, cur.last_updated_at))
-                .reduce((acc, cur) => {
-                    // If the current value's last_updated_at is not in the map, add it to the map and the accumulator
-                    if (!map.has(cur.last_updated_at)) {
-                        map.set(cur.last_updated_at, cur);
-                        acc.push(cur);
+            // Filter the extra array to only include unique objects
+            const arrFilter = item.extra.reduce((acc, cur) => {
+                // Get the week of the current value's last_updated_at
+                const week = getWeek(new Date(cur.last_updated_at));
+                // If the current value's week is not in the map, add it to the map and the accumulator
+                if (!map.has(week)) {
+                    map.set(week, cur);
+                    acc.push(cur);
+                } else {
+                    // If the current value's week is already in the map, we update the value in the map if the current value is newer
+                    const existingValue = map.get(week);
+                    if (new Date(cur.last_updated_at) > new Date(existingValue.last_updated_at)) {
+                        map.set(week, cur);
                     }
-                    return acc;
-                }, []);
+                }
+                return acc;
+            }, []);
 
             // Return a new object with the filtered extra array
-            const endTime = Date.now();
-            const processingTime = endTime - startTime;
-            console.log(`Processing time: ${processingTime}ms`);
             return {
                 id: item.id,
-                extra: filteredExtra,
+                extra: arrFilter,
             };
         });
 
-        // Before we update the extra entity we do a deepEquality comparison between the extra entity and filteredExtra
+        // Before we update the extra entity we do a deepEquality comparison between the existing extra entity and filteredExtra
+        // This serves as check to avoid unnecessary db update if it's not required
         const deepEqual = records.every((record, index) => isEqual(record.extra, filteredExtra[index].extra));
 
         // We only update the db if there are differences
@@ -134,7 +142,7 @@ export class AssetService {
                 entity.extra = el.extra;
 
                 // we update the db
-                this._repository.update(el.id, entity);
+                await this._repository.update(el.id, entity);
             }
         }
     };
@@ -171,7 +179,7 @@ export class AssetService {
                 entity.extra.push(entity.value);
 
                 // we update the db
-                this._repository.update(el.id, entity);
+                await this._repository.update(el.id, entity);
             }
         }
     };

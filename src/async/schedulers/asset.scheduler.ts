@@ -31,21 +31,20 @@ export class AssetScheduler {
 
             const lumMetrics = await this._lumNetworkService.getAssetInfo();
             if (lumMetrics) {
-                await this._assetService.ownAssetCreateOrUpdateValue(lumMetrics, AssetSymbol.LUM);
+                this._assetService.ownAssetCreateOrUpdateValue(lumMetrics, AssetSymbol.LUM);
             }
 
             const chainMetrics = await this._chainService.getAssetInfo();
             if (chainMetrics) {
-                await this._assetService.chainAssetCreateOrUpdateValue(chainMetrics);
+                this._assetService.chainAssetCreateOrUpdateValue(chainMetrics);
             }
         } catch (error) {
             this._logger.error(`Failed to update hourly asset info...`, error);
         }
     }
 
-    // Every Monday at 06:00pm
-    /* @Cron('0 18 * * MON') */
-    @Cron('17 15 * * MON')
+    // Every Monday at 06:30pm
+    @Cron('30 18 * * 1')
     async syncExtraWeekly(): Promise<void> {
         if (!this._configService.get<boolean>('DFRACT_SYNC_ENABLED')) {
             return;
@@ -55,7 +54,7 @@ export class AssetScheduler {
             this._logger.log(`Updating historical info from index assets...`);
 
             // We append historical data to be able to compute trends
-            await this._assetService.assetCreateOrAppendExtra();
+            this._assetService.createOrAppendExtra();
         } catch (error) {
             this._logger.error(`Failed to update weekly historical data...`, error);
         }
@@ -106,8 +105,7 @@ export class AssetScheduler {
     }
 
     // Cron that makes sure that the weekly historical data gets properly populated in case of failure
-    // Runs every 2 hours
-    @Cron(CronExpression.EVERY_5_MINUTES)
+    @Cron(CronExpression.EVERY_DAY_AT_2AM)
     async retrySync(): Promise<void> {
         if (!this._configService.get<boolean>('DFRACT_SYNC_ENABLED')) {
             return;
@@ -116,12 +114,14 @@ export class AssetScheduler {
         try {
             // We retry sync missing historical values
             this._logger.log(`Verifying missing historical data...`);
+
             this._assetService.retryExtraSync();
         } catch (error) {
             this._logger.error(`Failed to resync weekly historical data...`, error);
         }
     }
 
+    // We cleanup historical data in case of duplicates
     @Cron(CronExpression.EVERY_DAY_AT_4AM)
     async cleanupSync(): Promise<void> {
         if (!this._configService.get<boolean>('DFRACT_SYNC_ENABLED')) {
@@ -129,8 +129,8 @@ export class AssetScheduler {
         }
 
         try {
-            // We cleanup historical data in case of duplicates
-            this._logger.log(`Verifying missing historical data...`);
+            this._logger.log(`Cleaning up historical data...`);
+
             this._assetService.cleanupSync();
         } catch (error) {
             this._logger.error(`Failed to resync weekly historical data...`, error);
