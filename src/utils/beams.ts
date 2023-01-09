@@ -1,7 +1,7 @@
 import { LumMessages } from '@lum-network/sdk-javascript';
 import { BeamData } from '@lum-network/sdk-javascript/build/codec/beam/beam';
 import { Coin } from '@lum-network/sdk-javascript/build/codec/cosmos/base/v1beta1/coin';
-import { ChartGroupType } from './constants';
+import { BeamStatus, ChartGroupType } from './constants';
 
 export const isBeam = (type: string) => {
     return type === LumMessages.MsgOpenBeamUrl || type === LumMessages.MsgUpdateBeamUrl || type === LumMessages.MsgClaimBeamUrl;
@@ -36,7 +36,7 @@ export interface BeamEventValue {
     id: string;
     creatorAddress?: string;
     updaterAddress?: string;
-    status?: string;
+    status?: BeamStatus;
     cancelReason?: string;
     hideContent?: string;
     secret?: string;

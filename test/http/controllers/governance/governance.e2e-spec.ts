@@ -1,43 +1,73 @@
-import { INestApplication } from '@nestjs/common';
+import { HttpStatus, INestApplication } from '@nestjs/common';
 import { TestingModule, Test } from '@nestjs/testing';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { ApiModule } from '@app/modules';
+import { LumConstants } from '@lum-network/sdk-javascript';
 import request from 'supertest';
 
-import { mockResponseDepositors, mockResponseVotersPage0, mockResponseVotersPage1 } from './mock.data';
-
-import { DatabaseConfig } from '@app/database';
+import { ApiModule } from '@app/modules';
+import { ProposalDepositService, ProposalVoteService } from '@app/services';
+import { depositSeed, voteSeed } from './seed';
 
 describe('Governance (e2e)', () => {
     let app: INestApplication;
 
     beforeAll(async () => {
         const moduleFixture: TestingModule = await Test.createTestingModule({
-            imports: [
-                ApiModule,
-
-                // Use the e2e_test database to run the tests
-
-                TypeOrmModule.forRootAsync(DatabaseConfig),
-            ],
+            imports: [ApiModule],
         }).compile();
+
         app = moduleFixture.createNestApplication();
+
         await app.init();
-    });
 
-    it('[GET] Depositors - should return the depositors for proposalId 21', () => {
-        return request(app.getHttpServer()).get('/governance/proposals/21/depositors').expect(mockResponseDepositors);
-    });
+        const depositQueryExecutor = app.get<ProposalDepositService>(ProposalDepositService);
+        const voteQueryExecutor = app.get<ProposalVoteService>(ProposalVoteService);
 
-    it('[GET] Voters - should the first 5 voters for proposalId 21', () => {
-        return request(app.getHttpServer()).get('/governance/proposals/21/voters').expect(mockResponseVotersPage0);
-    });
-
-    it('[GET] Voters - should the first 5 voters of paginated page 1 for proposalId 21', () => {
-        return request(app.getHttpServer()).get('/governance/proposals/21/voters?page=1').expect(mockResponseVotersPage1);
+        await depositQueryExecutor.createOrUpdateDepositors(depositSeed.proposalId, depositSeed.depositorAddress, depositSeed.amount);
+        await voteQueryExecutor.createOrUpdateVoters(voteSeed.proposalId, voteSeed.voterAddress, voteSeed.voteOption, voteSeed.voteWeight);
     });
 
     afterAll(async () => {
         await app.close();
+    });
+
+    it('[GET] - should return proposals', async () => {
+        const response = await request(app.getHttpServer()).get('/governance/proposals');
+        expect(response.status).toEqual(HttpStatus.OK);
+        expect(response.body.result.length).toBeGreaterThanOrEqual(0);
+    });
+
+    it('[GET] - should return an error if the wrong proposal id is passed', async () => {
+        const response = await request(app.getHttpServer()).get('/governance/proposals/0');
+        expect(response.status).toEqual(HttpStatus.INTERNAL_SERVER_ERROR);
+    });
+
+    it('[GET] - should return a proposal by id', async () => {
+        const response = await request(app.getHttpServer()).get('/governance/proposals/10');
+        expect(response.status).toEqual(HttpStatus.OK);
+        expect(response.body.result.proposal_id.low).toEqual(10);
+        expect(response.body.result.status).toBeGreaterThanOrEqual(-1);
+        expect(response.body.result.status).toBeLessThanOrEqual(4);
+    });
+
+    it('[GET] - should return depositors by id', async () => {
+        const response = await request(app.getHttpServer()).get('/governance/proposals/10/depositors');
+        expect(response.status).toEqual(HttpStatus.OK);
+        expect(response.body.result.length).toBeGreaterThan(0);
+        expect(Number(response.body.result[0].amount.amount)).toBeGreaterThanOrEqual(100000000000);
+        expect(response.body.result[0].amount.denom).toEqual(LumConstants.MicroLumDenom);
+        expect(response.body.result[0].proposal_id).toBe(depositSeed.proposalId);
+        expect(response.body.result[0].depositor_address).toEqual(expect.stringMatching(/^lumvaloper/));
+        expect(response.body.metadata.items_count).toBeGreaterThan(0);
+    });
+
+    it('[GET] - should return voters by id', async () => {
+        const response = await request(app.getHttpServer()).get('/governance/proposals/10/voters');
+        expect(response.status).toEqual(HttpStatus.OK);
+        expect(response.body.result.length).toBeGreaterThan(0);
+        expect(response.body.result[0].vote_option).toBeGreaterThanOrEqual(-1);
+        expect(response.body.result[0].vote_option).toBeLessThanOrEqual(4);
+        expect(response.body.result[0].vote_weight).toBe(voteSeed.voteWeight);
+        expect(response.body.result[0].voter_address).toEqual(expect.stringMatching(/^lum1/));
+        expect(response.body.metadata.items_count).toBeGreaterThan(0);
     });
 });
