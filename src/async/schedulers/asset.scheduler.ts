@@ -31,12 +31,13 @@ export class AssetScheduler {
 
             const lumMetrics = await this._lumNetworkService.getAssetInfo();
             if (lumMetrics) {
-                this._assetService.ownAssetCreateOrUpdateValue(lumMetrics, AssetSymbol.LUM);
+                await this._assetService.ownAssetCreateOrUpdateValue(lumMetrics, AssetSymbol.LUM);
             }
 
             const chainMetrics = await this._chainService.getAssetInfo();
+
             if (chainMetrics) {
-                this._assetService.chainAssetCreateOrUpdateValue(chainMetrics);
+                await this._assetService.chainAssetCreateOrUpdateValue(chainMetrics);
             }
         } catch (error) {
             this._logger.error(`Failed to update hourly asset info...`, error);
@@ -44,6 +45,7 @@ export class AssetScheduler {
     }
 
     // Every Monday at 06:30pm
+    // We align the sync extra with the end of the DFR sync cron
     @Cron('30 18 * * 1')
     async syncExtraWeekly(): Promise<void> {
         if (!this._configService.get<boolean>('DFRACT_SYNC_ENABLED')) {
@@ -54,7 +56,7 @@ export class AssetScheduler {
             this._logger.log(`Updating historical info from index assets...`);
 
             // We append historical data to be able to compute trends
-            this._assetService.createOrAppendExtra();
+            await this._assetService.createOrAppendExtra();
         } catch (error) {
             this._logger.error(`Failed to update weekly historical data...`, error);
         }
@@ -92,11 +94,11 @@ export class AssetScheduler {
                 // If there is cash in the account balance, non-falsy dfractMetrics and an ongoing dfr gov prop, we update the records
                 // Pre gov prop asset info {account_balance, tvl}
                 if (preGovPropDfractMetrics && accountBalance > 0 && isGovPropDfractOngoing) {
-                    this._assetService.ownAssetCreateOrUpdateValue(preGovPropDfractMetrics, AssetSymbol.DFR);
+                    await this._assetService.ownAssetCreateOrUpdateValue(preGovPropDfractMetrics, AssetSymbol.DFR);
                     // If the gov prop has passed and has non-falsy dfractMetrics we update the records to persist the remaining metrics
                     // Post gov prop asset info {unit_price_usd, total_value_usd, supply, apy}
                 } else if (postGovPropDfractMetrics && isGovPropDfractPassed) {
-                    this._assetService.ownAssetCreateOrUpdateValue(postGovPropDfractMetrics, AssetSymbol.DFR);
+                    await this._assetService.ownAssetCreateOrUpdateValue(postGovPropDfractMetrics, AssetSymbol.DFR);
                 }
             }
         } catch (error) {
@@ -115,7 +117,7 @@ export class AssetScheduler {
             // We retry sync missing historical values
             this._logger.log(`Verifying missing historical data...`);
 
-            this._assetService.retryExtraSync();
+            await this._assetService.retryExtraSync();
         } catch (error) {
             this._logger.error(`Failed to resync weekly historical data...`, error);
         }
@@ -131,7 +133,7 @@ export class AssetScheduler {
         try {
             this._logger.log(`Cleaning up historical data...`);
 
-            this._assetService.cleanupSync();
+            await this._assetService.cleanupSync();
         } catch (error) {
             this._logger.error(`Failed to resync weekly historical data...`, error);
         }

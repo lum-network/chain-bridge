@@ -26,7 +26,7 @@ describe('Dfract (e2e)', () => {
         await dfractQueryExecutor.ownAssetCreateOrUpdateValue(lumSeed, AssetSymbol.LUM);
         await dfractQueryExecutor.chainAssetCreateOrUpdateValue(chainSeed);
         await dfractQueryExecutor.ownAssetCreateOrUpdateValue(dfrSeed, AssetSymbol.DFR);
-        await dfractQueryExecutor.assetCreateOrAppendExtra();
+        await dfractQueryExecutor.createOrAppendExtra();
     });
 
     afterAll(async () => {

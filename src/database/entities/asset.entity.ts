@@ -1,6 +1,6 @@
 import { Column, Entity, PrimaryColumn } from 'typeorm';
 
-import { GenericExtraEntity, GenericValueEntity } from '@app/utils';
+import { GenericValueEntity } from '@app/utils';
 
 @Entity({ name: 'assets' })
 export class AssetEntity {
@@ -11,7 +11,7 @@ export class AssetEntity {
     value: GenericValueEntity;
 
     @Column({ type: 'jsonb', nullable: false, default: () => "'[]'", array: false })
-    extra: GenericExtraEntity[] = [];
+    extra: GenericValueEntity[] = [];
 
     constructor(data: Partial<AssetEntity>) {
         Object.assign(this, data);

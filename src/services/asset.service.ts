@@ -5,8 +5,7 @@ import { isEqual } from 'lodash';
 import { Repository, UpdateResult } from 'typeorm';
 
 import { AssetEntity } from '@app/database';
-import { filterFalsy, GenericExtraEntity, GenericValueEntity, OwnAssetInfo } from '@app/utils';
-import { AssetInfo } from '@app/http';
+import { filterFalsy, GenericAssetInfo, GenericValueEntity } from '@app/utils';
 
 @Injectable()
 export class AssetService {
@@ -20,7 +19,7 @@ export class AssetService {
         });
     };
 
-    getExtra = async (): Promise<{ id: string; extra: GenericExtraEntity[] }[]> => {
+    getExtra = async (): Promise<{ id: string; extra: GenericValueEntity[] }[]> => {
         return await this._repository.createQueryBuilder('assets').select(['id', 'extra']).getRawMany();
     };
 
@@ -40,7 +39,7 @@ export class AssetService {
         }
     };
 
-    chainAssetCreateOrUpdateValue = async (getAssetInfo: AssetInfo[]): Promise<void> => {
+    chainAssetCreateOrUpdateValue = async (getAssetInfo: GenericAssetInfo[]): Promise<void> => {
         // We avoid falsy values being inserted in the db
         for (const key of filterFalsy(getAssetInfo)) {
             if (key) {
@@ -53,7 +52,7 @@ export class AssetService {
         }
     };
 
-    ownAssetCreateOrUpdateValue = async (getAssetInfo: OwnAssetInfo, name: string): Promise<void> => {
+    ownAssetCreateOrUpdateValue = async (getAssetInfo: GenericAssetInfo, name: string): Promise<void> => {
         // We avoid falsy values being inserted in the db
         for (const key in filterFalsy(getAssetInfo)) {
             if (key) {
@@ -85,7 +84,7 @@ export class AssetService {
         }
     };
 
-    // Cleanup historical data by keeping only 1 asset value per week
+    // Cleanup historical data by keeping only asset pair value per week
     cleanupSync = async (): Promise<void> => {
         const records = await this.getExtra();
 
@@ -93,8 +92,8 @@ export class AssetService {
         const getWeek = (date: Date): number => {
             // Set to midnight on the same day of the week
             date.setHours(0, 0, 0, 0);
-            // Set to the first day of the week
-            date.setDate(date.getDate() - date.getDay());
+            // Set to the first day of the week to be monday
+            date.setDate(date.getDate() - date.getDay() + (date.getDay() === 0 ? -6 : 1));
             // Return the week number
             return Math.ceil((date.valueOf() - new Date(date.getFullYear(), 0, 1).valueOf()) / 604800000);
         };
@@ -191,7 +190,7 @@ export class AssetService {
         return query.getManyAndCount();
     };
 
-    fetchMetricsSince = async (metrics: string, date: Date): Promise<{ id: string; extra: GenericExtraEntity[] }[]> => {
+    fetchMetricsSince = async (metrics: string, date: Date): Promise<{ id: string; extra: GenericValueEntity[] }[]> => {
         // Date will come as string format with month and year 'Jan-2022'
 
         const query = await this._repository.createQueryBuilder('assets').select(['id', 'extra']).where('id = :metrics', { metrics: metrics }).getRawMany();
