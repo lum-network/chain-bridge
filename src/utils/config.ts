@@ -24,5 +24,5 @@ export const ConfigMap = {
     API_PORT: Joi.number().required(),
     SENTRY_DSN: Joi.string().optional(),
     STARTING_HEIGHT: Joi.number().required(),
-    BULLBOARD_PASSWORD: Joi.string().required()
+    BULLBOARD_PASSWORD: Joi.string().required(),
 };
