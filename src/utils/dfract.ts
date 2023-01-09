@@ -70,15 +70,35 @@ export const computeTotalApy = async (
     };
 };
 
-export interface GenericValueEntity {
-    last_updated_at?: Date;
-    apy?: number;
-    supply?: number;
-    total_value_usd?: number;
+// Value field can only contain one these keys at the time
+export type AssetValue =
+    | {
+          apy?: number;
+      }
+    | { supply?: number }
+    | { total_value_usd?: number }
+    | { unit_price_usd?: number }
+    | { total_allocated_token?: number }
+    | { account_balance?: number }
+    | { tvl?: number };
+
+type ValueUnionProperties = keyof AssetValue;
+
+// last_updated_at is always present
+export type GenericValueEntity = {
+    last_updated_at: Date;
+} & {
+    [K in ValueUnionProperties]: AssetValue[K];
+};
+
+export interface GenericAssetInfo {
     unit_price_usd?: number;
+    total_value_usd?: number;
+    supply?: number;
+    apy?: number;
     total_allocated_token?: number;
-    account_balance?: number;
     tvl?: number;
+    last_updated_at?: Date;
 }
 
 // Eliminate falsy values to be inserted in DB

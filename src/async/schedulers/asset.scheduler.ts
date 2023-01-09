@@ -35,6 +35,7 @@ export class AssetScheduler {
             }
 
             const chainMetrics = await this._chainService.getAssetInfo();
+
             if (chainMetrics) {
                 await this._assetService.chainAssetCreateOrUpdateValue(chainMetrics);
             }
@@ -43,19 +44,19 @@ export class AssetScheduler {
         }
     }
 
-    @Cron(CronExpression.EVERY_WEEK)
+    // Every Monday at 06:30pm
+    // We align the sync extra with the end of the DFR sync cron
+    @Cron('30 18 * * 1')
     async syncExtraWeekly(): Promise<void> {
         if (!this._configService.get<boolean>('DFRACT_SYNC_ENABLED')) {
             return;
         }
 
         try {
-            // We only update chain values other than DFR once a week
-
             this._logger.log(`Updating historical info from index assets...`);
 
             // We append historical data to be able to compute trends
-            await this._assetService.assetCreateOrAppendExtra();
+            await this._assetService.createOrAppendExtra();
         } catch (error) {
             this._logger.error(`Failed to update weekly historical data...`, error);
         }
@@ -93,11 +94,11 @@ export class AssetScheduler {
                 // If there is cash in the account balance, non-falsy dfractMetrics and an ongoing dfr gov prop, we update the records
                 // Pre gov prop asset info {account_balance, tvl}
                 if (preGovPropDfractMetrics && accountBalance > 0 && isGovPropDfractOngoing) {
-                    this._assetService.ownAssetCreateOrUpdateValue(preGovPropDfractMetrics, AssetSymbol.DFR);
+                    await this._assetService.ownAssetCreateOrUpdateValue(preGovPropDfractMetrics, AssetSymbol.DFR);
                     // If the gov prop has passed and has non-falsy dfractMetrics we update the records to persist the remaining metrics
                     // Post gov prop asset info {unit_price_usd, total_value_usd, supply, apy}
                 } else if (postGovPropDfractMetrics && isGovPropDfractPassed) {
-                    this._assetService.ownAssetCreateOrUpdateValue(postGovPropDfractMetrics, AssetSymbol.DFR);
+                    await this._assetService.ownAssetCreateOrUpdateValue(postGovPropDfractMetrics, AssetSymbol.DFR);
                 }
             }
         } catch (error) {
@@ -106,39 +107,33 @@ export class AssetScheduler {
     }
 
     // Cron that makes sure that the weekly historical data gets properly populated in case of failure
-    // Runs every 2 hours
-    @Cron(CronExpression.EVERY_2_HOURS)
+    @Cron(CronExpression.EVERY_DAY_AT_2AM)
     async retrySync(): Promise<void> {
         if (!this._configService.get<boolean>('DFRACT_SYNC_ENABLED')) {
             return;
         }
 
         try {
+            // We retry sync missing historical values
             this._logger.log(`Verifying missing historical data...`);
-            const arr = [];
 
-            const record = await this._assetService.getExtra();
+            await this._assetService.retryExtraSync();
+        } catch (error) {
+            this._logger.error(`Failed to resync weekly historical data...`, error);
+        }
+    }
 
-            // For every metrics we want to check the last inserted extra value
-            for (const key of record) {
-                arr.push({ id: key?.id, extra: key?.extra?.pop() });
-            }
+    // We cleanup historical data in case of duplicates
+    @Cron(CronExpression.EVERY_DAY_AT_4AM)
+    async cleanupSync(): Promise<void> {
+        if (!this._configService.get<boolean>('DFRACT_SYNC_ENABLED')) {
+            return;
+        }
 
-            // As we update historical data one time per epoch we verify if the last updated record was inserted during that week time
-            // If not we retry
-            const today = new Date();
-            const firstWeekDay = new Date(today.setDate(today.getDate() - today.getDay())).toISOString();
-            const lastWeekDay = new Date(today.setDate(today.getDate() - today.getDay() + 7)).toISOString();
+        try {
+            this._logger.log(`Cleaning up historical data...`);
 
-            for (const el of arr) {
-                const isUpdated = new Date(el?.extra?.last_updated_at) >= new Date(firstWeekDay) && new Date(el?.extra?.last_updated_at) <= new Date(lastWeekDay);
-
-                if (!isUpdated) {
-                    // Wait for all the call to finish before createOrUpdateAssetExtra
-                    this._assetService.createOrUpdateAssetExtra(el.id);
-                    this._logger.log(`Updated failed sync historical data for ${el.id}`);
-                }
-            }
+            await this._assetService.cleanupSync();
         } catch (error) {
             this._logger.error(`Failed to resync weekly historical data...`, error);
         }

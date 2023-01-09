@@ -22,6 +22,7 @@ import {
     LUM_STAKING_ADDRESS,
     PERCENTAGE,
     TEN_EXPONENT_SIX,
+    GenericAssetInfo,
 } from '@app/utils';
 
 import { AssetService } from '@app/services';
@@ -227,7 +228,7 @@ export class ChainService {
         }
     };
 
-    getAssetInfo = async (): Promise<any[]> => {
+    getAssetInfo = async (): Promise<GenericAssetInfo[]> => {
         try {
             // In order to get the asset info we need to get the following info from all chains:
             // {unit_price_usd, total_value_usd (mcap), supply, apy}
