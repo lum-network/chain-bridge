@@ -4,35 +4,15 @@ import { Exclude, Expose, Type } from 'class-transformer';
 export class AssetInfo {
     @ApiProperty()
     @Expose()
-    last_updated_at?: Date;
+    last_updated_at: Date;
 
     @ApiProperty()
     @Expose()
-    unit_price_usd?: number;
+    key: 'unit_price_usd' | 'total_value_usd' | 'supply' | 'apy' | 'total_allocated_token' | 'account_balance' | 'tvl';
 
     @ApiProperty()
     @Expose()
-    total_value_usd?: number;
-
-    @ApiProperty()
-    @Expose()
-    supply?: number;
-
-    @ApiProperty()
-    @Expose()
-    apy?: number;
-
-    @ApiProperty()
-    @Expose()
-    total_allocated_token?: number;
-
-    @ApiProperty()
-    @Expose()
-    account_balance?: number;
-
-    @ApiProperty()
-    @Expose()
-    tvl?: number;
+    value: number;
 }
 
 export class AssetInfoResponse {

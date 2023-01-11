@@ -1,5 +1,7 @@
 import { LumMessages } from '@lum-network/sdk-javascript';
-import { ChartGroupType } from './constants';
+import { BeamData } from '@lum-network/sdk-javascript/build/codec/beam/beam';
+import { Coin } from '@lum-network/sdk-javascript/build/codec/cosmos/base/v1beta1/coin';
+import { BeamStatus, ChartGroupType } from './constants';
 
 export const isBeam = (type: string) => {
     return type === LumMessages.MsgOpenBeamUrl || type === LumMessages.MsgUpdateBeamUrl || type === LumMessages.MsgClaimBeamUrl;
@@ -28,3 +30,26 @@ export const formatDate = (groupType: string): string =>
         [ChartGroupType.GROUP_MONTHLY]: 'YYYY-MM',
         [ChartGroupType.GROUP_YEARLY]: 'YYYY',
     }[groupType || ChartGroupType.GROUP_DAILY]);
+
+export interface BeamEventValue {
+    // Only id is present in the 3 type of messages
+    id: string;
+    creatorAddress?: string;
+    updaterAddress?: string;
+    status?: BeamStatus;
+    cancelReason?: string;
+    hideContent?: string;
+    secret?: string;
+    schema?: string;
+    claimAddress?: string;
+    claimExpiresAtBlock?: number;
+    closesAtBlock?: number;
+    amount?: Coin;
+    data?: BeamData;
+}
+
+export interface BeamEvent {
+    time: Date;
+    type: string;
+    value: BeamEventValue;
+}

@@ -1,33 +1,71 @@
 name: Lint, format and test the bridge on pull request events
 on:
-  pull_request:
-    types: [opened, edited, synchronize, reopened]
+    pull_request:
+        types: [opened, edited, synchronize, reopened]
 
 jobs:
-  build:
-    name: Build, lint and format the code
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
+    build:
+        name: Build, lint, format the code and test
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v2
 
-      - uses: actions/setup-python@v1
-        with:
-          python-version: '3.x'
-          architecture: 'x64'
+            - uses: actions/setup-python@v1
+              with:
+                  python-version: '3.x'
+                  architecture: 'x64'
 
-      - uses: actions/setup-node@v1
-        with:
-          node-version: '16.10.0'
+            - uses: actions/setup-node@v1
+              with:
+                  node-version: '16.10.0'
 
-      - name: Install the project dependencies
-        run: yarn install
+            - name: Install the project dependencies
+              run: yarn install
 
-      - name: Format the code
-        run: yarn format
+            - name: Format the code
+              run: yarn format
 
-      - name: Lint the code
-        run: yarn lint
+            - name: Lint the code
+              run: yarn lint
 
-      - name: Test the code
-        run: yarn test --passWithNoTests
+            - name: Start docker containers
+              working-directory: tools
+              run: docker-compose up -d
+
+            - name: Install dependencies
+              run: yarn install
+
+            - name: Start server and start e2e tests
+              run: yarn start:api:dev & yarn test:e2e
+              timeout-minutes: 5
+              env:
+                  LUM_NETWORK_ENDPOINT: https://node0.testnet.lum.network/rpc
+                  COSMOS_NETWORK_ENDPOINT: https://rpc-cosmos.imperator.co
+                  AKASH_NETWORK_ENDPOINT: https://rpc-akash.imperator.co
+                  COMDEX_NETWORK_ENDPOINT: https://rpc-comdex.imperator.co
+                  SENTINEL_NETWORK_ENDPOINT: https://rpc-sentinel.imperator.co
+                  KICHAIN_NETWORK_ENDPOINT: https://rpc-kichain.imperator.co
+                  OSMOSIS_NETWORK_ENDPOINT: https://rpc-osmosis.imperator.co
+                  JUNO_NETWORK_ENDPOINT: https://rpc-juno.imperator.co
+                  EVMOS_NETWORK_ENDPOINT: https://rpc-evmos.imperator.co
+                  STARGAZE_NETWORK_ENDPOINT: https://rpc-stargaze.imperator.co
+                  DATABASE_URL: postgresql://postgres:emulator@127.0.0.1:5432/postgres
+                  GOVERNANCE_SYNC_ENABLED: true
+                  METRIC_SYNC_ENABLED: true
+                  VALIDATOR_SYNC_ENABLED: true
+                  BULLBOARD_PASSWORD: true
+                  DFRACT_SYNC_ENABLED: true
+                  REDIS_HOST: 127.0.0.1
+                  REDIS_PORT: 6379
+                  REDIS_PREFIX: lm-bridge
+                  INGEST_ENABLED: true
+                  INGEST_BACKWARD_ENABLED: false
+                  PUSH_NOTIF_ENABLED: true
+                  FAUCET_MNEMONIC: 'my mnemonic phrase'
+                  API_PORT: 3000
+                  STARTING_HEIGHT: 1
+
+            - name: Stop docker containers
+              working-directory: tools
+              run: docker-compose down
