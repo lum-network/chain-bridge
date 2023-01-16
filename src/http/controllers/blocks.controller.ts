@@ -6,6 +6,7 @@ import { plainToInstance } from 'class-transformer';
 import { BlockService } from '@app/services';
 
 import { DefaultTake } from '@app/http/decorators';
+import { BlockShowParams } from '@app/http/params';
 import { BlockResponse, DataResponse, DataResponseMetadata } from '@app/http/responses';
 
 import { ExplorerRequest } from '@app/utils';
@@ -51,12 +52,11 @@ export class BlocksController {
 
     @ApiOkResponse({ type: BlockResponse })
     @Get(':height')
-    async show(@Param('height') height: number): Promise<DataResponse> {
-        const block = await this._blockService.get(height);
+    async show(@Param() params: BlockShowParams): Promise<DataResponse> {
+        const block = await this._blockService.get(params.height);
 
         if (!block) {
-            await this._blockService.failSafeIngest(Number(height));
-
+            await this._blockService.failSafeIngest(params.height);
             throw new NotFoundException('block_not_found');
         }
 
