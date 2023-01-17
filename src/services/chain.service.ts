@@ -40,36 +40,37 @@ export class ChainService {
 
     constructor(private readonly _assetService: AssetService, private readonly _configService: ConfigService, private readonly _httpService: HttpService) {}
 
-    // This service aims to initialize connection to different chains and compute various metrics for the assets we represent in our Dfract index
-
     initialize = async () => {
         try {
             for (const env of CHAIN_ENV_CONFIG) {
-                // We iterate over all the clients and store them in an array of LumClient[]
                 this._chainClient = await LumClient.connect(this._configService.get<string>(env));
                 const chainId = await this._chainClient.getChainId();
 
                 this._client.push(this._chainClient);
 
-                this._logger.log(`Connection established to ${env} ${this._configService.get<string>(env)} = ${chainId}`);
+                this._logger.log(`Connection established to ${env} = ${chainId}`);
             }
         } catch (e) {
             console.error(e);
-
             Sentry.captureException(e);
         }
     };
 
     isInitialized = (): boolean => {
-        return this._client !== null;
+        return this._client.length > 0;
     };
 
+    /*
+     * This method returns the list of assets prices we represent in our Dfract index
+     * We intentionally remove the LUM ticker as we have our own method to compute the LUM price
+     */
     getPrice = async (): Promise<{ unit_price_usd: number; symbol: string }[]> => {
         try {
-            // Observable to get the prices and filter with the one we represent in the index
             const price = await lastValueFrom(this._httpService.get(`${ApiUrl.GET_CHAIN_TOKENS_ALL}`).pipe(map((response) => response.data)));
+            if (!price || !price.length) {
+                return [];
+            }
 
-            // We exclude LUM's price as we have our seperate service for that
             return price
                 .filter((el) => this._assetSymbol.some((f) => f === el.symbol && el.symbol !== AssetSymbol.LUM))
                 .map((el) => ({
@@ -77,20 +78,22 @@ export class ChainService {
                     symbol: el.symbol,
                 }));
         } catch (error) {
-            this._logger.error(`Could not fetch Price...`, error);
-
+            this._logger.error(`Could not fetch price...`, error);
             Sentry.captureException(error);
-
-            return null;
+            return [];
         }
     };
 
+    /*
+     * This method returns the list of assets market caps we represent in our Dfract index
+     * We intentionally remove the LUM ticker as we have our own method to compute the LUM price
+     */
     getMcap = async (): Promise<{ total_value_usd: number; symbol: string }[]> => {
         try {
-            // Observable to get the mcap and filter with the one we represent in the index
             const getMktCap = await lastValueFrom(this._httpService.get(`${ApiUrl.GET_CHAIN_TOKENS_MCAP}`).pipe(map((response) => response.data)));
-
-            // We exclude LUM's mcap as we have our seperate service for that
+            if (!getMktCap || !getMktCap.length) {
+                return [];
+            }
             return getMktCap
                 .filter((el) => this._assetSymbol.some((f) => f === el.symbol && el.symbol !== AssetSymbol.LUM))
                 .map((el) => ({
@@ -98,11 +101,9 @@ export class ChainService {
                     symbol: el.symbol,
                 }));
         } catch (error) {
-            this._logger.error(`Could not fetch Market Cap for External Chains...`, error);
-
+            this._logger.error(`Could not fetch Market Cap for external chains...`, error);
             Sentry.captureException(error);
-
-            return null;
+            return [];
         }
     };
 
@@ -125,13 +126,19 @@ export class ChainService {
             const evmosSupply = Number(await lastValueFrom(this._httpService.get(`${ApiUrl.GET_EVMOS_SUPPLY}`).pipe(map((response) => response.data.circulating_supply.amount)))) / CLIENT_PRECISION;
 
             // We map the token supply from the other chains with the one from evmos
-            return chainSupply.map((el) => [{ supply: evmosSupply, symbol: AssetSymbol.EVMOS }].find((o) => o.symbol === el.symbol) || el);
+            return chainSupply.map(
+                (el) =>
+                    [
+                        {
+                            supply: evmosSupply,
+                            symbol: AssetSymbol.EVMOS,
+                        },
+                    ].find((o) => o.symbol === el.symbol) || el,
+            );
         } catch (error) {
             this._logger.error(`Could not fetch Token Supply for External Chains...`, error);
-
             Sentry.captureException(error);
-
-            return null;
+            return [];
         }
     };
 
@@ -149,7 +156,10 @@ export class ChainService {
 
                     const metrics = await computeTotalApy(el, Number((await this.getTokenSupply())[index].supply), inflation, CLIENT_PRECISION, TEN_EXPONENT_SIX);
 
-                    return { apy: apy(metrics.inflation, metrics.communityTaxRate, metrics.stakingRatio), symbol: this._assetSymbol[index] };
+                    return {
+                        apy: apy(metrics.inflation, metrics.communityTaxRate, metrics.stakingRatio),
+                        symbol: this._assetSymbol[index],
+                    };
                 }),
             );
 
@@ -184,23 +194,23 @@ export class ChainService {
             ];
         } catch (error) {
             this._logger.error(`Could not fetch Token Apy for External Chains...`, error);
-
             Sentry.captureException(error);
-
-            return null;
+            return [];
         }
     };
 
+    /*
+     * This method returns the list of allocated tokens
+     * NOTE: EVMOS is being computed specifically as it has a different rounding precision
+     */
     getTotalAllocatedToken = async (): Promise<{ total_allocated_token: number; symbol: string }[]> => {
         try {
-            // We compute the total allocated token that will serve to calculate the tvl
-            // Evmos as a different rounding precision. Hence for precision purposes we exclude it from first client iteration batch
-            const evmosIndex = CHAIN_ENV_CONFIG.findIndex((el) => el === `${AssetSymbol.EVMOS}_NETWORK_ENDPOINT`);
+            const evmosIndex = CHAIN_ENV_CONFIG.findIndex((el) => el === `EVMOS_NETWORK_ENDPOINT`);
             // We exclude evmos from the first computation batch
-            const client = this._client.slice(0, evmosIndex);
+            const clients = this._client.slice(0, evmosIndex);
 
             const computedTotalToken = await Promise.all(
-                client.map(async (el, index) => {
+                clients.map(async (el, index) => {
                     const decode = LumUtils.Bech32.decode(LUM_STAKING_ADDRESS);
                     const getDecodedAddress = LumUtils.Bech32.encode(this._dfractPrefix[index], decode.data);
                     return {
@@ -217,21 +227,19 @@ export class ChainService {
             };
 
             const totalComputedToken = [...computedTotalToken, evmosTotalToken].sort((a, b) => a.symbol.localeCompare(b.symbol));
-
             return totalComputedToken;
         } catch (error) {
             this._logger.error('Failed to compute total allocated token for External Chain...', error);
-
             Sentry.captureException(error);
-
-            return null;
+            return [];
         }
     };
 
+    /*
+     * This method returns the list of all infos for the external chains
+     */
     getAssetInfo = async (): Promise<GenericAssetInfo[]> => {
         try {
-            // In order to get the asset info we need to get the following info from all chains:
-            // {unit_price_usd, total_value_usd (mcap), supply, apy}
             const [unit_price_usd, total_value_usd, supply, apy, totalToken] = await Promise.all([
                 this.getPrice(),
                 this.getMcap(),
@@ -242,20 +250,18 @@ export class ChainService {
 
             return [unit_price_usd, total_value_usd, supply, apy, totalToken].flat();
         } catch (error) {
-            this._logger.error('Failed to compute Asset Info for External Chain...', error);
-
+            this._logger.error('Failed to compute Asset Info for external chains...', error);
             Sentry.captureException(error);
-
-            return null;
+            return [];
         }
     };
 
+    /*
+     * This method returns the TVL for each external chains
+     * NOTE: EVMOS is being computed specifically as it cannot be decoded using the utils
+     */
     getTvl = async (): Promise<{ tvl: number; symbol: string }[]> => {
         try {
-            // We need to compute the tvl differently for evmos as don't decode the evmos address via the Lum.decode utils
-
-            // We get the price from the DB and sort by symbol as we don't need to make an additional call to a third party
-
             const [getTotalPriceDb, getTotalTokenDb] = await Promise.all([this._assetService.getChainServicePrice(), this._assetService.getChainServiceTotalAllocatedToken()]);
 
             if (getTotalPriceDb && getTotalTokenDb) {
@@ -267,12 +273,12 @@ export class ChainService {
                         symbol: el.symbol,
                     }));
             }
+
+            return [];
         } catch (error) {
             this._logger.error('Failed to compute TVL for External Chain...', error);
-
             Sentry.captureException(error);
-
-            return null;
+            return [];
         }
     };
 }
