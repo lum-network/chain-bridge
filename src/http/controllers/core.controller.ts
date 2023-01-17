@@ -1,4 +1,4 @@
-import { BadRequestException, Controller, Get, Logger } from '@nestjs/common';
+import { BadRequestException, CacheInterceptor, Controller, Get, Logger, UseInterceptors } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 
@@ -15,6 +15,7 @@ import { CLIENT_PRECISION, MetricNames } from '@app/utils';
 
 @ApiTags('core')
 @Controller('')
+@UseInterceptors(CacheInterceptor)
 export class CoreController {
     private readonly _logger: Logger = new Logger(CoreController.name);
 
