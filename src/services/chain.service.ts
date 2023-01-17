@@ -7,7 +7,23 @@ import * as Sentry from '@sentry/node';
 
 import { lastValueFrom, map } from 'rxjs';
 
-import { ApiUrl, apy, AssetPrefix, AssetSymbol, AssetMicroDenom, CHAIN_ENV_CONFIG, CLIENT_PRECISION, EVMOS_STAKING_ADDRESS, computeTotalApy, computeTotalTokenAmount, DfractOnChainApy, LUM_STAKING_ADDRESS, PERCENTAGE, TEN_EXPONENT_SIX, GenericAssetInfo } from '@app/utils';
+import {
+    ApiUrl,
+    apy,
+    AssetPrefix,
+    AssetSymbol,
+    AssetMicroDenom,
+    CHAIN_ENV_CONFIG,
+    CLIENT_PRECISION,
+    EVMOS_STAKING_ADDRESS,
+    computeTotalApy,
+    computeTotalTokenAmount,
+    DfractOnChainApy,
+    LUM_STAKING_ADDRESS,
+    PERCENTAGE,
+    TEN_EXPONENT_SIX,
+    GenericAssetInfo,
+} from '@app/utils';
 
 import { AssetService } from '@app/services';
 
@@ -217,7 +233,13 @@ export class ChainService {
      */
     getAssetInfo = async (): Promise<GenericAssetInfo[]> => {
         try {
-            const [unit_price_usd, total_value_usd, supply, apy, totalToken] = await Promise.all([this.getPrice(), this.getMcap(), this.getTokenSupply(), this.getApy(), this.getTotalAllocatedToken()]);
+            const [unit_price_usd, total_value_usd, supply, apy, totalToken] = await Promise.all([
+                this.getPrice(),
+                this.getMcap(),
+                this.getTokenSupply(),
+                this.getApy(),
+                this.getTotalAllocatedToken(),
+            ]);
 
             return [unit_price_usd, total_value_usd, supply, apy, totalToken].flat();
         } catch (error) {
