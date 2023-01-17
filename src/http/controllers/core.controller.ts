@@ -26,7 +26,6 @@ export class CoreController {
         @InjectMetric(MetricNames.MARKET_CAP) private readonly _marketCap: Gauge<string>,
         @InjectMetric(MetricNames.LUM_PRICE_EUR) private readonly _lumPriceEUR: Gauge<string>,
         @InjectMetric(MetricNames.LUM_PRICE_USD) private readonly _lumPriceUSD: Gauge<string>,
-
         // Dfr metrics constructors
         @InjectMetric(MetricNames.DFRACT_CURRENT_SUPPLY) private readonly _dfractCurrentSupply: Gauge<string>,
         @InjectMetric(MetricNames.DFRACT_MA_BALANCE) private readonly _dfractMaBalance: Gauge<string>,
@@ -37,7 +36,6 @@ export class CoreController {
         @InjectMetric(MetricNames.DFRACT_MARKET_CAP) private readonly _dfractMarketCap: Gauge<string>,
         // General metrics constructors
         @InjectMetric(MetricNames.TWITTER_FOLLOWERS) private readonly _twitterFollowers: Gauge<string>,
-
         private readonly _lumNetworkService: LumNetworkService,
         private readonly _messageGateway: GatewayWebsocket,
     ) {}
@@ -177,35 +175,22 @@ export class CoreController {
 
     @MessagePattern('updateMetric')
     async updateMetric(@Payload() data: { name: string; value: number }): Promise<void> {
-        if (data.name === MetricNames.COMMUNITY_POOL_SUPPLY) {
-            // Lum metrics
-            await this._communityPoolSupply.set(data.value);
-        } else if (data.name === MetricNames.LUM_CURRENT_SUPPLY) {
-            await this._lumCurrentSupply.set(data.value);
-        } else if (data.name === MetricNames.MARKET_CAP) {
-            await this._marketCap.set(data.value);
-        } else if (data.name === MetricNames.LUM_PRICE_EUR) {
-            await this._lumPriceEUR.set(data.value);
-        } else if (data.name === MetricNames.LUM_PRICE_USD) {
-            await this._lumPriceUSD.set(data.value);
-            // Dfr metrics
-        } else if (data.name === MetricNames.DFRACT_APY) {
-            await this._dfractApy.set(data.value);
-        } else if (data.name === MetricNames.DFRACT_BACKING_PRICE) {
-            await this._dfractBackingPrice.set(data.value);
-        } else if (data.name === MetricNames.DFRACT_CURRENT_SUPPLY) {
-            await this._dfractCurrentSupply.set(data.value);
-        } else if (data.name === MetricNames.DFRACT_MARKET_CAP) {
-            await this._dfractMarketCap.set(data.value);
-        } else if (data.name === MetricNames.DFRACT_MA_BALANCE) {
-            await this._dfractMaBalance.set(data.value);
-        } else if (data.name === MetricNames.DFRACT_MINT_RATIO) {
-            await this._dfractMintRatio.set(data.value);
-        } else if (data.name === MetricNames.DFRACT_NEW_DFR_TO_MINT) {
-            await this._dfractNewDfrToMint.set(data.value);
-            // General metrics
-        } else if (data.name === MetricNames.TWITTER_FOLLOWERS) {
-            await this._twitterFollowers.set(data.value);
-        }
+        const metrics = {};
+        metrics[MetricNames.COMMUNITY_POOL_SUPPLY] = this._communityPoolSupply.set(data.value);
+        metrics[MetricNames.LUM_CURRENT_SUPPLY] = this._lumCurrentSupply.set(data.value);
+        metrics[MetricNames.MARKET_CAP] = this._marketCap.set(data.value);
+        metrics[MetricNames.LUM_PRICE_EUR] = this._lumPriceEUR.set(data.value);
+        metrics[MetricNames.LUM_PRICE_USD] = this._lumPriceUSD.set(data.value);
+        metrics[MetricNames.DFRACT_APY] = this._dfractApy.set(data.value);
+        metrics[MetricNames.DFRACT_BACKING_PRICE] = this._dfractBackingPrice.set(data.value);
+        metrics[MetricNames.DFRACT_CURRENT_SUPPLY] = this._dfractCurrentSupply.set(data.value);
+        metrics[MetricNames.DFRACT_MARKET_CAP] = this._dfractMarketCap.set(data.value);
+        metrics[MetricNames.DFRACT_MA_BALANCE] = this._dfractMaBalance.set(data.value);
+        metrics[MetricNames.DFRACT_MINT_RATIO] = this._dfractMintRatio.set(data.value);
+        metrics[MetricNames.DFRACT_NEW_DFR_TO_MINT] = this._dfractNewDfrToMint.set(data.value);
+        metrics[MetricNames.TWITTER_FOLLOWERS] = this._twitterFollowers.set(data.value);
+
+        this._logger.log(`Updating metric ${data.name}...`);
+        await metrics[data.name]();
     }
 }
