@@ -7,23 +7,7 @@ import * as Sentry from '@sentry/node';
 
 import { lastValueFrom, map } from 'rxjs';
 
-import {
-    ApiUrl,
-    apy,
-    AssetPrefix,
-    AssetSymbol,
-    AssetMicroDenom,
-    CHAIN_ENV_CONFIG,
-    CLIENT_PRECISION,
-    EVMOS_STAKING_ADDRESS,
-    computeTotalApy,
-    computeTotalTokenAmount,
-    DfractOnChainApy,
-    LUM_STAKING_ADDRESS,
-    PERCENTAGE,
-    TEN_EXPONENT_SIX,
-    GenericAssetInfo,
-} from '@app/utils';
+import { ApiUrl, apy, AssetPrefix, AssetSymbol, AssetMicroDenom, CHAIN_ENV_CONFIG, CLIENT_PRECISION, EVMOS_STAKING_ADDRESS, computeTotalApy, computeTotalTokenAmount, DfractOnChainApy, LUM_STAKING_ADDRESS, PERCENTAGE, TEN_EXPONENT_SIX, GenericAssetInfo } from '@app/utils';
 
 import { AssetService } from '@app/services';
 
@@ -107,11 +91,12 @@ export class ChainService {
         }
     };
 
+    /*
+     * This method returns the list of tokens supply for external chains
+     * NOTE: EVMOS has a specific endpoint for getting the supply
+     */
     getTokenSupply = async (): Promise<{ supply: number; symbol: string }[]> => {
         try {
-            // Not all chains have a reliable token supply that we can extract from chain
-            // Hence for some, we need to rely on their official endpoint to retrieve it
-
             // Return token supply based on the microDenum and denum from assets in the index
             const chainSupply = await Promise.all(
                 this._client.map(async (el, index) => {
@@ -121,11 +106,8 @@ export class ChainService {
                 }),
             );
 
-            // The value returned from Evmos on chain does not seem accurate to us.
-            // Hence, we rely on their official documentation endpoint to retrieve the supply
             const evmosSupply = Number(await lastValueFrom(this._httpService.get(`${ApiUrl.GET_EVMOS_SUPPLY}`).pipe(map((response) => response.data.circulating_supply.amount)))) / CLIENT_PRECISION;
 
-            // We map the token supply from the other chains with the one from evmos
             return chainSupply.map(
                 (el) =>
                     [
@@ -142,16 +124,18 @@ export class ChainService {
         }
     };
 
+    /*
+     * This method returns the list of APY for our external chains
+     * But not all of them are able to return it, hence why we loop over a selected list of allowed chains
+     * NOTE: EVMOS has a specific computation logic
+     */
     getApy = async (): Promise<{ apy: number; symbol: string }[]> => {
         try {
-            // As inflation is not retrievable for now for some chain
-            // We take the first 5 {atom, akt, cmdx, dvpn, ki} chain as we need to compute the last ones manually for now.
-            // Once we can compute the inflation of all chains evenly we integrate them in the getChainApy variable
-            const client = this._client.slice(0, this._dfractOnChainApy.length);
+            // Only extract chains that have the APY endpoint
+            const clients = this._client.slice(0, this._dfractOnChainApy.length);
 
-            // Chains where inflation is retrievable
             const getChainApy = await Promise.all(
-                client.map(async (el, index) => {
+                clients.map(async (el, index) => {
                     const inflation = Number(await el.queryClient.mint.inflation()) / CLIENT_PRECISION;
 
                     const metrics = await computeTotalApy(el, Number((await this.getTokenSupply())[index].supply), inflation, CLIENT_PRECISION, TEN_EXPONENT_SIX);
@@ -163,20 +147,10 @@ export class ChainService {
                 }),
             );
 
-            // Evmos manual inflation calculation
-            // We use their official endpoint to retrieve the inflation rate
             const evmosIndex = CHAIN_ENV_CONFIG.findIndex((el) => el === `${AssetSymbol.EVMOS}_NETWORK_ENDPOINT`);
             const evmosInflation = Number(await lastValueFrom(this._httpService.get(`${ApiUrl.GET_EVMOS_INFLATION}`).pipe(map((response) => response.data.inflation_rate)))) / PERCENTAGE;
-
             const metrics = await computeTotalApy(this._client[evmosIndex], Number((await this.getTokenSupply())[evmosIndex].supply), evmosInflation, CLIENT_PRECISION, CLIENT_PRECISION);
-
-            // To calculate evmos community tax we need to sum-up the usage_incentive and the community_pool
             const inflationParams = await lastValueFrom(this._httpService.get(`${ApiUrl.GET_EVMOS_INFLATION_PARAMS}`).pipe(map((response) => response.data.params.inflation_distribution)));
-
-            const getEvmosApy = {
-                apy: apy(metrics.inflation, Number(inflationParams.usage_incentives) + Number(inflationParams.community_pool), metrics.stakingRatio),
-                symbol: this._assetSymbol[evmosIndex],
-            };
 
             // Chains for which inflation is not retrievable via the mint module. Hence, we rely on other rpc endpoints to retrieve it.
             const getOsmosisApy = Number(await lastValueFrom(this._httpService.get(`${ApiUrl.GET_OSMOSIS_APY}`).pipe(map((response) => response.data)))) / PERCENTAGE;
@@ -187,7 +161,10 @@ export class ChainService {
 
             return [
                 ...getChainApy,
-                getEvmosApy,
+                {
+                    apy: apy(metrics.inflation, Number(inflationParams.usage_incentives) + Number(inflationParams.community_pool), metrics.stakingRatio),
+                    symbol: this._assetSymbol[evmosIndex],
+                },
                 { apy: getOsmosisApy, symbol: AssetSymbol.OSMOSIS },
                 { apy: getJunoApy, symbol: AssetSymbol.JUNO },
                 { apy: getStargazeApy, symbol: AssetSymbol.STARGAZE },
@@ -240,13 +217,7 @@ export class ChainService {
      */
     getAssetInfo = async (): Promise<GenericAssetInfo[]> => {
         try {
-            const [unit_price_usd, total_value_usd, supply, apy, totalToken] = await Promise.all([
-                this.getPrice(),
-                this.getMcap(),
-                this.getTokenSupply(),
-                this.getApy(),
-                this.getTotalAllocatedToken(),
-            ]);
+            const [unit_price_usd, total_value_usd, supply, apy, totalToken] = await Promise.all([this.getPrice(), this.getMcap(), this.getTokenSupply(), this.getApy(), this.getTotalAllocatedToken()]);
 
             return [unit_price_usd, total_value_usd, supply, apy, totalToken].flat();
         } catch (error) {
