@@ -97,27 +97,21 @@ export class LumNetworkService {
         return this._client !== null;
     };
 
-    get moduleName(): string {
-        return this._currentModuleName;
-    }
-
     get client(): LumClient {
         return this._client;
     }
 
     getPrice = async (): Promise<any> => {
         try {
-            return lastValueFrom(this._httpService.get(`${ApiUrl.GET_LUM_PRICE}`).pipe(map((response) => response.data)));
+            return lastValueFrom(this._httpService.get(`${ApiUrl.GET_LUM_PRICE}`, { headers: { 'Accept-Encoding': '*' } }).pipe(map((response) => response.data)));
         } catch (error) {
             this._logger.error(`Could not fetch price for Lum Network...`, error);
-
             Sentry.captureException(error);
-
             return null;
         }
     };
 
-    getPriceHistory = async (startAt: number, endAt: number): Promise<any> => {
+    getPriceHistory = async (startAt: number, endAt: number): Promise<any[]> => {
         try {
             const res = await this._httpService.get(`${ApiUrl.GET_LUM_PRICE}/market_chart/range?vs_currency=usd&from=${startAt}&to=${endAt}`).toPromise();
             return res.data.prices.map((price) => {
@@ -257,9 +251,7 @@ export class LumNetworkService {
             };
         } catch (error) {
             this._logger.error('Failed to compute Token Info for Lum Network...', error);
-
             Sentry.captureException(error);
-
             return null;
         }
     };
@@ -272,10 +264,8 @@ export class LumNetworkService {
             return { tvl: totalAllocatedToken * price.market_data.current_price.usd, symbol: AssetSymbol.LUM };
         } catch (error) {
             this._logger.error('Failed to compute TVL for Lum Network...', error);
-
             Sentry.captureException(error);
-
-            return null;
+            return { tvl: 0, symbol: 'ERROR' };
         }
     };
 }
