@@ -1,16 +1,17 @@
-import { Injectable, Logger } from '@nestjs/common';
+import {Injectable, Logger} from '@nestjs/common';
 
-import { convertUnit } from '@lum-network/sdk-javascript/build/utils';
+import {convertUnit} from '@lum-network/sdk-javascript/build/utils';
 import * as Sentry from '@sentry/node';
 
-import { AssetService, ChainService, LumNetworkService } from '@app/services';
-import { AssetDenom, AssetMicroDenom, TEN_EXPONENT_SIX } from '@app/utils';
+import {AssetService, ChainService, LumNetworkService} from '@app/services';
+import {AssetDenom, AssetMicroDenom, TEN_EXPONENT_SIX} from '@app/utils';
 
 @Injectable()
 export class DfractService {
     private readonly _logger: Logger = new Logger(DfractService.name);
 
-    constructor(private readonly _assetService: AssetService, private readonly _chainService: ChainService, private readonly _lumNetworkService: LumNetworkService) {}
+    constructor(private readonly _assetService: AssetService, private readonly _chainService: ChainService, private readonly _lumNetworkService: LumNetworkService) {
+    }
 
     /*
      * This method returns the actual DFR token supply
@@ -160,6 +161,13 @@ export class DfractService {
                 apy = [...chainServiceApy, lumApy];
             }
 
+            if (tvl === null || apy === null) {
+                console.log(tvl);
+                console.log(apy);
+                this._logger.error(`Failed to compute TVL ${tvl} or APY ${apy} for DFR...`);
+                return 0;
+            }
+
             // Aggregate both tvl and apy from both chains to multiply tvl * token apy
             const merged = tvl
                 .map((item, i) => Object.assign({}, item, apy[i]))
@@ -178,6 +186,7 @@ export class DfractService {
             }
             return 0;
         } catch (error) {
+            console.error(error);
             this._logger.error(`Could not fetch Apy for Dfract...`, error);
             Sentry.captureException(error);
             return 0;
@@ -190,11 +199,11 @@ export class DfractService {
     getAssetInfoPreGovProp = async (): Promise<{ account_balance: number; tvl: number }> => {
         try {
             const [account_balance, tvl] = await Promise.all([this.getAccountBalance(), this.getTotalComputedTvl()]);
-            return { account_balance, tvl };
+            return {account_balance, tvl};
         } catch (error) {
             this._logger.error('Failed to compute Token Info for Dfract Pre Gov Prop...', error);
             Sentry.captureException(error);
-            return { account_balance: 0, tvl: 0 };
+            return {account_balance: 0, tvl: 0};
         }
     };
 
@@ -204,11 +213,11 @@ export class DfractService {
     getAssetInfoPostGovProp = async (): Promise<{ unit_price_usd: number; total_value_usd: number; supply: number; apy: number }> => {
         try {
             const [unit_price_usd, total_value_usd, supply, apy] = await Promise.all([this.getDfrBackingPrice(), this.getMcap(), this.getTokenSupply(), this.getApy()]);
-            return { unit_price_usd, total_value_usd, supply, apy };
+            return {unit_price_usd, total_value_usd, supply, apy};
         } catch (error) {
             this._logger.error('Failed to compute Token Info for Dfract Post Gov Prop...', error);
             Sentry.captureException(error);
-            return { unit_price_usd: 0, total_value_usd: 0, supply: 0, apy: 0 };
+            return {unit_price_usd: 0, total_value_usd: 0, supply: 0, apy: 0};
         }
     };
 }
