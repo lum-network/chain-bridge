@@ -8,6 +8,7 @@ import { NewBlockEvent } from '@cosmjs/tendermint-rpc';
 import { LumClient, LumConstants } from '@lum-network/sdk-javascript';
 import { convertUnit } from '@lum-network/sdk-javascript/build/utils';
 import { ProposalStatus } from '@lum-network/sdk-javascript/build/codec/cosmos/gov/v1beta1/gov';
+import { QueryProposalsResponse } from '@lum-network/sdk-javascript/build/codec/cosmos/gov/v1beta1/query';
 
 import * as Sentry from '@sentry/node';
 
@@ -125,7 +126,7 @@ export class LumNetworkService {
         }
     };
 
-    async getProposals() {
+    getProposals = async (): Promise<QueryProposalsResponse> => {
         try {
             // We want to sync all proposals and get the proposal_id
             const resultsProposals = await this.client.queryClient.gov.proposals(
@@ -143,10 +144,12 @@ export class LumNetworkService {
             return resultsProposals;
         } catch (error) {
             this._logger.error(`Failed to sync proposals from chain...`, error);
+            Sentry.captureException(error);
+            return null;
         }
-    }
+    };
 
-    async getOpenVotingProposals() {
+    getOpenVotingProposals = async (): Promise<any> => {
         try {
             const getProposals = await this.getProposals();
 
@@ -159,27 +162,27 @@ export class LumNetworkService {
                 }))
                 .filter((el) => moment(el.votingTime) > now);
 
-            if (votingDateTime.length) {
-                const getVotersByOpenProposalId = votingDateTime?.map((proposal) => proposal.proposalId).map((longInt) => longInt.low);
-                this._logger.log(`Fetched proposalId from open votes`, getVotersByOpenProposalId);
-
-                return getVotersByOpenProposalId;
-            } else {
-                this._logger.log(`No current open proposals to vote on...`);
+            if (!votingDateTime.length) {
+                return [];
             }
+
+            const getVotersByOpenProposalId = votingDateTime?.map((proposal) => proposal.proposalId).map((longInt) => longInt.low);
+            this._logger.log(`Fetched proposalId from open votes`, getVotersByOpenProposalId);
+
+            return getVotersByOpenProposalId;
         } catch (error) {
             this._logger.error(`Failed to sync proposalsById...`, error);
+            Sentry.captureException(error);
+            return [];
         }
-    }
+    };
 
     getTokenSupply = async (): Promise<number> => {
         try {
             return Number(convertUnit(await this.client.getSupply(LumConstants.MicroLumDenom), LumConstants.LumDenom));
         } catch (error) {
             this._logger.error(`Could not fetch Token Supply for Lum Network...`, error);
-
             Sentry.captureException(error);
-
             return null;
         }
     };
@@ -192,10 +195,8 @@ export class LumNetworkService {
             return supply * unit_price_usd.market_data.current_price.usd;
         } catch (error) {
             this._logger.error(`Could not fetch Market Cap for Lum Network...`, error);
-
             Sentry.captureException(error);
-
-            return null;
+            return 0;
         }
     };
 
@@ -206,28 +207,25 @@ export class LumNetworkService {
 
             // See util files src/utils/dfract to see how we compute inflation
 
-            return { apy: apy(metrics.inflation, metrics.communityTaxRate, metrics.stakingRatio), symbol: AssetSymbol.LUM };
+            return {
+                apy: apy(metrics.inflation, metrics.communityTaxRate, metrics.stakingRatio),
+                symbol: AssetSymbol.LUM,
+            };
         } catch (error) {
             this._logger.error(`Could not fetch Apy for Lum Network...`, error);
-
             Sentry.captureException(error);
-
-            return null;
+            return {apy: 0, symbol: 'ERROR'};
         }
     };
 
-    getAllocatedToken = async () => {
+    getAllocatedToken = async (): Promise<number> => {
         try {
-            // Compute total allocated token for Lum Network
             const token = await computeTotalTokenAmount(LUM_STAKING_ADDRESS, this.client, LumConstants.MicroLumDenom, CLIENT_PRECISION, TEN_EXPONENT_SIX);
-
             return token;
         } catch (error) {
             this._logger.error('Failed to compute total allocated token for Lum...', error);
-
             Sentry.captureException(error);
-
-            return null;
+            return 0;
         }
     };
 
