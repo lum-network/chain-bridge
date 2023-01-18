@@ -1,17 +1,17 @@
-import { BadRequestException, CacheInterceptor, Controller, Get, Logger, UseInterceptors } from '@nestjs/common';
-import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
-import { MessagePattern, Payload } from '@nestjs/microservices';
+import {BadRequestException, CacheInterceptor, Controller, Get, Logger, UseInterceptors} from '@nestjs/common';
+import {ApiOkResponse, ApiTags} from '@nestjs/swagger';
+import {MessagePattern, Payload} from '@nestjs/microservices';
 
-import { plainToInstance } from 'class-transformer';
-import { fromUtf8, keyToHex } from '@lum-network/sdk-javascript/build/utils';
+import {plainToInstance} from 'class-transformer';
+import {fromUtf8, keyToHex} from '@lum-network/sdk-javascript/build/utils';
 
-import { InjectMetric } from '@willsoto/nestjs-prometheus';
-import { Gauge } from 'prom-client';
+import {InjectMetric} from '@willsoto/nestjs-prometheus';
+import {Gauge} from 'prom-client';
 
-import { LumNetworkService } from '@app/services';
-import { BalanceResponse, DataResponse, LumResponse } from '@app/http/responses';
-import { GatewayWebsocket } from '@app/websocket';
-import { CLIENT_PRECISION, MetricNames } from '@app/utils';
+import {LumNetworkService} from '@app/services';
+import {BalanceResponse, DataResponse, LumResponse} from '@app/http/responses';
+import {GatewayWebsocket} from '@app/websocket';
+import {CLIENT_PRECISION, MetricNames} from '@app/utils';
 
 @ApiTags('core')
 @Controller('')
@@ -37,10 +37,11 @@ export class CoreController {
         @InjectMetric(MetricNames.TWITTER_FOLLOWERS) private readonly _twitterFollowers: Gauge<string>,
         private readonly _lumNetworkService: LumNetworkService,
         private readonly _messageGateway: GatewayWebsocket,
-    ) {}
+    ) {
+    }
 
     @UseInterceptors(CacheInterceptor)
-    @ApiOkResponse({ status: 200, type: LumResponse })
+    @ApiOkResponse({status: 200, type: LumResponse})
     @Get('price')
     async price(): Promise<DataResponse> {
         const lumPrice = await this._lumNetworkService.getPrice();
@@ -75,7 +76,7 @@ export class CoreController {
     }
 
     @UseInterceptors(CacheInterceptor)
-    @ApiOkResponse({ status: 200, type: [BalanceResponse] })
+    @ApiOkResponse({status: 200, type: [BalanceResponse]})
     @Get('assets')
     async assets(): Promise<DataResponse> {
         const assets = await this._lumNetworkService.client.queryClient.bank.totalSupply();
@@ -177,22 +178,27 @@ export class CoreController {
 
     @MessagePattern('updateMetric')
     async updateMetric(@Payload() data: { name: string; value: number }): Promise<void> {
-        const metrics = {};
-        metrics[MetricNames.COMMUNITY_POOL_SUPPLY] = this._communityPoolSupply.set(data.value);
-        metrics[MetricNames.LUM_CURRENT_SUPPLY] = this._lumCurrentSupply.set(data.value);
-        metrics[MetricNames.MARKET_CAP] = this._marketCap.set(data.value);
-        metrics[MetricNames.LUM_PRICE_EUR] = this._lumPriceEUR.set(data.value);
-        metrics[MetricNames.LUM_PRICE_USD] = this._lumPriceUSD.set(data.value);
-        metrics[MetricNames.DFRACT_APY] = this._dfractApy.set(data.value);
-        metrics[MetricNames.DFRACT_BACKING_PRICE] = this._dfractBackingPrice.set(data.value);
-        metrics[MetricNames.DFRACT_CURRENT_SUPPLY] = this._dfractCurrentSupply.set(data.value);
-        metrics[MetricNames.DFRACT_MARKET_CAP] = this._dfractMarketCap.set(data.value);
-        metrics[MetricNames.DFRACT_MA_BALANCE] = this._dfractMaBalance.set(data.value);
-        metrics[MetricNames.DFRACT_MINT_RATIO] = this._dfractMintRatio.set(data.value);
-        metrics[MetricNames.DFRACT_NEW_DFR_TO_MINT] = this._dfractNewDfrToMint.set(data.value);
-        metrics[MetricNames.TWITTER_FOLLOWERS] = this._twitterFollowers.set(data.value);
+        const metrics = new Map<string, Gauge<string>>();
+        metrics.set(MetricNames.COMMUNITY_POOL_SUPPLY, this._communityPoolSupply);
+        metrics.set(MetricNames.LUM_CURRENT_SUPPLY, this._lumCurrentSupply);
+        metrics.set(MetricNames.MARKET_CAP, this._marketCap);
+        metrics.set(MetricNames.LUM_PRICE_EUR, this._lumPriceEUR);
+        metrics.set(MetricNames.LUM_PRICE_USD, this._lumPriceUSD);
+        metrics.set(MetricNames.DFRACT_APY, this._dfractApy);
+        metrics.set(MetricNames.DFRACT_BACKING_PRICE, this._dfractBackingPrice);
+        metrics.set(MetricNames.DFRACT_CURRENT_SUPPLY, this._dfractCurrentSupply);
+        metrics.set(MetricNames.DFRACT_MARKET_CAP, this._dfractMarketCap);
+        metrics.set(MetricNames.DFRACT_MA_BALANCE, this._dfractMaBalance);
+        metrics.set(MetricNames.DFRACT_MINT_RATIO, this._dfractMintRatio);
+        metrics.set(MetricNames.DFRACT_NEW_DFR_TO_MINT, this._dfractNewDfrToMint);
+        metrics.set(MetricNames.TWITTER_FOLLOWERS, this._twitterFollowers);
 
-        this._logger.log(`Updating metric ${data.name}...`);
-        await metrics[data.name]();
+        this._logger.log(`Updating metric ${data.name} with value ${data.value}`);
+        const setter = metrics.get(data.name);
+        if (!setter) {
+            this._logger.error(`Metric ${data.name} not found`);
+            return;
+        }
+        await setter.set(data.value);
     }
 }

@@ -25,46 +25,43 @@ export class MetricScheduler {
         if (!this._configService.get<boolean>('METRIC_SYNC_ENABLED')) {
             return;
         }
-        try {
-            // Acquire data
-            const [lumCommunityPool, lumSupply, lumPrice, dfrApy, dfrBackingPrice, dfrSupply, dfrMcap, dfrBalance, newDfrToMint, dfrMintRatio] = await Promise.all([
-                this._lumNetworkService.client.queryClient.distribution.communityPool(),
-                this._lumNetworkService.getTokenSupply(),
-                this._lumNetworkService.getPrice(),
-                this._dfrService.getApy(),
-                this._dfrService.getDfrBackingPrice(),
-                this._dfrService.getTokenSupply(),
-                this._dfrService.getMcap(),
-                this._dfrService.getAccountBalance(),
-                this._dfrService.getNewDfrToMint(),
-                this._dfrService.getDfrMintRatio(),
-            ]);
 
-            // Compute community pool supply
-            const communityPoolSupply = lumCommunityPool.pool.find((coin) => coin.denom === LumConstants.MicroLumDenom);
+        // Acquire data
+        const [lumCommunityPool, lumSupply, lumPrice, dfrApy, dfrBackingPrice, dfrSupply, dfrMcap, dfrBalance, newDfrToMint, dfrMintRatio] = await Promise.all([
+            this._lumNetworkService.client.queryClient.distribution.communityPool(),
+            this._lumNetworkService.getTokenSupply(),
+            this._lumNetworkService.getPrice(),
+            this._dfrService.getApy(),
+            this._dfrService.getDfrBackingPrice(),
+            this._dfrService.getTokenSupply(),
+            this._dfrService.getMcap(),
+            this._dfrService.getAccountBalance(),
+            this._dfrService.getNewDfrToMint(),
+            this._dfrService.getDfrMintRatio(),
+        ]);
 
-            await Promise.all([
-                // LUM metrics
-                communityPoolSupply && makeRequest(this._client, 'updateMetric', { name: MetricNames.COMMUNITY_POOL_SUPPLY, value: parseInt(communityPoolSupply.amount, 10) / CLIENT_PRECISION }),
-                lumSupply && makeRequest(this._client, 'updateMetric', { name: MetricNames.LUM_CURRENT_SUPPLY, value: lumSupply }),
-                lumSupply && makeRequest(this._client, 'updateMetric', { name: MetricNames.MARKET_CAP, value: lumSupply * lumPrice.market_data.current_price.usd }),
-                lumPrice && makeRequest(this._client, 'updateMetric', { name: MetricNames.LUM_PRICE_EUR, value: lumPrice.market_data.current_price.eur }),
-                lumPrice && makeRequest(this._client, 'updateMetric', { name: MetricNames.LUM_PRICE_USD, value: lumPrice.market_data.current_price.usd }),
+        // Compute community pool supply
+        const communityPoolSupply = lumCommunityPool.pool.find((coin) => coin.denom === LumConstants.MicroLumDenom);
 
-                // DFR metrics
-                dfrApy && makeRequest(this._client, 'updateMetric', { name: MetricNames.DFRACT_APY, value: dfrApy }),
-                dfrBackingPrice && makeRequest(this._client, 'updateMetric', { name: MetricNames.DFRACT_BACKING_PRICE, value: dfrBackingPrice }),
-                dfrSupply && makeRequest(this._client, 'updateMetric', { name: MetricNames.DFRACT_CURRENT_SUPPLY, value: dfrSupply }),
-                dfrMcap && makeRequest(this._client, 'updateMetric', { name: MetricNames.DFRACT_MARKET_CAP, value: dfrMcap }),
-                dfrBalance && makeRequest(this._client, 'updateMetric', { name: MetricNames.DFRACT_MA_BALANCE, value: dfrBalance }),
-                newDfrToMint && makeRequest(this._client, 'updateMetric', { name: MetricNames.DFRACT_NEW_DFR_TO_MINT, value: newDfrToMint }),
-                dfrMintRatio && makeRequest(this._client, 'updateMetric', { name: MetricNames.DFRACT_MINT_RATIO, value: dfrMintRatio }),
+        await Promise.all([
+            // LUM metrics
+            communityPoolSupply && makeRequest(this._client, 'updateMetric', { name: MetricNames.COMMUNITY_POOL_SUPPLY, value: parseInt(communityPoolSupply.amount, 10) / CLIENT_PRECISION }),
+            lumSupply && makeRequest(this._client, 'updateMetric', { name: MetricNames.LUM_CURRENT_SUPPLY, value: lumSupply }),
+            lumSupply && makeRequest(this._client, 'updateMetric', { name: MetricNames.MARKET_CAP, value: lumSupply * lumPrice.market_data.current_price.usd }),
+            lumPrice && makeRequest(this._client, 'updateMetric', { name: MetricNames.LUM_PRICE_EUR, value: lumPrice.market_data.current_price.eur }),
+            lumPrice && makeRequest(this._client, 'updateMetric', { name: MetricNames.LUM_PRICE_USD, value: lumPrice.market_data.current_price.usd }),
 
-                // General metrics
-                lumPrice && makeRequest(this._client, 'updateMetric', { name: MetricNames.TWITTER_FOLLOWERS, value: lumPrice.community_data.twitter_followers }),
-            ]);
-        } catch (error) {
-            this._logger.error('Failed to launch the metrics scheduler...', error);
-        }
+            // DFR metrics
+            dfrApy && makeRequest(this._client, 'updateMetric', { name: MetricNames.DFRACT_APY, value: dfrApy }),
+            dfrBackingPrice && makeRequest(this._client, 'updateMetric', { name: MetricNames.DFRACT_BACKING_PRICE, value: dfrBackingPrice }),
+            dfrSupply && makeRequest(this._client, 'updateMetric', { name: MetricNames.DFRACT_CURRENT_SUPPLY, value: dfrSupply }),
+            dfrMcap && makeRequest(this._client, 'updateMetric', { name: MetricNames.DFRACT_MARKET_CAP, value: dfrMcap }),
+            dfrBalance && makeRequest(this._client, 'updateMetric', { name: MetricNames.DFRACT_MA_BALANCE, value: dfrBalance }),
+            newDfrToMint && makeRequest(this._client, 'updateMetric', { name: MetricNames.DFRACT_NEW_DFR_TO_MINT, value: newDfrToMint }),
+            dfrMintRatio && makeRequest(this._client, 'updateMetric', { name: MetricNames.DFRACT_MINT_RATIO, value: dfrMintRatio }),
+
+            // General metrics
+            lumPrice && makeRequest(this._client, 'updateMetric', { name: MetricNames.TWITTER_FOLLOWERS, value: lumPrice.community_data.twitter_followers }),
+        ]);
     }
 }
