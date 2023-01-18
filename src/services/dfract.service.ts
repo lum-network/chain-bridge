@@ -161,8 +161,6 @@ export class DfractService {
             }
 
             if (tvl === null || apy === null) {
-                console.log(tvl);
-                console.log(apy);
                 this._logger.error(`Failed to compute TVL ${tvl} or APY ${apy} for DFR...`);
                 return 0;
             }
@@ -185,7 +183,6 @@ export class DfractService {
             }
             return 0;
         } catch (error) {
-            console.error(error);
             this._logger.error(`Could not fetch Apy for Dfract...`, error);
             Sentry.captureException(error);
             return 0;
