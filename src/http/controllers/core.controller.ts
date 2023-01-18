@@ -1,17 +1,17 @@
-import {BadRequestException, CacheInterceptor, Controller, Get, Logger, UseInterceptors} from '@nestjs/common';
-import {ApiOkResponse, ApiTags} from '@nestjs/swagger';
-import {MessagePattern, Payload} from '@nestjs/microservices';
+import { BadRequestException, CacheInterceptor, Controller, Get, Logger, UseInterceptors } from '@nestjs/common';
+import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { MessagePattern, Payload } from '@nestjs/microservices';
 
-import {plainToInstance} from 'class-transformer';
-import {fromUtf8, keyToHex} from '@lum-network/sdk-javascript/build/utils';
+import { plainToInstance } from 'class-transformer';
+import { fromUtf8, keyToHex } from '@lum-network/sdk-javascript/build/utils';
 
-import {InjectMetric} from '@willsoto/nestjs-prometheus';
-import {Gauge} from 'prom-client';
+import { InjectMetric } from '@willsoto/nestjs-prometheus';
+import { Gauge } from 'prom-client';
 
-import {LumNetworkService} from '@app/services';
-import {BalanceResponse, DataResponse, LumResponse} from '@app/http/responses';
-import {GatewayWebsocket} from '@app/websocket';
-import {CLIENT_PRECISION, MetricNames} from '@app/utils';
+import { LumNetworkService } from '@app/services';
+import { BalanceResponse, DataResponse, LumResponse } from '@app/http/responses';
+import { GatewayWebsocket } from '@app/websocket';
+import { CLIENT_PRECISION, MetricNames } from '@app/utils';
 
 @ApiTags('core')
 @Controller('')
@@ -37,11 +37,10 @@ export class CoreController {
         @InjectMetric(MetricNames.TWITTER_FOLLOWERS) private readonly _twitterFollowers: Gauge<string>,
         private readonly _lumNetworkService: LumNetworkService,
         private readonly _messageGateway: GatewayWebsocket,
-    ) {
-    }
+    ) {}
 
     @UseInterceptors(CacheInterceptor)
-    @ApiOkResponse({status: 200, type: LumResponse})
+    @ApiOkResponse({ status: 200, type: LumResponse })
     @Get('price')
     async price(): Promise<DataResponse> {
         const lumPrice = await this._lumNetworkService.getPrice();
@@ -76,7 +75,7 @@ export class CoreController {
     }
 
     @UseInterceptors(CacheInterceptor)
-    @ApiOkResponse({status: 200, type: [BalanceResponse]})
+    @ApiOkResponse({ status: 200, type: [BalanceResponse] })
     @Get('assets')
     async assets(): Promise<DataResponse> {
         const assets = await this._lumNetworkService.client.queryClient.bank.totalSupply();

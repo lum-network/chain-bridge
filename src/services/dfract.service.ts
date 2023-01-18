@@ -1,17 +1,16 @@
-import {Injectable, Logger} from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 
-import {convertUnit} from '@lum-network/sdk-javascript/build/utils';
+import { convertUnit } from '@lum-network/sdk-javascript/build/utils';
 import * as Sentry from '@sentry/node';
 
-import {AssetService, ChainService, LumNetworkService} from '@app/services';
-import {AssetDenom, AssetMicroDenom, TEN_EXPONENT_SIX} from '@app/utils';
+import { AssetService, ChainService, LumNetworkService } from '@app/services';
+import { AssetDenom, AssetMicroDenom, TEN_EXPONENT_SIX } from '@app/utils';
 
 @Injectable()
 export class DfractService {
     private readonly _logger: Logger = new Logger(DfractService.name);
 
-    constructor(private readonly _assetService: AssetService, private readonly _chainService: ChainService, private readonly _lumNetworkService: LumNetworkService) {
-    }
+    constructor(private readonly _assetService: AssetService, private readonly _chainService: ChainService, private readonly _lumNetworkService: LumNetworkService) {}
 
     /*
      * This method returns the actual DFR token supply
@@ -199,11 +198,11 @@ export class DfractService {
     getAssetInfoPreGovProp = async (): Promise<{ account_balance: number; tvl: number }> => {
         try {
             const [account_balance, tvl] = await Promise.all([this.getAccountBalance(), this.getTotalComputedTvl()]);
-            return {account_balance, tvl};
+            return { account_balance, tvl };
         } catch (error) {
             this._logger.error('Failed to compute Token Info for Dfract Pre Gov Prop...', error);
             Sentry.captureException(error);
-            return {account_balance: 0, tvl: 0};
+            return { account_balance: 0, tvl: 0 };
         }
     };
 
@@ -213,11 +212,11 @@ export class DfractService {
     getAssetInfoPostGovProp = async (): Promise<{ unit_price_usd: number; total_value_usd: number; supply: number; apy: number }> => {
         try {
             const [unit_price_usd, total_value_usd, supply, apy] = await Promise.all([this.getDfrBackingPrice(), this.getMcap(), this.getTokenSupply(), this.getApy()]);
-            return {unit_price_usd, total_value_usd, supply, apy};
+            return { unit_price_usd, total_value_usd, supply, apy };
         } catch (error) {
             this._logger.error('Failed to compute Token Info for Dfract Post Gov Prop...', error);
             Sentry.captureException(error);
-            return {unit_price_usd: 0, total_value_usd: 0, supply: 0, apy: 0};
+            return { unit_price_usd: 0, total_value_usd: 0, supply: 0, apy: 0 };
         }
     };
 }
