@@ -15,7 +15,6 @@ import { CLIENT_PRECISION, MetricNames } from '@app/utils';
 
 @ApiTags('core')
 @Controller('')
-@UseInterceptors(CacheInterceptor)
 export class CoreController {
     private readonly _logger: Logger = new Logger(CoreController.name);
 
@@ -40,6 +39,7 @@ export class CoreController {
         private readonly _messageGateway: GatewayWebsocket,
     ) {}
 
+    @UseInterceptors(CacheInterceptor)
     @ApiOkResponse({ status: 200, type: LumResponse })
     @Get('price')
     async price(): Promise<DataResponse> {
@@ -74,6 +74,7 @@ export class CoreController {
         };
     }
 
+    @UseInterceptors(CacheInterceptor)
     @ApiOkResponse({ status: 200, type: [BalanceResponse] })
     @Get('assets')
     async assets(): Promise<DataResponse> {
@@ -88,6 +89,7 @@ export class CoreController {
         };
     }
 
+    @UseInterceptors(CacheInterceptor)
     @Get('params')
     async params(): Promise<DataResponse> {
         const [chainId, mintingInflation, mintingParams, stakingParams, govDepositParams, govVoteParams, govTallyParams, distributionParams, slashingParams, communityPoolParams] = await Promise.all([
