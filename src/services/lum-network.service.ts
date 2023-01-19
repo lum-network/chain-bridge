@@ -149,6 +149,15 @@ export class LumNetworkService {
         }
     };
 
+    getProposal = async (proposalId: number): Promise<any> => {
+        try {
+            const resultsProposal = await this.client.queryClient.gov.proposal(proposalId);
+            return resultsProposal;
+        } catch (error) {
+            return null;
+        }
+    };
+
     getOpenVotingProposals = async (): Promise<any> => {
         try {
             const getProposals = await this.getProposals();

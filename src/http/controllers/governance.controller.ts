@@ -36,8 +36,8 @@ export class GovernanceController {
 
     @ApiOkResponse({ status: 200, type: ProposalResponse })
     @Get('proposals/:id')
-    async get(@Param('id') id: string): Promise<DataResponse> {
-        const result = await this._lumNetworkService.client.queryClient.gov.proposal(id);
+    async get(@Param('id') id: number): Promise<DataResponse> {
+        const result = await this._lumNetworkService.getProposal(id);
 
         if (!result || !result.proposal) {
             throw new NotFoundException('proposal_not_found');
