@@ -39,6 +39,9 @@ export class HttpExceptionFilter extends BaseExceptionFilter {
                 errors: getDescriptionFromErrors(error as ValidationError[]),
             };
         } else {
+            if ((error as any).status !== undefined && (error as any).status !== null) {
+                code = (error as any).status;
+            }
             if (error.message !== undefined && error.message !== null) {
                 message = error.message;
             }
