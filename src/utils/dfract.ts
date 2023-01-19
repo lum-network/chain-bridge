@@ -5,14 +5,7 @@ export const apy = (inflation: number, communityTaxRate: number, stakingRatio: n
 
 // Helper function to compute total token amount from chains where we can get the info
 export const computeTotalTokenAmount = async (getDecodedAddress: string, client: LumClient, denom: string, applyClientPrecision: number, applyTenExponentSix: number): Promise<number> => {
-    const page: Uint8Array | undefined = undefined;
-
-    // The total token amount is composed of:
-    // 1) available tokens in balance
-    // 2) staking rewards tokens
-    // 3) staking rewards tokens
-    // 4) delagation rewards tokens
-    // 5) unbounding delegation
+    const page: Uint8Array | undefined = null;
 
     const [balance, rewards, delegationResponses, unbondingResponses] = await Promise.all([
         client.getBalance(getDecodedAddress, denom),
@@ -21,25 +14,23 @@ export const computeTotalTokenAmount = async (getDecodedAddress: string, client:
         client.queryClient.staking.delegatorUnbondingDelegations(getDecodedAddress, page),
     ]);
 
-    // 1) We get the available balance on the asset account
+    // Available tokens in the address balance
+    const accountBalance = Number(balance.amount) || 0;
 
-    const getAvailableBalance = Number(balance.amount) || 0;
+    // Tokens in the address rewards balance
+    const byDenomStakingRewards = rewards.rewards.map((el) => el.reward.filter((el) => el.denom === denom));
+    let stakingRewards = 0;
+    if (byDenomStakingRewards.length > 0) {
+        stakingRewards = byDenomStakingRewards[0].map((el) => el.amount).reduce((a, b) => Number(a) + Number(b), 0);
+    }
 
-    // 2) We get the nb of tokens coming from the staking rewards
-    // For each chain we compute the lum address to the equivalent of other chains address denom and can retrieve the token repartition
-    const getStakingRewards = Number(rewards.rewards.map((el) => el.reward.filter((el) => el.denom === denom))[0].map((el) => el.amount)) / applyClientPrecision;
+    // Tokens in the address delegation rewards
+    const getDelegationRewards = delegationResponses.delegationResponses.map((el) => el.balance.amount).reduce((a, b) => Number(a) + Number(b), 0);
 
-    // 3) We get the nb of tokens coming from the delegation rewards.
-    // From that we extract the amount
-    const getDelegationReward = delegationResponses.delegationResponses.map((el) => Number(el.balance.amount));
+    // Tokens currently in the address unbonding balance
+    const getUnbondingDelegations = unbondingResponses.unbondingResponses.map((el) => el.entries.map((el) => el.balance || 0)).reduce((a, b) => Number(a) + Number(b), 0);
 
-    // 4) We get the nb of tokens coming from the unbounding delation
-    const getUnbondingDelegation = unbondingResponses.unbondingResponses.map((el) => el.entries.map((el) => el.balance || 0));
-
-    // 5) The total token is computed from the sum of the 4 previous elements divided by 10^6
-    const totalToken = (Number(getStakingRewards) + Number(getUnbondingDelegation) + Number(getAvailableBalance) + Number(getDelegationReward)) / applyTenExponentSix;
-
-    return totalToken;
+    return (stakingRewards + getUnbondingDelegations + accountBalance + getDelegationRewards) / applyTenExponentSix;
 };
 
 // Helper function to compute total apy from chains where we can get the info

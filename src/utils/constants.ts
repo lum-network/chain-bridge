@@ -129,6 +129,7 @@ export enum AssetMicroDenom {
     JUNO = 'ujuno',
     STARGAZE = 'ustars',
     EVMOS = 'aevmos',
+    LUM = 'ulum',
     DFR = 'udfr',
 }
 
