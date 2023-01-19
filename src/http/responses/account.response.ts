@@ -82,7 +82,7 @@ export class AccountResponse {
     @Expose()
     @ApiProperty({ type: () => BalanceResponse })
     @Type(() => BalanceResponse)
-    balance: BalanceResponse;
+    balances: BalanceResponse[];
 
     @ApiProperty()
     @Expose({ name: 'pubKey' })
