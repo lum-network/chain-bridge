@@ -38,13 +38,13 @@ describe('Governance (e2e)', () => {
 
     it('[GET] - should return an error if the wrong proposal id is passed', async () => {
         const response = await request(app.getHttpServer()).get('/governance/proposals/0');
-        expect(response.status).toEqual(HttpStatus.INTERNAL_SERVER_ERROR);
+        expect(response.status).toEqual(HttpStatus.NOT_FOUND);
     });
 
     it('[GET] - should return a proposal by id', async () => {
         const response = await request(app.getHttpServer()).get('/governance/proposals/1');
         expect(response.status).toEqual(HttpStatus.OK);
-        expect(response.body.result.proposal_id.low).toEqual(10);
+        expect(response.body.result.proposal_id.low).toEqual(1);
         expect(response.body.result.status).toBeGreaterThanOrEqual(-1);
         expect(response.body.result.status).toBeLessThanOrEqual(4);
     });
