@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 
 import { AssetService, ChainService } from '@app/services';
 import { AssetSymbol, TEN_EXPONENT_SIX } from '@app/utils';
-import {LumChain} from "@app/services/chains";
+import { LumChain } from '@app/services/chains';
 
 @Injectable()
 export class DfractService {

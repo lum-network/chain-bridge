@@ -2,7 +2,7 @@ import { Logger } from '@nestjs/common';
 import { InjectQueue, Process, Processor } from '@nestjs/bull';
 
 import { Job, Queue } from 'bull';
-import dayjs from "dayjs";
+import dayjs from 'dayjs';
 import { LumConstants, LumMessages, LumRegistry, LumUtils } from '@lum-network/sdk-javascript';
 
 import { AssetSymbol, getAddressesRelatedToTransaction, isBeam, NotificationChannels, NotificationEvents, QueueJobs, Queues } from '@app/utils';
@@ -30,6 +30,11 @@ export class BlockConsumer {
             // Ignore blocks already in db
             if (await this._blockService.get(job.data.blockHeight)) {
                 return;
+            }
+
+            // Make sure chain is initialize before trying to ingest
+            if (!this._chainService.isChainInitialized(AssetSymbol.LUM)) {
+                throw new Error(`Chain ${AssetSymbol.LUM} is not yet initialized. Exiting for retry`);
             }
 
             this._logger.debug(`Ingesting block ${job.data.blockHeight} (attempt ${job.attemptsMade})`);
@@ -61,7 +66,7 @@ export class BlockConsumer {
                 // Acquire raw TX
                 const tx = await this._chainService.getChain(AssetSymbol.LUM).client.getTx(LumUtils.sha256(rawTx));
 
-                // Decode TX to human readable format
+                // Decode TX to human-readable format
                 const txData = LumRegistry.decodeTx(tx.tx);
 
                 // Parse the raw logs

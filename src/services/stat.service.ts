@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
-import dayjs from "dayjs";
+import dayjs from 'dayjs';
 
 import { BeamService } from '@app/services/beam.service';
 import { BlockService } from '@app/services/block.service';

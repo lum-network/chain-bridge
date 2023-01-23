@@ -1,7 +1,7 @@
 import { QueryProposalResponse, QueryProposalsResponse } from '@lum-network/sdk-javascript/build/codec/cosmos/gov/v1beta1/query';
 import { ProposalStatus } from '@lum-network/sdk-javascript/build/codec/cosmos/gov/v1beta1/gov';
 
-import dayjs from "dayjs";
+import dayjs from 'dayjs';
 import { lastValueFrom, map } from 'rxjs';
 
 import { GenericChain } from '@app/services/chains/generic.chain';

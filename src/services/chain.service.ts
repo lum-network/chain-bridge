@@ -208,6 +208,14 @@ export class ChainService {
         return true;
     };
 
+    isChainInitialized = (chainSymbol: AssetSymbol) => {
+        if (!this._clients[chainSymbol]) {
+            return false;
+        }
+
+        return this._clients[chainSymbol].isInitialized();
+    };
+
     getChain = <Type = GenericChain>(chainSymbol: AssetSymbol): Type => {
         return this._clients[chainSymbol] as Type;
     };
