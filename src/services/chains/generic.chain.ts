@@ -1,4 +1,5 @@
 import { LoggerService } from '@nestjs/common';
+import {HttpService} from "@nestjs/axios";
 
 import { LumClient, LumUtils } from '@lum-network/sdk-javascript';
 import { Stream } from 'xstream';
@@ -11,6 +12,7 @@ export type Callback = (instance: any) => void;
 
 interface GenericChainConfig {
     assetService: AssetService;
+    httpService: HttpService;
     loggerService: LoggerService;
     prefix: string;
     symbol: string;
@@ -23,29 +25,14 @@ interface GenericChainConfig {
 
 export class GenericChain {
     private readonly _config: GenericChainConfig;
-    private readonly _assetService: AssetService;
     private _chainId: string;
     private _clientStream: Stream<NewBlockEvent> = null;
-    private readonly _loggerService: LoggerService;
-    private readonly _endpoint: string;
-    private readonly _symbol: string;
-    private readonly _prefix: string;
     private _client: LumClient;
-    private readonly _denom: AssetDenom;
-    private readonly _microDenom: AssetMicroDenom;
 
     private readonly _postInitCallback: Callback;
 
     constructor(config: GenericChainConfig) {
         this._config = config;
-        this._assetService = config.assetService;
-        this._loggerService = config.loggerService;
-        this._symbol = config.symbol;
-        this._prefix = config.prefix;
-        this._endpoint = config.endpoint;
-        this._denom = config.denom;
-        this._microDenom = config.microDenom;
-        this._postInitCallback = config.postInitCallback;
     }
 
     get client(): LumClient {
@@ -53,23 +40,23 @@ export class GenericChain {
     }
 
     get endpoint(): string {
-        return this._endpoint;
+        return this._config.endpoint;
     }
 
     get prefix(): string {
-        return this._prefix;
+        return this._config.prefix;
     }
 
     get symbol(): string {
-        return this._symbol;
+        return this._config.symbol;
     }
 
     get denom(): string {
-        return this._denom;
+        return this._config.denom;
     }
 
     get microDenom(): string {
-        return this._microDenom;
+        return this._config.microDenom;
     }
 
     get clientStream(): any {
@@ -81,11 +68,15 @@ export class GenericChain {
     }
 
     get assetService(): AssetService {
-        return this._assetService;
+        return this._config.assetService;
+    }
+
+    get httpService(): HttpService {
+        return this._config.httpService;
     }
 
     get loggerService(): LoggerService {
-        return this._loggerService;
+        return this._config.loggerService;
     }
 
     initialize = async (): Promise<LumClient> => {
@@ -102,7 +93,7 @@ export class GenericChain {
         }
 
         // If we have a post init callback, just mention it
-        this._loggerService.debug(`Connected to ${this.symbol} chain = ${useEndpoint} (${chainId})`);
+        this.loggerService.debug(`Connected to ${this.symbol} chain = ${useEndpoint} (${chainId})`);
         if (this._postInitCallback) {
             this._postInitCallback(this);
         }
@@ -143,7 +134,7 @@ export class GenericChain {
 
     getTokenSupply = async (): Promise<number> => {
         try {
-            const supply = Number((await this.client.getSupply(this._microDenom)).amount) / TEN_EXPONENT_SIX;
+            const supply = Number((await this.client.getSupply(this.microDenom)).amount) / TEN_EXPONENT_SIX;
             return supply;
         } catch (error) {
             return 0;
@@ -163,7 +154,7 @@ export class GenericChain {
     };
 
     getTVL = async (): Promise<number> => {
-        const [getTotalPriceDb, getTotalTokenDb] = await Promise.all([this._assetService.getChainServicePrice(), this._assetService.getChainServiceTotalAllocatedToken()]);
+        const [getTotalPriceDb, getTotalTokenDb] = await Promise.all([this.assetService.getChainServicePrice(), this.assetService.getChainServiceTotalAllocatedToken()]);
         //TODO: implement
         return 0;
     };

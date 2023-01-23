@@ -38,6 +38,7 @@ export class ChainService {
         this._clients = {
             [AssetSymbol.COSMOS]: new GenericChain({
                 assetService: this._assetService,
+                httpService: this._httpService,
                 loggerService: this._logger,
                 prefix: AssetPrefix.COSMOS,
                 symbol: AssetSymbol.COSMOS,
@@ -47,6 +48,7 @@ export class ChainService {
             }),
             [AssetSymbol.AKASH_NETWORK]: new GenericChain({
                 assetService: this._assetService,
+                httpService: this._httpService,
                 loggerService: this._logger,
                 prefix: AssetPrefix.AKASH_NETWORK,
                 symbol: AssetSymbol.AKASH_NETWORK,
@@ -56,6 +58,7 @@ export class ChainService {
             }),
             [AssetSymbol.COMDEX]: new GenericChain({
                 assetService: this._assetService,
+                httpService: this._httpService,
                 loggerService: this._logger,
                 prefix: AssetPrefix.COMDEX,
                 symbol: AssetSymbol.COMDEX,
@@ -65,6 +68,7 @@ export class ChainService {
             }),
             [AssetSymbol.SENTINEL]: new GenericChain({
                 assetService: this._assetService,
+                httpService: this._httpService,
                 loggerService: this._logger,
                 prefix: AssetPrefix.SENTINEL,
                 symbol: AssetSymbol.SENTINEL,
@@ -74,6 +78,7 @@ export class ChainService {
             }),
             [AssetSymbol.KI]: new GenericChain({
                 assetService: this._assetService,
+                httpService: this._httpService,
                 loggerService: this._logger,
                 prefix: AssetPrefix.KI,
                 symbol: AssetSymbol.KI,
@@ -83,6 +88,7 @@ export class ChainService {
             }),
             [AssetSymbol.OSMOSIS]: new GenericChain({
                 assetService: this._assetService,
+                httpService: this._httpService,
                 loggerService: this._logger,
                 prefix: AssetPrefix.OSMOSIS,
                 symbol: AssetSymbol.OSMOSIS,
@@ -92,6 +98,7 @@ export class ChainService {
             }),
             [AssetSymbol.JUNO]: new GenericChain({
                 assetService: this._assetService,
+                httpService: this._httpService,
                 loggerService: this._logger,
                 prefix: AssetPrefix.JUNO,
                 symbol: AssetSymbol.JUNO,
@@ -101,6 +108,7 @@ export class ChainService {
             }),
             [AssetSymbol.STARGAZE]: new GenericChain({
                 assetService: this._assetService,
+                httpService: this._httpService,
                 loggerService: this._logger,
                 prefix: AssetPrefix.STARGAZE,
                 symbol: AssetSymbol.STARGAZE,
@@ -110,6 +118,7 @@ export class ChainService {
             }),
             [AssetSymbol.EVMOS]: new EvmosChain({
                 assetService: this._assetService,
+                httpService: this._httpService,
                 loggerService: this._logger,
                 prefix: AssetPrefix.EVMOS,
                 symbol: AssetSymbol.EVMOS,
@@ -119,6 +128,7 @@ export class ChainService {
             }),
             [AssetSymbol.LUM]: new LumChain({
                 assetService: this._assetService,
+                httpService: this._httpService,
                 loggerService: this._logger,
                 prefix: AssetPrefix.LUM,
                 symbol: AssetSymbol.LUM,
@@ -157,6 +167,7 @@ export class ChainService {
             }),
             [AssetSymbol.DFR]: new GenericChain({
                 assetService: this._assetService,
+                httpService: this._httpService,
                 loggerService: this._logger,
                 prefix: AssetPrefix.LUM,
                 symbol: AssetSymbol.DFR,
