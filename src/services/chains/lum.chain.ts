@@ -1,6 +1,8 @@
 import { QueryProposalResponse, QueryProposalsResponse } from '@lum-network/sdk-javascript/build/codec/cosmos/gov/v1beta1/query';
 import { ProposalStatus } from '@lum-network/sdk-javascript/build/codec/cosmos/gov/v1beta1/gov';
+
 import moment from 'moment/moment';
+import { lastValueFrom, map } from 'rxjs';
 
 import { GenericChain } from '@app/services/chains/generic.chain';
 import { ApiUrl } from '@app/utils';
@@ -12,20 +14,22 @@ export class LumChain extends GenericChain {
     };
 
     getPrice = async (): Promise<any> => {
-        const response = await fetch(ApiUrl.GET_LUM_PRICE);
-        const data = await response.json();
-        return data.data;
+        return lastValueFrom(this.httpService.get(`${ApiUrl.GET_LUM_PRICE}`, { headers: { 'Accept-Encoding': '*' } }).pipe(map((response) => response.data)));
     };
 
     getPriceHistory = async (startAt: number, endAt: number): Promise<any[]> => {
-        const response = await fetch(`${ApiUrl.GET_LUM_PRICE}/market_chart/range?vs_currency=usd&from=${startAt}&to=${endAt}`);
-        const data = await response.json();
-        return data.prices.map((price) => {
-            return {
-                key: String(price[0]),
-                value: Number(price[1]),
-            };
-        });
+        return lastValueFrom(
+            this.httpService.get(`${ApiUrl.GET_LUM_PRICE}/market_chart/range?vs_currency=usd&from=${startAt}&to=${endAt}`).pipe(
+                map((response) =>
+                    response.data.prices.map((price) => {
+                        return {
+                            key: String(price[0]),
+                            value: Number(price[1]),
+                        };
+                    }),
+                ),
+            ),
+        );
     };
 
     getProposals = async (): Promise<QueryProposalsResponse> => {
