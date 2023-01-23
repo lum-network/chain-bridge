@@ -2,7 +2,7 @@ import { Logger } from '@nestjs/common';
 import { InjectQueue, Process, Processor } from '@nestjs/bull';
 
 import { Job, Queue } from 'bull';
-import moment from 'moment';
+import dayjs from "dayjs";
 import { LumConstants, LumMessages, LumRegistry, LumUtils } from '@lum-network/sdk-javascript';
 
 import { AssetSymbol, getAddressesRelatedToTransaction, isBeam, NotificationChannels, NotificationEvents, QueueJobs, Queues } from '@app/utils';
@@ -48,7 +48,7 @@ export class BlockConsumer {
             const blockDoc: Partial<BlockEntity> = {
                 hash: LumUtils.toHex(block.blockId.hash).toUpperCase(),
                 height: block.block.header.height,
-                time: moment(block.block.header.time as Date).toDate(),
+                time: dayjs(block.block.header.time as Date).toDate(),
                 tx_count: block.block.txs.length,
                 tx_hashes: block.block.txs.map((tx) => LumUtils.toHex(LumUtils.sha256(tx)).toUpperCase()),
                 proposer_address: proposerAddress,

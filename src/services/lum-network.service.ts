@@ -7,12 +7,9 @@ import { InjectQueue } from '@nestjs/bull';
 import { NewBlockEvent } from '@cosmjs/tendermint-rpc';
 import { LumClient, LumConstants } from '@lum-network/sdk-javascript';
 import { convertUnit } from '@lum-network/sdk-javascript/build/utils';
-import { ProposalStatus } from '@lum-network/sdk-javascript/build/codec/cosmos/gov/v1beta1/gov';
-import { QueryProposalsResponse } from '@lum-network/sdk-javascript/build/codec/cosmos/gov/v1beta1/query';
 
 import * as Sentry from '@sentry/node';
 
-import moment from 'moment';
 import { Stream } from 'xstream';
 import { Queue } from 'bull';
 import { lastValueFrom, map } from 'rxjs';

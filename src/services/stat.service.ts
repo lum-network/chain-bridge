@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
-import moment from 'moment';
+import dayjs from "dayjs";
 
 import { BeamService } from '@app/services/beam.service';
 import { BlockService } from '@app/services/block.service';
@@ -61,8 +61,8 @@ export class StatService {
     getChart = async (type: ChartTypes, startAt: Date, endAt: Date, groupType: string): Promise<any> => {
         switch (type) {
             case ChartTypes.ASSET_VALUE:
-                const startAtTimestamp = moment(startAt).unix();
-                const endAtTimestamp = moment(endAt).unix();
+                const startAtTimestamp = dayjs(startAt).unix();
+                const endAtTimestamp = dayjs(endAt).unix();
 
                 return await this._chainService.getChain<LumChain>(AssetSymbol.LUM).getPriceHistory(startAtTimestamp, endAtTimestamp);
 

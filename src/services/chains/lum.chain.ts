@@ -1,7 +1,7 @@
 import { QueryProposalResponse, QueryProposalsResponse } from '@lum-network/sdk-javascript/build/codec/cosmos/gov/v1beta1/query';
 import { ProposalStatus } from '@lum-network/sdk-javascript/build/codec/cosmos/gov/v1beta1/gov';
 
-import moment from 'moment/moment';
+import dayjs from "dayjs";
 import { lastValueFrom, map } from 'rxjs';
 
 import { GenericChain } from '@app/services/chains/generic.chain';
@@ -32,6 +32,11 @@ export class LumChain extends GenericChain {
         );
     };
 
+    getTVL = async (): Promise<number> => {
+        const [totalAllocatedToken, price] = await Promise.all([this.getTotalAllocatedToken(), this.getPrice()]);
+        return totalAllocatedToken * price.market_data.current_price.usd;
+    };
+
     getProposals = async (): Promise<QueryProposalsResponse> => {
         // We want to sync all proposals and get the proposal_id
         const resultsProposals = await this.client.queryClient.gov.proposals(
@@ -56,14 +61,14 @@ export class LumChain extends GenericChain {
     getOpenVotingProposals = async (): Promise<any> => {
         const getProposals = await this.getProposals();
 
-        const now = moment();
+        const now = dayjs();
 
         const votingDateTime = getProposals.proposals
             .map((el) => ({
                 votingTime: el.votingEndTime,
                 proposalId: el.proposalId,
             }))
-            .filter((el) => moment(el.votingTime) > now);
+            .filter((el) => dayjs(el.votingTime).isAfter(now));
 
         if (!votingDateTime.length) {
             return [];
