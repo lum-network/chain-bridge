@@ -1,4 +1,4 @@
-import { Column, Entity, PrimaryColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, PrimaryColumn, UpdateDateColumn } from 'typeorm';
 
 import { GenericValueEntity } from '@app/utils';
 
@@ -12,6 +12,12 @@ export class AssetEntity {
 
     @Column({ type: 'jsonb', nullable: false, default: () => "'[]'", array: false })
     extra: GenericValueEntity[] = [];
+
+    @CreateDateColumn()
+    created_at: Date = new Date();
+
+    @UpdateDateColumn()
+    updated_at: Date = null;
 
     constructor(data: Partial<AssetEntity>) {
         Object.assign(this, data);
