@@ -5,8 +5,9 @@ import { ConfigService } from '@nestjs/config';
 
 import { LumConstants } from '@lum-network/sdk-javascript';
 
-import { CLIENT_PRECISION, makeRequest, MetricNames } from '@app/utils';
-import { DfractService, LumNetworkService } from '@app/services';
+import { AssetSymbol, CLIENT_PRECISION, makeRequest, MetricNames } from '@app/utils';
+import { DfractService, ChainService } from '@app/services';
+import { LumChain } from '@app/services/chains';
 
 @Injectable()
 export class MetricScheduler {
@@ -16,7 +17,7 @@ export class MetricScheduler {
         @Inject('API') private readonly _client: ClientProxy,
         private readonly _configService: ConfigService,
         private readonly _dfrService: DfractService,
-        private readonly _lumNetworkService: LumNetworkService,
+        private readonly _chainService: ChainService,
     ) {}
 
     // As we rely on external APIs to compute some DFR metrics we trigger the cron every min to avoid rate limiting and error chaining
@@ -28,9 +29,9 @@ export class MetricScheduler {
 
         // Acquire data
         const [lumCommunityPool, lumSupply, lumPrice, dfrApy, dfrBackingPrice, dfrSupply, dfrMcap, dfrBalance, newDfrToMint, dfrMintRatio] = await Promise.all([
-            this._lumNetworkService.client.queryClient.distribution.communityPool(),
-            this._lumNetworkService.getTokenSupply(),
-            this._lumNetworkService.getPrice(),
+            this._chainService.getChain<LumChain>(AssetSymbol.LUM).client.queryClient.distribution.communityPool(),
+            this._chainService.getChain<LumChain>(AssetSymbol.LUM).getTokenSupply(),
+            this._chainService.getChain<LumChain>(AssetSymbol.LUM).getPrice(),
             this._dfrService.getApy(),
             this._dfrService.getDfrBackingPrice(),
             this._dfrService.getTokenSupply(),

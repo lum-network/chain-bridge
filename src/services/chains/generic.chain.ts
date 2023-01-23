@@ -1,11 +1,31 @@
 import { LoggerService } from '@nestjs/common';
 
 import { LumClient, LumUtils } from '@lum-network/sdk-javascript';
+import { Stream } from 'xstream';
+import { NewBlockEvent } from '@cosmjs/tendermint-rpc';
+
 import { apy, AssetDenom, AssetMicroDenom, CLIENT_PRECISION, computeTotalApy, computeTotalTokenAmount, GenericAssetInfo, LUM_STAKING_ADDRESS, TEN_EXPONENT_SIX } from '@app/utils';
 import { AssetService } from '@app/services';
 
+export type Callback = (instance: any) => void;
+
+interface GenericChainConfig {
+    assetService: AssetService;
+    loggerService: LoggerService;
+    prefix: string;
+    symbol: string;
+    endpoint: string;
+    denom: AssetDenom;
+    microDenom: AssetMicroDenom;
+    subscribeToRPC?: boolean;
+    postInitCallback?: Callback;
+}
+
 export class GenericChain {
+    private readonly _config: GenericChainConfig;
     private readonly _assetService: AssetService;
+    private _chainId: string;
+    private _clientStream: Stream<NewBlockEvent> = null;
     private readonly _loggerService: LoggerService;
     private readonly _endpoint: string;
     private readonly _symbol: string;
@@ -14,14 +34,18 @@ export class GenericChain {
     private readonly _denom: AssetDenom;
     private readonly _microDenom: AssetMicroDenom;
 
-    constructor(assetService: AssetService, loggService: LoggerService, prefix: string, symbol: string, endpoint: string, denom: AssetDenom, microDenom: AssetMicroDenom) {
-        this._assetService = assetService;
-        this._loggerService = loggService;
-        this._symbol = symbol;
-        this._prefix = prefix;
-        this._endpoint = endpoint;
-        this._denom = denom;
-        this._microDenom = microDenom;
+    private readonly _postInitCallback: Callback;
+
+    constructor(config: GenericChainConfig) {
+        this._config = config;
+        this._assetService = config.assetService;
+        this._loggerService = config.loggerService;
+        this._symbol = config.symbol;
+        this._prefix = config.prefix;
+        this._endpoint = config.endpoint;
+        this._denom = config.denom;
+        this._microDenom = config.microDenom;
+        this._postInitCallback = config.postInitCallback;
     }
 
     get client(): LumClient {
@@ -48,6 +72,14 @@ export class GenericChain {
         return this._microDenom;
     }
 
+    get clientStream(): any {
+        return this._clientStream;
+    }
+
+    get chainId(): string {
+        return this._chainId;
+    }
+
     get assetService(): AssetService {
         return this._assetService;
     }
@@ -57,8 +89,23 @@ export class GenericChain {
     }
 
     initialize = async (): Promise<LumClient> => {
-        this._client = await LumClient.connect(this.endpoint);
-        this._loggerService.debug(`Connected to ${this.symbol} chain = ${this.endpoint}`);
+        // If we want to connect to RPC WS, we have to patch the connection URI
+        const useEndpoint = this._config.subscribeToRPC ? this._config.endpoint.replace('https://', 'wss://').replace('http://', 'ws://') : this._config.endpoint;
+
+        // Bind and acquire the chain id
+        this._client = await LumClient.connect(useEndpoint);
+        const chainId = await this._client.getChainId();
+
+        // If we want to subscribe to RPC, we have to create a stream
+        if (this._config.subscribeToRPC) {
+            this._clientStream = this._client.tmClient.subscribeNewBlock();
+        }
+
+        // If we have a post init callback, just mention it
+        this._loggerService.debug(`Connected to ${this.symbol} chain = ${useEndpoint} (${chainId})`);
+        if (this._postInitCallback) {
+            this._postInitCallback(this);
+        }
         return this._client;
     };
 

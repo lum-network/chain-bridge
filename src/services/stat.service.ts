@@ -4,17 +4,18 @@ import moment from 'moment';
 
 import { BeamService } from '@app/services/beam.service';
 import { BlockService } from '@app/services/block.service';
-import { LumNetworkService } from '@app/services/lum-network.service';
+import { ChainService } from '@app/services/chain.service';
 import { TransactionService } from '@app/services/transaction.service';
 
-import { BeamStatus, ChartTypes } from '@app/utils';
+import { AssetSymbol, BeamStatus, ChartTypes } from '@app/utils';
+import { LumChain } from '@app/services/chains';
 
 @Injectable()
 export class StatService {
     constructor(
         private readonly _blockService: BlockService,
         private readonly _beamService: BeamService,
-        private readonly _lumService: LumNetworkService,
+        private readonly _chainService: ChainService,
         private readonly _transactionService: TransactionService,
     ) {}
 
@@ -63,7 +64,7 @@ export class StatService {
                 const startAtTimestamp = moment(startAt).unix();
                 const endAtTimestamp = moment(endAt).unix();
 
-                return await this._lumService.getPriceHistory(startAtTimestamp, endAtTimestamp);
+                return await this._chainService.getChain<LumChain>(AssetSymbol.LUM).getPriceHistory(startAtTimestamp, endAtTimestamp);
 
             case ChartTypes.REVIEWS_SUM:
                 return await this._beamService.countInRange(startAt, endAt, groupType);

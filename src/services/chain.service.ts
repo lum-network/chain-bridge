@@ -1,120 +1,169 @@
 import { HttpService } from '@nestjs/axios';
+import { ModulesContainer } from '@nestjs/core';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { InjectQueue } from '@nestjs/bull';
 
+import { Queue } from 'bull';
 import * as Sentry from '@sentry/node';
+import { NewBlockEvent } from '@cosmjs/tendermint-rpc';
 
-import { AssetPrefix, AssetSymbol, AssetMicroDenom, AssetDenom, GenericAssetInfo } from '@app/utils';
+import { AssetPrefix, AssetSymbol, AssetMicroDenom, AssetDenom, GenericAssetInfo, Queues, QueueJobs, QueuePriority, MODULE_NAMES } from '@app/utils';
 
 import { AssetService } from '@app/services';
 import { EvmosChain, GenericChain, LumChain } from '@app/services/chains';
 
 @Injectable()
 export class ChainService {
+    private readonly _currentModuleName: string = null;
     private readonly _logger: Logger = new Logger(ChainService.name);
     private readonly _clients: { [key: string]: GenericChain } = {};
 
-    constructor(private readonly _assetService: AssetService, private readonly _configService: ConfigService, private readonly _httpService: HttpService) {
+    constructor(
+        @InjectQueue(Queues.BLOCKS) private readonly _queue: Queue,
+        private readonly _assetService: AssetService,
+        private readonly _configService: ConfigService,
+        private readonly _httpService: HttpService,
+        private readonly _modulesContainer: ModulesContainer,
+    ) {
+        // Lil hack to get the current module name
+        for (const nestModule of this._modulesContainer.values()) {
+            if (MODULE_NAMES.includes(nestModule.metatype.name)) {
+                this._currentModuleName = nestModule.metatype.name;
+                break;
+            }
+        }
+
+        // Client declarations
         this._clients = {
-            [AssetSymbol.COSMOS]: new GenericChain(
-                this._assetService,
-                this._logger,
-                AssetPrefix.COSMOS,
-                AssetSymbol.COSMOS,
-                this._configService.get<string>('COSMOS_NETWORK_ENDPOINT'),
-                AssetDenom.COSMOS,
-                AssetMicroDenom.COSMOS,
-            ),
-            [AssetSymbol.AKASH_NETWORK]: new GenericChain(
-                this._assetService,
-                this._logger,
-                AssetPrefix.AKASH_NETWORK,
-                AssetSymbol.AKASH_NETWORK,
-                this._configService.get<string>('AKASH_NETWORK_ENDPOINT'),
-                AssetDenom.AKASH_NETWORK,
-                AssetMicroDenom.AKASH_NETWORK,
-            ),
-            [AssetSymbol.COMDEX]: new GenericChain(
-                this._assetService,
-                this._logger,
-                AssetPrefix.COMDEX,
-                AssetSymbol.COMDEX,
-                this._configService.get<string>('COMDEX_NETWORK_ENDPOINT'),
-                AssetDenom.COMDEX,
-                AssetMicroDenom.COMDEX,
-            ),
-            [AssetSymbol.SENTINEL]: new GenericChain(
-                this._assetService,
-                this._logger,
-                AssetPrefix.SENTINEL,
-                AssetSymbol.SENTINEL,
-                this._configService.get<string>('SENTINEL_NETWORK_ENDPOINT'),
-                AssetDenom.SENTINEL,
-                AssetMicroDenom.SENTINEL,
-            ),
-            [AssetSymbol.KI]: new GenericChain(
-                this._assetService,
-                this._logger,
-                AssetPrefix.KI,
-                AssetSymbol.KI,
-                this._configService.get<string>('KICHAIN_NETWORK_ENDPOINT'),
-                AssetDenom.KI,
-                AssetMicroDenom.KI,
-            ),
-            [AssetSymbol.OSMOSIS]: new GenericChain(
-                this._assetService,
-                this._logger,
-                AssetPrefix.OSMOSIS,
-                AssetSymbol.OSMOSIS,
-                this._configService.get<string>('OSMOSIS_NETWORK_ENDPOINT'),
-                AssetDenom.OSMOSIS,
-                AssetMicroDenom.OSMOSIS,
-            ),
-            [AssetSymbol.JUNO]: new GenericChain(
-                this._assetService,
-                this._logger,
-                AssetPrefix.JUNO,
-                AssetSymbol.JUNO,
-                this._configService.get<string>('JUNO_NETWORK_ENDPOINT'),
-                AssetDenom.JUNO,
-                AssetMicroDenom.JUNO,
-            ),
-            [AssetSymbol.STARGAZE]: new GenericChain(
-                this._assetService,
-                this._logger,
-                AssetPrefix.STARGAZE,
-                AssetSymbol.STARGAZE,
-                this._configService.get<string>('STARGAZE_NETWORK_ENDPOINT'),
-                AssetDenom.STARGAZE,
-                AssetMicroDenom.STARGAZE,
-            ),
-            [AssetSymbol.EVMOS]: new EvmosChain(
-                this._assetService,
-                this._logger,
-                AssetPrefix.EVMOS,
-                AssetSymbol.EVMOS,
-                this._configService.get<string>('EVMOS_NETWORK_ENDPOINT'),
-                AssetDenom.EVMOS,
-                AssetMicroDenom.EVMOS,
-            ),
-            [AssetSymbol.LUM]: new LumChain(
-                this._assetService,
-                this._logger,
-                AssetPrefix.LUM,
-                AssetSymbol.LUM,
-                this._configService.get<string>('LUM_NETWORK_ENDPOINT'),
-                AssetDenom.LUM,
-                AssetMicroDenom.LUM,
-            ),
-            [AssetSymbol.DFR]: new GenericChain(
-                this._assetService,
-                this._logger,
-                AssetPrefix.LUM,
-                AssetSymbol.DFR,
-                this._configService.get<string>('LUM_NETWORK_ENDPOINT'),
-                AssetDenom.DFR,
-                AssetMicroDenom.DFR,
-            ),
+            [AssetSymbol.COSMOS]: new GenericChain({
+                assetService: this._assetService,
+                loggerService: this._logger,
+                prefix: AssetPrefix.COSMOS,
+                symbol: AssetSymbol.COSMOS,
+                endpoint: this._configService.get<string>('COSMOS_NETWORK_ENDPOINT'),
+                denom: AssetDenom.COSMOS,
+                microDenom: AssetMicroDenom.COSMOS,
+            }),
+            [AssetSymbol.AKASH_NETWORK]: new GenericChain({
+                assetService: this._assetService,
+                loggerService: this._logger,
+                prefix: AssetPrefix.AKASH_NETWORK,
+                symbol: AssetSymbol.AKASH_NETWORK,
+                endpoint: this._configService.get<string>('AKASH_NETWORK_ENDPOINT'),
+                denom: AssetDenom.AKASH_NETWORK,
+                microDenom: AssetMicroDenom.AKASH_NETWORK,
+            }),
+            [AssetSymbol.COMDEX]: new GenericChain({
+                assetService: this._assetService,
+                loggerService: this._logger,
+                prefix: AssetPrefix.COMDEX,
+                symbol: AssetSymbol.COMDEX,
+                endpoint: this._configService.get<string>('COMDEX_NETWORK_ENDPOINT'),
+                denom: AssetDenom.COMDEX,
+                microDenom: AssetMicroDenom.COMDEX,
+            }),
+            [AssetSymbol.SENTINEL]: new GenericChain({
+                assetService: this._assetService,
+                loggerService: this._logger,
+                prefix: AssetPrefix.SENTINEL,
+                symbol: AssetSymbol.SENTINEL,
+                endpoint: this._configService.get<string>('SENTINEL_NETWORK_ENDPOINT'),
+                denom: AssetDenom.SENTINEL,
+                microDenom: AssetMicroDenom.SENTINEL,
+            }),
+            [AssetSymbol.KI]: new GenericChain({
+                assetService: this._assetService,
+                loggerService: this._logger,
+                prefix: AssetPrefix.KI,
+                symbol: AssetSymbol.KI,
+                endpoint: this._configService.get<string>('KICHAIN_NETWORK_ENDPOINT'),
+                denom: AssetDenom.KI,
+                microDenom: AssetMicroDenom.KI,
+            }),
+            [AssetSymbol.OSMOSIS]: new GenericChain({
+                assetService: this._assetService,
+                loggerService: this._logger,
+                prefix: AssetPrefix.OSMOSIS,
+                symbol: AssetSymbol.OSMOSIS,
+                endpoint: this._configService.get<string>('OSMOSIS_NETWORK_ENDPOINT'),
+                denom: AssetDenom.OSMOSIS,
+                microDenom: AssetMicroDenom.OSMOSIS,
+            }),
+            [AssetSymbol.JUNO]: new GenericChain({
+                assetService: this._assetService,
+                loggerService: this._logger,
+                prefix: AssetPrefix.JUNO,
+                symbol: AssetSymbol.JUNO,
+                endpoint: this._configService.get<string>('JUNO_NETWORK_ENDPOINT'),
+                denom: AssetDenom.JUNO,
+                microDenom: AssetMicroDenom.JUNO,
+            }),
+            [AssetSymbol.STARGAZE]: new GenericChain({
+                assetService: this._assetService,
+                loggerService: this._logger,
+                prefix: AssetPrefix.STARGAZE,
+                symbol: AssetSymbol.STARGAZE,
+                endpoint: this._configService.get<string>('STARGAZE_NETWORK_ENDPOINT'),
+                denom: AssetDenom.STARGAZE,
+                microDenom: AssetMicroDenom.STARGAZE,
+            }),
+            [AssetSymbol.EVMOS]: new EvmosChain({
+                assetService: this._assetService,
+                loggerService: this._logger,
+                prefix: AssetPrefix.EVMOS,
+                symbol: AssetSymbol.EVMOS,
+                endpoint: this._configService.get<string>('EVMOS_NETWORK_ENDPOINT'),
+                denom: AssetDenom.EVMOS,
+                microDenom: AssetMicroDenom.EVMOS,
+            }),
+            [AssetSymbol.LUM]: new LumChain({
+                assetService: this._assetService,
+                loggerService: this._logger,
+                prefix: AssetPrefix.LUM,
+                symbol: AssetSymbol.LUM,
+                endpoint: this._configService.get<string>('LUM_NETWORK_ENDPOINT'),
+                denom: AssetDenom.LUM,
+                microDenom: AssetMicroDenom.LUM,
+                subscribeToRPC: this._currentModuleName === 'SyncSchedulerModule',
+                postInitCallback: (instance) => {
+                    // We only set the block listener in case of the sync scheduler module
+                    if (this._currentModuleName === 'SyncSchedulerModule') {
+                        instance.clientStream.addListener({
+                            next: async (ev: NewBlockEvent) => {
+                                await this._queue.add(
+                                    QueueJobs.INGEST,
+                                    {
+                                        blockHeight: ev.header.height,
+                                        notify: true,
+                                    },
+                                    {
+                                        jobId: `${instance.chainId}-block-${ev.header.height}`,
+                                        attempts: 5,
+                                        backoff: 60000,
+                                        priority: QueuePriority.HIGH,
+                                    },
+                                );
+                            },
+                            error: (err: Error) => {
+                                this._logger.error(`Failed to process the block event ${err}`);
+                            },
+                            complete: () => {
+                                this._logger.error(`Stream completed before we had time to process`);
+                            },
+                        });
+                    }
+                },
+            }),
+            [AssetSymbol.DFR]: new GenericChain({
+                assetService: this._assetService,
+                loggerService: this._logger,
+                prefix: AssetPrefix.LUM,
+                symbol: AssetSymbol.DFR,
+                endpoint: this._configService.get<string>('LUM_NETWORK_ENDPOINT'),
+                denom: AssetDenom.DFR,
+                microDenom: AssetMicroDenom.DFR,
+            }),
         };
     }
 
@@ -138,8 +187,8 @@ export class ChainService {
         return true;
     };
 
-    getChain = (chainSymbol: AssetSymbol) => {
-        return this._clients[chainSymbol];
+    getChain = <Type = GenericChain>(chainSymbol: AssetSymbol): Type => {
+        return this._clients[chainSymbol] as Type;
     };
 
     /*

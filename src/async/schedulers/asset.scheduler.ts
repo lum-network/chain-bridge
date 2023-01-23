@@ -3,8 +3,9 @@ import { ConfigService } from '@nestjs/config';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { ProposalStatus } from '@lum-network/sdk-javascript/build/codec/cosmos/gov/v1beta1/gov';
 
-import { AssetService, ChainService, DfractService, LumNetworkService } from '@app/services';
+import { AssetService, ChainService, DfractService } from '@app/services';
 import { AssetSymbol, LUM_DFR_ALLOCATION } from '@app/utils';
+import { LumChain } from '@app/services/chains';
 
 @Injectable()
 export class AssetScheduler {
@@ -15,7 +16,6 @@ export class AssetScheduler {
         private readonly _chainService: ChainService,
         private readonly _configService: ConfigService,
         private readonly _dfractService: DfractService,
-        private readonly _lumNetworkService: LumNetworkService,
     ) {}
 
     @Cron(CronExpression.EVERY_5_MINUTES)
@@ -29,7 +29,7 @@ export class AssetScheduler {
             // Data we get {unit_price_usd, total_value_usd, supply, apy, total_allocated_token}
             // We want to start syncing lum before moving to other chains
 
-            const lumMetrics = await this._lumNetworkService.getAssetInfo();
+            const lumMetrics = await this._chainService.getChain(AssetSymbol.LUM).getAssetInfo();
             if (lumMetrics) {
                 await this._assetService.ownAssetCreateOrUpdateValue(lumMetrics, AssetSymbol.LUM);
             }
@@ -77,7 +77,7 @@ export class AssetScheduler {
                 this._dfractService.getAssetInfoPreGovProp(),
                 this._dfractService.getAccountBalance(),
                 this._dfractService.getAssetInfoPostGovProp(),
-                this._lumNetworkService.getProposals(),
+                this._chainService.getChain<LumChain>(AssetSymbol.LUM).getProposals(),
             ]);
 
             // Check the last proposal

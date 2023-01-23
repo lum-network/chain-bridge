@@ -8,10 +8,11 @@ import { fromUtf8, keyToHex } from '@lum-network/sdk-javascript/build/utils';
 import { InjectMetric } from '@willsoto/nestjs-prometheus';
 import { Gauge } from 'prom-client';
 
-import { LumNetworkService } from '@app/services';
+import { ChainService } from '@app/services';
 import { BalanceResponse, DataResponse, LumResponse } from '@app/http/responses';
 import { GatewayWebsocket } from '@app/websocket';
-import { CLIENT_PRECISION, MetricNames } from '@app/utils';
+import { AssetSymbol, CLIENT_PRECISION, MetricNames } from '@app/utils';
+import { LumChain } from '@app/services/chains';
 
 @ApiTags('core')
 @Controller('')
@@ -35,7 +36,7 @@ export class CoreController {
         @InjectMetric(MetricNames.DFRACT_MARKET_CAP) private readonly _dfractMarketCap: Gauge<string>,
         // General metrics constructors
         @InjectMetric(MetricNames.TWITTER_FOLLOWERS) private readonly _twitterFollowers: Gauge<string>,
-        private readonly _lumNetworkService: LumNetworkService,
+        private readonly _chainService: ChainService,
         private readonly _messageGateway: GatewayWebsocket,
     ) {}
 
@@ -43,7 +44,7 @@ export class CoreController {
     @ApiOkResponse({ status: 200, type: LumResponse })
     @Get('price')
     async price(): Promise<DataResponse> {
-        const lumPrice = await this._lumNetworkService.getPrice();
+        const lumPrice = await this._chainService.getChain<LumChain>(AssetSymbol.LUM).getPrice();
 
         if (!lumPrice || !lumPrice || !lumPrice) {
             throw new BadRequestException('data_not_found');
@@ -78,7 +79,7 @@ export class CoreController {
     @ApiOkResponse({ status: 200, type: [BalanceResponse] })
     @Get('assets')
     async assets(): Promise<DataResponse> {
-        const assets = await this._lumNetworkService.client.queryClient.bank.totalSupply();
+        const assets = await this._chainService.getChain(AssetSymbol.LUM).client.queryClient.bank.totalSupply();
         return {
             result: assets.map((asset) => {
                 return {
@@ -93,16 +94,16 @@ export class CoreController {
     @Get('params')
     async params(): Promise<DataResponse> {
         const [chainId, mintingInflation, mintingParams, stakingParams, govDepositParams, govVoteParams, govTallyParams, distributionParams, slashingParams, communityPoolParams] = await Promise.all([
-            this._lumNetworkService.client.getChainId(),
-            this._lumNetworkService.client.queryClient.mint.inflation(),
-            this._lumNetworkService.client.queryClient.mint.params(),
-            this._lumNetworkService.client.queryClient.staking.params(),
-            this._lumNetworkService.client.queryClient.gov.params('deposit'),
-            this._lumNetworkService.client.queryClient.gov.params('voting'),
-            this._lumNetworkService.client.queryClient.gov.params('tallying'),
-            this._lumNetworkService.client.queryClient.distribution.params(),
-            this._lumNetworkService.client.queryClient.slashing.params(),
-            this._lumNetworkService.client.queryClient.distribution.communityPool(),
+            this._chainService.getChain(AssetSymbol.LUM).client.getChainId(),
+            this._chainService.getChain(AssetSymbol.LUM).client.queryClient.mint.inflation(),
+            this._chainService.getChain(AssetSymbol.LUM).client.queryClient.mint.params(),
+            this._chainService.getChain(AssetSymbol.LUM).client.queryClient.staking.params(),
+            this._chainService.getChain(AssetSymbol.LUM).client.queryClient.gov.params('deposit'),
+            this._chainService.getChain(AssetSymbol.LUM).client.queryClient.gov.params('voting'),
+            this._chainService.getChain(AssetSymbol.LUM).client.queryClient.gov.params('tallying'),
+            this._chainService.getChain(AssetSymbol.LUM).client.queryClient.distribution.params(),
+            this._chainService.getChain(AssetSymbol.LUM).client.queryClient.slashing.params(),
+            this._chainService.getChain(AssetSymbol.LUM).client.queryClient.distribution.communityPool(),
         ]);
         return {
             result: {

@@ -5,18 +5,18 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 
 import { Queue } from 'bull';
 
-import { LumNetworkService } from '@app/services';
-import { QueueJobs, QueuePriority, Queues } from '@app/utils';
+import { ChainService } from '@app/services';
+import { AssetSymbol, QueueJobs, QueuePriority, Queues } from '@app/utils';
 
 @Injectable()
 export class BlockScheduler {
-    constructor(@InjectQueue(Queues.BLOCKS) private readonly _queue: Queue, private readonly _configService: ConfigService, private readonly _lumNetworkService: LumNetworkService) {}
+    constructor(@InjectQueue(Queues.BLOCKS) private readonly _queue: Queue, private readonly _configService: ConfigService, private readonly _chainService: ChainService) {}
 
     @Cron(CronExpression.EVERY_DAY_AT_4AM, { name: 'blocks_backward_ingest' })
     async backwardIngest() {
         // Daily check that we did not miss a block sync somehow
-        const chainId = await this._lumNetworkService.client.getChainId();
-        const blockHeight = await this._lumNetworkService.client.getBlockHeight();
+        const chainId = this._chainService.getChain(AssetSymbol.LUM).chainId;
+        const blockHeight = await this._chainService.getChain(AssetSymbol.LUM).client.getBlockHeight();
         await this._queue.add(
             QueueJobs.TRIGGER_VERIFY_BLOCKS_BACKWARD,
             {

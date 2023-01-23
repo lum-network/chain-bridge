@@ -126,66 +126,6 @@ export class LumNetworkService {
         }
     };
 
-    getProposals = async (): Promise<QueryProposalsResponse> => {
-        try {
-            // We want to sync all proposals and get the proposal_id
-            const resultsProposals = await this.client.queryClient.gov.proposals(
-                ProposalStatus.PROPOSAL_STATUS_UNSPECIFIED |
-                    ProposalStatus.PROPOSAL_STATUS_DEPOSIT_PERIOD |
-                    ProposalStatus.PROPOSAL_STATUS_VOTING_PERIOD |
-                    ProposalStatus.PROPOSAL_STATUS_PASSED |
-                    ProposalStatus.PROPOSAL_STATUS_REJECTED |
-                    ProposalStatus.PROPOSAL_STATUS_FAILED |
-                    ProposalStatus.UNRECOGNIZED,
-                '',
-                '',
-            );
-
-            return resultsProposals;
-        } catch (error) {
-            this._logger.error(`Failed to sync proposals from chain...`, error);
-            Sentry.captureException(error);
-            return null;
-        }
-    };
-
-    getProposal = async (proposalId: number): Promise<any> => {
-        try {
-            const resultsProposal = await this.client.queryClient.gov.proposal(proposalId);
-            return resultsProposal;
-        } catch (error) {
-            return null;
-        }
-    };
-
-    getOpenVotingProposals = async (): Promise<any> => {
-        try {
-            const getProposals = await this.getProposals();
-
-            const now = moment();
-
-            const votingDateTime = getProposals.proposals
-                .map((el) => ({
-                    votingTime: el.votingEndTime,
-                    proposalId: el.proposalId,
-                }))
-                .filter((el) => moment(el.votingTime) > now);
-
-            if (!votingDateTime.length) {
-                return [];
-            }
-
-            const getVotersByOpenProposalId = votingDateTime?.map((proposal) => proposal.proposalId).map((longInt) => longInt.low);
-            this._logger.log(`Fetched proposalId from open votes`, getVotersByOpenProposalId);
-
-            return getVotersByOpenProposalId;
-        } catch (error) {
-            this._logger.error(`Failed to sync proposalsById...`, error);
-            Sentry.captureException(error);
-            return [];
-        }
-    };
-
     getTokenSupply = async (): Promise<number> => {
         try {
             return Number(convertUnit(await this.client.getSupply(LumConstants.MicroLumDenom), LumConstants.LumDenom));

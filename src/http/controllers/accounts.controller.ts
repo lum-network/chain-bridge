@@ -5,20 +5,16 @@ import { LumConstants, LumUtils } from '@lum-network/sdk-javascript';
 
 import { plainToInstance } from 'class-transformer';
 
-import { LumNetworkService, TransactionService, ValidatorDelegationService } from '@app/services';
+import { ChainService, TransactionService, ValidatorDelegationService } from '@app/services';
 import { AccountResponse, DataResponse, DataResponseMetadata, DelegationResponse, RedelegationResponse, TransactionResponse, UnbondingResponse } from '@app/http/responses';
 import { DefaultTake } from '@app/http/decorators';
-import { CLIENT_PRECISION, ExplorerRequest } from '@app/utils';
+import { AssetSymbol, CLIENT_PRECISION, ExplorerRequest } from '@app/utils';
 
 @ApiTags('accounts')
 @Controller('accounts')
 @UseInterceptors(CacheInterceptor)
 export class AccountsController {
-    constructor(
-        private readonly _lumNetworkService: LumNetworkService,
-        private readonly _transactionService: TransactionService,
-        private readonly _validatorDelegationService: ValidatorDelegationService,
-    ) {}
+    constructor(private readonly _chainService: ChainService, private readonly _transactionService: TransactionService, private readonly _validatorDelegationService: ValidatorDelegationService) {}
 
     @ApiOkResponse({ status: 200, type: [DelegationResponse] })
     @DefaultTake(25)
@@ -55,7 +51,7 @@ export class AccountsController {
     @ApiOkResponse({ status: 200, type: [RedelegationResponse] })
     @Get(':address/redelegations')
     async showRedelegations(@Req() request: ExplorerRequest, @Param('address') address: string): Promise<DataResponse> {
-        const redelegations = await this._lumNetworkService.client.queryClient.staking.redelegations(address, '', '');
+        const redelegations = await this._chainService.getChain(AssetSymbol.LUM).client.queryClient.staking.redelegations(address, '', '');
         return new DataResponse({
             result: redelegations.redelegationResponses.map((redelegation) => plainToInstance(RedelegationResponse, redelegation)),
             metadata: new DataResponseMetadata({
@@ -70,7 +66,7 @@ export class AccountsController {
     @ApiOkResponse({ status: 200, type: [UnbondingResponse] })
     @Get(':address/unbondings')
     async showUnbondings(@Req() request: ExplorerRequest, @Param('address') address: string): Promise<DataResponse> {
-        const unbondings = await this._lumNetworkService.client.queryClient.staking.delegatorUnbondingDelegations(address);
+        const unbondings = await this._chainService.getChain(AssetSymbol.LUM).client.queryClient.staking.delegatorUnbondingDelegations(address);
         return new DataResponse({
             result: unbondings.unbondingResponses.map((unbonding) => plainToInstance(UnbondingResponse, unbonding)),
             metadata: new DataResponseMetadata({
@@ -86,14 +82,30 @@ export class AccountsController {
     @Get(':address')
     async show(@Param('address') address: string): Promise<DataResponse> {
         const [account, balance, rewards, withdrawAddress, commissions, airdrop, totalShares] = await Promise.all([
-            this._lumNetworkService.client.getAccount(address).catch(() => null),
-            this._lumNetworkService.client.getBalance(address, LumConstants.MicroLumDenom).catch(() => null),
-            this._lumNetworkService.client.queryClient.distribution.delegationTotalRewards(address).catch(() => null),
-            this._lumNetworkService.client.queryClient.distribution.delegatorWithdrawAddress(address).catch(() => null),
-            this._lumNetworkService.client.queryClient.distribution
-                .validatorCommission(LumUtils.Bech32.encode(LumConstants.LumBech32PrefixValAddr, LumUtils.Bech32.decode(address).data))
+            this._chainService
+                .getChain(AssetSymbol.LUM)
+                .client.getAccount(address)
                 .catch(() => null),
-            this._lumNetworkService.client.queryClient.airdrop.claimRecord(address).catch(() => null),
+            this._chainService
+                .getChain(AssetSymbol.LUM)
+                .client.getBalance(address, LumConstants.MicroLumDenom)
+                .catch(() => null),
+            this._chainService
+                .getChain(AssetSymbol.LUM)
+                .client.queryClient.distribution.delegationTotalRewards(address)
+                .catch(() => null),
+            this._chainService
+                .getChain(AssetSymbol.LUM)
+                .client.queryClient.distribution.delegatorWithdrawAddress(address)
+                .catch(() => null),
+            this._chainService
+                .getChain(AssetSymbol.LUM)
+                .client.queryClient.distribution.validatorCommission(LumUtils.Bech32.encode(LumConstants.LumBech32PrefixValAddr, LumUtils.Bech32.decode(address).data))
+                .catch(() => null),
+            this._chainService
+                .getChain(AssetSymbol.LUM)
+                .client.queryClient.airdrop.claimRecord(address)
+                .catch(() => null),
             this._validatorDelegationService.sumTotalSharesForDelegator(address).catch(() => null),
         ]);
 

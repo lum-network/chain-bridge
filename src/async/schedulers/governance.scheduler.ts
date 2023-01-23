@@ -2,7 +2,9 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Cron, CronExpression } from '@nestjs/schedule';
 
-import { ProposalVoteService, ProposalDepositService, LumNetworkService } from '@app/services';
+import { ChainService, ProposalDepositService, ProposalVoteService } from '@app/services';
+import { LumChain } from '@app/services/chains';
+import { AssetSymbol } from '@app/utils';
 
 @Injectable()
 export class GovernanceScheduler {
@@ -10,7 +12,7 @@ export class GovernanceScheduler {
 
     constructor(
         private readonly _configService: ConfigService,
-        private readonly _lumNetworkService: LumNetworkService,
+        private readonly _chainService: ChainService,
         private readonly _governanceProposalVoteService: ProposalVoteService,
         private readonly _governanceProposalDepositService: ProposalDepositService,
     ) {}
@@ -24,7 +26,7 @@ export class GovernanceScheduler {
             this._logger.log(`Syncing votes from chain...`);
 
             // We need to get the proposalsId in order to fetch the voters
-            const proposalIds = await this._lumNetworkService.getOpenVotingProposals();
+            const proposalIds = await this._chainService.getChain<LumChain>(AssetSymbol.LUM).getOpenVotingProposals();
 
             if (!proposalIds || !proposalIds.length) {
                 this._logger.log(`voteSync scheduler not launched as no current open proposals to vote on...`);
@@ -34,7 +36,7 @@ export class GovernanceScheduler {
             // Only start the patch process if there are actual proposalId
             for (const id of proposalIds) {
                 // Fetch the votes based on the proposalId
-                const getVotes = await this._lumNetworkService.client.queryClient.gov.votes(id);
+                const getVotes = await this._chainService.getChain(AssetSymbol.LUM).client.queryClient.gov.votes(id);
 
                 // Map the votes to get the voters, the voteOption and the voteWeight
                 const getVoterAndOptions = getVotes.votes.map((voteArgs) => ({
@@ -66,7 +68,7 @@ export class GovernanceScheduler {
             this._logger.log(`Syncing deposits from chain...`);
 
             // We need to get the proposalsId in order to fetch the deposits
-            const proposalIds = await this._lumNetworkService.getOpenVotingProposals();
+            const proposalIds = await this._chainService.getChain<LumChain>(AssetSymbol.LUM).getOpenVotingProposals();
 
             if (!proposalIds || !proposalIds.length) {
                 this._logger.log(`No active proposals to sync deposits for...`);
@@ -76,7 +78,7 @@ export class GovernanceScheduler {
             // Only start the patch process if there are actual proposalId
             for (const id of proposalIds) {
                 // Fetch the deposits based on the proposalId
-                const getDeposits = await this._lumNetworkService.client.queryClient.gov.deposits(id);
+                const getDeposits = await this._chainService.getChain(AssetSymbol.LUM).client.queryClient.gov.deposits(id);
 
                 // Map the deposits to get the depositors and the amount
                 const getDepositor = getDeposits.deposits.map((deposit) => ({

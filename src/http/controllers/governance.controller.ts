@@ -3,17 +3,18 @@ import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 
 import { plainToInstance } from 'class-transformer';
 
-import { ProposalDepositService, ProposalVoteService, LumNetworkService } from '@app/services';
-import { DataResponse, DataResponseMetadata, DepositorResponse, ProposalResponse, VoterResponse, ResultResponse } from '@app/http/responses/';
-import { decodeContent, ExplorerRequest } from '@app/utils';
+import { ChainService, ProposalDepositService, ProposalVoteService } from '@app/services';
+import { DataResponse, DataResponseMetadata, DepositorResponse, ProposalResponse, ResultResponse, VoterResponse } from '@app/http/responses/';
+import { AssetSymbol, decodeContent, ExplorerRequest } from '@app/utils';
 import { DefaultTake } from '@app/http/decorators';
+import { LumChain } from '@app/services/chains';
 
 @ApiTags('governance')
 @Controller('governance')
 @UseInterceptors(CacheInterceptor)
 export class GovernanceController {
     constructor(
-        private readonly _lumNetworkService: LumNetworkService,
+        private readonly _chainService: ChainService,
         private readonly _governanceProposalVoteService: ProposalVoteService,
         private readonly _governanceProposalDepositService: ProposalDepositService,
     ) {}
@@ -21,7 +22,7 @@ export class GovernanceController {
     @ApiOkResponse({ status: 200, type: [ProposalResponse] })
     @Get('proposals')
     async fetch(@Req() request: ExplorerRequest): Promise<DataResponse> {
-        const results = await this._lumNetworkService.getProposals();
+        const results = await this._chainService.getChain<LumChain>(AssetSymbol.LUM).getProposals();
 
         return new DataResponse({
             result: results.proposals.map((proposal) => plainToInstance(ProposalResponse, decodeContent(proposal))),
@@ -37,7 +38,7 @@ export class GovernanceController {
     @ApiOkResponse({ status: 200, type: ProposalResponse })
     @Get('proposals/:id')
     async get(@Param('id') id: number): Promise<DataResponse> {
-        const result = await this._lumNetworkService.getProposal(id);
+        const result = await this._chainService.getChain<LumChain>(AssetSymbol.LUM).getProposal(id);
 
         if (!result || !result.proposal) {
             throw new NotFoundException('proposal_not_found');
@@ -51,7 +52,7 @@ export class GovernanceController {
     @ApiOkResponse({ status: 200, type: ResultResponse })
     @Get('proposals/:id/tally')
     async getTallyResults(@Param('id') id: string): Promise<DataResponse> {
-        const result = await this._lumNetworkService.client.queryClient.gov.tally(id);
+        const result = await this._chainService.getChain(AssetSymbol.LUM).client.queryClient.gov.tally(id);
 
         if (!result || !result.tally) {
             throw new NotFoundException('tally_not_found');

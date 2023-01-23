@@ -20,14 +20,13 @@ import {
     BlockService,
     ChainService,
     DfractService,
-    LumNetworkService,
     ProposalDepositService,
     ProposalVoteService,
     TransactionService,
     ValidatorDelegationService,
     ValidatorService,
 } from '@app/services';
-import { ConfigMap, QueueJobs, QueuePriority, Queues, SentryModuleOptions } from '@app/utils';
+import { AssetSymbol, ConfigMap, QueueJobs, QueuePriority, Queues, SentryModuleOptions } from '@app/utils';
 import { DatabaseConfig, DatabaseFeatures } from '@app/database';
 
 @Module({
@@ -71,7 +70,6 @@ import { DatabaseConfig, DatabaseFeatures } from '@app/database';
         ChainService,
         DfractService,
         GovernanceScheduler,
-        LumNetworkService,
         MetricScheduler,
         ProposalDepositService,
         ProposalVoteService,
@@ -84,36 +82,24 @@ import { DatabaseConfig, DatabaseFeatures } from '@app/database';
 export class SyncSchedulerModule implements OnModuleInit, OnApplicationBootstrap {
     private readonly _logger: Logger = new Logger(SyncSchedulerModule.name);
 
-    constructor(
-        @InjectQueue(Queues.BLOCKS) private readonly _queue: Queue,
-        private readonly _chainService: ChainService,
-        private readonly _configService: ConfigService,
-        private readonly _lumNetworkService: LumNetworkService,
-    ) {}
+    constructor(@InjectQueue(Queues.BLOCKS) private readonly _queue: Queue, private readonly _chainService: ChainService, private readonly _configService: ConfigService) {}
 
     async onModuleInit() {
         // Log out
         const ingestEnabled = this._configService.get<boolean>('INGEST_ENABLED') ? 'enabled' : 'disabled';
         this._logger.log(`AppModule ingestion: ${ingestEnabled}`);
 
-        // We want to intitiliaze lum network first
-        await this._lumNetworkService.initialize();
         await this._chainService.initialize();
     }
 
     async onApplicationBootstrap() {
-        // If we weren't able to initialize connection with Lum Network, exit the project
-        if (!this._lumNetworkService.isInitialized()) {
-            throw new Error(`Cannot initialize the Lum Network Service, exiting...`);
-        }
-
         if (!this._chainService.isInitialized()) {
             throw new Error(`Cannot initialize the External Chain Service, exiting...`);
         }
 
         // Trigger block backward ingestion at startup
-        const chainId = await this._lumNetworkService.client.getChainId();
-        const blockHeight = await this._lumNetworkService.client.getBlockHeight();
+        const chainId = this._chainService.getChain(AssetSymbol.LUM).chainId;
+        const blockHeight = await this._chainService.getChain(AssetSymbol.LUM).client.getBlockHeight();
         await this._queue.add(
             QueueJobs.TRIGGER_VERIFY_BLOCKS_BACKWARD,
             {

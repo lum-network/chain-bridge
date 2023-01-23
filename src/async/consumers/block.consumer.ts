@@ -4,11 +4,11 @@ import { ConfigService } from '@nestjs/config';
 
 import { Job, Queue } from 'bull';
 import moment from 'moment';
-import { LumUtils, LumRegistry, LumMessages, LumConstants } from '@lum-network/sdk-javascript';
+import { LumConstants, LumMessages, LumRegistry, LumUtils } from '@lum-network/sdk-javascript';
 
-import { getAddressesRelatedToTransaction, isBeam, NotificationChannels, NotificationEvents, QueueJobs, Queues } from '@app/utils';
+import { AssetSymbol, getAddressesRelatedToTransaction, isBeam, NotificationChannels, NotificationEvents, QueueJobs, Queues } from '@app/utils';
 
-import { BlockService, LumNetworkService, TransactionService, ValidatorService } from '@app/services';
+import { BlockService, ChainService, TransactionService, ValidatorService } from '@app/services';
 import { BlockEntity, TransactionEntity } from '@app/database';
 
 @Processor(Queues.BLOCKS)
@@ -21,7 +21,7 @@ export class BlockConsumer {
         @InjectQueue(Queues.NOTIFICATIONS) private readonly _notificationQueue: Queue,
         private readonly _blockService: BlockService,
         private readonly _configService: ConfigService,
-        private readonly _lumNetworkService: LumNetworkService,
+        private readonly _chainService: ChainService,
         private readonly _transactionService: TransactionService,
         private readonly _validatorService: ValidatorService,
     ) {}
@@ -42,7 +42,7 @@ export class BlockConsumer {
             this._logger.debug(`Ingesting block ${job.data.blockHeight} (attempt ${job.attemptsMade})`);
 
             // Get block data
-            const block = await this._lumNetworkService.client.getBlock(job.data.blockHeight);
+            const block = await this._chainService.getChain(AssetSymbol.LUM).client.getBlock(job.data.blockHeight);
 
             // Get the operator address
             const proposerAddress = LumUtils.toHex(block.block.header.proposerAddress).toUpperCase();
@@ -66,7 +66,7 @@ export class BlockConsumer {
             // Fetch and format transactions data
             const getFormattedTx = async (rawTx: Uint8Array): Promise<Partial<TransactionEntity>> => {
                 // Acquire raw TX
-                const tx = await this._lumNetworkService.client.getTx(LumUtils.sha256(rawTx));
+                const tx = await this._chainService.getChain(AssetSymbol.LUM).client.getTx(LumUtils.sha256(rawTx));
 
                 // Decode TX to human readable format
                 const txData = LumRegistry.decodeTx(tx.tx);

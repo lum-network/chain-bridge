@@ -8,7 +8,7 @@ import * as Joi from 'joi';
 import * as redisStore from 'cache-manager-redis-store';
 import * as parseRedisUrl from 'parse-redis-url-simple';
 
-import { BeamService, BlockService, LumNetworkService, StatService, TransactionService, ValidatorDelegationService, ValidatorService } from '@app/services';
+import { BeamService, BlockService, ChainService, StatService, TransactionService, ValidatorDelegationService, ValidatorService } from '@app/services';
 
 import { BlocksCommands, RedisCommands, TransactionsCommands, ValidatorsCommands } from '@app/console';
 import { DatabaseConfig, DatabaseFeatures } from '@app/database';
@@ -41,7 +41,7 @@ import { ConfigMap } from '@app/utils';
         TypeOrmModule.forFeature(DatabaseFeatures),
     ],
     providers: [
-        LumNetworkService,
+        ChainService,
         BeamService,
         BlockService,
         StatService,
@@ -55,9 +55,9 @@ import { ConfigMap } from '@app/utils';
     ],
 })
 export class CliModule implements OnModuleInit {
-    constructor(private readonly _lumService: LumNetworkService) {}
+    constructor(private readonly _chainService: ChainService) {}
 
     async onModuleInit(): Promise<void> {
-        await this._lumService.initialize();
+        await this._chainService.initialize();
     }
 }
