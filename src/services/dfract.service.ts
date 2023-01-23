@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 
 import { AssetService, ChainService } from '@app/services';
 import { AssetSymbol, TEN_EXPONENT_SIX } from '@app/utils';
+import {LumChain} from "@app/services/chains";
 
 @Injectable()
 export class DfractService {
@@ -90,9 +91,9 @@ export class DfractService {
 
         const [chainServiceTvl, lumTvl, chainServiceApy, lumApy] = await Promise.all([
             this._chainService.getTvl(),
-            this._chainService.getChain(AssetSymbol.LUM).getTVL(),
+            this._chainService.getChain<LumChain>(AssetSymbol.LUM).getTVL(),
             this._assetService.getChainServiceApy(),
-            this._chainService.getChain(AssetSymbol.LUM).getAPY(),
+            this._chainService.getChain<LumChain>(AssetSymbol.LUM).getAPY(),
         ]);
 
         // We compute the tvl for external chains and lum

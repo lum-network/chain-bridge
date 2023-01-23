@@ -248,7 +248,6 @@ export class ChainService {
 
     /*
      * This method returns the list of tokens supply for external chains
-     * NOTE: EVMOS has a specific endpoint for getting the supply
      */
     getTokenSupply = async (): Promise<{ supply: number; symbol: string }[]> => {
         const tokenSupplies: { supply: number; symbol: string }[] = await Promise.all(
@@ -266,7 +265,6 @@ export class ChainService {
     /*
      * This method returns the list of APY for our external chains
      * But not all of them are able to return it, hence why we loop over a selected list of allowed chains
-     * NOTE: EVMOS has a specific computation logic
      */
     getApy = async (): Promise<{ apy: number; symbol: string }[]> => {
         const apys: { apy: number; symbol: string }[] = await Promise.all(
@@ -283,7 +281,6 @@ export class ChainService {
 
     /*
      * This method returns the list of allocated tokens
-     * NOTE: EVMOS is being computed specifically as it has a different rounding precision
      */
     getTotalAllocatedToken = async (): Promise<{ total_allocated_token: number; symbol: string }[]> => {
         const totalAllocatedTokens: { total_allocated_token: number; symbol: string }[] = await Promise.all(
@@ -320,28 +317,19 @@ export class ChainService {
 
     /*
      * This method returns the TVL for each external chains
-     * NOTE: EVMOS is being computed specifically as it cannot be decoded using the utils
      */
     getTvl = async (): Promise<{ tvl: number; symbol: string }[]> => {
-        /*try {
-            const [getTotalPriceDb, getTotalTokenDb] = await Promise.all([this._assetService.getChainServicePrice(), this._assetService.getChainServiceTotalAllocatedToken()]);
+        const [getTotalPriceDb, getTotalTokenDb] = await Promise.all([this._assetService.getChainServicePrice(), this._assetService.getChainServiceTotalAllocatedToken()]);
 
-            if (getTotalPriceDb && getTotalTokenDb) {
-                return getTotalTokenDb
-                    .sort((a, b) => a.symbol.localeCompare(b.symbol))
-                    .map((item, i) => Object.assign({}, item, getTotalPriceDb[i]))
-                    .map((el) => ({
-                        tvl: Number(el.unit_price_usd) * Number(el.total_allocated_token),
-                        symbol: el.symbol,
-                    }));
-            }
-
-            return [];
-        } catch (error) {
-            this._logger.error('Failed to compute TVL for External Chain...', error);
-            Sentry.captureException(error);
-            return [];
-        }*/
+        if (getTotalPriceDb && getTotalTokenDb) {
+            return getTotalTokenDb
+                .sort((a, b) => a.symbol.localeCompare(b.symbol))
+                .map((item, i) => Object.assign({}, item, getTotalPriceDb[i]))
+                .map((el) => ({
+                    tvl: Number(el.unit_price_usd) * Number(el.total_allocated_token),
+                    symbol: el.symbol,
+                }));
+        }
         return [];
     };
 }
