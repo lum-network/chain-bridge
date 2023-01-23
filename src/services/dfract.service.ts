@@ -35,7 +35,7 @@ export class DfractService {
     };
 
     getPersistedTotalComputedTvl = async (): Promise<number> => {
-        return Number(await this._assetService.getDfrTotalComputedTvl());
+        return this._assetService.getDfrTotalComputedTvl();
     };
 
     /*
@@ -46,7 +46,7 @@ export class DfractService {
     };
 
     getPersistedAccountBalance = async (): Promise<number> => {
-        return Number(await this._assetService.getDfrAccountBalance());
+        return this._assetService.getDfrAccountBalance();
     };
 
     /*
