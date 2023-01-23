@@ -146,6 +146,11 @@ export class ChainService {
                 microDenom: AssetMicroDenom.LUM,
                 subscribeToRPC: this._currentModuleName === 'SyncSchedulerModule',
                 postInitCallback: (instance) => {
+                    // Only ingest if allowed by the configuration
+                    if (this._configService.get<boolean>('INGEST_ENABLED') === false) {
+                        return;
+                    }
+
                     // We only set the block listener in case of the sync scheduler module
                     if (this._currentModuleName === 'SyncSchedulerModule') {
                         instance.clientStream.addListener({
