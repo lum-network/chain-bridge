@@ -1,6 +1,5 @@
 import { Logger } from '@nestjs/common';
 import { InjectQueue, Process, Processor } from '@nestjs/bull';
-import { ConfigService } from '@nestjs/config';
 
 import { Job, Queue } from 'bull';
 import moment from 'moment';
@@ -20,7 +19,6 @@ export class BlockConsumer {
         @InjectQueue(Queues.BEAMS) private readonly _beamQueue: Queue,
         @InjectQueue(Queues.NOTIFICATIONS) private readonly _notificationQueue: Queue,
         private readonly _blockService: BlockService,
-        private readonly _configService: ConfigService,
         private readonly _chainService: ChainService,
         private readonly _transactionService: TransactionService,
         private readonly _validatorService: ValidatorService,
@@ -28,11 +26,6 @@ export class BlockConsumer {
 
     @Process(QueueJobs.INGEST)
     async ingestBlock(job: Job<{ blockHeight: number; notify?: boolean }>) {
-        // Only ingest if allowed by the configuration
-        if (this._configService.get<boolean>('INGEST_ENABLED') === false) {
-            return;
-        }
-
         try {
             // Ignore blocks already in db
             if (await this._blockService.get(job.data.blockHeight)) {
@@ -190,11 +183,6 @@ export class BlockConsumer {
 
     @Process(QueueJobs.TRIGGER_VERIFY_BLOCKS_BACKWARD)
     async verifyBlocksBackward(job: Job<{ chainId: string; fromBlock: number; toBlock: number }>) {
-        if (this._configService.get<boolean>('INGEST_BACKWARD_ENABLED') === false) {
-            this._logger.debug('Backward ingest is disabled');
-            return;
-        }
-
         this._logger.debug(`Verifying range from block ${job.data.fromBlock} to block ${job.data.toBlock} for chain with id ${job.data.chainId}`);
         const res = await this._blockService.countInRange(job.data.fromBlock, job.data.toBlock - 1);
 

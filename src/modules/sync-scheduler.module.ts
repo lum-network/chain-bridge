@@ -85,6 +85,9 @@ export class SyncSchedulerModule implements OnModuleInit, OnApplicationBootstrap
     constructor(@InjectQueue(Queues.BLOCKS) private readonly _queue: Queue, private readonly _chainService: ChainService, private readonly _configService: ConfigService) {}
 
     async onModuleInit() {
+        // Pause queues until application bootstrap
+        await this._queue.pause();
+
         // Log out
         const ingestEnabled = this._configService.get<boolean>('INGEST_ENABLED') ? 'enabled' : 'disabled';
         this._logger.log(`AppModule ingestion: ${ingestEnabled}`);
@@ -95,6 +98,14 @@ export class SyncSchedulerModule implements OnModuleInit, OnApplicationBootstrap
     async onApplicationBootstrap() {
         if (!this._chainService.isInitialized()) {
             throw new Error(`Cannot initialize the External Chain Service, exiting...`);
+        }
+
+        // Resume queues
+        await this._queue.resume();
+
+        // If the backward ingest is disabled, don't ship the job
+        if (this._configService.get<boolean>('INGEST_BACKWARD_ENABLED') === false) {
+            return;
         }
 
         // Trigger block backward ingestion at startup
