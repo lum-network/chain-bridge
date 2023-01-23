@@ -45,6 +45,7 @@ export class ChainService {
                 endpoint: this._configService.get<string>('COSMOS_NETWORK_ENDPOINT'),
                 denom: AssetDenom.COSMOS,
                 microDenom: AssetMicroDenom.COSMOS,
+                subscribeToRPC: false,
             }),
             [AssetSymbol.AKASH_NETWORK]: new GenericChain({
                 assetService: this._assetService,
@@ -55,6 +56,7 @@ export class ChainService {
                 endpoint: this._configService.get<string>('AKASH_NETWORK_ENDPOINT'),
                 denom: AssetDenom.AKASH_NETWORK,
                 microDenom: AssetMicroDenom.AKASH_NETWORK,
+                subscribeToRPC: false,
             }),
             [AssetSymbol.COMDEX]: new GenericChain({
                 assetService: this._assetService,
@@ -65,6 +67,7 @@ export class ChainService {
                 endpoint: this._configService.get<string>('COMDEX_NETWORK_ENDPOINT'),
                 denom: AssetDenom.COMDEX,
                 microDenom: AssetMicroDenom.COMDEX,
+                subscribeToRPC: false,
             }),
             [AssetSymbol.SENTINEL]: new GenericChain({
                 assetService: this._assetService,
@@ -75,6 +78,7 @@ export class ChainService {
                 endpoint: this._configService.get<string>('SENTINEL_NETWORK_ENDPOINT'),
                 denom: AssetDenom.SENTINEL,
                 microDenom: AssetMicroDenom.SENTINEL,
+                subscribeToRPC: false,
             }),
             [AssetSymbol.KI]: new GenericChain({
                 assetService: this._assetService,
@@ -85,6 +89,7 @@ export class ChainService {
                 endpoint: this._configService.get<string>('KICHAIN_NETWORK_ENDPOINT'),
                 denom: AssetDenom.KI,
                 microDenom: AssetMicroDenom.KI,
+                subscribeToRPC: false,
             }),
             [AssetSymbol.OSMOSIS]: new GenericChain({
                 assetService: this._assetService,
@@ -95,6 +100,7 @@ export class ChainService {
                 endpoint: this._configService.get<string>('OSMOSIS_NETWORK_ENDPOINT'),
                 denom: AssetDenom.OSMOSIS,
                 microDenom: AssetMicroDenom.OSMOSIS,
+                subscribeToRPC: false,
             }),
             [AssetSymbol.JUNO]: new GenericChain({
                 assetService: this._assetService,
@@ -105,6 +111,7 @@ export class ChainService {
                 endpoint: this._configService.get<string>('JUNO_NETWORK_ENDPOINT'),
                 denom: AssetDenom.JUNO,
                 microDenom: AssetMicroDenom.JUNO,
+                subscribeToRPC: false,
             }),
             [AssetSymbol.STARGAZE]: new GenericChain({
                 assetService: this._assetService,
@@ -115,6 +122,7 @@ export class ChainService {
                 endpoint: this._configService.get<string>('STARGAZE_NETWORK_ENDPOINT'),
                 denom: AssetDenom.STARGAZE,
                 microDenom: AssetMicroDenom.STARGAZE,
+                subscribeToRPC: false,
             }),
             [AssetSymbol.EVMOS]: new EvmosChain({
                 assetService: this._assetService,
@@ -125,6 +133,7 @@ export class ChainService {
                 endpoint: this._configService.get<string>('EVMOS_NETWORK_ENDPOINT'),
                 denom: AssetDenom.EVMOS,
                 microDenom: AssetMicroDenom.EVMOS,
+                subscribeToRPC: false,
             }),
             [AssetSymbol.LUM]: new LumChain({
                 assetService: this._assetService,
@@ -174,6 +183,7 @@ export class ChainService {
                 endpoint: this._configService.get<string>('LUM_NETWORK_ENDPOINT'),
                 denom: AssetDenom.DFR,
                 microDenom: AssetMicroDenom.DFR,
+                subscribeToRPC: false,
             }),
         };
     }

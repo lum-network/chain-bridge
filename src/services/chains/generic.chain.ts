@@ -29,8 +29,6 @@ export class GenericChain {
     private _clientStream: Stream<NewBlockEvent> = null;
     private _client: LumClient;
 
-    private readonly _postInitCallback: Callback;
-
     constructor(config: GenericChainConfig) {
         this._config = config;
     }
@@ -94,8 +92,8 @@ export class GenericChain {
 
         // If we have a post init callback, just mention it
         this.loggerService.debug(`Connected to ${this.symbol} chain = ${useEndpoint} (${chainId})`);
-        if (this._postInitCallback) {
-            this._postInitCallback(this);
+        if (this._config.postInitCallback) {
+            this._config.postInitCallback(this);
         }
         return this._client;
     };
