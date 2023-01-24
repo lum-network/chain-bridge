@@ -1,5 +1,5 @@
-import { QueryProposalResponse, QueryProposalsResponse } from '@lum-network/sdk-javascript/build/codec/cosmos/gov/v1beta1/query';
-import { ProposalStatus } from '@lum-network/sdk-javascript/build/codec/cosmos/gov/v1beta1/gov';
+import { QueryProposalResponse, QueryProposalsResponse } from '@lum-network/sdk-javascript/build/codec/cosmos/gov/v1/query';
+import { ProposalStatus } from '@lum-network/sdk-javascript/build/codec/cosmos/gov/v1/gov';
 
 import dayjs from 'dayjs';
 import { lastValueFrom, map } from 'rxjs';
@@ -66,7 +66,7 @@ export class LumChain extends GenericChain {
         const votingDateTime = getProposals.proposals
             .map((el) => ({
                 votingTime: el.votingEndTime,
-                proposalId: el.proposalId,
+                proposalId: el.id,
             }))
             .filter((el) => dayjs(el.votingTime).isAfter(now));
 

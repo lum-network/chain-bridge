@@ -140,9 +140,9 @@ export class CoreController {
                         period: govDepositParams.depositParams.maxDepositPeriod.seconds.low,
                     },
                     tally: {
-                        quorum: keyToHex(govTallyParams.tallyParams.quorum).toString(),
-                        threshold: keyToHex(govTallyParams.tallyParams.threshold).toString(),
-                        veto_threshold: keyToHex(govTallyParams.tallyParams.vetoThreshold).toString(),
+                        quorum: govTallyParams.tallyParams.quorum,
+                        threshold: govTallyParams.tallyParams.threshold,
+                        veto_threshold: govTallyParams.tallyParams.vetoThreshold,
                     },
                 },
                 distribution: {
