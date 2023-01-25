@@ -1,5 +1,5 @@
 import { LoggerService } from '@nestjs/common';
-import {HttpService} from "@nestjs/axios";
+import { HttpService } from '@nestjs/axios';
 
 import { LumClient, LumUtils } from '@lum-network/sdk-javascript';
 import { Stream } from 'xstream';
@@ -152,8 +152,7 @@ export class GenericChain {
     };
 
     getTVL = async (): Promise<number> => {
-        const [getTotalPriceDb, getTotalTokenDb] = await Promise.all([this.assetService.getChainServicePrice(), this.assetService.getChainServiceTotalAllocatedToken()]);
-        //TODO: implement
+        const [getTotalPriceDb, getTotalTokenDb] = await Promise.all([this.assetService.getPrices(), this.assetService.getTotalAllocatedTokens()]);
         return 0;
     };
 

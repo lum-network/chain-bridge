@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Cron, CronExpression } from '@nestjs/schedule';
+
 import { ProposalStatus } from '@lum-network/sdk-javascript/build/codec/cosmos/gov/v1beta1/gov';
 
 import { AssetService, ChainService, DfractService } from '@app/services';
@@ -23,24 +24,12 @@ export class AssetScheduler {
         if (!this._configService.get<boolean>('DFRACT_SYNC_ENABLED')) {
             return;
         }
-        try {
-            this._logger.log(`Syncing latest assets info from chain...`);
-            // We sync all values except DFR every hour by starting with LUM
-            // Data we get {unit_price_usd, total_value_usd, supply, apy, total_allocated_token}
-            // We want to start syncing lum before moving to other chains
 
-            const lumMetrics = await this._chainService.getChain(AssetSymbol.LUM).getAssetInfo();
-            if (lumMetrics) {
-                await this._assetService.ownAssetCreateOrUpdateValue(lumMetrics, AssetSymbol.LUM);
-            }
+        this._logger.log(`Syncing latest assets info from chain...`);
 
-            const chainMetrics = await this._chainService.getAssetInfo();
-
-            if (chainMetrics) {
-                await this._assetService.chainAssetCreateOrUpdateValue(chainMetrics);
-            }
-        } catch (error) {
-            this._logger.error(`Failed to update hourly asset info...`, error);
+        const chainMetrics = await this._chainService.getAssetInfo();
+        if (chainMetrics && chainMetrics.length > 0) {
+            await this._assetService.createOrUpdateFromInfo(chainMetrics);
         }
     }
 
@@ -52,90 +41,48 @@ export class AssetScheduler {
             return;
         }
 
-        try {
-            this._logger.log(`Updating historical info from index assets...`);
-
-            // We append historical data to be able to compute trends
-            await this._assetService.createOrAppendExtra();
-        } catch (error) {
-            this._logger.error(`Failed to update weekly historical data...`, error);
-        }
+        this._logger.log(`Updating historical info from index assets...`);
+        await this._assetService.createOrAppendExtra();
     }
 
     // Every 10 minutes, between 08:00 am and 05:59 PM, only on Monday
     @Cron('0 */10 08-17 * * 1')
     async syncDfr(): Promise<void> {
         if (!this._configService.get<boolean>('DFRACT_SYNC_ENABLED')) {
-            return;
+            //return;
         }
 
-        try {
-            this._logger.log(`Updating DFR token values...`);
+        this._logger.log(`Updating DFR token values...`);
 
-            // We only update DFR values once every epoch
-            const [preGovPropDfractMetrics, accountBalance, postGovPropDfractMetrics, proposalResults] = await Promise.all([
-                this._dfractService.getAssetInfoPreGovProp(),
-                this._dfractService.getAccountBalance(),
-                this._dfractService.getAssetInfoPostGovProp(),
-                this._chainService.getChain<LumChain>(AssetSymbol.LUM).getProposals(),
-            ]);
+        // We only update DFR values once every epoch
+        const [preGovPropDfractMetrics, accountBalance, postGovPropDfractMetrics, proposalResults] = await Promise.all([
+            this._dfractService.getAssetInfoPreGovProp(),
+            this._dfractService.getAccountBalance(),
+            this._dfractService.getAssetInfoPostGovProp(),
+            this._chainService.getChain<LumChain>(AssetSymbol.LUM).getProposals(),
+        ]);
 
-            // Check the last proposal
-            const proposal = proposalResults.proposals.pop();
-            // Verify that the last proposal is a DFR Allocation Proposal
-            const isGovPropDfract = proposal.content.typeUrl === LUM_DFR_ALLOCATION;
-            // Verify that the status is ongoing for pre gov prop update
-            const isGovPropDfractOngoing = proposal.status === ProposalStatus.PROPOSAL_STATUS_VOTING_PERIOD;
-            // Verify that the status is passed for post gov prop update
-            const isGovPropDfractPassed = proposal.status === ProposalStatus.PROPOSAL_STATUS_PASSED;
+        // Check the last proposal
+        /*const proposal = proposalResults.proposals.pop();
+        // Verify that the last proposal is a DFR Allocation Proposal
+        console.log(proposal);
+        const isGovPropDfract = proposal.content.typeUrl === LUM_DFR_ALLOCATION;
+        // Verify that the status is ongoing for pre gov prop update
+        const isGovPropDfractOngoing = proposal.status === ProposalStatus.PROPOSAL_STATUS_VOTING_PERIOD;
+        // Verify that the status is passed for post gov prop update
+        const isGovPropDfractPassed = proposal.status === ProposalStatus.PROPOSAL_STATUS_PASSED;
 
-            // We only consider the cron if the last gov prop is a DFR allocation gov prop
-            if (isGovPropDfract) {
-                // If there is cash in the account balance, non-falsy dfractMetrics and an ongoing dfr gov prop, we update the records
-                // Pre gov prop asset info {account_balance, tvl}
-                if (preGovPropDfractMetrics && accountBalance > 0 && isGovPropDfractOngoing) {
-                    await this._assetService.ownAssetCreateOrUpdateValue(preGovPropDfractMetrics, AssetSymbol.DFR);
-                    // If the gov prop has passed and has non-falsy dfractMetrics we update the records to persist the remaining metrics
-                    // Post gov prop asset info {unit_price_usd, total_value_usd, supply, apy}
-                } else if (postGovPropDfractMetrics && isGovPropDfractPassed) {
-                    await this._assetService.ownAssetCreateOrUpdateValue(postGovPropDfractMetrics, AssetSymbol.DFR);
-                }
+        // We only consider the cron if the last gov prop is a DFR allocation gov prop
+        if (isGovPropDfract) {
+            // If there is cash in the account balance, non-falsy dfractMetrics and an ongoing dfr gov prop, we update the records
+            // Pre gov prop asset info {account_balance, tvl}
+            if (preGovPropDfractMetrics && accountBalance > 0 && isGovPropDfractOngoing) {
+                await this._assetService.ownAssetCreateOrUpdateValue(preGovPropDfractMetrics, AssetSymbol.DFR);
+                // If the gov prop has passed and has non-falsy dfractMetrics we update the records to persist the remaining metrics
+                // Post gov prop asset info {unit_price_usd, total_value_usd, supply, apy}
+            } else if (postGovPropDfractMetrics && isGovPropDfractPassed) {
+                await this._assetService.ownAssetCreateOrUpdateValue(postGovPropDfractMetrics, AssetSymbol.DFR);
             }
-        } catch (error) {
-            this._logger.error(`Failed to update DFR token values...`, error);
-        }
-    }
-
-    // Cron that makes sure that the weekly historical data gets properly populated in case of failure
-    @Cron(CronExpression.EVERY_DAY_AT_2AM)
-    async retrySync(): Promise<void> {
-        if (!this._configService.get<boolean>('DFRACT_SYNC_ENABLED')) {
-            return;
-        }
-
-        try {
-            // We retry sync missing historical values
-            this._logger.log(`Verifying missing historical data...`);
-
-            await this._assetService.retryExtraSync();
-        } catch (error) {
-            this._logger.error(`Failed to resync weekly historical data...`, error);
-        }
-    }
-
-    // We cleanup historical data in case of duplicates
-    @Cron(CronExpression.EVERY_DAY_AT_4AM)
-    async cleanupSync(): Promise<void> {
-        if (!this._configService.get<boolean>('DFRACT_SYNC_ENABLED')) {
-            return;
-        }
-
-        try {
-            this._logger.log(`Cleaning up historical data...`);
-
-            await this._assetService.cleanupSync();
-        } catch (error) {
-            this._logger.error(`Failed to resync weekly historical data...`, error);
-        }
+        }*/
     }
 }

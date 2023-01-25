@@ -92,7 +92,7 @@ export class DfractService {
         const [chainServiceTvl, lumTvl, chainServiceApy, lumApy] = await Promise.all([
             this._chainService.getTvl(),
             this._chainService.getChain<LumChain>(AssetSymbol.LUM).getTVL(),
-            this._assetService.getChainServiceApy(),
+            this._assetService.getAPYs(),
             this._chainService.getChain<LumChain>(AssetSymbol.LUM).getAPY(),
         ]);
 

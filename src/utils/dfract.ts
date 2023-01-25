@@ -77,8 +77,6 @@ type ValueUnionProperties = keyof AssetValue;
 
 // last_updated_at is always present
 export type GenericValueEntity = {
-    last_updated_at: Date;
-} & {
     [K in ValueUnionProperties]: AssetValue[K];
 };
 

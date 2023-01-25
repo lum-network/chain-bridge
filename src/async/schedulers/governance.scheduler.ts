@@ -2,7 +2,9 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Cron, CronExpression } from '@nestjs/schedule';
 
-import { ChainService, ProposalDepositService, ProposalVoteService } from '@app/services';
+import { LumRegistry } from '@lum-network/sdk-javascript';
+
+import { ChainService, ProposalDepositService, ProposalService, ProposalVoteService } from '@app/services';
 import { LumChain } from '@app/services/chains';
 import { AssetSymbol } from '@app/utils';
 
@@ -13,9 +15,53 @@ export class GovernanceScheduler {
     constructor(
         private readonly _configService: ConfigService,
         private readonly _chainService: ChainService,
+        private readonly _governanceProposalService: ProposalService,
         private readonly _governanceProposalVoteService: ProposalVoteService,
         private readonly _governanceProposalDepositService: ProposalDepositService,
     ) {}
+
+    @Cron(CronExpression.EVERY_MINUTE)
+    async proposalSync() {
+        if (!this._configService.get<boolean>('GOVERNANCE_SYNC_ENABLED')) {
+            return;
+        }
+
+        this._logger.log(`Syncing proposals from chain...`);
+
+        const proposals = await this._chainService.getChain<LumChain>(AssetSymbol.LUM).getProposals();
+        for (const proposal of proposals.proposals) {
+            // Try to decode the main message
+            const decodedMsg = LumRegistry.decode(proposal.messages[0]);
+            let decodedContent = null;
+            if (decodedMsg.content) {
+                decodedContent = LumRegistry.decode(decodedMsg.content);
+
+                // If the decoded content is a MsgSubmitProposal it contains plan, we need to patch the height value to store raw int
+                if (decodedContent.plan !== undefined && decodedContent.plan !== null) {
+                    decodedContent.plan.height = decodedContent.plan.height.toNumber();
+                }
+            }
+
+            // Create or update the entity
+            await this._governanceProposalService.createOrUpdateProposal({
+                id: proposal.id.toNumber(),
+                status: proposal.status,
+                metadata: proposal.metadata,
+                content: decodedContent,
+                final_tally_result: {
+                    yes: Number(proposal.finalTallyResult.yesCount),
+                    abstain: Number(proposal.finalTallyResult.abstainCount),
+                    no: Number(proposal.finalTallyResult.noCount),
+                    no_with_veto: Number(proposal.finalTallyResult.noWithVetoCount),
+                },
+                total_deposits: proposal.totalDeposit.map((el) => ({ amount: Number(el.amount), denom: el.denom })),
+                submitted_at: proposal.submitTime,
+                deposit_end_time: proposal.depositEndTime,
+                voting_start_time: proposal.votingStartTime,
+                voting_end_time: proposal.votingEndTime,
+            });
+        }
+    }
 
     @Cron(CronExpression.EVERY_30_SECONDS)
     async voteSync() {

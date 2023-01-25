@@ -332,7 +332,7 @@ export class ChainService {
      * This method returns the TVL for each external chains
      */
     getTvl = async (): Promise<{ tvl: number; symbol: string }[]> => {
-        const [getTotalPriceDb, getTotalTokenDb] = await Promise.all([this._assetService.getChainServicePrice(), this._assetService.getChainServiceTotalAllocatedToken()]);
+        const [getTotalPriceDb, getTotalTokenDb] = await Promise.all([this._assetService.getPrices(), this._assetService.getTotalAllocatedTokens()]);
 
         if (getTotalPriceDb && getTotalTokenDb) {
             return getTotalTokenDb
