@@ -22,12 +22,6 @@ export class ProposalEntity {
     @Column({ type: 'varchar', length: 256, nullable: true })
     metadata: string = null;
 
-    @Column({ type: 'varchar', length: 128, nullable: true })
-    title: string = null;
-
-    @Column({ type: 'text', nullable: true })
-    description: string = null;
-
     @Column({ type: 'jsonb', nullable: true })
     final_tally_result: ProposalFinalTallyResult = {
         yes: 0,
