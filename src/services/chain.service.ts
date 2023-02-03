@@ -12,6 +12,7 @@ import { AssetPrefix, AssetSymbol, AssetMicroDenom, AssetDenom, GenericAssetInfo
 
 import { AssetService } from '@app/services';
 import { EvmosChain, GenericChain, LumChain } from '@app/services/chains';
+import {lastValueFrom} from "rxjs";
 
 @Injectable()
 export class ChainService {
@@ -34,9 +35,9 @@ export class ChainService {
             }
         }
 
-        // Client declarations
-        this._clients = {
-            [AssetSymbol.COSMOS]: new GenericChain({
+        // Only initialize other chains if dfract sync enabled
+        if (this._configService.get<boolean>('DFRACT_SYNC_ENABLED')) {
+            this._clients[AssetSymbol.COSMOS] = new GenericChain({
                 assetService: this._assetService,
                 httpService: this._httpService,
                 loggerService: this._logger,
@@ -46,8 +47,8 @@ export class ChainService {
                 denom: AssetDenom.COSMOS,
                 microDenom: AssetMicroDenom.COSMOS,
                 subscribeToRPC: false,
-            }),
-            [AssetSymbol.AKASH_NETWORK]: new GenericChain({
+            });
+            this._clients[AssetSymbol.AKASH_NETWORK] = new GenericChain({
                 assetService: this._assetService,
                 httpService: this._httpService,
                 loggerService: this._logger,
@@ -57,8 +58,8 @@ export class ChainService {
                 denom: AssetDenom.AKASH_NETWORK,
                 microDenom: AssetMicroDenom.AKASH_NETWORK,
                 subscribeToRPC: false,
-            }),
-            [AssetSymbol.COMDEX]: new GenericChain({
+            });
+            this._clients[AssetSymbol.COMDEX] = new GenericChain({
                 assetService: this._assetService,
                 httpService: this._httpService,
                 loggerService: this._logger,
@@ -68,8 +69,8 @@ export class ChainService {
                 denom: AssetDenom.COMDEX,
                 microDenom: AssetMicroDenom.COMDEX,
                 subscribeToRPC: false,
-            }),
-            [AssetSymbol.SENTINEL]: new GenericChain({
+            });
+            this._clients[AssetSymbol.SENTINEL] = new GenericChain({
                 assetService: this._assetService,
                 httpService: this._httpService,
                 loggerService: this._logger,
@@ -79,8 +80,8 @@ export class ChainService {
                 denom: AssetDenom.SENTINEL,
                 microDenom: AssetMicroDenom.SENTINEL,
                 subscribeToRPC: false,
-            }),
-            [AssetSymbol.KI]: new GenericChain({
+            });
+            this._clients[AssetSymbol.KI] = new GenericChain({
                 assetService: this._assetService,
                 httpService: this._httpService,
                 loggerService: this._logger,
@@ -90,8 +91,8 @@ export class ChainService {
                 denom: AssetDenom.KI,
                 microDenom: AssetMicroDenom.KI,
                 subscribeToRPC: false,
-            }),
-            [AssetSymbol.OSMOSIS]: new GenericChain({
+            });
+            this._clients[AssetSymbol.OSMOSIS] = new GenericChain({
                 assetService: this._assetService,
                 httpService: this._httpService,
                 loggerService: this._logger,
@@ -101,8 +102,8 @@ export class ChainService {
                 denom: AssetDenom.OSMOSIS,
                 microDenom: AssetMicroDenom.OSMOSIS,
                 subscribeToRPC: false,
-            }),
-            [AssetSymbol.JUNO]: new GenericChain({
+            });
+            this._clients[AssetSymbol.JUNO] = new GenericChain({
                 assetService: this._assetService,
                 httpService: this._httpService,
                 loggerService: this._logger,
@@ -112,8 +113,8 @@ export class ChainService {
                 denom: AssetDenom.JUNO,
                 microDenom: AssetMicroDenom.JUNO,
                 subscribeToRPC: false,
-            }),
-            [AssetSymbol.STARGAZE]: new GenericChain({
+            });
+            this._clients[AssetSymbol.STARGAZE] = new GenericChain({
                 assetService: this._assetService,
                 httpService: this._httpService,
                 loggerService: this._logger,
@@ -123,8 +124,8 @@ export class ChainService {
                 denom: AssetDenom.STARGAZE,
                 microDenom: AssetMicroDenom.STARGAZE,
                 subscribeToRPC: false,
-            }),
-            [AssetSymbol.EVMOS]: new EvmosChain({
+            });
+            this._clients[AssetSymbol.EVMOS] = new EvmosChain({
                 assetService: this._assetService,
                 httpService: this._httpService,
                 loggerService: this._logger,
@@ -134,52 +135,8 @@ export class ChainService {
                 denom: AssetDenom.EVMOS,
                 microDenom: AssetMicroDenom.EVMOS,
                 subscribeToRPC: false,
-            }),
-            [AssetSymbol.LUM]: new LumChain({
-                assetService: this._assetService,
-                httpService: this._httpService,
-                loggerService: this._logger,
-                prefix: AssetPrefix.LUM,
-                symbol: AssetSymbol.LUM,
-                endpoint: this._configService.get<string>('LUM_NETWORK_ENDPOINT'),
-                denom: AssetDenom.LUM,
-                microDenom: AssetMicroDenom.LUM,
-                subscribeToRPC: this._currentModuleName === 'SyncSchedulerModule',
-                postInitCallback: (instance) => {
-                    // Only ingest if allowed by the configuration
-                    if (this._configService.get<boolean>('INGEST_ENABLED') === false) {
-                        return;
-                    }
-
-                    // We only set the block listener in case of the sync scheduler module
-                    if (this._currentModuleName === 'SyncSchedulerModule') {
-                        instance.clientStream.addListener({
-                            next: async (ev: NewBlockEvent) => {
-                                await this._queue.add(
-                                    QueueJobs.INGEST,
-                                    {
-                                        blockHeight: ev.header.height,
-                                        notify: true,
-                                    },
-                                    {
-                                        jobId: `${instance.chainId}-block-${ev.header.height}`,
-                                        attempts: 5,
-                                        backoff: 60000,
-                                        priority: QueuePriority.HIGH,
-                                    },
-                                );
-                            },
-                            error: (err: Error) => {
-                                this._logger.error(`Failed to process the block event ${err}`);
-                            },
-                            complete: () => {
-                                this._logger.error(`Stream completed before we had time to process`);
-                            },
-                        });
-                    }
-                },
-            }),
-            [AssetSymbol.DFR]: new GenericChain({
+            });
+            this._clients[AssetSymbol.DFR] = new GenericChain({
                 assetService: this._assetService,
                 httpService: this._httpService,
                 loggerService: this._logger,
@@ -189,8 +146,53 @@ export class ChainService {
                 denom: AssetDenom.DFR,
                 microDenom: AssetMicroDenom.DFR,
                 subscribeToRPC: false,
-            }),
-        };
+            });
+        }
+
+        this._clients[AssetSymbol.LUM] = new LumChain({
+            assetService: this._assetService,
+            httpService: this._httpService,
+            loggerService: this._logger,
+            prefix: AssetPrefix.LUM,
+            symbol: AssetSymbol.LUM,
+            endpoint: this._configService.get<string>('LUM_NETWORK_ENDPOINT'),
+            denom: AssetDenom.LUM,
+            microDenom: AssetMicroDenom.LUM,
+            subscribeToRPC: this._currentModuleName === 'SyncSchedulerModule',
+            postInitCallback: (instance) => {
+                // Only ingest if allowed by the configuration
+                if (this._configService.get<boolean>('INGEST_ENABLED') === false) {
+                    return;
+                }
+
+                // We only set the block listener in case of the sync scheduler module
+                if (this._currentModuleName === 'SyncSchedulerModule') {
+                    instance.clientStream.addListener({
+                        next: async (ev: NewBlockEvent) => {
+                            await this._queue.add(
+                                QueueJobs.INGEST,
+                                {
+                                    blockHeight: ev.header.height,
+                                    notify: true,
+                                },
+                                {
+                                    jobId: `${instance.chainId}-block-${ev.header.height}`,
+                                    attempts: 5,
+                                    backoff: 60000,
+                                    priority: QueuePriority.HIGH,
+                                },
+                            );
+                        },
+                        error: (err: Error) => {
+                            this._logger.error(`Failed to process the block event ${err}`);
+                        },
+                        complete: () => {
+                            this._logger.error(`Stream completed before we had time to process`);
+                        },
+                    });
+                }
+            },
+        });
     }
 
     initialize = async () => {
@@ -223,6 +225,11 @@ export class ChainService {
 
     getChain = <Type = GenericChain>(chainSymbol: AssetSymbol): Type => {
         return this._clients[chainSymbol] as Type;
+    };
+
+
+    getIPFSContent = async (cid: string): Promise<any> => {
+        return lastValueFrom(this._httpService.get(`https://${cid}.ipfs.nftstorage.link/`));
     };
 
     /*
