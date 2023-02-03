@@ -14,7 +14,11 @@ export class ProposalService {
     };
 
     fetch = async (): Promise<ProposalEntity[]> => {
-        return this._repository.find();
+        return this._repository.find({
+            order: {
+                id: 'DESC',
+            },
+        });
     };
 
     createOrUpdateProposal = async (data: Partial<ProposalEntity>) => {

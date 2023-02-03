@@ -66,6 +66,10 @@ export class ProposalResponse {
     proposal_id: Long;
 
     @ApiProperty()
+    @Expose()
+    type_url: string;
+
+    @ApiProperty()
     @Expose({ name: 'submitted_at' })
     submit_time: string;
 

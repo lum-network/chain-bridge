@@ -20,7 +20,7 @@ export class GovernanceScheduler {
         private readonly _governanceProposalDepositService: ProposalDepositService,
     ) {}
 
-    @Cron(CronExpression.EVERY_10_SECONDS)
+    @Cron(CronExpression.EVERY_MINUTE)
     async proposalSync() {
         if (!this._configService.get<boolean>('GOVERNANCE_SYNC_ENABLED')) {
             return;
@@ -63,8 +63,8 @@ export class GovernanceScheduler {
                 }
 
                 decodedContent = {
-                    title: ipfsContent.title ? ipfsContent.title : '',
-                    description: ipfsContent.details ? ipfsContent.details : '',
+                    title: ipfsContent.data.title ? ipfsContent.data.title : '',
+                    description: ipfsContent.data.details ? ipfsContent.data.details : '',
                 };
             }
 
