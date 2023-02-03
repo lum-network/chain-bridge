@@ -48,10 +48,12 @@ export class GovernanceScheduler {
             if(!decodedContent && proposal.metadata && proposal.metadata.startsWith('ipfs://')) {
                 const ipfsHash = proposal.metadata.replace('ipfs://', '');
                 const ipfsContent = await this._chainService.getIPFSContent(ipfsHash);
-                decodedContent = {
-                    title: ipfsContent.title ? ipfsContent.title : '',
-                    description: ipfsContent.details ? ipfsContent.details : '',
-                };
+                if(ipfsContent) {
+                    decodedContent = {
+                        title: ipfsContent.title ? ipfsContent.title : '',
+                        description: ipfsContent.details ? ipfsContent.details : '',
+                    };
+                }
             }
 
             // Create or update the entity

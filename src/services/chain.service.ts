@@ -12,7 +12,7 @@ import { AssetPrefix, AssetSymbol, AssetMicroDenom, AssetDenom, GenericAssetInfo
 
 import { AssetService } from '@app/services';
 import { EvmosChain, GenericChain, LumChain } from '@app/services/chains';
-import {lastValueFrom} from "rxjs";
+import { lastValueFrom } from 'rxjs';
 
 @Injectable()
 export class ChainService {
@@ -227,10 +227,16 @@ export class ChainService {
         return this._clients[chainSymbol] as Type;
     };
 
-    getIPFSContent = async (cid: string): Promise<any> => {
-        return lastValueFrom(this._httpService.get(`https://${cid}.ipfs.nftstorage.link/`, {
-            headers: { "Accept-Encoding": "gzip,deflate,compress" }
-        }));
+    getIPFSContent = async (cid: string): Promise<any | null> => {
+        try {
+            return lastValueFrom(
+                this._httpService.get(`https://${cid}.ipfs.nftstorage.link/`, {
+                    headers: { 'Accept-Encoding': 'gzip,deflate,compress' },
+                }),
+            );
+        } catch (e) {
+            return null;
+        }
     };
 
     /*
