@@ -20,7 +20,7 @@ export class GovernanceScheduler {
         private readonly _governanceProposalDepositService: ProposalDepositService,
     ) {}
 
-    @Cron(CronExpression.EVERY_MINUTE)
+    @Cron(CronExpression.EVERY_10_SECONDS)
     async proposalSync() {
         if (!this._configService.get<boolean>('GOVERNANCE_SYNC_ENABLED')) {
             return;
@@ -30,10 +30,20 @@ export class GovernanceScheduler {
         const proposals = await this._chainService.getChain<LumChain>(AssetSymbol.LUM).getProposals();
         for (const proposal of proposals.proposals) {
             let decodedContent = null;
+            let typeUrl = null;
 
             // Try to decode the content using messages array
             if (proposal.messages.length > 0) {
                 const decodedMsg = LumRegistry.decode(proposal.messages[0]);
+
+                // Acquire the typeUrl
+                typeUrl = proposal.messages[0].typeUrl.split('/')[1];
+                // If it's an old system, we have to take the inner typeUrl
+                if (typeUrl === 'cosmos.gov.v1.MsgExecLegacyContent') {
+                    typeUrl = decodedMsg.content.typeUrl.split('/')[1];
+                }
+
+                // Acquire the content
                 if (decodedMsg.content) {
                     decodedContent = LumRegistry.decode(decodedMsg.content);
 
@@ -61,6 +71,7 @@ export class GovernanceScheduler {
             // Create or update the entity
             await this._governanceProposalService.createOrUpdateProposal({
                 id: proposal.id.toNumber(),
+                type_url: typeUrl,
                 status: proposal.status,
                 metadata: proposal.metadata,
                 content: decodedContent,

@@ -13,6 +13,9 @@ export class ProposalEntity {
     @PrimaryColumn()
     id: number;
 
+    @Column({ type: 'varchar', length: 128, nullable: true })
+    type_url: string;
+
     @Column({ type: 'smallint' })
     status: number;
 
