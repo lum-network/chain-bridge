@@ -25,13 +25,13 @@ export class GovernanceScheduler {
         if (!this._configService.get<boolean>('GOVERNANCE_SYNC_ENABLED')) {
             return;
         }
-
-        this._logger.log(`Syncing proposals from chain...`);
+        this._logger.log(`[RootSync] Syncing proposals from chain...`);
 
         const proposals = await this._chainService.getChain<LumChain>(AssetSymbol.LUM).getProposals();
         for (const proposal of proposals.proposals) {
-            // Try to decode the main message
             let decodedContent = null;
+
+            // Try to decode the content using messages array
             if (proposal.messages.length > 0) {
                 const decodedMsg = LumRegistry.decode(proposal.messages[0]);
                 if (decodedMsg.content) {
@@ -44,25 +44,42 @@ export class GovernanceScheduler {
                 }
             }
 
+            // If we have no content yet, but we do have an IPFS metadata, acquire the content from there
+            if(!decodedContent && proposal.metadata && proposal.metadata.startsWith('ipfs://')) {
+                const ipfsHash = proposal.metadata.replace('ipfs://', '');
+                const ipfsContent = await this._chainService.getIPFSContent(ipfsHash);
+                decodedContent = {
+                    title: ipfsContent.title ? ipfsContent.title : '',
+                    description: ipfsContent.details ? ipfsContent.details : '',
+                };
+            }
+
             // Create or update the entity
             await this._governanceProposalService.createOrUpdateProposal({
                 id: proposal.id.toNumber(),
                 status: proposal.status,
                 metadata: proposal.metadata,
                 content: decodedContent,
-                final_tally_result: {
-                    yes: Number(proposal.finalTallyResult.yesCount),
-                    abstain: Number(proposal.finalTallyResult.abstainCount),
-                    no: Number(proposal.finalTallyResult.noCount),
-                    no_with_veto: Number(proposal.finalTallyResult.noWithVetoCount),
-                },
+                final_tally_result: proposal.finalTallyResult
+                    ? {
+                          yes: Number(proposal.finalTallyResult.yesCount),
+                          abstain: Number(proposal.finalTallyResult.abstainCount),
+                          no: Number(proposal.finalTallyResult.noCount),
+                          no_with_veto: Number(proposal.finalTallyResult.noWithVetoCount),
+                      }
+                    : {
+                          yes: 0,
+                          abstain: 0,
+                          no: 0,
+                          no_with_veto: 0,
+                      },
                 total_deposits: proposal.totalDeposit.map((el) => ({ amount: Number(el.amount), denom: el.denom })),
                 submitted_at: proposal.submitTime,
                 deposit_end_time: proposal.depositEndTime,
                 voting_start_time: proposal.votingStartTime,
                 voting_end_time: proposal.votingEndTime,
             });
-            this._logger.debug(`Synced proposal #${proposal.id.toNumber()}`);
+            this._logger.debug(`[RootSync] Synced proposal #${proposal.id.toNumber()}`);
         }
     }
 
@@ -71,13 +88,13 @@ export class GovernanceScheduler {
         if (!this._configService.get<boolean>('GOVERNANCE_SYNC_ENABLED')) {
             return;
         }
-        this._logger.log(`Syncing votes from chain...`);
+        this._logger.log(`[VoteSync] Syncing votes from chain...`);
 
         // We need to get the proposalsId in order to fetch the voters
         const proposalIds = await this._chainService.getChain<LumChain>(AssetSymbol.LUM).getOpenVotingProposals();
 
         if (!proposalIds || !proposalIds.length) {
-            this._logger.log(`voteSync scheduler not launched as no current open proposals to vote on...`);
+            this._logger.log(`[VoteSync] No current open proposal to vote on...`);
             return;
         }
 
@@ -101,7 +118,7 @@ export class GovernanceScheduler {
                 }
             }
         }
-        this._logger.log(`Synced ${proposalIds.length || 0} proposals from chain...`);
+        this._logger.log(`[VoteSync] Synced ${proposalIds.length || 0} proposals from chain...`);
     }
 
     @Cron(CronExpression.EVERY_30_SECONDS)
@@ -109,13 +126,13 @@ export class GovernanceScheduler {
         if (!this._configService.get<boolean>('GOVERNANCE_SYNC_ENABLED')) {
             return;
         }
-        this._logger.log(`Syncing deposits from chain...`);
+        this._logger.log(`[DepositSync] Syncing deposits from chain...`);
 
         // We need to get the proposalsId in order to fetch the deposits
         const proposalIds = await this._chainService.getChain<LumChain>(AssetSymbol.LUM).getOpenVotingProposals();
 
         if (!proposalIds || !proposalIds.length) {
-            this._logger.log(`No active proposals to sync deposits for...`);
+            this._logger.log(`[DepositSync] No active proposals to sync deposits for...`);
             return;
         }
 
@@ -135,6 +152,6 @@ export class GovernanceScheduler {
                 await this._governanceProposalDepositService.createOrUpdateDepositors(id, depositorAddress.depositor, depositorAddress.amount);
             }
         }
-        this._logger.log(`Synced ${proposalIds.length || 0} proposals from chain...`);
+        this._logger.log(`[DepositSync] Synced ${proposalIds.length || 0} proposals from chain...`);
     }
 }

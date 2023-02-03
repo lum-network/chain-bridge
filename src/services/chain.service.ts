@@ -227,9 +227,10 @@ export class ChainService {
         return this._clients[chainSymbol] as Type;
     };
 
-
     getIPFSContent = async (cid: string): Promise<any> => {
-        return lastValueFrom(this._httpService.get(`https://${cid}.ipfs.nftstorage.link/`));
+        return lastValueFrom(this._httpService.get(`https://${cid}.ipfs.nftstorage.link/`, {
+            headers: { "Accept-Encoding": "gzip,deflate,compress" }
+        }));
     };
 
     /*
