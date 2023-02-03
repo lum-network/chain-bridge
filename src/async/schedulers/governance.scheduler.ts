@@ -45,10 +45,10 @@ export class GovernanceScheduler {
             }
 
             // If we have no content yet, but we do have an IPFS metadata, acquire the content from there
-            if(!decodedContent && proposal.metadata && proposal.metadata.startsWith('ipfs://')) {
+            if (!decodedContent && proposal.metadata && proposal.metadata.startsWith('ipfs://')) {
                 const ipfsHash = proposal.metadata.replace('ipfs://', '');
                 const ipfsContent = await this._chainService.getIPFSContent(ipfsHash);
-                if(ipfsContent) {
+                if (ipfsContent) {
                     decodedContent = {
                         title: ipfsContent.title ? ipfsContent.title : '',
                         description: ipfsContent.details ? ipfsContent.details : '',
