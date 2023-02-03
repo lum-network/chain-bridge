@@ -19,48 +19,66 @@ export class AssetScheduler {
         private readonly _dfractService: DfractService,
     ) {}
 
-    @Cron(CronExpression.EVERY_5_MINUTES)
+    @Cron(CronExpression.EVERY_MINUTE)
+    // @Cron(CronExpression.EVERY_5_MINUTES)
     async syncValue(): Promise<void> {
         if (!this._configService.get<boolean>('DFRACT_SYNC_ENABLED')) {
-            return;
+            //TODO: enable back this
+            // return;
         }
 
         this._logger.log(`Syncing latest assets info from chain...`);
 
-        const chainMetrics = await this._chainService.getAssetInfo();
-        if (chainMetrics && chainMetrics.length > 0) {
-            await this._assetService.createOrUpdateFromInfo(chainMetrics);
+        try {
+            const chainMetrics = await this._chainService.getAssetInfo();
+            if (chainMetrics && chainMetrics.length > 0) {
+                await this._assetService.createOrUpdateFromInfo(chainMetrics);
+            }
+        } catch(e){
+            console.error(e);
         }
     }
 
     // Every Monday at 06:30pm
     // We align the sync extra with the end of the DFR sync cron
-    @Cron('30 18 * * 1')
+    @Cron(CronExpression.EVERY_MINUTE)
+    // @Cron('30 18 * * 1')
     async syncExtraWeekly(): Promise<void> {
         if (!this._configService.get<boolean>('DFRACT_SYNC_ENABLED')) {
-            return;
+            //TODO: enable back this
+            // return;
         }
 
-        this._logger.log(`Updating historical info from index assets...`);
-        await this._assetService.createOrAppendExtra();
+        try {
+            this._logger.log(`Updating historical info from index assets...`);
+            // await this._assetService.createOrAppendExtra();
+        } catch(e){
+            console.error(e);
+        }
     }
 
     // Every 10 minutes, between 08:00 am and 05:59 PM, only on Monday
-    @Cron('0 */10 08-17 * * 1')
+    @Cron(CronExpression.EVERY_MINUTE)
+    //@Cron('0 */10 08-17 * * 1')
     async syncDfr(): Promise<void> {
         if (!this._configService.get<boolean>('DFRACT_SYNC_ENABLED')) {
+            //TODO: enable back this
             //return;
         }
 
         this._logger.log(`Updating DFR token values...`);
 
-        // We only update DFR values once every epoch
-        const [preGovPropDfractMetrics, accountBalance, postGovPropDfractMetrics, proposalResults] = await Promise.all([
-            this._dfractService.getAssetInfoPreGovProp(),
-            this._dfractService.getAccountBalance(),
-            this._dfractService.getAssetInfoPostGovProp(),
-            this._chainService.getChain<LumChain>(AssetSymbol.LUM).getProposals(),
-        ]);
+        try {
+            // We only update DFR values once every epoch
+            const [preGovPropDfractMetrics, accountBalance, postGovPropDfractMetrics, proposalResults] = await Promise.all([
+                this._dfractService.getAssetInfoPreGovProp(),
+                this._dfractService.getAccountBalance(),
+                this._dfractService.getAssetInfoPostGovProp(),
+                this._chainService.getChain<LumChain>(AssetSymbol.LUM).getProposals(),
+            ]);
+        } catch(e){
+            console.error(e);
+        }
 
         // Check the last proposal
         /*const proposal = proposalResults.proposals.pop();

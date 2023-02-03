@@ -4,6 +4,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectQueue } from '@nestjs/bull';
 
+import { lastValueFrom } from 'rxjs';
 import { Queue } from 'bull';
 import * as Sentry from '@sentry/node';
 import { NewBlockEvent } from '@cosmjs/tendermint-rpc';
@@ -12,7 +13,6 @@ import { AssetPrefix, AssetSymbol, AssetMicroDenom, AssetDenom, GenericAssetInfo
 
 import { AssetService } from '@app/services';
 import { EvmosChain, GenericChain, LumChain } from '@app/services/chains';
-import { lastValueFrom } from 'rxjs';
 
 @Injectable()
 export class ChainService {
@@ -136,19 +136,19 @@ export class ChainService {
                 microDenom: AssetMicroDenom.EVMOS,
                 subscribeToRPC: false,
             });
-            this._clients[AssetSymbol.DFR] = new GenericChain({
-                assetService: this._assetService,
-                httpService: this._httpService,
-                loggerService: this._logger,
-                prefix: AssetPrefix.LUM,
-                symbol: AssetSymbol.DFR,
-                endpoint: this._configService.get<string>('LUM_NETWORK_ENDPOINT'),
-                denom: AssetDenom.DFR,
-                microDenom: AssetMicroDenom.DFR,
-                subscribeToRPC: false,
-            });
         }
 
+        this._clients[AssetSymbol.DFR] = new GenericChain({
+            assetService: this._assetService,
+            httpService: this._httpService,
+            loggerService: this._logger,
+            prefix: AssetPrefix.LUM,
+            symbol: AssetSymbol.DFR,
+            endpoint: this._configService.get<string>('LUM_NETWORK_ENDPOINT'),
+            denom: AssetDenom.DFR,
+            microDenom: AssetMicroDenom.DFR,
+            subscribeToRPC: false,
+        });
         this._clients[AssetSymbol.LUM] = new LumChain({
             assetService: this._assetService,
             httpService: this._httpService,
@@ -240,89 +240,6 @@ export class ChainService {
     };
 
     /*
-     * This method returns the list of assets prices we represent in our Dfract index
-     * We intentionally remove the LUM ticker as we have our own method to compute the LUM price
-     */
-    getPrice = async (): Promise<{ unit_price_usd: number; symbol: string }[]> => {
-        const prices: { unit_price_usd: number; symbol: string }[] = await Promise.all(
-            Object.keys(this._clients).map(async (chainKey) => {
-                const chain = this._clients[chainKey];
-                return {
-                    unit_price_usd: await chain.getPrice(),
-                    symbol: chain.symbol,
-                };
-            }),
-        );
-        return prices;
-    };
-
-    /*
-     * This method returns the list of assets market caps we represent in our Dfract index
-     * We intentionally remove the LUM ticker as we have our own method to compute the LUM price
-     */
-    getMcap = async (): Promise<{ total_value_usd: number; symbol: string }[]> => {
-        const marketCaps: { total_value_usd: number; symbol: string }[] = await Promise.all(
-            Object.keys(this._clients).map(async (chainKey) => {
-                const chain = this._clients[chainKey];
-                return {
-                    total_value_usd: await chain.getMarketCap(),
-                    symbol: chain.symbol,
-                };
-            }),
-        );
-        return marketCaps;
-    };
-
-    /*
-     * This method returns the list of tokens supply for external chains
-     */
-    getTokenSupply = async (): Promise<{ supply: number; symbol: string }[]> => {
-        const tokenSupplies: { supply: number; symbol: string }[] = await Promise.all(
-            Object.keys(this._clients).map(async (chainKey) => {
-                const chain = this._clients[chainKey];
-                return {
-                    supply: await chain.getTokenSupply(),
-                    symbol: chain.symbol,
-                };
-            }),
-        );
-        return tokenSupplies;
-    };
-
-    /*
-     * This method returns the list of APY for our external chains
-     * But not all of them are able to return it, hence why we loop over a selected list of allowed chains
-     */
-    getApy = async (): Promise<{ apy: number; symbol: string }[]> => {
-        const apys: { apy: number; symbol: string }[] = await Promise.all(
-            Object.keys(this._clients).map(async (chainKey) => {
-                const chain = this._clients[chainKey];
-                return {
-                    apy: await chain.getAPY(),
-                    symbol: chain.symbol,
-                };
-            }),
-        );
-        return apys;
-    };
-
-    /*
-     * This method returns the list of allocated tokens
-     */
-    getTotalAllocatedToken = async (): Promise<{ total_allocated_token: number; symbol: string }[]> => {
-        const totalAllocatedTokens: { total_allocated_token: number; symbol: string }[] = await Promise.all(
-            Object.keys(this._clients).map(async (chainKey) => {
-                const chain = this._clients[chainKey];
-                return {
-                    total_allocated_token: await chain.getTotalAllocatedToken(),
-                    symbol: chain.symbol,
-                };
-            }),
-        );
-        return totalAllocatedTokens;
-    };
-
-    /*
      * This method returns the list of all infos for the external chains
      */
     getAssetInfo = async (): Promise<GenericAssetInfo[]> => {
@@ -331,11 +248,12 @@ export class ChainService {
                 const chain = this._clients[chainKey];
                 return {
                     symbol: chain.symbol,
-                    price: await chain.getPrice(),
-                    market_cap: await chain.getMarketCap(),
-                    token_supply: await chain.getTokenSupply(),
+                    unit_price_usd: await chain.getPrice(),
+                    total_value_usd: await chain.getMarketCap(),
+                    supply: await chain.getTokenSupply(),
                     apy: await chain.getAPY(),
                     total_allocated_token: await chain.getTotalAllocatedToken(),
+                    tvl: await chain.getTVL(),
                 };
             }),
         );
@@ -347,16 +265,21 @@ export class ChainService {
      */
     getTvl = async (): Promise<{ tvl: number; symbol: string }[]> => {
         const [getTotalPriceDb, getTotalTokenDb] = await Promise.all([this._assetService.getPrices(), this._assetService.getTotalAllocatedTokens()]);
-
-        if (getTotalPriceDb && getTotalTokenDb) {
-            return getTotalTokenDb
-                .sort((a, b) => a.symbol.localeCompare(b.symbol))
-                .map((item, i) => Object.assign({}, item, getTotalPriceDb[i]))
-                .map((el) => ({
-                    tvl: Number(el.unit_price_usd) * Number(el.total_allocated_token),
-                    symbol: el.symbol,
-                }));
+        if (!getTotalPriceDb || !getTotalTokenDb) {
+            return [];
         }
-        return [];
+
+        if (getTotalPriceDb.length === 0 || getTotalTokenDb.length === 0) {
+            return [];
+        }
+
+        return getTotalTokenDb
+            .filter((token) => token.symbol !== AssetSymbol.LUM && token.symbol !== AssetSymbol.DFR)
+            .sort((a, b) => a.symbol.localeCompare(b.symbol))
+            .map((item, i) => Object.assign({}, item, getTotalPriceDb[i]))
+            .map((el) => ({
+                tvl: Number(el.unit_price_usd) * Number(el.total_allocated_token),
+                symbol: el.symbol,
+            }));
     };
 }

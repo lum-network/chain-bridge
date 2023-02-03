@@ -16,7 +16,7 @@ export class AssetEntity {
     @CreateDateColumn()
     created_at: Date = new Date();
 
-    @UpdateDateColumn()
+    @UpdateDateColumn({ nullable: true })
     updated_at: Date = null;
 
     constructor(data: Partial<AssetEntity>) {

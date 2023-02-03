@@ -9,12 +9,53 @@ import { ApiUrl } from '@app/utils';
 
 export class LumChain extends GenericChain {
     getMarketCap = async (): Promise<number> => {
-        const [supply, unit_price_usd] = await Promise.all([this.getTokenSupply(), this.getPrice()]);
-        return supply * unit_price_usd.market_data.current_price.usd;
+        const [supply, price] = await Promise.all([this.getTokenSupply(), this.getPrice()]);
+        return supply * price;
     };
 
-    getPrice = async (): Promise<any> => {
-        return lastValueFrom(this.httpService.get(`${ApiUrl.GET_LUM_PRICE}`, { headers: { 'Accept-Encoding': '*' } }).pipe(map((response) => response.data)));
+    getPrice = async (): Promise<number> => {
+        try {
+            const data = await lastValueFrom(this.httpService.get(`${ApiUrl.GET_LUM_PRICE}`, { headers: { 'Accept-Encoding': '*' } }).pipe(map((response) => response.data)));
+            return Number(data.market_data.current_price.usd);
+        } catch (e) {
+            return 0;
+        }
+    };
+
+    getPriceEUR = async (): Promise<number> => {
+        try {
+            const data = await lastValueFrom(this.httpService.get(`${ApiUrl.GET_LUM_PRICE}`, { headers: { 'Accept-Encoding': '*' } }).pipe(map((response) => response.data)));
+            return Number(data.market_data.current_price.eur);
+        } catch (e) {
+            return 0;
+        }
+    };
+
+    getCommunityData = async (): Promise<{ twitter_followers: number }> => {
+        try {
+            const data = await lastValueFrom(this.httpService.get(`${ApiUrl.GET_LUM_PRICE}`, { headers: { 'Accept-Encoding': '*' } }).pipe(map((response) => response.data)));
+            return data.community_data;
+        } catch (e) {
+            return { twitter_followers: 0 };
+        }
+    };
+
+    getTotalVolume = async (): Promise<number> => {
+        try {
+            const data = await lastValueFrom(this.httpService.get(`${ApiUrl.GET_LUM_PRICE}`, { headers: { 'Accept-Encoding': '*' } }).pipe(map((response) => response.data)));
+            return Number(data.market_data.total_volume.usd);
+        } catch (e) {
+            return 0;
+        }
+    };
+
+    getPriceChange = async (): Promise<string> => {
+        try {
+            const data = await lastValueFrom(this.httpService.get(`${ApiUrl.GET_LUM_PRICE}`, { headers: { 'Accept-Encoding': '*' } }).pipe(map((response) => response.data)));
+            return data.market_data.price_change_24h;
+        } catch (e) {
+            return null;
+        }
     };
 
     getPriceHistory = async (startAt: number, endAt: number): Promise<any[]> => {
@@ -34,7 +75,7 @@ export class LumChain extends GenericChain {
 
     getTVL = async (): Promise<number> => {
         const [totalAllocatedToken, price] = await Promise.all([this.getTotalAllocatedToken(), this.getPrice()]);
-        return totalAllocatedToken * price.market_data.current_price.usd;
+        return totalAllocatedToken * price;
     };
 
     getProposals = async (): Promise<QueryProposalsResponse> => {

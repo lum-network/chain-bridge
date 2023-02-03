@@ -1,7 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { Expose, Exclude, Type, Transform } from 'class-transformer';
-
+import { Expose, Exclude, Type } from 'class-transformer';
 import Long from 'long';
 
 import { BalanceResponse } from '@app/http/responses/balance.response';

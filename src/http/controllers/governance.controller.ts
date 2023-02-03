@@ -5,9 +5,8 @@ import { plainToInstance } from 'class-transformer';
 
 import { ChainService, ProposalDepositService, ProposalService, ProposalVoteService } from '@app/services';
 import { DataResponse, DataResponseMetadata, DepositorResponse, ProposalResponse, ResultResponse, VoterResponse } from '@app/http/responses/';
-import { AssetSymbol, decodeContent, ExplorerRequest } from '@app/utils';
+import { AssetSymbol, ExplorerRequest } from '@app/utils';
 import { DefaultTake } from '@app/http/decorators';
-import { LumChain } from '@app/services/chains';
 
 @ApiTags('governance')
 @Controller('governance')

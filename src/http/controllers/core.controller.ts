@@ -3,7 +3,7 @@ import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 
 import { plainToInstance } from 'class-transformer';
-import { fromUtf8, keyToHex } from '@lum-network/sdk-javascript/build/utils';
+import { fromUtf8 } from '@lum-network/sdk-javascript/build/utils';
 
 import { InjectMetric } from '@willsoto/nestjs-prometheus';
 import { Gauge } from 'prom-client';
@@ -44,16 +44,15 @@ export class CoreController {
     @ApiOkResponse({ status: 200, type: LumResponse })
     @Get('price')
     async price(): Promise<DataResponse> {
-        const lumPrice = await this._chainService.getChain<LumChain>(AssetSymbol.LUM).getPrice();
-
-        if (!lumPrice || !lumPrice || !lumPrice) {
-            throw new BadRequestException('data_not_found');
-        }
+        const [price, totalVolume, priceChange24h] = await Promise.all([
+            this._chainService.getChain<LumChain>(AssetSymbol.LUM).getPrice(),
+            this._chainService.getChain<LumChain>(AssetSymbol.LUM).getTotalVolume(),
+            this._chainService.getChain<LumChain>(AssetSymbol.LUM).getPriceChange(),
+        ]);
 
         // Compute the previous price
-        const price = lumPrice.market_data.current_price.usd;
         let previousPrice = 0.0;
-        const priceChange = String(lumPrice.market_data.price_change_24h);
+        const priceChange = String(priceChange24h);
         if (priceChange[0] === '-') {
             previousPrice = price + parseFloat(priceChange.split('-')[1]);
         } else {
@@ -62,11 +61,11 @@ export class CoreController {
 
         const res = {
             price: price,
-            denom: lumPrice.platforms.cosmos,
-            symbol: lumPrice.symbol.toUpperCase(),
+            denom: 'ibc/8A34AF0C1943FD0DFCDE9ADBF0B2C9959C45E87E6088EA2FC6ADACD59261B8A2',
+            symbol: 'LUM',
             liquidity: 0.0,
-            volume_24h: lumPrice.market_data.total_volume.usd,
-            name: lumPrice.name,
+            volume_24h: totalVolume,
+            name: 'Lum Network',
             previous_day_price: previousPrice,
         };
 

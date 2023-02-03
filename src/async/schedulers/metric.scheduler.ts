@@ -28,10 +28,12 @@ export class MetricScheduler {
         }
 
         // Acquire data
-        const [lumCommunityPool, lumSupply, lumPrice, dfrApy, dfrBackingPrice, dfrSupply, dfrMcap, dfrBalance, newDfrToMint, dfrMintRatio] = await Promise.all([
+        const [lumCommunityPool, lumSupply, lumPrice, lumPriceEUR, lumCommunityData, dfrApy, dfrBackingPrice, dfrSupply, dfrMcap, dfrBalance, newDfrToMint, dfrMintRatio] = await Promise.all([
             this._chainService.getChain<LumChain>(AssetSymbol.LUM).client.queryClient.distribution.communityPool(),
             this._chainService.getChain<LumChain>(AssetSymbol.LUM).getTokenSupply(),
             this._chainService.getChain<LumChain>(AssetSymbol.LUM).getPrice(),
+            this._chainService.getChain<LumChain>(AssetSymbol.LUM).getPriceEUR(),
+            this._chainService.getChain<LumChain>(AssetSymbol.LUM).getCommunityData(),
             this._dfrService.getApy(),
             this._dfrService.getDfrBackingPrice(),
             this._dfrService.getTokenSupply(),
@@ -48,9 +50,9 @@ export class MetricScheduler {
             // LUM metrics
             communityPoolSupply && makeRequest(this._client, 'updateMetric', { name: MetricNames.COMMUNITY_POOL_SUPPLY, value: parseInt(communityPoolSupply.amount, 10) / CLIENT_PRECISION }),
             lumSupply && makeRequest(this._client, 'updateMetric', { name: MetricNames.LUM_CURRENT_SUPPLY, value: lumSupply }),
-            lumSupply && makeRequest(this._client, 'updateMetric', { name: MetricNames.MARKET_CAP, value: lumSupply * lumPrice.market_data.current_price.usd }),
-            lumPrice && makeRequest(this._client, 'updateMetric', { name: MetricNames.LUM_PRICE_EUR, value: lumPrice.market_data.current_price.eur }),
-            lumPrice && makeRequest(this._client, 'updateMetric', { name: MetricNames.LUM_PRICE_USD, value: lumPrice.market_data.current_price.usd }),
+            lumSupply && makeRequest(this._client, 'updateMetric', { name: MetricNames.MARKET_CAP, value: lumSupply * lumPrice }),
+            lumPrice && makeRequest(this._client, 'updateMetric', { name: MetricNames.LUM_PRICE_EUR, value: lumPriceEUR }),
+            lumPrice && makeRequest(this._client, 'updateMetric', { name: MetricNames.LUM_PRICE_USD, value: lumPrice }),
 
             // DFR metrics
             dfrApy && makeRequest(this._client, 'updateMetric', { name: MetricNames.DFRACT_APY, value: dfrApy }),
@@ -62,7 +64,7 @@ export class MetricScheduler {
             dfrMintRatio && makeRequest(this._client, 'updateMetric', { name: MetricNames.DFRACT_MINT_RATIO, value: dfrMintRatio }),
 
             // General metrics
-            lumPrice && makeRequest(this._client, 'updateMetric', { name: MetricNames.TWITTER_FOLLOWERS, value: lumPrice.community_data.twitter_followers }),
+            lumPrice && makeRequest(this._client, 'updateMetric', { name: MetricNames.TWITTER_FOLLOWERS, value: lumCommunityData.twitter_followers }),
         ]);
     }
 }

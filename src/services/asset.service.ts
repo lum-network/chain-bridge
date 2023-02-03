@@ -25,28 +25,34 @@ export class AssetService {
         });
     };
 
-    createOrUpdate = async (compositeKey: string, value: GenericValueEntity): Promise<AssetEntity | UpdateResult> => {
-        const entity = await this.getById(compositeKey);
+    createOrUpdate = async (compositeKey: string, value: GenericValueEntity): Promise<AssetEntity> => {
+        let entity = await this.getById(compositeKey);
         if (!entity) {
-            const createAssetValueEntity = new AssetEntity({ id: compositeKey, value });
-            return this._repository.save(createAssetValueEntity);
+            entity = new AssetEntity({ id: compositeKey, value, created_at: new Date() });
         }
 
-        entity.id = compositeKey;
         entity.value = value;
-        return this._repository.update(entity.id, entity);
+        entity.updated_at = new Date();
+        return this._repository.save(entity);
     };
 
     createOrUpdateFromInfo = async (infos: GenericAssetInfo[]): Promise<void> => {
-        // We avoid falsy values being inserted in the db
-        for (const key of filterFalsy(infos)) {
-            if (!key) {
+        for (const info of filterFalsy(infos)) {
+            // Make sure we did get an info
+            if (!info) {
                 continue;
             }
 
-            const compositeKey = `${key.symbol.toLowerCase()}_${Object.keys(key)[0]}`;
-            const value = { [Object.keys(key)[0]]: Object.values(key)[0] };
-            await this.createOrUpdate(compositeKey, value);
+            // For each key of the info, create or update the asset
+            for (const [key, value] of Object.entries(info)) {
+                // There are some redundant keys that we want to avoid to sync
+                if (key === 'symbol') {
+                    continue;
+                }
+                const compositeKey = `${info.symbol.toLowerCase()}_${key}`;
+                const finalValue = { value: value, created_at: new Date() };
+                await this.createOrUpdate(compositeKey, finalValue);
+            }
         }
     };
 
@@ -74,7 +80,6 @@ export class AssetService {
     };
 
     fetchMetricsSince = async (metrics: string, date: Date): Promise<{ id: string; extra: GenericValueEntity[] }[]> => {
-        // Date will come as string format with month and year 'Jan-2022'
         const data = await this._repository.find({
             where: {
                 id: metrics,
@@ -83,9 +88,9 @@ export class AssetService {
         });
 
         // We return data that has been request since the start of the requested month
-        /*return data.map((el) => ({
-            id: el.id,
-            extra: el.extra.filter((el) => new Date(el.updated_at).getTime() >= new Date(date).getTime() && new Date(el.last_updated_at).getTime() < new Date().getTime()),
+        /*return data.map((asset) => ({
+            id: asset.id,
+            extra: asset.extra.filter((value) => new Date(el.updated_at).getTime() >= new Date(date).getTime() && new Date(el.last_updated_at).getTime() < new Date().getTime()),
         }));*/
         return [];
     };
@@ -106,11 +111,10 @@ export class AssetService {
             },
             select: ['id', 'value'],
         });
-        const filteredQuery = data.filter((el) => el.id !== 'dfr_apy' && el.id !== 'lum_apy');
-        return filteredQuery
+        return data
             .map((el) => ({
-                symbol: el.id.substring(0, el.id.indexOf('_')).toUpperCase(),
-                apy: (el.value as any).apy,
+                symbol: el.id.split('_')[0].toUpperCase(),
+                apy: (el.value as any).value,
             }))
             .sort((a, b) => a.symbol.localeCompare(b.symbol));
     };
@@ -122,11 +126,10 @@ export class AssetService {
             },
             select: ['id', 'value'],
         });
-        const filteredQuery = data.filter((el) => el.id !== 'dfr_unit_price_usd' && el.id !== 'lum_unit_price_usd');
-        return filteredQuery
+        return data
             .map((el) => ({
-                symbol: el.id.substring(0, el.id.indexOf('_')).toUpperCase(),
-                unit_price_usd: (el.value as any).unit_price_usd,
+                symbol: el.id.split('_')[0].toUpperCase(),
+                unit_price_usd: (el.value as any).value,
             }))
             .sort((a, b) => a.symbol.localeCompare(b.symbol));
     };
@@ -138,22 +141,27 @@ export class AssetService {
             },
             select: ['id', 'value'],
         });
-        const filteredQuery = data.filter((el) => el.id !== 'dfr_total_allocated_token' && el.id !== 'lum_total_allocated_token');
-        return filteredQuery
+        return data
             .map((el) => ({
-                symbol: el.id.substring(0, el.id.indexOf('_')).toUpperCase(),
-                total_allocated_token: (el.value as any).total_allocated_token,
+                symbol: el.id.split('_')[0].toUpperCase(),
+                total_allocated_token: (el.value as any).value,
             }))
             .sort((a, b) => a.symbol.localeCompare(b.symbol));
     };
 
     getDfrAccountBalance = async (): Promise<number> => {
         const data = await this._repository.findOne({ where: { id: 'dfr_account_balance' }, select: ['id', 'value'] });
-        return (data.value as any).account_balance;
+        if (!data) {
+            return 0;
+        }
+        return (data.value as any).value;
     };
 
     getDfrTotalComputedTvl = async (): Promise<number> => {
         const data = await this._repository.findOne({ where: { id: 'dfr_tvl' }, select: ['id', 'value'] });
-        return (data.value as any).tvl;
+        if (!data) {
+            return 0;
+        }
+        return (data.value as any).value;
     };
 }

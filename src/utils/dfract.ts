@@ -63,9 +63,7 @@ export const computeTotalApy = async (
 
 // Value field can only contain one these keys at the time
 export type AssetValue =
-    | {
-          apy?: number;
-      }
+    | { apy?: number }
     | { supply?: number }
     | { total_value_usd?: number }
     | { unit_price_usd?: number }
@@ -77,10 +75,13 @@ type ValueUnionProperties = keyof AssetValue;
 
 // last_updated_at is always present
 export type GenericValueEntity = {
+    created_at: Date;
+} & {
     [K in ValueUnionProperties]: AssetValue[K];
 };
 
 export interface GenericAssetInfo {
+    symbol?: string;
     unit_price_usd?: number;
     total_value_usd?: number;
     supply?: number;

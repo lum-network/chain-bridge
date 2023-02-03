@@ -26,12 +26,11 @@ export class DfractService {
             return 0;
         }
 
-        // TODO: fix that
-        /*return [chainTvl, lumTvl]
+        const totalTVL = chainTvl
             .flat()
             .map((el) => el.tvl)
-            .reduce((prev, next) => prev + next);*/
-        return 0;
+            .reduce((a, b) => a + b, 0);
+        return totalTVL + lumTvl;
     };
 
     getPersistedTotalComputedTvl = async (): Promise<number> => {
