@@ -81,14 +81,14 @@ export class AccountsController {
     @ApiOkResponse({ status: 200, type: AccountResponse })
     @Get(':address')
     async show(@Param('address') address: string): Promise<DataResponse> {
-        const [account, balance, rewards, withdrawAddress, commissions, airdrop, totalShares] = await Promise.all([
+        const [account, balances, rewards, withdrawAddress, commissions, airdrop, totalShares] = await Promise.all([
             this._chainService
                 .getChain(AssetSymbol.LUM)
                 .client.getAccount(address)
                 .catch(() => null),
             this._chainService
                 .getChain(AssetSymbol.LUM)
-                .client.getBalance(address, LumConstants.MicroLumDenom)
+                .client.getAllBalances(address)
                 .catch(() => null),
             this._chainService
                 .getChain(AssetSymbol.LUM)
@@ -144,10 +144,12 @@ export class AccountsController {
                     }),
                 },
                 airdrop: airdrop.claimRecord,
-                balance: {
-                    denom: balance.denom,
-                    amount: parseInt(balance.amount, 10),
-                },
+                balances: balances.map((balance) => {
+                    return {
+                        denom: balance.denom,
+                        amount: parseInt(balance.amount, 10),
+                    };
+                }),
                 commissions: commissions.commission.commission.map((com) => {
                     return {
                         denom: com.denom,

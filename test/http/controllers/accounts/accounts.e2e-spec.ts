@@ -53,7 +53,7 @@ describe('Accounts (e2e)', () => {
         expect(response.body.result.commissions).toBeTruthy();
         expect(response.body.result).toHaveProperty('address', 'lum1ugeeckr6frejr62jm60m69zxy7ttudc3w584kn');
         expect(response.body.result.withdraw_address).toBeTruthy();
-        expect(response.body.result.balance).toBeTruthy();
+        expect(response.body.result.balances).toBeTruthy();
         expect(response.body.result.account_number).toBeGreaterThanOrEqual(0);
         expect(response.body.result.all_rewards).toBeTruthy();
         expect(response.body.result.sequence).toBeTruthy();
