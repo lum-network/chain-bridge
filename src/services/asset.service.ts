@@ -4,7 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Like, Repository } from 'typeorm';
 
 import { AssetEntity } from '@app/database';
-import { filterFalsy, GenericAssetInfo, GenericValueEntity } from '@app/utils';
+import { filterFalsy, GenericAssetInfo } from '@app/utils';
 
 @Injectable()
 export class AssetService {
@@ -58,7 +58,7 @@ export class AssetService {
         return query.getManyAndCount();
     };
 
-    fetchMetricsSince = async (metrics: string, date: Date): Promise<{ id: string; extra: GenericValueEntity[] }[]> => {
+    fetchMetricsSince = async (metrics: string, date: Date): Promise<{ id: string; value: string[] }[]> => {
         const data = await this._repository.find({
             where: {
                 key: metrics,
@@ -112,7 +112,7 @@ export class AssetService {
                 id: 'DESC',
             },
         });
-        if (!data|| !data.value) {
+        if (!data || !data.value) {
             return 0;
         }
         return Number(data.value);
@@ -158,7 +158,7 @@ export class AssetService {
                 id: 'DESC',
             },
         });
-        if (!data|| !data.value) {
+        if (!data || !data.value) {
             return 0;
         }
         return Number(data.value);
@@ -166,7 +166,7 @@ export class AssetService {
 
     getDfrAccountBalance = async (): Promise<number> => {
         const data = await this._repository.findOne({ where: { key: 'dfr_account_balance' }, select: ['id', 'key', 'value'], order: { id: 'DESC' } });
-        if (!data|| !data.value) {
+        if (!data || !data.value) {
             return 0;
         }
         return Number(data.value);

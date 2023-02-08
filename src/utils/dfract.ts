@@ -73,11 +73,6 @@ export type AssetValue =
 
 type ValueUnionProperties = keyof AssetValue;
 
-// last_updated_at is always present
-export type GenericValueEntity = {
-    [K in ValueUnionProperties]: AssetValue[K];
-};
-
 export interface GenericAssetInfo {
     symbol?: string;
     unit_price_usd?: number;
