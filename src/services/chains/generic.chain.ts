@@ -83,7 +83,7 @@ export class GenericChain {
 
         // Bind and acquire the chain id
         this._client = await LumClient.connect(useEndpoint);
-        const chainId = await this._client.getChainId();
+        this._chainId = await this._client.getChainId();
 
         // If we want to subscribe to RPC, we have to create a stream
         if (this._config.subscribeToRPC) {
@@ -91,7 +91,7 @@ export class GenericChain {
         }
 
         // If we have a post init callback, just mention it
-        this.loggerService.debug(`Connected to ${this.symbol} chain = ${useEndpoint} (${chainId})`);
+        this.loggerService.debug(`Connected to ${this.symbol} chain = ${useEndpoint} (${this._chainId})`);
         if (this._config.postInitCallback) {
             this._config.postInitCallback(this);
         }
