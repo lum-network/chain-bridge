@@ -6,9 +6,15 @@ import { AssetScheduler } from '@app/async';
 export class CronsCommands {
     constructor(private readonly _assetScheduler: AssetScheduler) {}
 
-    @Command({ command: 'asset-sync-dfr', description: 'Sync DFR values' })
-    async assetSyncDfr(): Promise<void> {
-        await this._assetScheduler.syncDfr();
+    @Command({ command: 'asset-daily-sync', description: 'Daily sync values' })
+    async assetSyncDaily(): Promise<void> {
+        await this._assetScheduler.dailySyncValues();
+        process.exit(0);
+    }
+
+    @Command({ command: 'asset-weekly-sync', description: 'Weekly sync values' })
+    async assetSyncWeekly(): Promise<void> {
+        await this._assetScheduler.weeklySyncValues();
         process.exit(0);
     }
 }

@@ -1,17 +1,17 @@
-import { Column, CreateDateColumn, Entity, PrimaryColumn, UpdateDateColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 
 import { GenericValueEntity } from '@app/utils';
 
 @Entity({ name: 'assets' })
 export class AssetEntity {
-    @PrimaryColumn({ type: 'text' })
-    id: string;
+    @PrimaryGeneratedColumn()
+    id: number;
+
+    @Column({ type: 'varchar', length: 32 })
+    key: string;
 
     @Column({ type: 'jsonb', nullable: false })
     value: GenericValueEntity;
-
-    @Column({ type: 'jsonb', nullable: false, default: () => "'[]'", array: false })
-    extra: GenericValueEntity[] = [];
 
     @CreateDateColumn()
     created_at: Date = new Date();

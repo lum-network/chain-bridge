@@ -172,4 +172,4 @@ export const CHAIN_ENV_CONFIG = [
 // Lum endpoint
 export const LUM_ENV_CONFIG = 'LUM_NETWORK_ENDPOINT';
 
-export const LUM_DFR_ALLOCATION = '/lum.network.dfract.WithdrawAndMintProposal';
+export const LUM_DFR_ALLOCATION_TYPE_URL = 'lum.network.dfract.WithdrawAndMintProposal';

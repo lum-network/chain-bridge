@@ -1,8 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
-import { Like, Repository, UpdateResult } from 'typeorm';
-import dayjs from 'dayjs';
+import { Like, Repository } from 'typeorm';
 
 import { AssetEntity } from '@app/database';
 import { filterFalsy, GenericAssetInfo, GenericValueEntity } from '@app/utils';
@@ -11,32 +10,31 @@ import { filterFalsy, GenericAssetInfo, GenericValueEntity } from '@app/utils';
 export class AssetService {
     constructor(@InjectRepository(AssetEntity) private readonly _repository: Repository<AssetEntity>) {}
 
-    getById = async (compositeKey: string): Promise<AssetEntity> => {
+    getById = async (id: number): Promise<AssetEntity> => {
         return this._repository.findOne({
             where: {
-                id: compositeKey,
+                id,
             },
         });
     };
 
-    getExtra = async (): Promise<{ id: string; extra: GenericValueEntity[] }[]> => {
-        return this._repository.find({
-            select: ['id', 'extra'],
+    getByKey = async (key: string): Promise<AssetEntity> => {
+        return this._repository.findOne({
+            where: {
+                key,
+            },
         });
     };
 
-    createOrUpdate = async (compositeKey: string, value: GenericValueEntity): Promise<AssetEntity> => {
-        let entity = await this.getById(compositeKey);
-        if (!entity) {
-            entity = new AssetEntity({ id: compositeKey, value, created_at: new Date() });
-        }
-
-        entity.value = value;
-        entity.updated_at = new Date();
+    create = async (key: string, value: GenericValueEntity): Promise<AssetEntity> => {
+        const entity = new AssetEntity({
+            key,
+            value,
+        });
         return this._repository.save(entity);
     };
 
-    createOrUpdateFromInfo = async (infos: GenericAssetInfo[]): Promise<void> => {
+    createFromInfo = async (infos: GenericAssetInfo[]): Promise<void> => {
         for (const info of filterFalsy(infos)) {
             // Make sure we did get an info
             if (!info) {
@@ -50,27 +48,8 @@ export class AssetService {
                     continue;
                 }
                 const compositeKey = `${info.symbol.toLowerCase()}_${key}`;
-                const finalValue = { value: value, created_at: new Date() };
-                await this.createOrUpdate(compositeKey, finalValue);
+                await this.create(compositeKey, value);
             }
-        }
-    };
-
-    // We create or append extra values
-    createOrAppendExtra = async (): Promise<void> => {
-        const records = await this.getExtra();
-
-        for (const record of records) {
-            const entity = await this.getById(record.id);
-
-            // We want to exclude all redundant data
-            if (entity.extra.includes(entity.value)) {
-                continue;
-            }
-
-            // If the value is not present, append it to the extra array and update the db
-            entity.extra.push(entity.value);
-            await this._repository.update(record.id, entity);
         }
     };
 
@@ -82,9 +61,9 @@ export class AssetService {
     fetchMetricsSince = async (metrics: string, date: Date): Promise<{ id: string; extra: GenericValueEntity[] }[]> => {
         const data = await this._repository.find({
             where: {
-                id: metrics,
+                key: metrics,
             },
-            select: ['id', 'extra', 'updated_at'],
+            select: ['id', 'updated_at'],
         });
 
         // We return data that has been request since the start of the requested month
@@ -95,25 +74,29 @@ export class AssetService {
         return [];
     };
 
-    fetchLatestAsset = async (denom: string): Promise<{ id: string; value: GenericValueEntity }[]> => {
+    fetchLatestAsset = async (denom: string): Promise<AssetEntity[]> => {
         return this._repository.find({
             where: {
-                id: Like(`%${denom}%`),
+                key: Like(`%${denom}%`),
             },
-            select: ['id', 'value'],
+            select: ['id', 'key', 'value'],
+            take: 1,
+            order: {
+                id: 'DESC',
+            },
         });
     };
 
     getAPYs = async (): Promise<{ symbol: string; apy: number }[]> => {
         const data = await this._repository.find({
             where: {
-                id: Like(`%apy%`),
+                key: Like(`%apy%`),
             },
-            select: ['id', 'value'],
+            select: ['id', 'key', 'value'],
         });
         return data
             .map((el) => ({
-                symbol: el.id.split('_')[0].toUpperCase(),
+                symbol: el.key.split('_')[0].toUpperCase(),
                 apy: (el.value as any).value,
             }))
             .sort((a, b) => a.symbol.localeCompare(b.symbol));
@@ -122,13 +105,13 @@ export class AssetService {
     getPrices = async (): Promise<{ symbol: string; unit_price_usd: number }[]> => {
         const data = await this._repository.find({
             where: {
-                id: Like(`%unit_price_usd%`),
+                key: Like(`%unit_price_usd%`),
             },
-            select: ['id', 'value'],
+            select: ['id', 'key', 'value'],
         });
         return data
             .map((el) => ({
-                symbol: el.id.split('_')[0].toUpperCase(),
+                symbol: el.key.split('_')[0].toUpperCase(),
                 unit_price_usd: (el.value as any).value,
             }))
             .sort((a, b) => a.symbol.localeCompare(b.symbol));
@@ -137,20 +120,20 @@ export class AssetService {
     getTotalAllocatedTokens = async (): Promise<{ symbol: string; total_allocated_token: number }[]> => {
         const data = await this._repository.find({
             where: {
-                id: Like(`%total_allocated_token%`),
+                key: Like(`%total_allocated_token%`),
             },
-            select: ['id', 'value'],
+            select: ['id', 'key', 'value'],
         });
         return data
             .map((el) => ({
-                symbol: el.id.split('_')[0].toUpperCase(),
+                symbol: el.key.split('_')[0].toUpperCase(),
                 total_allocated_token: (el.value as any).value,
             }))
             .sort((a, b) => a.symbol.localeCompare(b.symbol));
     };
 
     getDfrAccountBalance = async (): Promise<number> => {
-        const data = await this._repository.findOne({ where: { id: 'dfr_account_balance' }, select: ['id', 'value'] });
+        const data = await this._repository.findOne({ where: { key: 'dfr_account_balance' }, select: ['id', 'key', 'value'], order: { id: 'DESC' } });
         if (!data) {
             return 0;
         }
@@ -158,7 +141,7 @@ export class AssetService {
     };
 
     getDfrTotalComputedTvl = async (): Promise<number> => {
-        const data = await this._repository.findOne({ where: { id: 'dfr_tvl' }, select: ['id', 'value'] });
+        const data = await this._repository.findOne({ where: { key: 'dfr_tvl' }, select: ['id', 'key', 'value'], order: { id: 'DESC' } });
         if (!data) {
             return 0;
         }

@@ -9,7 +9,7 @@ import * as Joi from 'joi';
 import * as redisStore from 'cache-manager-redis-store';
 import * as parseRedisUrl from 'parse-redis-url-simple';
 
-import { AssetService, BeamService, BlockService, ChainService, DfractService, StatService, TransactionService, ValidatorDelegationService, ValidatorService } from '@app/services';
+import {AssetService, BeamService, BlockService, ChainService, DfractService, ProposalService, StatService, TransactionService, ValidatorDelegationService, ValidatorService} from '@app/services';
 
 import { BlocksCommands, CronsCommands, RedisCommands, TransactionsCommands, ValidatorsCommands } from '@app/console';
 import { DatabaseConfig, DatabaseFeatures } from '@app/database';
@@ -50,6 +50,7 @@ import { AssetScheduler, AsyncQueues } from '@app/async';
         BlockService,
         DfractService,
         StatService,
+        ProposalService,
         TransactionService,
         ValidatorService,
         ValidatorDelegationService,
