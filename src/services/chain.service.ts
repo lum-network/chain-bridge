@@ -12,7 +12,7 @@ import { NewBlockEvent } from '@cosmjs/tendermint-rpc';
 import { AssetPrefix, AssetSymbol, AssetMicroDenom, AssetDenom, GenericAssetInfo, Queues, QueueJobs, QueuePriority, MODULE_NAMES } from '@app/utils';
 
 import { AssetService } from '@app/services';
-import { EvmosChain, GenericChain, LumChain } from '@app/services/chains';
+import {EvmosChain, GenericChain, JunoChain, LumChain, OsmosisChain, StargazeChain} from '@app/services/chains';
 
 @Injectable()
 export class ChainService {
@@ -92,7 +92,7 @@ export class ChainService {
                 microDenom: AssetMicroDenom.KI,
                 subscribeToRPC: false,
             });
-            this._clients[AssetSymbol.OSMOSIS] = new GenericChain({
+            this._clients[AssetSymbol.OSMOSIS] = new OsmosisChain({
                 assetService: this._assetService,
                 httpService: this._httpService,
                 loggerService: this._logger,
@@ -103,7 +103,7 @@ export class ChainService {
                 microDenom: AssetMicroDenom.OSMOSIS,
                 subscribeToRPC: false,
             });
-            this._clients[AssetSymbol.JUNO] = new GenericChain({
+            this._clients[AssetSymbol.JUNO] = new JunoChain({
                 assetService: this._assetService,
                 httpService: this._httpService,
                 loggerService: this._logger,
@@ -114,7 +114,7 @@ export class ChainService {
                 microDenom: AssetMicroDenom.JUNO,
                 subscribeToRPC: false,
             });
-            this._clients[AssetSymbol.STARGAZE] = new GenericChain({
+            this._clients[AssetSymbol.STARGAZE] = new StargazeChain({
                 assetService: this._assetService,
                 httpService: this._httpService,
                 loggerService: this._logger,

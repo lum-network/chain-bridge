@@ -30,8 +30,4 @@ export class EvmosChain extends GenericChain {
         const tokens = Number(await computeTotalTokenAmount(EVMOS_STAKING_ADDRESS, this.client, this.microDenom, CLIENT_PRECISION, CLIENT_PRECISION));
         return tokens;
     };
-
-    getTVL = async (): Promise<number> => {
-        return super.getTVL();
-    };
 }

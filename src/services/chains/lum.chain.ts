@@ -78,6 +78,10 @@ export class LumChain extends GenericChain {
         return totalAllocatedToken * price;
     };
 
+    getAPY = async (): Promise<number> => {
+        return 0;
+    };
+
     getProposals = async (): Promise<QueryProposalsResponse> => {
         // We want to sync all proposals and get the proposal_id
         const resultsProposals = await this.client.queryClient.gov.proposals(
