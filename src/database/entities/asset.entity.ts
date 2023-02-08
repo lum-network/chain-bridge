@@ -1,7 +1,5 @@
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 
-import { GenericValueEntity } from '@app/utils';
-
 @Entity({ name: 'assets' })
 export class AssetEntity {
     @PrimaryGeneratedColumn()
@@ -10,8 +8,8 @@ export class AssetEntity {
     @Column({ type: 'varchar', length: 32 })
     key: string;
 
-    @Column({ type: 'jsonb', nullable: false })
-    value: GenericValueEntity;
+    @Column({ type: 'text', nullable: false })
+    value: string;
 
     @CreateDateColumn()
     created_at: Date = new Date();

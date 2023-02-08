@@ -152,8 +152,8 @@ export class GenericChain {
     };
 
     getTVL = async (): Promise<number> => {
-        const [getTotalPriceDb, getTotalTokenDb] = await Promise.all([this.assetService.getPrices(), this.assetService.getTotalAllocatedTokens()]);
-        return 0;
+        const [price, totalToken] = await Promise.all([this.assetService.getPriceForSymbol(this.symbol), this.assetService.getTotalAllocatedTokensForSymbol(this.symbol)]);
+        return price * totalToken;
     };
 
     getAssetInfo = async (): Promise<GenericAssetInfo> => {

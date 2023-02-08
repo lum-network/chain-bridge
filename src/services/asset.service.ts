@@ -26,7 +26,7 @@ export class AssetService {
         });
     };
 
-    create = async (key: string, value: GenericValueEntity): Promise<AssetEntity> => {
+    create = async (key: string, value: string): Promise<AssetEntity> => {
         const entity = new AssetEntity({
             key,
             value,
@@ -48,7 +48,7 @@ export class AssetService {
                     continue;
                 }
                 const compositeKey = `${info.symbol.toLowerCase()}_${key}`;
-                await this.create(compositeKey, value);
+                await this.create(compositeKey, String(value));
             }
         }
     };
@@ -102,6 +102,22 @@ export class AssetService {
             .sort((a, b) => a.symbol.localeCompare(b.symbol));
     };
 
+    getPriceForSymbol = async (symbol: string): Promise<number> => {
+        const data = await this._repository.findOne({
+            where: {
+                key: `${symbol.toLowerCase()}_unit_price_usd`,
+            },
+            select: ['id', 'key', 'value'],
+            order: {
+                id: 'DESC',
+            },
+        });
+        if (!data|| !data.value) {
+            return 0;
+        }
+        return Number(data.value);
+    };
+
     getPrices = async (): Promise<{ symbol: string; unit_price_usd: number }[]> => {
         const data = await this._repository.find({
             where: {
@@ -132,19 +148,35 @@ export class AssetService {
             .sort((a, b) => a.symbol.localeCompare(b.symbol));
     };
 
-    getDfrAccountBalance = async (): Promise<number> => {
-        const data = await this._repository.findOne({ where: { key: 'dfr_account_balance' }, select: ['id', 'key', 'value'], order: { id: 'DESC' } });
-        if (!data) {
+    getTotalAllocatedTokensForSymbol = async (symbol: string): Promise<number> => {
+        const data = await this._repository.findOne({
+            where: {
+                key: `${symbol.toLowerCase()}_total_allocated_token`,
+            },
+            select: ['id', 'key', 'value'],
+            order: {
+                id: 'DESC',
+            },
+        });
+        if (!data|| !data.value) {
             return 0;
         }
-        return (data.value as any).value;
+        return Number(data.value);
+    }
+
+    getDfrAccountBalance = async (): Promise<number> => {
+        const data = await this._repository.findOne({ where: { key: 'dfr_account_balance' }, select: ['id', 'key', 'value'], order: { id: 'DESC' } });
+        if (!data|| !data.value) {
+            return 0;
+        }
+        return Number(data.value);
     };
 
     getDfrTotalComputedTvl = async (): Promise<number> => {
         const data = await this._repository.findOne({ where: { key: 'dfr_tvl' }, select: ['id', 'key', 'value'], order: { id: 'DESC' } });
-        if (!data) {
+        if (!data || !data.value) {
             return 0;
         }
-        return (data.value as any).value;
+        return Number(data.value);
     };
 }
