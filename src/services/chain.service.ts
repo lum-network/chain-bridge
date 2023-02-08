@@ -138,7 +138,7 @@ export class ChainService {
             });
         }
 
-        this._clients[AssetSymbol.DFR] = new GenericChain({
+        this._clients[AssetSymbol.DFR] = new LumChain({
             assetService: this._assetService,
             httpService: this._httpService,
             loggerService: this._logger,
