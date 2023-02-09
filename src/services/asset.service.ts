@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
-import { Like, Repository } from 'typeorm';
+import { Like, MoreThan, Repository } from 'typeorm';
 
 import { AssetEntity } from '@app/database';
 import { filterFalsy, GenericAssetInfo } from '@app/utils';
@@ -58,20 +58,14 @@ export class AssetService {
         return query.getManyAndCount();
     };
 
-    fetchMetricsSince = async (metrics: string, date: Date): Promise<{ id: string; value: string[] }[]> => {
+    fetchMetricsSince = async (metrics: string, date: Date): Promise<AssetEntity[]> => {
         const data = await this._repository.find({
             where: {
                 key: metrics,
-            },
-            select: ['id', 'updated_at'],
+                created_at: MoreThan(date),
+            }
         });
-
-        // We return data that has been request since the start of the requested month
-        /*return data.map((asset) => ({
-            id: asset.id,
-            extra: asset.extra.filter((value) => new Date(el.updated_at).getTime() >= new Date(date).getTime() && new Date(el.last_updated_at).getTime() < new Date().getTime()),
-        }));*/
-        return [];
+        return data;
     };
 
     fetchLatestAsset = async (denom: string): Promise<AssetEntity[]> => {

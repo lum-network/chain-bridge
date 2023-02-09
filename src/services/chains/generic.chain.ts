@@ -4,10 +4,10 @@ import { HttpService } from '@nestjs/axios';
 import { LumClient, LumUtils } from '@lum-network/sdk-javascript';
 import { Stream } from 'xstream';
 import { NewBlockEvent } from '@cosmjs/tendermint-rpc';
+import { lastValueFrom, map } from 'rxjs';
 
-import {ApiUrl, apy, AssetDenom, AssetMicroDenom, CLIENT_PRECISION, computeTotalApy, computeTotalTokenAmount, GenericAssetInfo, LUM_STAKING_ADDRESS, TEN_EXPONENT_SIX} from '@app/utils';
+import { ApiUrl, apy, AssetDenom, AssetMicroDenom, CLIENT_PRECISION, computeTotalApy, computeTotalTokenAmount, GenericAssetInfo, LUM_STAKING_ADDRESS, TEN_EXPONENT_SIX } from '@app/utils';
 import { AssetService } from '@app/services';
-import {lastValueFrom, map} from "rxjs";
 
 export type Callback = (instance: any) => void;
 
