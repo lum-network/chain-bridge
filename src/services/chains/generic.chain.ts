@@ -140,15 +140,23 @@ export class GenericChain {
     };
 
     getAPY = async (): Promise<number> => {
-        const inflation = Number(await this.client.queryClient.mint.inflation()) / CLIENT_PRECISION;
-        const metrics = await computeTotalApy(this.client, Number(await this.getTokenSupply()), inflation, CLIENT_PRECISION, TEN_EXPONENT_SIX);
-        return apy(metrics.inflation, metrics.communityTaxRate, metrics.stakingRatio);
+        try {
+            const inflation = Number(await this.client.queryClient.mint.inflation()) / CLIENT_PRECISION;
+            const metrics = await computeTotalApy(this.client, Number(await this.getTokenSupply()), inflation, CLIENT_PRECISION, TEN_EXPONENT_SIX);
+            return apy(metrics.inflation, metrics.communityTaxRate, metrics.stakingRatio);
+        } catch (error) {
+            return 0;
+        }
     };
 
     getTotalAllocatedToken = async (): Promise<number> => {
-        const decode = LumUtils.Bech32.decode(LUM_STAKING_ADDRESS);
-        const getDecodedAddress = LumUtils.Bech32.encode(this.prefix, decode.data);
-        return Number(await computeTotalTokenAmount(getDecodedAddress, this.client, this.microDenom, CLIENT_PRECISION, TEN_EXPONENT_SIX));
+        try {
+            const decode = LumUtils.Bech32.decode(LUM_STAKING_ADDRESS);
+            const getDecodedAddress = LumUtils.Bech32.encode(this.prefix, decode.data);
+            return Number(await computeTotalTokenAmount(getDecodedAddress, this.client, this.microDenom, CLIENT_PRECISION, TEN_EXPONENT_SIX));
+        } catch (error) {
+            return 0;
+        }
     };
 
     getTVL = async (): Promise<number> => {
