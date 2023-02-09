@@ -169,7 +169,6 @@ export class LumNetworkService {
             const token = await computeTotalTokenAmount(LUM_STAKING_ADDRESS, this.client, LumConstants.MicroLumDenom, CLIENT_PRECISION, TEN_EXPONENT_SIX);
             return token;
         } catch (error) {
-            console.error(error);
             this._logger.error('Failed to compute total allocated token for Lum...', error);
             Sentry.captureException(error);
             return 0;
