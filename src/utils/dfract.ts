@@ -62,17 +62,6 @@ export const computeTotalApy = async (
 };
 
 // Value field can only contain one these keys at the time
-export type AssetValue =
-    | { apy?: number }
-    | { supply?: number }
-    | { total_value_usd?: number }
-    | { unit_price_usd?: number }
-    | { total_allocated_token?: number }
-    | { account_balance?: number }
-    | { tvl?: number };
-
-type ValueUnionProperties = keyof AssetValue;
-
 export interface GenericAssetInfo {
     symbol?: string;
     unit_price_usd?: number;
