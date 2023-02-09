@@ -85,6 +85,7 @@ export enum ApiUrl {
     GET_EVMOS_INFLATION_PARAMS = 'https://rest.bd.evmos.org:1317/evmos/inflation/v1/params',
     GET_CHAIN_TOKENS_MCAP = 'https://api-osmosis.imperator.co/tokens/v2/mcap',
     GET_CHAIN_TOKENS_ALL = 'https://api-osmosis.imperator.co/tokens/v2/all',
+    GET_CHAIN_TOKENS = 'https://api-osmosis.imperator.co/tokens/v2',
     GET_LUM_PRICE = 'https://api.coingecko.com/api/v3/coins/lum-network',
     GET_JUNO_APY = 'https://supply-api.junonetwork.io/apr',
     GET_OSMOSIS_APY = 'https://api-osmosis.imperator.co/apr/v2/staking',

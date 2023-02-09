@@ -5,8 +5,9 @@ import { LumClient, LumUtils } from '@lum-network/sdk-javascript';
 import { Stream } from 'xstream';
 import { NewBlockEvent } from '@cosmjs/tendermint-rpc';
 
-import { apy, AssetDenom, AssetMicroDenom, CLIENT_PRECISION, computeTotalApy, computeTotalTokenAmount, GenericAssetInfo, LUM_STAKING_ADDRESS, TEN_EXPONENT_SIX } from '@app/utils';
+import {ApiUrl, apy, AssetDenom, AssetMicroDenom, CLIENT_PRECISION, computeTotalApy, computeTotalTokenAmount, GenericAssetInfo, LUM_STAKING_ADDRESS, TEN_EXPONENT_SIX} from '@app/utils';
 import { AssetService } from '@app/services';
+import {lastValueFrom, map} from "rxjs";
 
 export type Callback = (instance: any) => void;
 
@@ -104,8 +105,8 @@ export class GenericChain {
 
     getTokenInformationFromOsmosis = async (): Promise<any> => {
         try {
-            const response = await fetch(`https://api-osmosis.imperator.co/tokens/v2/${this.symbol}`);
-            return response.json();
+            const response = await lastValueFrom(this.httpService.get(`${ApiUrl.GET_CHAIN_TOKENS}/${this.symbol}`).pipe(map((response) => response.data)));
+            return response;
         } catch (error) {
             return null;
         }
@@ -121,8 +122,7 @@ export class GenericChain {
 
     getMarketCap = async (): Promise<number> => {
         try {
-            const response = await fetch(`https://api-osmosis.imperator.co/tokens/v2/mcap`);
-            const data = await response.json();
+            const data = await lastValueFrom(this.httpService.get(ApiUrl.GET_CHAIN_TOKENS_MCAP).pipe(map((response) => response.data)));
             const extractedData = data.find((d: any) => d.symbol === this.symbol);
             return extractedData ? extractedData.market_cap : 0;
         } catch (error) {
