@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Cron, CronExpression } from '@nestjs/schedule';
 
+import * as Sentry from '@sentry/node';
 import { ProposalStatus } from '@lum-network/sdk-javascript/build/codec/cosmos/gov/v1beta1/gov';
 
 import { AssetService, ChainService, DfractService, ProposalService } from '@app/services';
@@ -30,9 +31,10 @@ export class AssetScheduler {
         try {
             const chainMetrics = await this._chainService.getAssetInfo();
             if (chainMetrics && chainMetrics.length > 0) {
-                await this._assetService.createFromInfo(chainMetrics);
+                await this._assetService.createFromInfo(chainMetrics.filter((metric) => metric.symbol !== 'DFR'));
             }
         } catch (e) {
+            Sentry.captureException(e);
             console.error(e);
         }
     }
@@ -46,30 +48,41 @@ export class AssetScheduler {
 
         this._logger.log(`Updating DFR token values...`);
 
-        // We only update DFR values once every epoch
-        const [preGovPropDfractMetrics, accountBalance, postGovPropDfractMetrics, proposals] = await Promise.all([
-            this._dfractService.getAssetInfoPreGovProp(),
-            this._dfractService.getAccountBalance(),
-            this._dfractService.getAssetInfoPostGovProp(),
-            this._proposalService.fetch(),
-        ]);
+        try {
+            // We only update DFR values once every epoch
+            const [preGovPropMetrics, accountBalance, postGovPropMetrics, proposals] = await Promise.all([
+                this._dfractService.getAssetInfoPreGovProp(),
+                this._dfractService.getAccountBalance(),
+                this._dfractService.getAssetInfoPostGovProp(),
+                this._proposalService.fetch(),
+            ]);
 
-        const lastProposal = proposals[0];
-        if (lastProposal.type_url !== LUM_DFR_ALLOCATION_TYPE_URL) {
-            return;
+            // Make sure it's actually a DFR gov prop
+            const lastProposal = proposals[0];
+            if (lastProposal.type_url !== LUM_DFR_ALLOCATION_TYPE_URL) {
+                return;
+            }
+
+            // Check if the gov prop is ongoing or passed
+            const isGovPropOngoing = lastProposal.status === ProposalStatus.PROPOSAL_STATUS_VOTING_PERIOD;
+            const isGovPropPassed = lastProposal.status === ProposalStatus.PROPOSAL_STATUS_PASSED;
+
+            // If there is cash in the account balance, non-falsy dfractMetrics and an ongoing dfr gov prop, we update the records
+            // Pre gov prop asset info {account_balance, tvl}
+            if (preGovPropMetrics && accountBalance > 0 && isGovPropOngoing) {
+                await this._assetService.create(`dfr_account_balance`, String(preGovPropMetrics.account_balance));
+                await this._assetService.create(`dfr_tvl`, String(preGovPropMetrics.tvl));
+                // If the gov prop has passed and has non-falsy dfractMetrics we update the records to persist the remaining metrics
+                // Post gov prop asset info {unit_price_usd, total_value_usd, supply, apy}
+            } else if (postGovPropMetrics && isGovPropPassed) {
+                await this._assetService.create(`dfr_unit_price_usd`, String(postGovPropMetrics.unit_price_usd));
+                await this._assetService.create(`dfr_total_value_usd`, String(postGovPropMetrics.total_value_usd));
+                await this._assetService.create(`dfr_supply`, String(postGovPropMetrics.supply));
+                await this._assetService.create(`dfr_apy`, String(postGovPropMetrics.apy));
+            }
+        } catch (e) {
+            Sentry.captureException(e);
+            console.error(e);
         }
-
-        const isGovPropDfractOngoing = lastProposal.status === ProposalStatus.PROPOSAL_STATUS_VOTING_PERIOD;
-        const isGovPropDfractPassed = lastProposal.status === ProposalStatus.PROPOSAL_STATUS_PASSED;
-
-        /*// If there is cash in the account balance, non-falsy dfractMetrics and an ongoing dfr gov prop, we update the records
-        // Pre gov prop asset info {account_balance, tvl}
-        if (preGovPropDfractMetrics && accountBalance > 0 && isGovPropDfractOngoing) {
-            await this._assetService.ownAssetCreateOrUpdateValue(preGovPropDfractMetrics, AssetSymbol.DFR);
-            // If the gov prop has passed and has non-falsy dfractMetrics we update the records to persist the remaining metrics
-            // Post gov prop asset info {unit_price_usd, total_value_usd, supply, apy}
-        } else if (postGovPropDfractMetrics && isGovPropDfractPassed) {
-            await this._assetService.ownAssetCreateOrUpdateValue(postGovPropDfractMetrics, AssetSymbol.DFR);
-        }*/
     }
 }
