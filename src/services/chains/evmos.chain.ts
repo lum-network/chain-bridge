@@ -26,7 +26,7 @@ export class EvmosChain extends GenericChain {
         return Number(data.circulating_supply.amount) / CLIENT_PRECISION;
     };
 
-    getTotalAllocatedTokens = async (): Promise<number> => {
+    getTotalAllocatedToken = async (): Promise<number> => {
         const tokens = Number(await computeTotalTokenAmount(EVMOS_STAKING_ADDRESS, this.client, this.microDenom, CLIENT_PRECISION, CLIENT_PRECISION));
         return tokens;
     };
