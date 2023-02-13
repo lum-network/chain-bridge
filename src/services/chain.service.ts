@@ -274,7 +274,6 @@ export class ChainService {
         }
 
         return getTotalTokenDb
-            .filter((token) => token.symbol !== AssetSymbol.LUM && token.symbol !== AssetSymbol.DFR)
             .sort((a, b) => a.symbol.localeCompare(b.symbol))
             .map((item, i) => Object.assign({}, item, getTotalPriceDb[i]))
             .map((el) => ({

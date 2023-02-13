@@ -161,6 +161,7 @@ export class GenericChain {
 
     getTVL = async (): Promise<number> => {
         let [price, totalToken] = await Promise.all([this.assetService.getPriceForSymbol(this.symbol), this.assetService.getTotalAllocatedTokensForSymbol(this.symbol)]);
+
         if (!price) {
             price = await this.getPrice();
         }

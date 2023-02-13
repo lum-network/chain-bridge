@@ -21,7 +21,7 @@ export const computeTotalTokenAmount = async (getDecodedAddress: string, client:
     const byDenomStakingRewards = rewards.rewards.map((el) => el.reward.filter((el) => el.denom === denom));
     let stakingRewards = 0;
     if (byDenomStakingRewards.length > 0) {
-        stakingRewards = byDenomStakingRewards[0].map((el) => el.amount).reduce((a, b) => Number(a) + Number(b), 0);
+        stakingRewards = byDenomStakingRewards[0].map((el) => el.amount).reduce((a, b) => Number(a) + Number(b), 0) / applyClientPrecision;
     }
 
     // Tokens in the address delegation rewards

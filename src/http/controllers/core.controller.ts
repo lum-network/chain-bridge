@@ -1,4 +1,4 @@
-import { BadRequestException, CacheInterceptor, Controller, Get, Logger, UseInterceptors } from '@nestjs/common';
+import { CacheInterceptor, Controller, Get, Logger, UseInterceptors } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 

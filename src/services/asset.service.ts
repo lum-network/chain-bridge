@@ -89,9 +89,10 @@ export class AssetService {
             select: ['id', 'key', 'value'],
         });
         return data
+            .filter((el) => el.key !== 'dfr_apy' && el.key !== 'lum_apy')
             .map((el) => ({
                 symbol: el.key.split('_')[0].toUpperCase(),
-                apy: (el.value as any).value,
+                apy: el.value as any,
             }))
             .sort((a, b) => a.symbol.localeCompare(b.symbol));
     };
@@ -106,6 +107,7 @@ export class AssetService {
                 id: 'DESC',
             },
         });
+
         if (!data || !data.value) {
             return 0;
         }
@@ -120,9 +122,10 @@ export class AssetService {
             select: ['id', 'key', 'value'],
         });
         return data
+            .filter((el) => el.key !== 'dfr_unit_price_usd' && el.key !== 'lum_unit_price_usd')
             .map((el) => ({
                 symbol: el.key.split('_')[0].toUpperCase(),
-                unit_price_usd: (el.value as any).value,
+                unit_price_usd: el.value as any,
             }))
             .sort((a, b) => a.symbol.localeCompare(b.symbol));
     };
@@ -135,9 +138,10 @@ export class AssetService {
             select: ['id', 'key', 'value'],
         });
         return data
+            .filter((el) => el.key !== 'lum_total_allocated_token')
             .map((el) => ({
                 symbol: el.key.split('_')[0].toUpperCase(),
-                total_allocated_token: (el.value as any).value,
+                total_allocated_token: el.value as any,
             }))
             .sort((a, b) => a.symbol.localeCompare(b.symbol));
     };

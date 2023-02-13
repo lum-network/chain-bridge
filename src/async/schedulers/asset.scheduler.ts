@@ -50,9 +50,8 @@ export class AssetScheduler {
 
         try {
             // We only update DFR values once every epoch
-            const [preGovPropMetrics, accountBalance, postGovPropMetrics, proposals] = await Promise.all([
+            const [preGovPropMetrics, postGovPropMetrics, proposals] = await Promise.all([
                 this._dfractService.getAssetInfoPreGovProp(),
-                this._dfractService.getAccountBalance(),
                 this._dfractService.getAssetInfoPostGovProp(),
                 this._proposalService.fetchType(LUM_DFR_ALLOCATION_TYPE_URL),
             ]);
@@ -63,7 +62,7 @@ export class AssetScheduler {
 
             // If there is cash in the account balance, non-falsy dfractMetrics and an ongoing dfr gov prop, we update the records
             // Pre gov prop asset info {account_balance, tvl}
-            if (preGovPropMetrics && accountBalance > 0 && isGovPropOngoing) {
+            if (preGovPropMetrics && preGovPropMetrics.account_balance > 0 && isGovPropOngoing) {
                 await this._assetService.create(`dfr_account_balance`, String(preGovPropMetrics.account_balance));
                 await this._assetService.create(`dfr_tvl`, String(preGovPropMetrics.tvl));
                 // If the gov prop has passed and has non-falsy dfractMetrics we update the records to persist the remaining metrics

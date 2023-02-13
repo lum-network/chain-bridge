@@ -31,6 +31,7 @@ export class DfractService {
             .flat()
             .map((el) => el.tvl)
             .reduce((a, b) => a + b, 0);
+
         return totalTVL + lumTvl;
     };
 
@@ -98,11 +99,11 @@ export class DfractService {
 
         // We compute the tvl for external chains and lum
         if (chainServiceTvl && lumTvl) {
-            tvl = [...chainServiceTvl, lumTvl];
+            tvl = [...chainServiceTvl, { symbol: AssetSymbol.LUM, tvl: lumTvl }];
         }
 
         if (chainServiceApy && lumApy) {
-            apy = [...chainServiceApy, lumApy];
+            apy = [...chainServiceApy, { symbol: AssetSymbol.LUM, apy: lumApy }];
         }
 
         if (tvl === null || apy === null) {
