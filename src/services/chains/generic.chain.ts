@@ -114,7 +114,7 @@ export class GenericChain {
 
     getPrice = async (): Promise<number> => {
         const infos = await this.getTokenInformationFromOsmosis();
-        if (!infos || infos.length) {
+        if (!infos || !infos.length) {
             return 0;
         }
         return infos[0].price;
