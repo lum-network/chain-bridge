@@ -114,10 +114,10 @@ export class GenericChain {
 
     getPrice = async (): Promise<number> => {
         const infos = await this.getTokenInformationFromOsmosis();
-        if (!infos) {
+        if (!infos || infos.length) {
             return 0;
         }
-        return infos.price;
+        return infos[0].price;
     };
 
     getMarketCap = async (): Promise<number> => {
@@ -160,7 +160,13 @@ export class GenericChain {
     };
 
     getTVL = async (): Promise<number> => {
-        const [price, totalToken] = await Promise.all([this.assetService.getPriceForSymbol(this.symbol), this.assetService.getTotalAllocatedTokensForSymbol(this.symbol)]);
+        let [price, totalToken] = await Promise.all([this.assetService.getPriceForSymbol(this.symbol), this.assetService.getTotalAllocatedTokensForSymbol(this.symbol)]);
+        if (!price) {
+            price = await this.getPrice();
+        }
+        if (!totalToken) {
+            totalToken = await this.getTotalAllocatedToken();
+        }
         return price * totalToken;
     };
 

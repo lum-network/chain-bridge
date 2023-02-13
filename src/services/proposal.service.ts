@@ -21,6 +21,17 @@ export class ProposalService {
         });
     };
 
+    fetchType = async (typeUrl: string): Promise<ProposalEntity[]> => {
+        return this._repository.find({
+            order: {
+                id: 'DESC',
+            },
+            where: {
+                type_url: typeUrl,
+            },
+        });
+    };
+
     createOrUpdateProposal = async (data: Partial<ProposalEntity>) => {
         let proposal = await this.getById(data.id);
 

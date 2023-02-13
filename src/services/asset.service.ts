@@ -63,7 +63,7 @@ export class AssetService {
             where: {
                 key: metrics,
                 created_at: MoreThan(date),
-            }
+            },
         });
         return data;
     };
@@ -156,7 +156,7 @@ export class AssetService {
             return 0;
         }
         return Number(data.value);
-    }
+    };
 
     getDfrAccountBalance = async (): Promise<number> => {
         const data = await this._repository.findOne({ where: { key: 'dfr_account_balance' }, select: ['id', 'key', 'value'], order: { id: 'DESC' } });

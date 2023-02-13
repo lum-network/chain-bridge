@@ -22,6 +22,7 @@ export class DfractService {
      */
     getTotalComputedTvl = async (): Promise<number> => {
         const [chainTvl, lumTvl] = await Promise.all([this._chainService.getTvl(), this._chainService.getChain(AssetSymbol.LUM).getTVL()]);
+
         if (!chainTvl || !lumTvl) {
             return 0;
         }

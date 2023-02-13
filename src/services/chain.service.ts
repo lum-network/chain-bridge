@@ -12,7 +12,7 @@ import { NewBlockEvent } from '@cosmjs/tendermint-rpc';
 import { AssetPrefix, AssetSymbol, AssetMicroDenom, AssetDenom, GenericAssetInfo, Queues, QueueJobs, QueuePriority, MODULE_NAMES } from '@app/utils';
 
 import { AssetService } from '@app/services';
-import {EvmosChain, GenericChain, JunoChain, LumChain, OsmosisChain, StargazeChain} from '@app/services/chains';
+import { EvmosChain, GenericChain, JunoChain, LumChain, OsmosisChain, StargazeChain } from '@app/services/chains';
 
 @Injectable()
 export class ChainService {

@@ -54,18 +54,12 @@ export class AssetScheduler {
                 this._dfractService.getAssetInfoPreGovProp(),
                 this._dfractService.getAccountBalance(),
                 this._dfractService.getAssetInfoPostGovProp(),
-                this._proposalService.fetch(),
+                this._proposalService.fetchType(LUM_DFR_ALLOCATION_TYPE_URL),
             ]);
 
-            // Make sure it's actually a DFR gov prop
-            const lastProposal = proposals[0];
-            if (lastProposal.type_url !== LUM_DFR_ALLOCATION_TYPE_URL) {
-                return;
-            }
-
             // Check if the gov prop is ongoing or passed
-            const isGovPropOngoing = lastProposal.status === ProposalStatus.PROPOSAL_STATUS_VOTING_PERIOD;
-            const isGovPropPassed = lastProposal.status === ProposalStatus.PROPOSAL_STATUS_PASSED;
+            const isGovPropOngoing = proposals[0].status === ProposalStatus.PROPOSAL_STATUS_VOTING_PERIOD;
+            const isGovPropPassed = proposals[0].status === ProposalStatus.PROPOSAL_STATUS_PASSED;
 
             // If there is cash in the account balance, non-falsy dfractMetrics and an ongoing dfr gov prop, we update the records
             // Pre gov prop asset info {account_balance, tvl}
