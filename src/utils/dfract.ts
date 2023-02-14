@@ -73,12 +73,14 @@ export interface GenericAssetInfo {
     last_updated_at?: Date;
 }
 
-// Eliminate falsy values to be inserted in DB
-export const filterFalsy = (obj) =>
-    Object.keys(obj).reduce((acc, key) => {
-        if (obj[key]) {
-            acc[key] = obj[key];
+export const getUniqueSymbols = (data: any[]) => {
+    const uniqueSymbols = new Set();
+    const result = [];
+    for (const entry of data) {
+        if (!uniqueSymbols.has(entry.symbol)) {
+            uniqueSymbols.add(entry.symbol);
+            result.push({ symbol: entry.symbol, ...entry });
         }
-
-        return acc;
-    }, []);
+    }
+    return result;
+};

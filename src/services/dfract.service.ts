@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 
 import { AssetService, ChainService } from '@app/services';
-import { AssetSymbol, TEN_EXPONENT_SIX } from '@app/utils';
+import { AssetSymbol, getUniqueSymbols, TEN_EXPONENT_SIX } from '@app/utils';
 import { LumChain } from '@app/services/chains';
 
 @Injectable()
@@ -97,13 +97,16 @@ export class DfractService {
             this._chainService.getChain<LumChain>(AssetSymbol.LUM).getAPY(),
         ]);
 
+        // Only keep the last inserted symbols for apy
+        const filterChainApy = getUniqueSymbols(chainServiceApy);
+
         // We compute the tvl for external chains and lum
         if (chainServiceTvl && lumTvl) {
             tvl = [...chainServiceTvl, { symbol: AssetSymbol.LUM, tvl: lumTvl }];
         }
 
-        if (chainServiceApy && lumApy) {
-            apy = [...chainServiceApy, { symbol: AssetSymbol.LUM, apy: lumApy }];
+        if (filterChainApy && lumApy) {
+            apy = [...filterChainApy, { symbol: AssetSymbol.LUM, apy: lumApy }];
         }
 
         if (tvl === null || apy === null) {

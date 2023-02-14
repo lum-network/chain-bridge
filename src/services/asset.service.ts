@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
-import { Like, MoreThan, Repository } from 'typeorm';
+import { Like, MoreThan, MoreThanOrEqual, Repository } from 'typeorm';
 
 import { AssetEntity } from '@app/database';
-import { filterFalsy, GenericAssetInfo } from '@app/utils';
+import { GenericAssetInfo } from '@app/utils';
+import dayjs from 'dayjs';
 
 @Injectable()
 export class AssetService {
@@ -18,12 +19,30 @@ export class AssetService {
         });
     };
 
-    getByKey = async (key: string): Promise<AssetEntity> => {
+    getByKey = async (key: string, date: Date): Promise<AssetEntity> => {
         return this._repository.findOne({
             where: {
                 key,
+                created_at: date,
+            },
+            order: {
+                created_at: 'DESC',
             },
         });
+    };
+
+    isKeyCreated = async (key: string): Promise<boolean> => {
+        const today = dayjs().startOf('day');
+        const entity = await this._repository.findOne({
+            where: {
+                key,
+                created_at: MoreThanOrEqual(today.toDate()),
+            },
+            order: {
+                created_at: 'DESC',
+            },
+        });
+        return !entity;
     };
 
     create = async (key: string, value: string): Promise<AssetEntity> => {
@@ -35,7 +54,7 @@ export class AssetService {
     };
 
     createFromInfo = async (infos: GenericAssetInfo[]): Promise<void> => {
-        for (const info of filterFalsy(infos)) {
+        for (const info of infos) {
             // Make sure we did get an info
             if (!info) {
                 continue;
@@ -74,7 +93,6 @@ export class AssetService {
                 key: Like(`%${denom}%`),
             },
             select: ['id', 'key', 'value'],
-            take: 1,
             order: {
                 id: 'DESC',
             },
@@ -119,8 +137,12 @@ export class AssetService {
             where: {
                 key: Like(`%unit_price_usd%`),
             },
-            select: ['id', 'key', 'value'],
+            select: ['id', 'key', 'value', 'created_at'],
+            order: {
+                created_at: 'DESC',
+            },
         });
+
         return data
             .filter((el) => el.key !== 'dfr_unit_price_usd' && el.key !== 'lum_unit_price_usd')
             .map((el) => ({
@@ -136,6 +158,9 @@ export class AssetService {
                 key: Like(`%total_allocated_token%`),
             },
             select: ['id', 'key', 'value'],
+            order: {
+                created_at: 'DESC',
+            },
         });
         return data
             .filter((el) => el.key !== 'lum_total_allocated_token')

@@ -7,6 +7,7 @@ import { ProposalStatus } from '@lum-network/sdk-javascript/build/codec/cosmos/g
 
 import { AssetService, ChainService, DfractService, ProposalService } from '@app/services';
 import { LUM_DFR_ALLOCATION_TYPE_URL } from '@app/utils';
+import dayjs from 'dayjs';
 
 @Injectable()
 export class AssetScheduler {
@@ -56,22 +57,34 @@ export class AssetScheduler {
                 this._proposalService.fetchType(LUM_DFR_ALLOCATION_TYPE_URL),
             ]);
 
+            const now = dayjs();
+            const votingEndTime = dayjs(proposals[0].voting_end_time);
+            const isVotingEndTimeToday = dayjs(votingEndTime).isSame(now.startOf('day'), 'day');
+            const diff = votingEndTime.diff(now, 'minute');
+            // Cron is running every 10min, if less or equal than 10 than update
+            const votingEndTimeSoonReached = Math.abs(diff) <= 10;
+
+            // Verify if proposals is not empty and the voting endTime is today
+            if (!proposals.length || !isVotingEndTimeToday) {
+                return;
+            }
+
             // Check if the gov prop is ongoing or passed
             const isGovPropOngoing = proposals[0].status === ProposalStatus.PROPOSAL_STATUS_VOTING_PERIOD;
             const isGovPropPassed = proposals[0].status === ProposalStatus.PROPOSAL_STATUS_PASSED;
 
             // If there is cash in the account balance, non-falsy dfractMetrics and an ongoing dfr gov prop, we update the records
             // Pre gov prop asset info {account_balance, tvl}
-            if (preGovPropMetrics && preGovPropMetrics.account_balance > 0 && isGovPropOngoing) {
+            if (preGovPropMetrics && preGovPropMetrics.account_balance > 0 && isGovPropOngoing && votingEndTimeSoonReached) {
                 await this._assetService.create(`dfr_account_balance`, String(preGovPropMetrics.account_balance));
                 await this._assetService.create(`dfr_tvl`, String(preGovPropMetrics.tvl));
                 // If the gov prop has passed and has non-falsy dfractMetrics we update the records to persist the remaining metrics
                 // Post gov prop asset info {unit_price_usd, total_value_usd, supply, apy}
             } else if (postGovPropMetrics && isGovPropPassed) {
-                await this._assetService.create(`dfr_unit_price_usd`, String(postGovPropMetrics.unit_price_usd));
-                await this._assetService.create(`dfr_total_value_usd`, String(postGovPropMetrics.total_value_usd));
-                await this._assetService.create(`dfr_supply`, String(postGovPropMetrics.supply));
-                await this._assetService.create(`dfr_apy`, String(postGovPropMetrics.apy));
+                (await this._assetService.isKeyCreated('dfr_unit_price_usd')) && (await this._assetService.create(`dfr_unit_price_usd`, String(postGovPropMetrics.unit_price_usd)));
+                (await this._assetService.isKeyCreated('dfr_total_value_usd')) && (await this._assetService.create(`dfr_total_value_usd`, String(postGovPropMetrics.total_value_usd)));
+                (await this._assetService.isKeyCreated('dfr_supply')) && (await this._assetService.create(`dfr_supply`, String(postGovPropMetrics.supply)));
+                (await this._assetService.isKeyCreated('dfr_apy')) && (await this._assetService.create(`dfr_apy`, String(postGovPropMetrics.apy)));
             }
         } catch (e) {
             Sentry.captureException(e);

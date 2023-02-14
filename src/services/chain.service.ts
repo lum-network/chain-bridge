@@ -9,7 +9,7 @@ import { Queue } from 'bull';
 import * as Sentry from '@sentry/node';
 import { NewBlockEvent } from '@cosmjs/tendermint-rpc';
 
-import { AssetPrefix, AssetSymbol, AssetMicroDenom, AssetDenom, GenericAssetInfo, Queues, QueueJobs, QueuePriority, MODULE_NAMES } from '@app/utils';
+import { AssetPrefix, AssetSymbol, AssetMicroDenom, AssetDenom, GenericAssetInfo, Queues, QueueJobs, QueuePriority, MODULE_NAMES, getUniqueSymbols } from '@app/utils';
 
 import { AssetService } from '@app/services/asset.service';
 import { MarketService } from '@app/services/market.service';
@@ -280,17 +280,22 @@ export class ChainService {
      */
     getTvl = async (): Promise<{ tvl: number; symbol: string }[]> => {
         const [getTotalPriceDb, getTotalTokenDb] = await Promise.all([this._assetService.getPrices(), this._assetService.getTotalAllocatedTokens()]);
-        if (!getTotalPriceDb || !getTotalTokenDb) {
+
+        // Only keep the last inserted key symbols
+        const filteredPriceDb = getUniqueSymbols(getTotalPriceDb);
+        const filteredTokenDb = getUniqueSymbols(getTotalTokenDb);
+
+        if (!filteredPriceDb || !filteredTokenDb) {
             return [];
         }
 
-        if (getTotalPriceDb.length === 0 || getTotalTokenDb.length === 0) {
+        if (filteredPriceDb.length === 0 || filteredTokenDb.length === 0) {
             return [];
         }
 
-        return getTotalTokenDb
+        return filteredTokenDb
             .sort((a, b) => a.symbol.localeCompare(b.symbol))
-            .map((item, i) => Object.assign({}, item, getTotalPriceDb[i]))
+            .map((item, i) => Object.assign({}, item, filteredPriceDb[i]))
             .map((el) => ({
                 tvl: Number(el.unit_price_usd) * Number(el.total_allocated_token),
                 symbol: el.symbol,

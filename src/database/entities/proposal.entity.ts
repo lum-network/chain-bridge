@@ -36,16 +36,16 @@ export class ProposalEntity {
     @Column({ type: 'jsonb', nullable: true })
     content: string = null;
 
-    @Column({ type: 'date' })
+    @Column({ type: 'timestamp' })
     submitted_at: Date;
 
-    @Column({ type: 'date' })
+    @Column({ type: 'timestamp' })
     deposit_end_time: Date;
 
-    @Column({ type: 'date' })
+    @Column({ type: 'timestamp' })
     voting_start_time: Date;
 
-    @Column({ type: 'date' })
+    @Column({ type: 'timestamp' })
     voting_end_time: Date;
 
     @CreateDateColumn()
