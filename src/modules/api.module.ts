@@ -44,6 +44,7 @@ import {
     ValidatorService,
     ValidatorDelegationService,
     ProposalService,
+    MarketService,
 } from '@app/services';
 
 import { ConfigMap, metrics, PayloadValidationOptions, SentryModuleOptions } from '@app/utils';
@@ -102,6 +103,7 @@ import { AsyncQueues } from '@app/async';
         DfractService,
         GatewayWebsocket,
         LumNetworkIndicator,
+        MarketService,
         ...metrics,
         ProposalService,
         ProposalVoteService,
