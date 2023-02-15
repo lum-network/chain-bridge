@@ -11,7 +11,8 @@ import { NewBlockEvent } from '@cosmjs/tendermint-rpc';
 
 import { AssetPrefix, AssetSymbol, AssetMicroDenom, AssetDenom, GenericAssetInfo, Queues, QueueJobs, QueuePriority, MODULE_NAMES } from '@app/utils';
 
-import { AssetService } from '@app/services';
+import { AssetService } from '@app/services/asset.service';
+import { MarketService } from '@app/services/market.service';
 import { EvmosChain, GenericChain, JunoChain, LumChain, OsmosisChain, StargazeChain } from '@app/services/chains';
 
 @Injectable()
@@ -25,6 +26,7 @@ export class ChainService {
         private readonly _assetService: AssetService,
         private readonly _configService: ConfigService,
         private readonly _httpService: HttpService,
+        private readonly _marketService: MarketService,
         private readonly _modulesContainer: ModulesContainer,
     ) {
         // Lil hack to get the current module name
@@ -40,6 +42,7 @@ export class ChainService {
             this._clients[AssetSymbol.COSMOS] = new GenericChain({
                 assetService: this._assetService,
                 httpService: this._httpService,
+                marketService: this._marketService,
                 loggerService: this._logger,
                 prefix: AssetPrefix.COSMOS,
                 symbol: AssetSymbol.COSMOS,
@@ -51,6 +54,7 @@ export class ChainService {
             this._clients[AssetSymbol.AKASH_NETWORK] = new GenericChain({
                 assetService: this._assetService,
                 httpService: this._httpService,
+                marketService: this._marketService,
                 loggerService: this._logger,
                 prefix: AssetPrefix.AKASH_NETWORK,
                 symbol: AssetSymbol.AKASH_NETWORK,
@@ -62,6 +66,7 @@ export class ChainService {
             this._clients[AssetSymbol.COMDEX] = new GenericChain({
                 assetService: this._assetService,
                 httpService: this._httpService,
+                marketService: this._marketService,
                 loggerService: this._logger,
                 prefix: AssetPrefix.COMDEX,
                 symbol: AssetSymbol.COMDEX,
@@ -73,6 +78,7 @@ export class ChainService {
             this._clients[AssetSymbol.SENTINEL] = new GenericChain({
                 assetService: this._assetService,
                 httpService: this._httpService,
+                marketService: this._marketService,
                 loggerService: this._logger,
                 prefix: AssetPrefix.SENTINEL,
                 symbol: AssetSymbol.SENTINEL,
@@ -84,6 +90,7 @@ export class ChainService {
             this._clients[AssetSymbol.KI] = new GenericChain({
                 assetService: this._assetService,
                 httpService: this._httpService,
+                marketService: this._marketService,
                 loggerService: this._logger,
                 prefix: AssetPrefix.KI,
                 symbol: AssetSymbol.KI,
@@ -95,6 +102,7 @@ export class ChainService {
             this._clients[AssetSymbol.OSMOSIS] = new OsmosisChain({
                 assetService: this._assetService,
                 httpService: this._httpService,
+                marketService: this._marketService,
                 loggerService: this._logger,
                 prefix: AssetPrefix.OSMOSIS,
                 symbol: AssetSymbol.OSMOSIS,
@@ -106,6 +114,7 @@ export class ChainService {
             this._clients[AssetSymbol.JUNO] = new JunoChain({
                 assetService: this._assetService,
                 httpService: this._httpService,
+                marketService: this._marketService,
                 loggerService: this._logger,
                 prefix: AssetPrefix.JUNO,
                 symbol: AssetSymbol.JUNO,
@@ -117,6 +126,7 @@ export class ChainService {
             this._clients[AssetSymbol.STARGAZE] = new StargazeChain({
                 assetService: this._assetService,
                 httpService: this._httpService,
+                marketService: this._marketService,
                 loggerService: this._logger,
                 prefix: AssetPrefix.STARGAZE,
                 symbol: AssetSymbol.STARGAZE,
@@ -128,6 +138,7 @@ export class ChainService {
             this._clients[AssetSymbol.EVMOS] = new EvmosChain({
                 assetService: this._assetService,
                 httpService: this._httpService,
+                marketService: this._marketService,
                 loggerService: this._logger,
                 prefix: AssetPrefix.EVMOS,
                 symbol: AssetSymbol.EVMOS,
@@ -141,6 +152,7 @@ export class ChainService {
         this._clients[AssetSymbol.DFR] = new LumChain({
             assetService: this._assetService,
             httpService: this._httpService,
+            marketService: this._marketService,
             loggerService: this._logger,
             prefix: AssetPrefix.LUM,
             symbol: AssetSymbol.DFR,
@@ -152,6 +164,7 @@ export class ChainService {
         this._clients[AssetSymbol.LUM] = new LumChain({
             assetService: this._assetService,
             httpService: this._httpService,
+            marketService: this._marketService,
             loggerService: this._logger,
             prefix: AssetPrefix.LUM,
             symbol: AssetSymbol.LUM,
@@ -246,10 +259,12 @@ export class ChainService {
         const assetInfos: GenericAssetInfo[] = await Promise.all(
             Object.keys(this._clients).map(async (chainKey) => {
                 const chain = this._clients[chainKey];
+                const price = await this._marketService.getTokenPrice(chain.symbol);
+                const mcap = await this._marketService.getTokenMarketCap(chain.symbol);
                 return {
                     symbol: chain.symbol,
-                    unit_price_usd: await chain.getPrice(),
-                    total_value_usd: await chain.getMarketCap(),
+                    unit_price_usd: price,
+                    total_value_usd: mcap,
                     supply: await chain.getTokenSupply(),
                     apy: await chain.getAPY(),
                     total_allocated_token: await chain.getTotalAllocatedToken(),

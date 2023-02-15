@@ -7,13 +7,14 @@ import { NewBlockEvent } from '@cosmjs/tendermint-rpc';
 import { lastValueFrom, map } from 'rxjs';
 
 import { ApiUrl, apy, AssetDenom, AssetMicroDenom, CLIENT_PRECISION, computeTotalApy, computeTotalTokenAmount, GenericAssetInfo, LUM_STAKING_ADDRESS, TEN_EXPONENT_SIX } from '@app/utils';
-import { AssetService } from '@app/services';
+import { AssetService, MarketService } from '@app/services';
 
 export type Callback = (instance: any) => void;
 
 interface GenericChainConfig {
     assetService: AssetService;
     httpService: HttpService;
+    marketService: MarketService;
     loggerService: LoggerService;
     prefix: string;
     symbol: string;
@@ -72,6 +73,10 @@ export class GenericChain {
 
     get httpService(): HttpService {
         return this._config.httpService;
+    }
+
+    get marketService(): MarketService {
+        return this._config.marketService;
     }
 
     get loggerService(): LoggerService {

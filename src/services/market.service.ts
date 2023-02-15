@@ -51,17 +51,25 @@ export class MarketService {
         }
     };
 
-    getTokenInformation = async (symbol: string, forceRefresh = false): Promise<TokenInformation | undefined> => {
+    getTokenPrice = async (symbol: string, forceRefresh = false): Promise<number> => {
         if (!this._informations.length || forceRefresh) {
             await this.refreshTokenInformations();
         }
-        return this._informations.find((info) => info.symbol.toLowerCase() === symbol.toLowerCase());
+        const val = this._informations.find((info) => info.symbol.toLowerCase() === symbol.toLowerCase());
+        if (!val) {
+            return 0;
+        }
+        return val.price;
     };
 
-    getTokenMarketCap = async (symbol: string, forceRefresh = false): Promise<TokenMarketCap | undefined> => {
+    getTokenMarketCap = async (symbol: string, forceRefresh = false): Promise<number> => {
         if (!this._marketCaps.length || forceRefresh) {
             await this.refreshTokenMarketCaps();
         }
-        return this._marketCaps.find((info) => info.symbol.toLowerCase() === symbol.toLowerCase());
+        const val = this._marketCaps.find((info) => info.symbol.toLowerCase() === symbol.toLowerCase());
+        if (!val) {
+            return 0;
+        }
+        return val.market_cap;
     };
 }
