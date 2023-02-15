@@ -256,22 +256,37 @@ export class ChainService {
      * This method returns the list of all infos for the external chains
      */
     getAssetInfo = async (): Promise<GenericAssetInfo[]> => {
-        const assetInfos: GenericAssetInfo[] = await Promise.all(
+        const price = await this._marketService.refreshTokenInformations();
+        const mcap = await this._marketService.refreshTokenMarketCaps();
+        const lumMcap = await this.getChain<LumChain>(AssetSymbol.LUM).getMarketCap();
+
+        // Terminate if we don't fetch correctly to avoid inserting falsy values
+        if (!price.length || !mcap.length || !lumMcap) {
+            return [];
+        }
+
+        const assetInfos: GenericAssetInfo[] | any[] = await Promise.all(
             Object.keys(this._clients).map(async (chainKey) => {
                 const chain = this._clients[chainKey];
-                const price = await this._marketService.getTokenPrice(chain.symbol);
-                const mcap = await this._marketService.getTokenMarketCap(chain.symbol);
+                const priceByChain = await this._marketService.getTokenPrice(price, chain.symbol);
+                // External provider does not have lum mcap, hence we need to retrieve it from LumChain
+                const mcapByChain = chain.symbol !== AssetSymbol.LUM ? await this._marketService.getTokenMarketCap(mcap, chain.symbol) : lumMcap;
+                // Calculate the tvl within the same scope
+                const totalAllocatedToken = await chain.getTotalAllocatedToken();
+                const computedTvl = priceByChain * totalAllocatedToken;
+
                 return {
                     symbol: chain.symbol,
-                    unit_price_usd: price,
-                    total_value_usd: mcap,
+                    unit_price_usd: priceByChain,
+                    total_value_usd: mcapByChain,
                     supply: await chain.getTokenSupply(),
                     apy: await chain.getAPY(),
-                    total_allocated_token: await chain.getTotalAllocatedToken(),
-                    tvl: await chain.getTVL(),
+                    total_allocated_token: totalAllocatedToken,
+                    tvl: computedTvl,
                 };
             }),
         );
+
         return assetInfos;
     };
 

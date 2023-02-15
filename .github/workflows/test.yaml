@@ -38,7 +38,7 @@ jobs:
 
             - name: Start server and start e2e tests
               run: yarn start:api:dev & yarn test:e2e
-              timeout-minutes: 5
+              timeout-minutes: 15
               env:
                   LUM_NETWORK_ENDPOINT: https://node0.testnet.lum.network/rpc
                   COSMOS_NETWORK_ENDPOINT: https://rpc-cosmos.imperator.co

@@ -57,17 +57,21 @@ export class AssetScheduler {
                 this._proposalService.fetchType(LUM_DFR_ALLOCATION_TYPE_URL),
             ]);
 
+            if (!proposals || !proposals.length) {
+                return;
+            }
+
             const now = dayjs();
             const votingEndTime = dayjs(proposals[0].voting_end_time);
             const isVotingEndTimeToday = dayjs(votingEndTime).isSame(now.startOf('day'), 'day');
-            const diff = votingEndTime.diff(now, 'minute');
-            // Cron is running every 10min, if less or equal than 10 than update
-            const votingEndTimeSoonReached = Math.abs(diff) <= 10;
 
-            // Verify if proposals is not empty and the voting endTime is today
-            if (!proposals.length || !isVotingEndTimeToday) {
+            if (!isVotingEndTimeToday) {
                 return;
             }
+
+            const diff = votingEndTime.diff(now, 'minute');
+            // Cron is running every 10min, if less or equal than 10min than create
+            const votingEndTimeSoonReached = Math.abs(diff) <= 10;
 
             // Check if the gov prop is ongoing or passed
             const isGovPropOngoing = proposals[0].status === ProposalStatus.PROPOSAL_STATUS_VOTING_PERIOD;
@@ -80,6 +84,7 @@ export class AssetScheduler {
                 await this._assetService.create(`dfr_tvl`, String(preGovPropMetrics.tvl));
                 // If the gov prop has passed and has non-falsy dfractMetrics we update the records to persist the remaining metrics
                 // Post gov prop asset info {unit_price_usd, total_value_usd, supply, apy}
+                // Only create if key is not created for the day
             } else if (postGovPropMetrics && isGovPropPassed) {
                 (await this._assetService.isKeyCreated('dfr_unit_price_usd')) && (await this._assetService.create(`dfr_unit_price_usd`, String(postGovPropMetrics.unit_price_usd)));
                 (await this._assetService.isKeyCreated('dfr_total_value_usd')) && (await this._assetService.create(`dfr_total_value_usd`, String(postGovPropMetrics.total_value_usd)));

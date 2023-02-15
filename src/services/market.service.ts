@@ -26,15 +26,17 @@ export interface TokenMarketCap {
 
 @Injectable()
 export class MarketService {
-    private _informations: TokenInformation[] = [];
-    private _marketCaps: TokenMarketCap[] = [];
-
     constructor(private readonly _httpService: HttpService) {}
 
     refreshTokenInformations = async (): Promise<TokenInformation[]> => {
         try {
-            const response = await lastValueFrom(this._httpService.get(`${ApiUrl.GET_CHAIN_TOKENS}/all`).pipe(map((response) => response.data)));
-            this._informations = response;
+            const response = await lastValueFrom(
+                this._httpService
+                    .get(`${ApiUrl.GET_CHAIN_TOKENS}/all`, {
+                        headers: { 'Accept-Encoding': 'gzip,deflate,compress' },
+                    })
+                    .pipe(map((response) => response.data)),
+            );
             return response;
         } catch (error) {
             return [];
@@ -43,30 +45,37 @@ export class MarketService {
 
     refreshTokenMarketCaps = async (): Promise<TokenMarketCap[]> => {
         try {
-            const data = await lastValueFrom(this._httpService.get(ApiUrl.GET_CHAIN_TOKENS_MCAP).pipe(map((response) => response.data)));
-            this._marketCaps = data;
+            const data = await lastValueFrom(
+                this._httpService
+                    .get(ApiUrl.GET_CHAIN_TOKENS_MCAP, {
+                        headers: { 'Accept-Encoding': 'gzip,deflate,compress' },
+                    })
+                    .pipe(map((response) => response.data)),
+            );
             return data;
         } catch (error) {
             return [];
         }
     };
 
-    getTokenPrice = async (symbol: string, forceRefresh = false): Promise<number> => {
-        if (!this._informations.length || forceRefresh) {
-            await this.refreshTokenInformations();
+    getTokenPrice = async (price: TokenInformation[], symbol: string): Promise<number> => {
+        if (!price || !price.length) {
+            return;
         }
-        const val = this._informations.find((info) => info.symbol.toLowerCase() === symbol.toLowerCase());
+
+        const val = price.find((info) => info.symbol.toLowerCase() === symbol.toLowerCase());
         if (!val) {
             return 0;
         }
         return val.price;
     };
 
-    getTokenMarketCap = async (symbol: string, forceRefresh = false): Promise<number> => {
-        if (!this._marketCaps.length || forceRefresh) {
-            await this.refreshTokenMarketCaps();
+    getTokenMarketCap = async (mcap: TokenMarketCap[], symbol: string): Promise<number> => {
+        if (!mcap || !mcap.length) {
+            return;
         }
-        const val = this._marketCaps.find((info) => info.symbol.toLowerCase() === symbol.toLowerCase());
+
+        const val = mcap.find((info) => info.symbol.toLowerCase() === symbol.toLowerCase());
         if (!val) {
             return 0;
         }

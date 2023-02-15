@@ -5,9 +5,8 @@ import request from 'supertest';
 
 import { ApiModule } from '@app/modules';
 import { AssetService } from '@app/services';
-import { AssetSymbol } from '@app/utils';
 
-import { chainSeed, dfrSeed, lumSeed } from './seed';
+import { chainSeed } from './seed';
 
 describe('Dfract (e2e)', () => {
     let app: INestApplication;
@@ -23,10 +22,13 @@ describe('Dfract (e2e)', () => {
 
         const dfractQueryExecutor = app.get<AssetService>(AssetService);
 
-        await dfractQueryExecutor.ownAssetCreateOrUpdateValue(lumSeed, AssetSymbol.LUM);
-        await dfractQueryExecutor.chainAssetCreateOrUpdateValue(chainSeed);
-        await dfractQueryExecutor.ownAssetCreateOrUpdateValue(dfrSeed, AssetSymbol.DFR);
-        await dfractQueryExecutor.createOrAppendExtra();
+        await dfractQueryExecutor.createFromInfo(chainSeed);
+        await dfractQueryExecutor.create(`dfr_account_balance`, String(1.0837));
+        await dfractQueryExecutor.create(`dfr_tvl`, String(856346));
+        await dfractQueryExecutor.create(`dfr_unit_price_usd`, String(0.91234));
+        await dfractQueryExecutor.create(`dfr_total_value_usd`, String(856346));
+        await dfractQueryExecutor.create(`dfr_supply`, String(7473637363));
+        await dfractQueryExecutor.create(`dfr_apy`, String(0.2983));
     });
 
     afterAll(async () => {
@@ -74,41 +76,36 @@ describe('Dfract (e2e)', () => {
             since: '2022-12-01 00:00:00',
         });
         expect(response.body.code).toEqual(HttpStatus.OK);
-        expect(response.body.result[0].id === 'lum_apy').toBe(true);
-        expect(response.body.result[0].extra.length).toBeGreaterThan(0);
+        expect(response.body.result[0].key === 'lum_apy').toBe(true);
     });
 
     it('[GET] - should return response for specific asset denom (lum)', async () => {
         const response = await request(app.getHttpServer()).get('/dfract/assets/lum');
         expect(response.body.code).toEqual(HttpStatus.OK);
         response.body.result.forEach((obj) => {
+            expect(obj).toHaveProperty('id');
+            expect(obj).toHaveProperty('key');
             expect(obj).toHaveProperty('value');
-            expect(obj.value).toHaveProperty('last_updated_at');
-            expect(obj.value.last_updated_at).toBeTruthy();
+            expect(obj).toHaveProperty('created_at');
 
-            if (obj.id === 'lum_total_allocated_token') {
-                expect(obj.value).toHaveProperty('total_allocated_token');
-                expect(obj.value.total_allocated_token).toBeGreaterThan(0);
+            if (obj.key === 'lum_total_allocated_token') {
+                expect(Number(obj.value)).toBeGreaterThan(0);
             }
 
-            if (obj.id === 'lum_total_value_usd') {
-                expect(obj.value).toHaveProperty('total_value_usd');
-                expect(obj.value.total_value_usd).toBeGreaterThan(0);
+            if (obj.key === 'lum_total_value_usd') {
+                expect(Number(obj.value)).toBeGreaterThan(0);
             }
 
-            if (obj.id === 'lum_unit_price_usd') {
-                expect(obj.value).toHaveProperty('unit_price_usd');
-                expect(obj.value.unit_price_usd).toBeGreaterThan(0);
+            if (obj.key === 'lum_unit_price_usd') {
+                expect(Number(obj.value)).toBeGreaterThan(0);
             }
 
-            if (obj.id === 'lum_apy') {
-                expect(obj.value).toHaveProperty('apy');
-                expect(obj.value.apy).toBeGreaterThan(0);
+            if (obj.key === 'lum_apy') {
+                expect(Number(obj.value)).toBeGreaterThan(0);
             }
 
-            if (obj.id === 'lum_supply') {
-                expect(obj.value).toHaveProperty('supply');
-                expect(obj.value.supply).toBeGreaterThan(0);
+            if (obj.key === 'lum_supply') {
+                expect(Number(obj.value)).toBeGreaterThan(0);
             }
         });
     });

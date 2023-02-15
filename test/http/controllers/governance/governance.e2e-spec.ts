@@ -4,8 +4,8 @@ import { LumConstants } from '@lum-network/sdk-javascript';
 import request from 'supertest';
 
 import { ApiModule } from '@app/modules';
-import { ProposalDepositService, ProposalVoteService } from '@app/services';
-import { depositSeed, voteSeed } from './seed';
+import { ProposalDepositService, ProposalService, ProposalVoteService } from '@app/services';
+import { depositSeed, govPropSeed, voteSeed } from './seed';
 
 describe('Governance (e2e)', () => {
     let app: INestApplication;
@@ -19,9 +19,11 @@ describe('Governance (e2e)', () => {
 
         await app.init();
 
+        const govPropQueryExecutor = app.get<ProposalService>(ProposalService);
         const depositQueryExecutor = app.get<ProposalDepositService>(ProposalDepositService);
         const voteQueryExecutor = app.get<ProposalVoteService>(ProposalVoteService);
 
+        await govPropQueryExecutor.createOrUpdateProposal(govPropSeed);
         await depositQueryExecutor.createOrUpdateDepositors(depositSeed.proposalId, depositSeed.depositorAddress, depositSeed.amount);
         await voteQueryExecutor.createOrUpdateVoters(voteSeed.proposalId, voteSeed.voterAddress, voteSeed.voteOption, voteSeed.voteWeight);
     });
@@ -44,7 +46,7 @@ describe('Governance (e2e)', () => {
     it('[GET] - should return a proposal by id', async () => {
         const response = await request(app.getHttpServer()).get('/governance/proposals/1');
         expect(response.status).toEqual(HttpStatus.OK);
-        expect(response.body.result.proposal_id.low).toEqual(1);
+        expect(response.body.result.proposal_id).toEqual(1);
         expect(response.body.result.status).toBeGreaterThanOrEqual(-1);
         expect(response.body.result.status).toBeLessThanOrEqual(4);
     });
