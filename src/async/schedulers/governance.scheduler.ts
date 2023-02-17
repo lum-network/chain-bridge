@@ -129,7 +129,7 @@ export class GovernanceScheduler {
             for (const voteKey of getVoterAndOptions) {
                 // Only update the db if there is any vote during the voting period
                 if (getVotes && getVotes.votes && getVotes.votes.length > 0) {
-                    await this._governanceProposalVoteService.createOrUpdateVoters(id, voteKey.voter, voteKey.voteOption, voteKey.voteWeight);
+                    await this._governanceProposalVoteService.createOrUpdateVoters(id, voteKey.voter, voteKey.voteOption, Number(voteKey.voteWeight));
                 }
             }
         }

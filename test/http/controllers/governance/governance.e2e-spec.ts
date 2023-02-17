@@ -25,7 +25,7 @@ describe('Governance (e2e)', () => {
 
         await govPropQueryExecutor.createOrUpdateProposal(govPropSeed);
         await depositQueryExecutor.createOrUpdateDepositors(depositSeed.proposalId, depositSeed.depositorAddress, depositSeed.amount);
-        await voteQueryExecutor.createOrUpdateVoters(voteSeed.proposalId, voteSeed.voterAddress, voteSeed.voteOption, voteSeed.voteWeight);
+        await voteQueryExecutor.createOrUpdateVoters(voteSeed.proposalId, voteSeed.voterAddress, voteSeed.voteOption, Number(voteSeed.voteWeight));
     });
 
     afterAll(async () => {

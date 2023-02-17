@@ -256,21 +256,13 @@ export class ChainService {
      * This method returns the list of all infos for the external chains
      */
     getAssetInfo = async (): Promise<GenericAssetInfo[]> => {
-        const price = await this._marketService.refreshTokenInformations();
-        const mcap = await this._marketService.refreshTokenMarketCaps();
-        const lumMcap = await this.getChain<LumChain>(AssetSymbol.LUM).getMarketCap();
-
-        // Terminate if we don't fetch correctly to avoid inserting falsy values
-        if (!price.length || !mcap.length || !lumMcap) {
-            return [];
-        }
-
         const assetInfos: GenericAssetInfo[] | any[] = await Promise.all(
             Object.keys(this._clients).map(async (chainKey) => {
                 const chain = this._clients[chainKey];
-                const priceByChain = await this._marketService.getTokenPrice(price, chain.symbol);
+                const priceByChain = await this._marketService.getTokenPrice(chain.symbol);
                 // External provider does not have lum mcap, hence we need to retrieve it from LumChain
-                const mcapByChain = chain.symbol !== AssetSymbol.LUM ? await this._marketService.getTokenMarketCap(mcap, chain.symbol) : lumMcap;
+                const mcapByChain = chain.symbol !== AssetSymbol.LUM ? await this._marketService.getTokenMarketCap(chain.symbol) : await this.getChain<LumChain>(AssetSymbol.LUM).getMarketCap();
+
                 // Calculate the tvl within the same scope
                 const totalAllocatedToken = await chain.getTotalAllocatedToken();
                 const computedTvl = priceByChain * totalAllocatedToken;

@@ -6,7 +6,7 @@ import * as Sentry from '@sentry/node';
 import { ProposalStatus } from '@lum-network/sdk-javascript/build/codec/cosmos/gov/v1beta1/gov';
 
 import { AssetService, ChainService, DfractService, ProposalService } from '@app/services';
-import { LUM_DFR_ALLOCATION_TYPE_URL } from '@app/utils';
+import { hasFalsyProperties, LUM_DFR_ALLOCATION_TYPE_URL } from '@app/utils';
 import dayjs from 'dayjs';
 
 @Injectable()
@@ -31,8 +31,10 @@ export class AssetScheduler {
 
         try {
             const chainMetrics = await this._chainService.getAssetInfo();
-            if (chainMetrics && chainMetrics.length > 0) {
-                await this._assetService.createFromInfo(chainMetrics.filter((metric) => metric.symbol !== 'DFR'));
+            const filteredMetrics = chainMetrics.filter((metric) => metric.symbol !== 'DFR');
+
+            if (chainMetrics && chainMetrics.length > 0 && !hasFalsyProperties(filteredMetrics)) {
+                await this._assetService.createFromInfo(filteredMetrics);
             }
         } catch (e) {
             Sentry.captureException(e);

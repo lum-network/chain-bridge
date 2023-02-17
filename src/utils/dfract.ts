@@ -84,3 +84,14 @@ export const getUniqueSymbols = (data: any[]) => {
     }
     return result;
 };
+
+export const hasFalsyProperties = (arr: any[]) => {
+    return arr.some((obj) => {
+        for (const prop in obj) {
+            if (!obj[prop]) {
+                return true;
+            }
+        }
+        return false;
+    });
+};
