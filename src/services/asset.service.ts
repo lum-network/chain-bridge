@@ -92,7 +92,7 @@ export class AssetService {
             where: {
                 key: Like(`%${denom}%`),
             },
-            select: ['id', 'key', 'value'],
+            select: ['id', 'key', 'value', 'created_at'],
             order: {
                 id: 'DESC',
             },
