@@ -37,13 +37,14 @@ import {
     BlockService,
     ChainService,
     DfractService,
-    LumNetworkService,
     ProposalDepositService,
     ProposalVoteService,
     StatService,
     TransactionService,
     ValidatorService,
     ValidatorDelegationService,
+    ProposalService,
+    MarketService,
 } from '@app/services';
 
 import { ConfigMap, metrics, PayloadValidationOptions, SentryModuleOptions } from '@app/utils';
@@ -102,8 +103,9 @@ import { AsyncQueues } from '@app/async';
         DfractService,
         GatewayWebsocket,
         LumNetworkIndicator,
-        LumNetworkService,
+        MarketService,
         ...metrics,
+        ProposalService,
         ProposalVoteService,
         ProposalDepositService,
         StatService,
@@ -131,20 +133,14 @@ import { AsyncQueues } from '@app/async';
 export class ApiModule implements OnModuleInit, OnApplicationBootstrap {
     private readonly _logger: Logger = new Logger(ApiModule.name);
 
-    constructor(private readonly _chainService: ChainService, private readonly _lumNetworkService: LumNetworkService) {}
+    constructor(private readonly _chainService: ChainService) {}
 
     async onModuleInit() {
         // We want first LUM to be initialized before intializing the other chains
-        await this._lumNetworkService.initialize();
         await this._chainService.initialize();
     }
 
     async onApplicationBootstrap() {
-        // If we weren't able to initialize connection with Lum Network, exit the project
-        if (!this._lumNetworkService.isInitialized()) {
-            throw new Error(`Cannot initialize the Lum Network Service, exiting...`);
-        }
-
         if (!this._chainService.isInitialized()) {
             throw new Error(`Cannot initialize the External Service, exiting...`);
         }

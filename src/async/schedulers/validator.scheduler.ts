@@ -2,11 +2,11 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { ConfigService } from '@nestjs/config';
 
-import { LumConstants, LumTypes, LumUtils, LumRegistry } from '@lum-network/sdk-javascript';
+import { LumConstants, LumRegistry, LumTypes, LumUtils } from '@lum-network/sdk-javascript';
 
-import { LumNetworkService, ValidatorDelegationService, ValidatorService } from '@app/services';
+import { ChainService, ValidatorDelegationService, ValidatorService } from '@app/services';
 import { ValidatorEntity } from '@app/database';
-import { AssetPrefix, CLIENT_PRECISION, SIGNED_BLOCK_WINDOW } from '@app/utils';
+import { AssetPrefix, AssetSymbol, CLIENT_PRECISION, SIGNED_BLOCK_WINDOW } from '@app/utils';
 
 @Injectable()
 export class ValidatorScheduler {
@@ -14,7 +14,7 @@ export class ValidatorScheduler {
 
     constructor(
         private readonly _configService: ConfigService,
-        private readonly _lumNetworkService: LumNetworkService,
+        private readonly _chainService: ChainService,
         private readonly _validatorService: ValidatorService,
         private readonly _validatorDelegationService: ValidatorDelegationService,
     ) {}
@@ -33,7 +33,7 @@ export class ValidatorScheduler {
         for (const validator of validators) {
             let page: Uint8Array | undefined = undefined;
             while (true) {
-                const delegations = await this._lumNetworkService.client.queryClient.staking.validatorDelegations(validator.operator_address, page);
+                const delegations = await this._chainService.getChain(AssetSymbol.LUM).client.queryClient.staking.validatorDelegations(validator.operator_address, page);
                 this._logger.debug(`Found ${delegations.delegationResponses.length} delegations to sync for validator ${validator.operator_address}`);
 
                 // For each delegation, we create or update the matching entry in our database
@@ -63,7 +63,7 @@ export class ValidatorScheduler {
 
         try {
             // Fetch tendermint validators
-            const tmValidators = await this._lumNetworkService.client.tmClient.validatorsAll(this._configService.get<number>('STARTING_HEIGHT'));
+            const tmValidators = await this._chainService.getChain(AssetSymbol.LUM).client.tmClient.validatorsAll(this._configService.get<number>('STARTING_HEIGHT'));
 
             // Build validators list
             const validators: Partial<ValidatorEntity>[] = [];
@@ -82,7 +82,7 @@ export class ValidatorScheduler {
             for (const s of statuses) {
                 page = undefined;
                 while (true) {
-                    const stakingValidators = await this._lumNetworkService.client.queryClient.staking.validators(s as any, page);
+                    const stakingValidators = await this._chainService.getChain(AssetSymbol.LUM).client.queryClient.staking.validators(s as any, page);
 
                     for (const val of stakingValidators.validators) {
                         const pubKey = LumRegistry.decode(val.consensusPubkey) as LumTypes.PubKey;
@@ -96,11 +96,11 @@ export class ValidatorScheduler {
 
                                 // Fetch the signing infos and self bonded for validators
                                 const [signingInfos, selfBonded] = await Promise.all([
-                                    this._lumNetworkService.client.queryClient.slashing.signing_info(validators[v].consensus_address),
-                                    this._lumNetworkService.client.queryClient.staking.delegatorDelegations(getDecodedAccountAddress),
+                                    this._chainService.getChain(AssetSymbol.LUM).client.queryClient.slashing.signing_info(validators[v].consensus_address),
+                                    this._chainService.getChain(AssetSymbol.LUM).client.queryClient.staking.delegatorDelegations(getDecodedAccountAddress),
                                 ]);
 
-                                // Set the required informations
+                                // Set the required information
                                 validators[v].operator_address = val.operatorAddress;
                                 validators[v].account_address = getDecodedAccountAddress;
                                 validators[v].description = {

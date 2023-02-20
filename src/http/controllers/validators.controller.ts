@@ -3,10 +3,10 @@ import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 
 import { plainToInstance } from 'class-transformer';
 
-import { BlockService, LumNetworkService, ValidatorDelegationService, ValidatorService } from '@app/services';
+import { BlockService, ChainService, ValidatorDelegationService, ValidatorService } from '@app/services';
 import { DefaultTake } from '@app/http/decorators';
 import { BalanceResponse, BlockResponse, DataResponse, DataResponseMetadata, DelegationResponse, ValidatorResponse } from '@app/http/responses';
-import { ExplorerRequest } from '@app/utils';
+import { AssetSymbol, ExplorerRequest } from '@app/utils';
 
 @ApiTags('validators')
 @Controller('validators')
@@ -14,7 +14,7 @@ import { ExplorerRequest } from '@app/utils';
 export class ValidatorsController {
     constructor(
         private readonly _blockService: BlockService,
-        private readonly _lumNetworkService: LumNetworkService,
+        private readonly _chainService: ChainService,
         private readonly _validatorService: ValidatorService,
         private readonly _validatorDelegationService: ValidatorDelegationService,
     ) {}
@@ -82,7 +82,7 @@ export class ValidatorsController {
     async showRewards(@Req() request: ExplorerRequest, @Param('address') address: string): Promise<DataResponse> {
         const {
             rewards: { rewards },
-        } = await this._lumNetworkService.client.queryClient.distribution.validatorOutstandingRewards(address);
+        } = await this._chainService.getChain(AssetSymbol.LUM).client.queryClient.distribution.validatorOutstandingRewards(address);
         return new DataResponse({
             result: rewards.map((rwd) => plainToInstance(BalanceResponse, rwd)),
             metadata: new DataResponseMetadata({

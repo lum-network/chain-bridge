@@ -3,14 +3,14 @@ import { Logger } from '@nestjs/common';
 
 import { Job } from 'bull';
 
-import { BeamEventValue, QueueJobs, Queues } from '@app/utils';
-import { BeamService, LumNetworkService } from '@app/services';
+import { AssetSymbol, BeamEventValue, QueueJobs, Queues } from '@app/utils';
+import { BeamService, ChainService } from '@app/services';
 
 @Processor(Queues.BEAMS)
 export class BeamConsumer {
     private readonly _logger: Logger = new Logger(BeamConsumer.name);
 
-    constructor(private readonly _beamService: BeamService, private readonly _lumNetworkService: LumNetworkService) {}
+    constructor(private readonly _beamService: BeamService, private readonly _chainService: ChainService) {}
 
     @Process(QueueJobs.INGEST)
     async ingestBeam(job: Job<{ id: string; value: BeamEventValue; url: string; time: Date }>) {
@@ -23,7 +23,7 @@ export class BeamConsumer {
         this._logger.debug(`Ingesting beam ${job.data.id}`);
 
         // Get beam by passing the id received by the tx dispatch in block consumer
-        const remoteBeam = await this._lumNetworkService.client.queryClient.beam.get(job.data.id);
+        const remoteBeam = await this._chainService.getChain(AssetSymbol.LUM).client.queryClient.beam.get(job.data.id);
 
         // We format the remote beam to match it against our schema
         const formattedBeam = {

@@ -1,5 +1,5 @@
 import { LumMessages } from '@lum-network/sdk-javascript';
-import { BeamData } from '@lum-network/sdk-javascript/build/codec/beam/beam';
+import { BeamData } from '@lum-network/sdk-javascript/build/codec/lum-network/beam/beam';
 import { Coin } from '@lum-network/sdk-javascript/build/codec/cosmos/base/v1beta1/coin';
 import { BeamStatus, ChartGroupType } from './constants';
 

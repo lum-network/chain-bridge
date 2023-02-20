@@ -1,23 +1,26 @@
-import { ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus, InternalServerErrorException } from '@nestjs/common';
+import { ArgumentsHost, Catch, HttpStatus, InternalServerErrorException } from '@nestjs/common';
+import { BaseExceptionFilter } from '@nestjs/core';
 
 import * as Sentry from '@sentry/node';
-
 import { Request, Response } from 'express';
+import { isArray, ValidationError } from 'class-validator';
 
-@Catch(HttpException)
-export class HttpExceptionFilter implements ExceptionFilter {
-    catch(exception: HttpException, host: ArgumentsHost) {
+import { getDescriptionFromErrors } from '@app/utils';
+
+@Catch()
+export class HttpExceptionFilter extends BaseExceptionFilter {
+    catch = (error: Error, host: ArgumentsHost): void => {
         const ctx = host.switchToHttp();
         const response = ctx.getResponse<Response>();
         const request = ctx.getRequest<Request>();
-        const status = exception.getStatus();
 
         let code: HttpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
         let message = 'error';
+        let result: any = null;
 
-        if (exception instanceof InternalServerErrorException) {
-            message = exception.message;
-            Sentry.captureException(exception, {
+        if (error instanceof InternalServerErrorException) {
+            message = error.message;
+            Sentry.captureException(error, {
                 user: {
                     ip_address: request.ip,
                 },
@@ -29,19 +32,28 @@ export class HttpExceptionFilter implements ExceptionFilter {
                     date: new Date(),
                 },
             });
+        } else if (isArray(error) && error.length > 0 && error[0] instanceof ValidationError) {
+            code = HttpStatus.BAD_REQUEST;
+            message = 'payload_validation_failed';
+            result = {
+                errors: getDescriptionFromErrors(error as ValidationError[]),
+            };
         } else {
-            code = exception.getStatus();
-            if (exception.message !== undefined && exception.message !== null) {
-                message = exception.message;
+            if ((error as any).status !== undefined && (error as any).status !== null) {
+                code = (error as any).status;
+            }
+            if (error.message !== undefined && error.message !== null) {
+                message = error.message;
             }
         }
 
-        response.status(status).json({
+        response.status(code).json({
             code,
             message,
             result: {
                 url: request.url,
+                ...result,
             },
         });
-    }
+    };
 }

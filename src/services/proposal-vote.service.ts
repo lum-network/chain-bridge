@@ -27,7 +27,7 @@ export class ProposalVoteService {
         });
     };
 
-    createOrUpdateVoters = async (proposalId: number, voterAddress: string, voteOption: number, voteWeight: string): Promise<ProposalVoteEntity> => {
+    createOrUpdateVoters = async (proposalId: number, voterAddress: string, voteOption: number, voteWeight: number): Promise<ProposalVoteEntity> => {
         let entity = await this.getByProposalId(proposalId);
 
         // Initialize accountAddress and operatorAddress

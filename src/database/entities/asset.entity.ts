@@ -1,17 +1,21 @@
-import { Column, Entity, PrimaryColumn } from 'typeorm';
-
-import { GenericValueEntity } from '@app/utils';
+import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 
 @Entity({ name: 'assets' })
 export class AssetEntity {
-    @PrimaryColumn({ type: 'text' })
-    id: string;
+    @PrimaryGeneratedColumn()
+    id: number;
 
-    @Column({ type: 'jsonb', nullable: false })
-    value: GenericValueEntity;
+    @Column({ type: 'varchar', length: 32 })
+    key: string;
 
-    @Column({ type: 'jsonb', nullable: false, default: () => "'[]'", array: false })
-    extra: GenericValueEntity[] = [];
+    @Column({ type: 'text', nullable: false })
+    value: string;
+
+    @CreateDateColumn()
+    created_at: Date = new Date();
+
+    @UpdateDateColumn({ nullable: true })
+    updated_at: Date = null;
 
     constructor(data: Partial<AssetEntity>) {
         Object.assign(this, data);

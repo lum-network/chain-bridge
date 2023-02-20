@@ -19,7 +19,7 @@ export class ProposalVoteEntity {
     vote_option: VoteOption;
 
     @Column({ type: 'bigint' })
-    vote_weight: string;
+    vote_weight: number;
 
     constructor(data: Partial<ProposalVoteEntity>) {
         Object.assign(this, data);

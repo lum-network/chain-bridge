@@ -37,4 +37,9 @@ describe('Blocks (e2e)', () => {
         expect(response.body.result.proposer_address).toBeTruthy();
         expect(response.body.result.operator_address).toEqual(expect.stringMatching(/^lumvaloper/));
     });
+
+    it('[GET] Should throw an error if invalid data passed', async () => {
+        const response = await request(app.getHttpServer()).get('/blocks/abcd');
+        expect(response.status).toEqual(HttpStatus.BAD_REQUEST);
+    });
 });

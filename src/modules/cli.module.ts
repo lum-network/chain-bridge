@@ -2,17 +2,31 @@ import { CacheModule, Module, OnModuleInit } from '@nestjs/common';
 import { HttpModule } from '@nestjs/axios';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { BullModule } from '@nestjs/bull';
 
 import { ConsoleModule } from 'nestjs-console';
 import * as Joi from 'joi';
 import * as redisStore from 'cache-manager-redis-store';
 import * as parseRedisUrl from 'parse-redis-url-simple';
 
-import { BeamService, BlockService, LumNetworkService, StatService, TransactionService, ValidatorDelegationService, ValidatorService } from '@app/services';
+import {
+    AssetService,
+    BeamService,
+    BlockService,
+    ChainService,
+    DfractService,
+    MarketService,
+    ProposalService,
+    StatService,
+    TransactionService,
+    ValidatorDelegationService,
+    ValidatorService,
+} from '@app/services';
 
-import { BlocksCommands, RedisCommands, TransactionsCommands, ValidatorsCommands } from '@app/console';
+import { BlocksCommands, CronsCommands, RedisCommands, TransactionsCommands, ValidatorsCommands } from '@app/console';
 import { DatabaseConfig, DatabaseFeatures } from '@app/database';
 import { ConfigMap } from '@app/utils';
+import { AssetScheduler, AsyncQueues } from '@app/async';
 
 @Module({
     imports: [
@@ -20,6 +34,7 @@ import { ConfigMap } from '@app/utils';
             isGlobal: true,
             validationSchema: Joi.object(ConfigMap),
         }),
+        ...AsyncQueues.map((queue) => BullModule.registerQueueAsync(queue)),
         CacheModule.registerAsync({
             imports: [ConfigModule],
             useFactory: (configService: ConfigService) => {
@@ -41,23 +56,29 @@ import { ConfigMap } from '@app/utils';
         TypeOrmModule.forFeature(DatabaseFeatures),
     ],
     providers: [
-        LumNetworkService,
+        ChainService,
+        AssetService,
         BeamService,
         BlockService,
+        DfractService,
+        MarketService,
         StatService,
+        ProposalService,
         TransactionService,
         ValidatorService,
         ValidatorDelegationService,
+        AssetScheduler,
         BlocksCommands,
+        CronsCommands,
         RedisCommands,
         TransactionsCommands,
         ValidatorsCommands,
     ],
 })
 export class CliModule implements OnModuleInit {
-    constructor(private readonly _lumService: LumNetworkService) {}
+    constructor(private readonly _chainService: ChainService) {}
 
     async onModuleInit(): Promise<void> {
-        await this._lumService.initialize();
+        await this._chainService.initialize();
     }
 }

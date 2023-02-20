@@ -18,7 +18,7 @@ jobs:
 
             - uses: actions/setup-node@v1
               with:
-                  node-version: '16.10.0'
+                  node-version: '16.18.0'
 
             - name: Install the project dependencies
               run: yarn install
@@ -38,7 +38,7 @@ jobs:
 
             - name: Start server and start e2e tests
               run: yarn start:api:dev & yarn test:e2e
-              timeout-minutes: 5
+              timeout-minutes: 15
               env:
                   LUM_NETWORK_ENDPOINT: https://node0.testnet.lum.network/rpc
                   COSMOS_NETWORK_ENDPOINT: https://rpc-cosmos.imperator.co

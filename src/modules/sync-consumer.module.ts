@@ -11,7 +11,19 @@ import * as parseRedisUrl from 'parse-redis-url-simple';
 
 import { AsyncQueues, BeamConsumer, BlockConsumer, NotificationConsumer } from '@app/async';
 
-import { BeamService, BlockService, LumNetworkService, ProposalDepositService, ProposalVoteService, TransactionService, ValidatorDelegationService, ValidatorService } from '@app/services';
+import {
+    AssetService,
+    BeamService,
+    BlockService,
+    ChainService,
+    MarketService,
+    ProposalDepositService,
+    ProposalService,
+    ProposalVoteService,
+    TransactionService,
+    ValidatorDelegationService,
+    ValidatorService,
+} from '@app/services';
 import { ConfigMap, SentryModuleOptions } from '@app/utils';
 import { DatabaseConfig, DatabaseFeatures } from '@app/database';
 
@@ -47,9 +59,12 @@ import { DatabaseConfig, DatabaseFeatures } from '@app/database';
     ],
     controllers: [],
     providers: [
-        LumNetworkService,
+        AssetService,
+        ChainService,
         BeamService,
         BlockService,
+        MarketService,
+        ProposalService,
         ProposalDepositService,
         ProposalVoteService,
         TransactionService,
@@ -61,16 +76,16 @@ import { DatabaseConfig, DatabaseFeatures } from '@app/database';
     ],
 })
 export class SyncConsumerModule implements OnModuleInit, OnApplicationBootstrap {
-    constructor(private readonly _lumNetworkService: LumNetworkService) {}
+    constructor(private readonly _chainService: ChainService) {}
 
     async onModuleInit() {
         // Make sure to initialize the lum network service
-        await this._lumNetworkService.initialize();
+        await this._chainService.initialize();
     }
 
     async onApplicationBootstrap() {
         // If we weren't able to initialize connection with Lum Network, exit the project
-        if (!this._lumNetworkService.isInitialized()) {
+        if (!this._chainService.isInitialized()) {
             throw new Error(`Cannot initialize the Lum Network Service, exiting...`);
         }
     }

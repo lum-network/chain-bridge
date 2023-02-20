@@ -3,9 +3,9 @@ import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 
 import { plainToInstance } from 'class-transformer';
 
-import { ProposalDepositService, ProposalVoteService, LumNetworkService } from '@app/services';
-import { DataResponse, DataResponseMetadata, DepositorResponse, ProposalResponse, VoterResponse, ResultResponse } from '@app/http/responses/';
-import { decodeContent, ExplorerRequest } from '@app/utils';
+import { ChainService, ProposalDepositService, ProposalService, ProposalVoteService } from '@app/services';
+import { DataResponse, DataResponseMetadata, DepositorResponse, ProposalResponse, ResultResponse, VoterResponse } from '@app/http/responses/';
+import { AssetSymbol, ExplorerRequest } from '@app/utils';
 import { DefaultTake } from '@app/http/decorators';
 
 @ApiTags('governance')
@@ -13,7 +13,8 @@ import { DefaultTake } from '@app/http/decorators';
 @UseInterceptors(CacheInterceptor)
 export class GovernanceController {
     constructor(
-        private readonly _lumNetworkService: LumNetworkService,
+        private readonly _chainService: ChainService,
+        private readonly _proposalSevice: ProposalService,
         private readonly _governanceProposalVoteService: ProposalVoteService,
         private readonly _governanceProposalDepositService: ProposalDepositService,
     ) {}
@@ -21,14 +22,13 @@ export class GovernanceController {
     @ApiOkResponse({ status: 200, type: [ProposalResponse] })
     @Get('proposals')
     async fetch(@Req() request: ExplorerRequest): Promise<DataResponse> {
-        const results = await this._lumNetworkService.getProposals();
-
+        const results = await this._proposalSevice.fetch();
         return new DataResponse({
-            result: results.proposals.map((proposal) => plainToInstance(ProposalResponse, decodeContent(proposal))),
+            result: results.map((proposal) => plainToInstance(ProposalResponse, proposal)),
             metadata: new DataResponseMetadata({
                 page: request.pagination.page,
                 limit: request.pagination.limit,
-                items_count: results.proposals.length,
+                items_count: results.length,
                 items_total: null,
             }),
         });
@@ -36,22 +36,22 @@ export class GovernanceController {
 
     @ApiOkResponse({ status: 200, type: ProposalResponse })
     @Get('proposals/:id')
-    async get(@Param('id') id: string): Promise<DataResponse> {
-        const result = await this._lumNetworkService.client.queryClient.gov.proposal(id);
+    async get(@Param('id') id: number): Promise<DataResponse> {
+        const result = await this._proposalSevice.getById(id);
 
-        if (!result || !result.proposal) {
+        if (!result) {
             throw new NotFoundException('proposal_not_found');
         }
 
         return {
-            result: plainToInstance(ProposalResponse, decodeContent(result.proposal)),
+            result: plainToInstance(ProposalResponse, result),
         };
     }
 
     @ApiOkResponse({ status: 200, type: ResultResponse })
     @Get('proposals/:id/tally')
     async getTallyResults(@Param('id') id: string): Promise<DataResponse> {
-        const result = await this._lumNetworkService.client.queryClient.gov.tally(id);
+        const result = await this._chainService.getChain(AssetSymbol.LUM).client.queryClient.gov.tally(id);
 
         if (!result || !result.tally) {
             throw new NotFoundException('tally_not_found');
@@ -63,7 +63,6 @@ export class GovernanceController {
     }
 
     @ApiOkResponse({ status: 200, type: VoterResponse })
-    // Return only 5 voters per page
     @DefaultTake(5)
     @Get('proposals/:id/voters')
     async getVoters(@Req() request: ExplorerRequest, @Param('id') id: string): Promise<DataResponse> {
@@ -83,7 +82,6 @@ export class GovernanceController {
     }
 
     @ApiOkResponse({ status: 200, type: DepositorResponse })
-    // Return only 5 depositors per page
     @DefaultTake(5)
     @Get('proposals/:id/depositors')
     async getDepositors(@Req() request: ExplorerRequest, @Param('id') id: string): Promise<DataResponse> {

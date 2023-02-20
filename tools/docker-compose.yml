@@ -14,16 +14,16 @@ services:
     lm-node:
         logging:
             driver: none
-        image: rg.fr-par.scw.cloud/lum-network/chain:latest
+        image: rg.fr-par.scw.cloud/lum-network/chain:v1.3.0
         command:
             - /bin/sh
             - -c
             - |
-                lumd unsafe-reset-all
-                lumd keys add genesis_key
-                lumd init genesis_key --chain-id=lum-network-devnet
-                lumd add-genesis-account `lumd keys show genesis_key -a` 1000000000000000ulum
-                lumd gentx genesis_key 1000000ulum --chain-id=lum-network-devnet
+                lumd tendermint unsafe-reset-all
+                lumd init genesis_node --chain-id=lum-network-devnet
+                lumd keys add genesis_key --keyring-backend test
+                lumd add-genesis-account `lumd keys show genesis_key -a --keyring-backend test` 1000000000000000ulum
+                lumd gentx genesis_key 1000000ulum --chain-id=lum-network-devnet --keyring-backend test
                 lumd collect-gentxs
                 sed -i 's/"stake"/"ulum"/g' /chain/.lumd/config/genesis.json
                 sed -i 's/minimum-gas-prices = ""/minimum-gas-prices = "0.001ulum"/g' /chain/.lumd/config/app.toml

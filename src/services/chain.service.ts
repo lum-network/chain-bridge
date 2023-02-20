@@ -1,278 +1,311 @@
 import { HttpService } from '@nestjs/axios';
+import { ModulesContainer } from '@nestjs/core';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { InjectQueue } from '@nestjs/bull';
 
-import { LumClient, LumUtils } from '@lum-network/sdk-javascript';
+import { lastValueFrom } from 'rxjs';
+import { Queue } from 'bull';
 import * as Sentry from '@sentry/node';
+import { NewBlockEvent } from '@cosmjs/tendermint-rpc';
 
-import { lastValueFrom, map } from 'rxjs';
+import { AssetPrefix, AssetSymbol, AssetMicroDenom, AssetDenom, GenericAssetInfo, Queues, QueueJobs, QueuePriority, MODULE_NAMES, getUniqueSymbols } from '@app/utils';
 
-import {
-    ApiUrl,
-    apy,
-    AssetPrefix,
-    AssetSymbol,
-    AssetMicroDenom,
-    CHAIN_ENV_CONFIG,
-    CLIENT_PRECISION,
-    EVMOS_STAKING_ADDRESS,
-    computeTotalApy,
-    computeTotalTokenAmount,
-    DfractOnChainApy,
-    LUM_STAKING_ADDRESS,
-    PERCENTAGE,
-    TEN_EXPONENT_SIX,
-    GenericAssetInfo,
-} from '@app/utils';
-
-import { AssetService } from '@app/services';
+import { AssetService } from '@app/services/asset.service';
+import { MarketService } from '@app/services/market.service';
+import { EvmosChain, GenericChain, JunoChain, LumChain, OsmosisChain, StargazeChain } from '@app/services/chains';
 
 @Injectable()
 export class ChainService {
+    private readonly _currentModuleName: string = null;
     private readonly _logger: Logger = new Logger(ChainService.name);
-    private _chainClient: LumClient = null;
-    private _client: LumClient[] = [];
+    private readonly _clients: { [key: string]: GenericChain } = {};
 
-    private _assetSymbol = Object.values(AssetSymbol).map((key) => key);
-    private _assetMicroDenom = Object.values(AssetMicroDenom).map((key) => key);
-    private _dfractOnChainApy = Object.values(DfractOnChainApy).map((key) => key);
-    private _dfractPrefix = Object.values(AssetPrefix).map((key) => key);
+    constructor(
+        @InjectQueue(Queues.BLOCKS) private readonly _queue: Queue,
+        private readonly _assetService: AssetService,
+        private readonly _configService: ConfigService,
+        private readonly _httpService: HttpService,
+        private readonly _marketService: MarketService,
+        private readonly _modulesContainer: ModulesContainer,
+    ) {
+        // Lil hack to get the current module name
+        for (const nestModule of this._modulesContainer.values()) {
+            if (MODULE_NAMES.includes(nestModule.metatype.name)) {
+                this._currentModuleName = nestModule.metatype.name;
+                break;
+            }
+        }
 
-    constructor(private readonly _assetService: AssetService, private readonly _configService: ConfigService, private readonly _httpService: HttpService) {}
+        // Only initialize other chains if dfract sync enabled
+        if (this._configService.get<boolean>('DFRACT_SYNC_ENABLED')) {
+            this._clients[AssetSymbol.COSMOS] = new GenericChain({
+                assetService: this._assetService,
+                httpService: this._httpService,
+                marketService: this._marketService,
+                loggerService: this._logger,
+                prefix: AssetPrefix.COSMOS,
+                symbol: AssetSymbol.COSMOS,
+                endpoint: this._configService.get<string>('COSMOS_NETWORK_ENDPOINT'),
+                denom: AssetDenom.COSMOS,
+                microDenom: AssetMicroDenom.COSMOS,
+                subscribeToRPC: false,
+            });
+            this._clients[AssetSymbol.AKASH_NETWORK] = new GenericChain({
+                assetService: this._assetService,
+                httpService: this._httpService,
+                marketService: this._marketService,
+                loggerService: this._logger,
+                prefix: AssetPrefix.AKASH_NETWORK,
+                symbol: AssetSymbol.AKASH_NETWORK,
+                endpoint: this._configService.get<string>('AKASH_NETWORK_ENDPOINT'),
+                denom: AssetDenom.AKASH_NETWORK,
+                microDenom: AssetMicroDenom.AKASH_NETWORK,
+                subscribeToRPC: false,
+            });
+            this._clients[AssetSymbol.COMDEX] = new GenericChain({
+                assetService: this._assetService,
+                httpService: this._httpService,
+                marketService: this._marketService,
+                loggerService: this._logger,
+                prefix: AssetPrefix.COMDEX,
+                symbol: AssetSymbol.COMDEX,
+                endpoint: this._configService.get<string>('COMDEX_NETWORK_ENDPOINT'),
+                denom: AssetDenom.COMDEX,
+                microDenom: AssetMicroDenom.COMDEX,
+                subscribeToRPC: false,
+            });
+            this._clients[AssetSymbol.SENTINEL] = new GenericChain({
+                assetService: this._assetService,
+                httpService: this._httpService,
+                marketService: this._marketService,
+                loggerService: this._logger,
+                prefix: AssetPrefix.SENTINEL,
+                symbol: AssetSymbol.SENTINEL,
+                endpoint: this._configService.get<string>('SENTINEL_NETWORK_ENDPOINT'),
+                denom: AssetDenom.SENTINEL,
+                microDenom: AssetMicroDenom.SENTINEL,
+                subscribeToRPC: false,
+            });
+            this._clients[AssetSymbol.KI] = new GenericChain({
+                assetService: this._assetService,
+                httpService: this._httpService,
+                marketService: this._marketService,
+                loggerService: this._logger,
+                prefix: AssetPrefix.KI,
+                symbol: AssetSymbol.KI,
+                endpoint: this._configService.get<string>('KICHAIN_NETWORK_ENDPOINT'),
+                denom: AssetDenom.KI,
+                microDenom: AssetMicroDenom.KI,
+                subscribeToRPC: false,
+            });
+            this._clients[AssetSymbol.OSMOSIS] = new OsmosisChain({
+                assetService: this._assetService,
+                httpService: this._httpService,
+                marketService: this._marketService,
+                loggerService: this._logger,
+                prefix: AssetPrefix.OSMOSIS,
+                symbol: AssetSymbol.OSMOSIS,
+                endpoint: this._configService.get<string>('OSMOSIS_NETWORK_ENDPOINT'),
+                denom: AssetDenom.OSMOSIS,
+                microDenom: AssetMicroDenom.OSMOSIS,
+                subscribeToRPC: false,
+            });
+            this._clients[AssetSymbol.JUNO] = new JunoChain({
+                assetService: this._assetService,
+                httpService: this._httpService,
+                marketService: this._marketService,
+                loggerService: this._logger,
+                prefix: AssetPrefix.JUNO,
+                symbol: AssetSymbol.JUNO,
+                endpoint: this._configService.get<string>('JUNO_NETWORK_ENDPOINT'),
+                denom: AssetDenom.JUNO,
+                microDenom: AssetMicroDenom.JUNO,
+                subscribeToRPC: false,
+            });
+            this._clients[AssetSymbol.STARGAZE] = new StargazeChain({
+                assetService: this._assetService,
+                httpService: this._httpService,
+                marketService: this._marketService,
+                loggerService: this._logger,
+                prefix: AssetPrefix.STARGAZE,
+                symbol: AssetSymbol.STARGAZE,
+                endpoint: this._configService.get<string>('STARGAZE_NETWORK_ENDPOINT'),
+                denom: AssetDenom.STARGAZE,
+                microDenom: AssetMicroDenom.STARGAZE,
+                subscribeToRPC: false,
+            });
+            this._clients[AssetSymbol.EVMOS] = new EvmosChain({
+                assetService: this._assetService,
+                httpService: this._httpService,
+                marketService: this._marketService,
+                loggerService: this._logger,
+                prefix: AssetPrefix.EVMOS,
+                symbol: AssetSymbol.EVMOS,
+                endpoint: this._configService.get<string>('EVMOS_NETWORK_ENDPOINT'),
+                denom: AssetDenom.EVMOS,
+                microDenom: AssetMicroDenom.EVMOS,
+                subscribeToRPC: false,
+            });
+        }
 
-    // This service aims to initialize connection to different chains and compute various metrics for the assets we represent in our Dfract index
+        this._clients[AssetSymbol.DFR] = new LumChain({
+            assetService: this._assetService,
+            httpService: this._httpService,
+            marketService: this._marketService,
+            loggerService: this._logger,
+            prefix: AssetPrefix.LUM,
+            symbol: AssetSymbol.DFR,
+            endpoint: this._configService.get<string>('LUM_NETWORK_ENDPOINT'),
+            denom: AssetDenom.DFR,
+            microDenom: AssetMicroDenom.DFR,
+            subscribeToRPC: false,
+        });
+        this._clients[AssetSymbol.LUM] = new LumChain({
+            assetService: this._assetService,
+            httpService: this._httpService,
+            marketService: this._marketService,
+            loggerService: this._logger,
+            prefix: AssetPrefix.LUM,
+            symbol: AssetSymbol.LUM,
+            endpoint: this._configService.get<string>('LUM_NETWORK_ENDPOINT'),
+            denom: AssetDenom.LUM,
+            microDenom: AssetMicroDenom.LUM,
+            subscribeToRPC: this._currentModuleName === 'SyncSchedulerModule',
+            postInitCallback: (instance) => {
+                // Only ingest if allowed by the configuration
+                if (this._configService.get<boolean>('INGEST_ENABLED') === false) {
+                    return;
+                }
+
+                // We only set the block listener in case of the sync scheduler module
+                if (this._currentModuleName === 'SyncSchedulerModule') {
+                    instance.clientStream.addListener({
+                        next: async (ev: NewBlockEvent) => {
+                            await this._queue.add(
+                                QueueJobs.INGEST,
+                                {
+                                    blockHeight: ev.header.height,
+                                    notify: true,
+                                },
+                                {
+                                    jobId: `${instance.chainId}-block-${ev.header.height}`,
+                                    attempts: 5,
+                                    backoff: 60000,
+                                    priority: QueuePriority.HIGH,
+                                },
+                            );
+                        },
+                        error: (err: Error) => {
+                            this._logger.error(`Failed to process the block event ${err}`);
+                        },
+                        complete: () => {
+                            this._logger.error(`Stream completed before we had time to process`);
+                        },
+                    });
+                }
+            },
+        });
+    }
 
     initialize = async () => {
         try {
-            for (const env of CHAIN_ENV_CONFIG) {
-                // We iterate over all the clients and store them in an array of LumClient[]
-                this._chainClient = await LumClient.connect(this._configService.get<string>(env));
-                const chainId = await this._chainClient.getChainId();
-
-                this._client.push(this._chainClient);
-
-                this._logger.log(`Connection established to ${env} ${this._configService.get<string>(env)} = ${chainId}`);
+            for (const chainKey of Object.keys(this._clients)) {
+                await this._clients[chainKey].initialize();
             }
         } catch (e) {
             console.error(e);
-
             Sentry.captureException(e);
         }
     };
 
-    isInitialized = (): boolean => {
-        return this._client !== null;
-    };
-
-    getPrice = async (): Promise<{ unit_price_usd: number; symbol: string }[]> => {
-        try {
-            // Observable to get the prices and filter with the one we represent in the index
-            const price = await lastValueFrom(this._httpService.get(`${ApiUrl.GET_CHAIN_TOKENS_ALL}`).pipe(map((response) => response.data)));
-
-            // We exclude LUM's price as we have our seperate service for that
-            return price
-                .filter((el) => this._assetSymbol.some((f) => f === el.symbol && el.symbol !== AssetSymbol.LUM))
-                .map((el) => ({
-                    unit_price_usd: el.price,
-                    symbol: el.symbol,
-                }));
-        } catch (error) {
-            this._logger.error(`Could not fetch Price...`, error);
-
-            Sentry.captureException(error);
-
-            return null;
-        }
-    };
-
-    getMcap = async (): Promise<{ total_value_usd: number; symbol: string }[]> => {
-        try {
-            // Observable to get the mcap and filter with the one we represent in the index
-            const getMktCap = await lastValueFrom(this._httpService.get(`${ApiUrl.GET_CHAIN_TOKENS_MCAP}`).pipe(map((response) => response.data)));
-
-            // We exclude LUM's mcap as we have our seperate service for that
-            return getMktCap
-                .filter((el) => this._assetSymbol.some((f) => f === el.symbol && el.symbol !== AssetSymbol.LUM))
-                .map((el) => ({
-                    total_value_usd: el.market_cap,
-                    symbol: el.symbol,
-                }));
-        } catch (error) {
-            this._logger.error(`Could not fetch Market Cap for External Chains...`, error);
-
-            Sentry.captureException(error);
-
-            return null;
-        }
-    };
-
-    getTokenSupply = async (): Promise<{ supply: number; symbol: string }[]> => {
-        try {
-            // Not all chains have a reliable token supply that we can extract from chain
-            // Hence for some, we need to rely on their official endpoint to retrieve it
-
-            // Return token supply based on the microDenum and denum from assets in the index
-            const chainSupply = await Promise.all(
-                this._client.map(async (el, index) => {
-                    const supply = Number((await el.getSupply(this._assetMicroDenom[index])).amount) / TEN_EXPONENT_SIX;
-
-                    return { supply, symbol: this._assetSymbol[index] };
-                }),
-            );
-
-            // The value returned from Evmos on chain does not seem accurate to us.
-            // Hence, we rely on their official documentation endpoint to retrieve the supply
-            const evmosSupply = Number(await lastValueFrom(this._httpService.get(`${ApiUrl.GET_EVMOS_SUPPLY}`).pipe(map((response) => response.data.circulating_supply.amount)))) / CLIENT_PRECISION;
-
-            // We map the token supply from the other chains with the one from evmos
-            return chainSupply.map((el) => [{ supply: evmosSupply, symbol: AssetSymbol.EVMOS }].find((o) => o.symbol === el.symbol) || el);
-        } catch (error) {
-            this._logger.error(`Could not fetch Token Supply for External Chains...`, error);
-
-            Sentry.captureException(error);
-
-            return null;
-        }
-    };
-
-    getApy = async (): Promise<{ apy: number; symbol: string }[]> => {
-        try {
-            // As inflation is not retrievable for now for some chain
-            // We take the first 5 {atom, akt, cmdx, dvpn, ki} chain as we need to compute the last ones manually for now.
-            // Once we can compute the inflation of all chains evenly we integrate them in the getChainApy variable
-            const client = this._client.slice(0, this._dfractOnChainApy.length);
-
-            // Chains where inflation is retrievable
-            const getChainApy = await Promise.all(
-                client.map(async (el, index) => {
-                    const inflation = Number(await el.queryClient.mint.inflation()) / CLIENT_PRECISION;
-
-                    const metrics = await computeTotalApy(el, Number((await this.getTokenSupply())[index].supply), inflation, CLIENT_PRECISION, TEN_EXPONENT_SIX);
-
-                    return { apy: apy(metrics.inflation, metrics.communityTaxRate, metrics.stakingRatio), symbol: this._assetSymbol[index] };
-                }),
-            );
-
-            // Evmos manual inflation calculation
-            // We use their official endpoint to retrieve the inflation rate
-            const evmosIndex = CHAIN_ENV_CONFIG.findIndex((el) => el === `${AssetSymbol.EVMOS}_NETWORK_ENDPOINT`);
-            const evmosInflation = Number(await lastValueFrom(this._httpService.get(`${ApiUrl.GET_EVMOS_INFLATION}`).pipe(map((response) => response.data.inflation_rate)))) / PERCENTAGE;
-
-            const metrics = await computeTotalApy(this._client[evmosIndex], Number((await this.getTokenSupply())[evmosIndex].supply), evmosInflation, CLIENT_PRECISION, CLIENT_PRECISION);
-
-            // To calculate evmos community tax we need to sum-up the usage_incentive and the community_pool
-            const inflationParams = await lastValueFrom(this._httpService.get(`${ApiUrl.GET_EVMOS_INFLATION_PARAMS}`).pipe(map((response) => response.data.params.inflation_distribution)));
-
-            const getEvmosApy = {
-                apy: apy(metrics.inflation, Number(inflationParams.usage_incentives) + Number(inflationParams.community_pool), metrics.stakingRatio),
-                symbol: this._assetSymbol[evmosIndex],
-            };
-
-            // Chains for which inflation is not retrievable via the mint module. Hence, we rely on other rpc endpoints to retrieve it.
-            const getOsmosisApy = Number(await lastValueFrom(this._httpService.get(`${ApiUrl.GET_OSMOSIS_APY}`).pipe(map((response) => response.data)))) / PERCENTAGE;
-
-            const getJunoApy = Number(await lastValueFrom(this._httpService.get(`${ApiUrl.GET_JUNO_APY}`).pipe(map((response) => response.data)))) / PERCENTAGE;
-
-            const getStargazeApy = Number(await lastValueFrom(this._httpService.get(`${ApiUrl.GET_STARGAZE_APY}`).pipe(map((response) => response.data)))) / PERCENTAGE;
-
-            return [
-                ...getChainApy,
-                getEvmosApy,
-                { apy: getOsmosisApy, symbol: AssetSymbol.OSMOSIS },
-                { apy: getJunoApy, symbol: AssetSymbol.JUNO },
-                { apy: getStargazeApy, symbol: AssetSymbol.STARGAZE },
-            ];
-        } catch (error) {
-            this._logger.error(`Could not fetch Token Apy for External Chains...`, error);
-
-            Sentry.captureException(error);
-
-            return null;
-        }
-    };
-
-    getTotalAllocatedToken = async (): Promise<{ total_allocated_token: number; symbol: string }[]> => {
-        try {
-            // We compute the total allocated token that will serve to calculate the tvl
-            // Evmos as a different rounding precision. Hence for precision purposes we exclude it from first client iteration batch
-            const evmosIndex = CHAIN_ENV_CONFIG.findIndex((el) => el === `${AssetSymbol.EVMOS}_NETWORK_ENDPOINT`);
-            // We exclude evmos from the first computation batch
-            const client = this._client.slice(0, evmosIndex);
-
-            const computedTotalToken = await Promise.all(
-                client.map(async (el, index) => {
-                    const decode = LumUtils.Bech32.decode(LUM_STAKING_ADDRESS);
-                    const getDecodedAddress = LumUtils.Bech32.encode(this._dfractPrefix[index], decode.data);
-                    return {
-                        total_allocated_token: Number(await computeTotalTokenAmount(getDecodedAddress, el, this._assetMicroDenom[index], CLIENT_PRECISION, TEN_EXPONENT_SIX)),
-                        symbol: this._assetSymbol[index],
-                    };
-                }),
-            );
-
-            // We calculate the total token amount for evmos
-            const evmosTotalToken = {
-                total_allocated_token: Number(await computeTotalTokenAmount(EVMOS_STAKING_ADDRESS, this._client[evmosIndex], this._assetMicroDenom[evmosIndex], CLIENT_PRECISION, CLIENT_PRECISION)),
-                symbol: this._assetSymbol[evmosIndex],
-            };
-
-            const totalComputedToken = [...computedTotalToken, evmosTotalToken].sort((a, b) => a.symbol.localeCompare(b.symbol));
-
-            return totalComputedToken;
-        } catch (error) {
-            this._logger.error('Failed to compute total allocated token for External Chain...', error);
-
-            Sentry.captureException(error);
-
-            return null;
-        }
-    };
-
-    getAssetInfo = async (): Promise<GenericAssetInfo[]> => {
-        try {
-            // In order to get the asset info we need to get the following info from all chains:
-            // {unit_price_usd, total_value_usd (mcap), supply, apy}
-            const [unit_price_usd, total_value_usd, supply, apy, totalToken] = await Promise.all([
-                this.getPrice(),
-                this.getMcap(),
-                this.getTokenSupply(),
-                this.getApy(),
-                this.getTotalAllocatedToken(),
-            ]);
-
-            return [unit_price_usd, total_value_usd, supply, apy, totalToken].flat();
-        } catch (error) {
-            this._logger.error('Failed to compute Asset Info for External Chain...', error);
-
-            Sentry.captureException(error);
-
-            return null;
-        }
-    };
-
-    getTvl = async (): Promise<{ tvl: number; symbol: string }[]> => {
-        try {
-            // We need to compute the tvl differently for evmos as don't decode the evmos address via the Lum.decode utils
-
-            // We get the price from the DB and sort by symbol as we don't need to make an additional call to a third party
-
-            const [getTotalPriceDb, getTotalTokenDb] = await Promise.all([this._assetService.getChainServicePrice(), this._assetService.getChainServiceTotalAllocatedToken()]);
-
-            if (getTotalPriceDb && getTotalTokenDb) {
-                return getTotalTokenDb
-                    .sort((a, b) => a.symbol.localeCompare(b.symbol))
-                    .map((item, i) => Object.assign({}, item, getTotalPriceDb[i]))
-                    .map((el) => ({
-                        tvl: Number(el.unit_price_usd) * Number(el.total_allocated_token),
-                        symbol: el.symbol,
-                    }));
+    isInitialized = () => {
+        for (const chainKey of Object.keys(this._clients)) {
+            if (!this._clients[chainKey].isInitialized()) {
+                return false;
             }
-        } catch (error) {
-            this._logger.error('Failed to compute TVL for External Chain...', error);
+        }
+        return true;
+    };
 
-            Sentry.captureException(error);
+    isChainInitialized = (chainSymbol: AssetSymbol) => {
+        if (!this._clients[chainSymbol]) {
+            return false;
+        }
 
+        return this._clients[chainSymbol].isInitialized();
+    };
+
+    getChain = <Type = GenericChain>(chainSymbol: AssetSymbol): Type => {
+        return this._clients[chainSymbol] as Type;
+    };
+
+    getIPFSContent = async (cid: string): Promise<any | null> => {
+        try {
+            return lastValueFrom(
+                this._httpService.get(`https://${cid}.ipfs.nftstorage.link/`, {
+                    headers: { 'Accept-Encoding': 'gzip,deflate,compress' },
+                }),
+            );
+        } catch (e) {
             return null;
         }
+    };
+
+    /*
+     * This method returns the list of all infos for the external chains
+     */
+    getAssetInfo = async (): Promise<GenericAssetInfo[]> => {
+        const assetInfos: GenericAssetInfo[] | any[] = await Promise.all(
+            Object.keys(this._clients).map(async (chainKey) => {
+                const chain = this._clients[chainKey];
+                const priceByChain = await this._marketService.getTokenPrice(chain.symbol);
+                // External provider does not have lum mcap, hence we need to retrieve it from LumChain
+                const mcapByChain = chain.symbol !== AssetSymbol.LUM ? await this._marketService.getTokenMarketCap(chain.symbol) : await this.getChain<LumChain>(AssetSymbol.LUM).getMarketCap();
+
+                // Calculate the tvl within the same scope
+                const totalAllocatedToken = await chain.getTotalAllocatedToken();
+                const computedTvl = priceByChain * totalAllocatedToken;
+
+                return {
+                    symbol: chain.symbol,
+                    unit_price_usd: priceByChain,
+                    total_value_usd: mcapByChain,
+                    supply: await chain.getTokenSupply(),
+                    apy: await chain.getAPY(),
+                    total_allocated_token: totalAllocatedToken,
+                    tvl: computedTvl,
+                };
+            }),
+        );
+
+        return assetInfos;
+    };
+
+    /*
+     * This method returns the TVL for each external chains
+     */
+    getTvl = async (): Promise<{ tvl: number; symbol: string }[]> => {
+        const [getTotalPriceDb, getTotalTokenDb] = await Promise.all([this._assetService.getPrices(), this._assetService.getTotalAllocatedTokens()]);
+
+        // Only keep the last inserted key symbols
+        const filteredPriceDb = getUniqueSymbols(getTotalPriceDb);
+        const filteredTokenDb = getUniqueSymbols(getTotalTokenDb);
+
+        if (!filteredPriceDb || !filteredTokenDb) {
+            return [];
+        }
+
+        if (filteredPriceDb.length === 0 || filteredTokenDb.length === 0) {
+            return [];
+        }
+
+        return filteredTokenDb
+            .sort((a, b) => a.symbol.localeCompare(b.symbol))
+            .map((item, i) => Object.assign({}, item, filteredPriceDb[i]))
+            .map((el) => ({
+                tvl: Number(el.unit_price_usd) * Number(el.total_allocated_token),
+                symbol: el.symbol,
+            }));
     };
 }
