@@ -78,6 +78,8 @@ export class AssetScheduler {
             // Check if the gov prop is ongoing or passed
             const isGovPropOngoing = proposals[0].status === ProposalStatus.PROPOSAL_STATUS_VOTING_PERIOD;
             const isGovPropPassed = proposals[0].status === ProposalStatus.PROPOSAL_STATUS_PASSED;
+            const isAccBalanceCreated = !(await this._assetService.isNewKey('dfr_account_balance'));
+            const isTvlCreated = !(await this._assetService.isNewKey('dfr_tvl'));
 
             // If there is cash in the account balance, non-falsy dfractMetrics and an ongoing dfr gov prop, we update the records
             // Pre gov prop asset info {account_balance, tvl}
@@ -87,11 +89,11 @@ export class AssetScheduler {
                 // If the gov prop has passed and has non-falsy dfractMetrics we update the records to persist the remaining metrics
                 // Post gov prop asset info {unit_price_usd, total_value_usd, supply, apy}
                 // Only create if key is not created for the day
-            } else if (postGovPropMetrics && isGovPropPassed) {
-                (await this._assetService.isKeyCreated('dfr_unit_price_usd')) && (await this._assetService.create(`dfr_unit_price_usd`, String(postGovPropMetrics.unit_price_usd)));
-                (await this._assetService.isKeyCreated('dfr_total_value_usd')) && (await this._assetService.create(`dfr_total_value_usd`, String(postGovPropMetrics.total_value_usd)));
-                (await this._assetService.isKeyCreated('dfr_supply')) && (await this._assetService.create(`dfr_supply`, String(postGovPropMetrics.supply)));
-                (await this._assetService.isKeyCreated('dfr_apy')) && (await this._assetService.create(`dfr_apy`, String(postGovPropMetrics.apy)));
+            } else if (postGovPropMetrics && isGovPropPassed && isAccBalanceCreated && isTvlCreated) {
+                (await this._assetService.isNewKey('dfr_unit_price_usd')) && (await this._assetService.create(`dfr_unit_price_usd`, String(postGovPropMetrics.unit_price_usd)));
+                (await this._assetService.isNewKey('dfr_total_value_usd')) && (await this._assetService.create(`dfr_total_value_usd`, String(postGovPropMetrics.total_value_usd)));
+                (await this._assetService.isNewKey('dfr_supply')) && (await this._assetService.create(`dfr_supply`, String(postGovPropMetrics.supply)));
+                (await this._assetService.isNewKey('dfr_apy')) && (await this._assetService.create(`dfr_apy`, String(postGovPropMetrics.apy)));
             }
         } catch (e) {
             Sentry.captureException(e);

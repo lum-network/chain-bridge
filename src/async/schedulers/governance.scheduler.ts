@@ -94,6 +94,7 @@ export class GovernanceScheduler {
                 voting_start_time: proposal.votingStartTime,
                 voting_end_time: proposal.votingEndTime,
             });
+
             this._logger.debug(`[RootSync] Synced proposal #${proposal.id.toNumber()}`);
         }
     }

@@ -95,3 +95,13 @@ export const hasFalsyProperties = (arr: any[]) => {
         return false;
     });
 };
+
+export const getUniqueEntries = (data: any[]) => {
+    const uniqueEntries = new Map();
+    for (const entry of data) {
+        if (!uniqueEntries.has(entry.key)) {
+            uniqueEntries.set(entry.key, entry);
+        }
+    }
+    return Array.from(uniqueEntries.values());
+};

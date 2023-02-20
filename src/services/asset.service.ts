@@ -4,7 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Like, MoreThan, MoreThanOrEqual, Repository } from 'typeorm';
 
 import { AssetEntity } from '@app/database';
-import { GenericAssetInfo } from '@app/utils';
+import { GenericAssetInfo, getUniqueEntries } from '@app/utils';
 import dayjs from 'dayjs';
 
 @Injectable()
@@ -31,7 +31,7 @@ export class AssetService {
         });
     };
 
-    isKeyCreated = async (key: string): Promise<boolean> => {
+    isNewKey = async (key: string): Promise<boolean> => {
         const today = dayjs().startOf('day');
         const entity = await this._repository.findOne({
             where: {
@@ -88,7 +88,7 @@ export class AssetService {
     };
 
     fetchLatestAsset = async (denom: string): Promise<AssetEntity[]> => {
-        return this._repository.find({
+        const data = await this._repository.find({
             where: {
                 key: Like(`%${denom}%`),
             },
@@ -97,6 +97,8 @@ export class AssetService {
                 id: 'DESC',
             },
         });
+
+        return getUniqueEntries(data);
     };
 
     getAPYs = async (): Promise<{ symbol: string; apy: number }[]> => {
