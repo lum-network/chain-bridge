@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Cron, CronExpression } from '@nestjs/schedule';
+import { Cron } from '@nestjs/schedule';
 
 import * as Sentry from '@sentry/node';
 import { ProposalStatus } from '@lum-network/sdk-javascript/build/codec/cosmos/gov/v1beta1/gov';
@@ -21,7 +21,8 @@ export class AssetScheduler {
         private readonly _proposalService: ProposalService,
     ) {}
 
-    @Cron(CronExpression.EVERY_DAY_AT_5AM)
+    // Every 10 minutes, every day, between 05:00 am and 05:59 PM
+    @Cron('0 */10 05-17 * * *')
     async dailySyncValues(): Promise<void> {
         if (!this._configService.get<boolean>('DFRACT_SYNC_ENABLED')) {
             return;

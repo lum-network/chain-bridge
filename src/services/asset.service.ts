@@ -67,7 +67,7 @@ export class AssetService {
                     continue;
                 }
                 const compositeKey = `${info.symbol.toLowerCase()}_${key}`;
-                await this.create(compositeKey, String(value));
+                (await this.isNewKey(compositeKey)) && (await this.create(compositeKey, String(value)));
             }
         }
     };
