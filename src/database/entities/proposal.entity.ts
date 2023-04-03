@@ -39,13 +39,13 @@ export class ProposalEntity {
     @Column({ type: 'timestamp' })
     submitted_at: Date;
 
-    @Column({ type: 'timestamp' })
+    @Column({ type: 'timestamp', nullable: true })
     deposit_end_time: Date;
 
-    @Column({ type: 'timestamp' })
+    @Column({ type: 'timestamp', nullable: true })
     voting_start_time: Date;
 
-    @Column({ type: 'timestamp' })
+    @Column({ type: 'timestamp', nullable: true })
     voting_end_time: Date;
 
     @CreateDateColumn()
