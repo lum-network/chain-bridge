@@ -177,6 +177,10 @@ export class CoreController {
 
     @MessagePattern('updateMetric')
     async updateMetric(@Payload() data: { name: string; value: number }): Promise<void> {
+        if (!data.name || !data.value) {
+            return;
+        }
+
         const metrics = new Map<string, Gauge<string>>();
         metrics.set(MetricNames.COMMUNITY_POOL_SUPPLY, this._communityPoolSupply);
         metrics.set(MetricNames.LUM_CURRENT_SUPPLY, this._lumCurrentSupply);
