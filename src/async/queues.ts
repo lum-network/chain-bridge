@@ -5,14 +5,30 @@ import { Queues } from '@app/utils';
 
 export const AsyncQueues: BullModuleAsyncOptions[] = [
     {
+        name: Queues.ASSETS,
+        imports: [ConfigModule],
+        inject: [ConfigService],
+        useFactory: (configService: ConfigService) => ({
+            url: configService.get<string>('REDIS_URL'),
+            limiter: {
+                max: 1,
+                duration: 30,
+            },
+            defaultJobOptions: {
+                removeOnComplete: false,
+                removeOnFail: false,
+            },
+        }),
+    },
+    {
         name: Queues.BEAMS,
         imports: [ConfigModule],
         inject: [ConfigService],
         useFactory: (configService: ConfigService) => ({
             url: configService.get<string>('REDIS_URL'),
             defaultJobOptions: {
-                removeOnComplete: true,
-                removeOnFail: true,
+                removeOnComplete: false,
+                removeOnFail: false,
             },
         }),
     },
@@ -23,8 +39,8 @@ export const AsyncQueues: BullModuleAsyncOptions[] = [
         useFactory: (configService: ConfigService) => ({
             url: configService.get<string>('REDIS_URL'),
             defaultJobOptions: {
-                removeOnComplete: true,
-                removeOnFail: true,
+                removeOnComplete: false,
+                removeOnFail: false,
             },
         }),
     },
