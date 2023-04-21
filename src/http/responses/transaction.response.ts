@@ -30,7 +30,7 @@ import {
     AcknowledgementMessageResponse,
     RecvPacketMessageResponse,
     ExecMessageResponse,
-    GrantMessageResponse,
+    GrantMessageResponse, MillionsDepositMessageResponse, ClaimPrizeMessageResponse, WithdrawDepositMessageResponse, WithdrawDepositRetryMessageResponse, DepositRetryMessageResponse,
 } from '@app/http/responses/message.response';
 
 @Exclude()
@@ -120,6 +120,11 @@ export class TransactionResponse {
                 { value: RecvPacketMessageResponse, name: LumMessages.MsgRecvPacketUrl },
                 { value: ExecMessageResponse, name: LumMessages.MsgExecUrl },
                 { value: GrantMessageResponse, name: LumMessages.MsgGrantUrl },
+                { value: MillionsDepositMessageResponse, name: LumMessages.MsgMillionsDepositUrl },
+                { value: ClaimPrizeMessageResponse, name: LumMessages.MsgClaimPrizeUrl },
+                { value: WithdrawDepositMessageResponse, name: LumMessages.MsgWithdrawDepositUrl },
+                { value: WithdrawDepositRetryMessageResponse, name: LumMessages.MsgWithdrawDepositRetryUrl },
+                { value: DepositRetryMessageResponse, name: LumMessages.MsgDepositRetryUrl },
             ],
         },
         keepDiscriminatorProperty: true,

@@ -500,3 +500,48 @@ export class GrantMessageResponse extends MessageResponse {
     @Type(() => GrantValueResponse)
     value: GrantValueResponse;
 }
+
+class MillionsDepositValueResponse {}
+
+@Exclude()
+export class MillionsDepositMessageResponse extends MessageResponse {
+    @Expose()
+    @Type(() => MillionsDepositValueResponse)
+    value: MillionsDepositValueResponse;
+}
+
+class ClaimPrizeValueResponse {}
+
+@Exclude()
+export class ClaimPrizeMessageResponse extends MessageResponse {
+    @Expose()
+    @Type(() => ClaimPrizeValueResponse)
+    value: ClaimPrizeValueResponse;
+}
+
+class WithdrawDepositValueResponse {}
+
+@Exclude()
+export class WithdrawDepositMessageResponse extends MessageResponse {
+    @Expose()
+    @Type(() => WithdrawDepositValueResponse)
+    value: WithdrawDepositValueResponse;
+}
+
+class WithdrawDepositRetryValueResponse {}
+
+@Exclude()
+export class WithdrawDepositRetryMessageResponse extends MessageResponse {
+    @Expose()
+    @Type(() => WithdrawDepositRetryValueResponse)
+    value: WithdrawDepositRetryValueResponse;
+}
+
+class DepositRetryValueResponse {}
+
+@Exclude()
+export class DepositRetryMessageResponse extends MessageResponse {
+    @Expose()
+    @Type(() => DepositRetryValueResponse)
+    value: DepositRetryValueResponse;
+}
