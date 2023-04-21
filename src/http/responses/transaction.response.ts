@@ -30,7 +30,12 @@ import {
     AcknowledgementMessageResponse,
     RecvPacketMessageResponse,
     ExecMessageResponse,
-    GrantMessageResponse, MillionsDepositMessageResponse, ClaimPrizeMessageResponse, WithdrawDepositMessageResponse, WithdrawDepositRetryMessageResponse, DepositRetryMessageResponse,
+    GrantMessageResponse,
+    MillionsDepositMessageResponse,
+    ClaimPrizeMessageResponse,
+    WithdrawDepositMessageResponse,
+    WithdrawDepositRetryMessageResponse,
+    DepositRetryMessageResponse,
 } from '@app/http/responses/message.response';
 
 @Exclude()
