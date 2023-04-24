@@ -3,7 +3,6 @@ import { CacheInterceptor, Controller, Get, NotFoundException, UseInterceptors }
 import { MillionsPoolsService } from '@app/services';
 import { DataResponse } from '@app/http';
 import { MillionsPoolsEntity } from '@app/database';
-import Long from 'long';
 
 @ApiTags('millions')
 @Controller('millions')
