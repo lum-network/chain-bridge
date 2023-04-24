@@ -23,6 +23,7 @@ import {
     HealthController,
     HttpExceptionFilter,
     LumNetworkIndicator,
+    MillionsController,
     PaginationInterceptor,
     ResponseInterceptor,
     SearchController,
@@ -45,6 +46,7 @@ import {
     ValidatorDelegationService,
     ProposalService,
     MarketService,
+    MillionsPoolsService,
 } from '@app/services';
 
 import { ConfigMap, metrics, PayloadValidationOptions, SentryModuleOptions } from '@app/utils';
@@ -94,6 +96,7 @@ import { AsyncQueues } from '@app/async';
         StatsController,
         TransactionsController,
         ValidatorsController,
+        MillionsController,
     ],
     providers: [
         AssetService,
@@ -112,6 +115,7 @@ import { AsyncQueues } from '@app/async';
         TransactionService,
         ValidatorService,
         ValidatorDelegationService,
+        MillionsPoolsService,
         { provide: APP_FILTER, useClass: HttpExceptionFilter },
         { provide: APP_INTERCEPTOR, useClass: PaginationInterceptor },
         { provide: APP_INTERCEPTOR, useClass: ResponseInterceptor },

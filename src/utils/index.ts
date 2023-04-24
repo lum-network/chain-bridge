@@ -11,3 +11,4 @@ export * from './sentry';
 export * from './transactions';
 export * from './validation';
 export * from './validators';
+export * from './assets';
