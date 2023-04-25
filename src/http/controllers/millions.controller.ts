@@ -1,8 +1,12 @@
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { CacheInterceptor, Controller, Get, UseInterceptors } from '@nestjs/common';
 
+import { plainToInstance } from 'class-transformer';
+
 import { MillionsPoolsService } from '@app/services';
-import { DataResponse } from '@app/http';
+
+import { DataResponse, MillionsPoolResponse, MillionsPoolRewardsResponse } from '@app/http';
+import { CLIENT_PRECISION } from '@app/utils';
 
 @ApiTags('millions')
 @Controller('millions')
@@ -10,37 +14,40 @@ import { DataResponse } from '@app/http';
 export class MillionsController {
     constructor(private readonly _millionsPoolsService: MillionsPoolsService) {}
 
+    @ApiOkResponse({ status: 200, type: [MillionsPoolResponse] })
     @Get('pools')
-    async pools(): Promise<any> {
+    async pools(): Promise<DataResponse> {
         const pools = await this._millionsPoolsService.fetch();
 
         return new DataResponse({
-            result: pools,
+            result: pools.map((pool) => plainToInstance(MillionsPoolResponse, pool)),
         });
     }
 
+    @ApiOkResponse({ status: 200, type: [MillionsPoolRewardsResponse] })
     @Get('pools/rewards')
-    async poolsRewards(): Promise<any> {
+    async poolsRewards(): Promise<DataResponse> {
         const pools = await this._millionsPoolsService.fetch();
 
-        const rewards: any[] = pools.map((pool) => {
+        const rewards = pools.map((pool) => {
             return {
-                pool_id: pool.id,
+                id: pool.id,
+                available_prize_pool: pool.available_prize_pool,
                 rewards: {
                     denom: pool.denom_native,
 
                     // Sum all rewards for each validator
-                    amount: pool.validators
-                        .reduce((acc, validator) => {
-                            return acc + BigInt(validator.rewards_amount[0]?.amount ?? 0);
-                        }, BigInt(0))
-                        .toString(),
+                    amount: Math.ceil(
+                        pool.validators.reduce((acc, validator) => {
+                            return acc + parseInt(validator.rewards_amount[0]?.amount ?? '0', 10) / CLIENT_PRECISION;
+                        }, 0),
+                    ),
                 },
             };
         });
 
         return new DataResponse({
-            result: rewards,
+            result: plainToInstance(MillionsPoolRewardsResponse, rewards),
         });
     }
 }

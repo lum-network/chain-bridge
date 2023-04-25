@@ -5,10 +5,10 @@ export class MillionsPoolsEntity {
     @PrimaryColumn({ type: 'integer' })
     id: number;
 
-    @Column({ type: 'varchar', length: 16 })
+    @Column({ type: 'varchar', length: 128 })
     denom: string;
 
-    @Column({ type: 'varchar', length: 64 })
+    @Column({ type: 'varchar', length: 16 })
     denom_native: string;
 
     @Column({ type: 'varchar', length: 32 })
@@ -29,7 +29,7 @@ export class MillionsPoolsEntity {
     @Column({ type: 'varchar', length: 16 })
     bech32_prefix_val_address: string;
 
-    @Column({ type: 'varchar', length: 256 })
+    @Column({ type: 'varchar', length: 16 })
     min_deposit_amount: string;
 
     @Column({ type: 'varchar', length: 128 })
@@ -41,7 +41,7 @@ export class MillionsPoolsEntity {
     @Column({ type: 'integer' })
     next_draw_id: number;
 
-    @Column({ type: 'varchar', length: 256 })
+    @Column({ type: 'varchar', length: 32 })
     tvl_amount: string;
 
     @Column({ type: 'integer' })
@@ -74,16 +74,16 @@ export class MillionsPoolsEntity {
     draw_schedule: {
         initial_draw_at: string;
         draw_delta: {
-            seconds: string;
-            nanos: string;
+            seconds: number;
+            nanos: number;
         };
     };
 
     @Column({ type: 'jsonb' })
     prize_strategy: {
         prize_batches: {
-            pool_percent: string;
-            quantity: string;
+            pool_percent: number;
+            quantity: number;
             draw_probability: string;
         }[];
     };

@@ -67,14 +67,14 @@ export class MillionsScheduler {
                 draw_schedule: {
                     initial_draw_at: pool.drawSchedule.initialDrawAt.toString(),
                     draw_delta: {
-                        seconds: pool.drawSchedule.drawDelta.seconds.toString(),
-                        nanos: pool.drawSchedule.drawDelta.nanos.toString(),
+                        seconds: pool.drawSchedule.drawDelta.seconds.toNumber(),
+                        nanos: pool.drawSchedule.drawDelta.nanos,
                     },
                 },
                 prize_strategy: {
                     prize_batches: pool.prizeStrategy.prizeBatches.map((prizeBatch) => ({
-                        pool_percent: prizeBatch.poolPercent.toString(),
-                        quantity: prizeBatch.quantity.toString(),
+                        pool_percent: prizeBatch.poolPercent.toNumber(),
+                        quantity: prizeBatch.quantity.toNumber(),
                         draw_probability: prizeBatch.drawProbability,
                     })),
                 },
@@ -84,6 +84,8 @@ export class MillionsScheduler {
                     denom: pool.availablePrizePool.denom,
                 },
             };
+
+            console.log(entity);
 
             await this._millionsPoolsService.createOrUpdate(entity);
         }
