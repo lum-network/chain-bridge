@@ -4,7 +4,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { MillionsPoolsEntity } from '@app/database';
-import {BalanceResponse} from "@app/http";
 
 @Injectable()
 export class MillionsPoolsService {
