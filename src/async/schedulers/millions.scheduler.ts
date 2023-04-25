@@ -85,8 +85,6 @@ export class MillionsScheduler {
                 },
             };
 
-            console.log(entity);
-
             await this._millionsPoolsService.createOrUpdate(entity);
         }
     }
