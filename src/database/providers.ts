@@ -5,13 +5,13 @@ import {
     AssetEntity,
     BeamEntity,
     BlockEntity,
+    MillionsPoolsEntity,
     ProposalDepositEntity,
     ProposalEntity,
     ProposalVoteEntity,
     TransactionEntity,
     ValidatorDelegationEntity,
     ValidatorEntity,
-    MillionsPoolsEntity,
 } from '@app/database/entities';
 
 export const DatabaseConfig: TypeOrmModuleAsyncOptions = {
@@ -20,7 +20,7 @@ export const DatabaseConfig: TypeOrmModuleAsyncOptions = {
     useFactory: async (configService: ConfigService) => ({
         type: 'postgres',
         url: configService.get('DATABASE_URL'),
-        entities: [AssetEntity, BeamEntity, BlockEntity, ProposalEntity, ProposalDepositEntity, ProposalVoteEntity, TransactionEntity, ValidatorDelegationEntity, ValidatorEntity, MillionsPoolsEntity],
+        entities: [AssetEntity, BeamEntity, BlockEntity, MillionsPoolsEntity, ProposalEntity, ProposalDepositEntity, ProposalVoteEntity, TransactionEntity, ValidatorDelegationEntity, ValidatorEntity],
         synchronize: true,
         logging: false,
     }),
@@ -30,11 +30,11 @@ export const DatabaseFeatures = [
     AssetEntity,
     BeamEntity,
     BlockEntity,
+    MillionsPoolsEntity,
     ProposalEntity,
     ProposalDepositEntity,
     ProposalVoteEntity,
     TransactionEntity,
     ValidatorDelegationEntity,
     ValidatorEntity,
-    MillionsPoolsEntity,
 ];

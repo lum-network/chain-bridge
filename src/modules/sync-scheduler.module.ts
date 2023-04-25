@@ -12,7 +12,7 @@ import { Queue } from 'bull';
 import { SentryModule } from '@ntegral/nestjs-sentry';
 import * as parseRedisUrl from 'parse-redis-url-simple';
 
-import { AssetScheduler, AsyncQueues, BlockScheduler, GovernanceScheduler, MetricScheduler, ValidatorScheduler, MillionsScheduler } from '@app/async';
+import { AssetScheduler, AsyncQueues, BlockScheduler, GovernanceScheduler, MetricScheduler, MillionsScheduler, ValidatorScheduler  } from '@app/async';
 
 import {
     AssetService,
@@ -75,6 +75,8 @@ import { DatabaseConfig, DatabaseFeatures } from '@app/database';
         MarketService,
         GovernanceScheduler,
         MetricScheduler,
+        MillionsScheduler,
+        MillionsPoolsService,
         ProposalService,
         ProposalDepositService,
         ProposalVoteService,
@@ -82,8 +84,6 @@ import { DatabaseConfig, DatabaseFeatures } from '@app/database';
         ValidatorService,
         ValidatorDelegationService,
         ValidatorScheduler,
-        MillionsScheduler,
-        MillionsPoolsService,
     ],
 })
 export class SyncSchedulerModule implements OnModuleInit, OnApplicationBootstrap {

@@ -92,11 +92,11 @@ import { AsyncQueues } from '@app/async';
         CoreController,
         GovernanceController,
         HealthController,
+        MillionsController,
         SearchController,
         StatsController,
         TransactionsController,
         ValidatorsController,
-        MillionsController,
     ],
     providers: [
         AssetService,
@@ -108,6 +108,7 @@ import { AsyncQueues } from '@app/async';
         LumNetworkIndicator,
         MarketService,
         ...metrics,
+        MillionsPoolsService,
         ProposalService,
         ProposalVoteService,
         ProposalDepositService,
@@ -115,7 +116,6 @@ import { AsyncQueues } from '@app/async';
         TransactionService,
         ValidatorService,
         ValidatorDelegationService,
-        MillionsPoolsService,
         { provide: APP_FILTER, useClass: HttpExceptionFilter },
         { provide: APP_INTERCEPTOR, useClass: PaginationInterceptor },
         { provide: APP_INTERCEPTOR, useClass: ResponseInterceptor },
@@ -140,7 +140,7 @@ export class ApiModule implements OnModuleInit, OnApplicationBootstrap {
     constructor(private readonly _chainService: ChainService) {}
 
     async onModuleInit() {
-        // We want first LUM to be initialized before intializing the other chains
+        // We want first LUM to be initialized before initializing the other chains
         await this._chainService.initialize();
     }
 

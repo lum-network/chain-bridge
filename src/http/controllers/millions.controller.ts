@@ -1,8 +1,8 @@
-import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
-import { CacheInterceptor, Controller, Get, NotFoundException, UseInterceptors } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
+import { CacheInterceptor, Controller, Get, UseInterceptors } from '@nestjs/common';
+
 import { MillionsPoolsService } from '@app/services';
 import { DataResponse } from '@app/http';
-import { MillionsPoolsEntity } from '@app/database';
 
 @ApiTags('millions')
 @Controller('millions')
@@ -10,14 +10,9 @@ import { MillionsPoolsEntity } from '@app/database';
 export class MillionsController {
     constructor(private readonly _millionsPoolsService: MillionsPoolsService) {}
 
-    @ApiOkResponse({ status: 200, type: MillionsPoolsEntity })
     @Get('pools')
-    async fetchPools(): Promise<any> {
-        const pools = await this._millionsPoolsService.fetchAll();
-
-        if (!pools) {
-            throw new NotFoundException('pools_not_found');
-        }
+    async pools(): Promise<any> {
+        const pools = await this._millionsPoolsService.fetch();
 
         return new DataResponse({
             result: pools,
@@ -25,18 +20,14 @@ export class MillionsController {
     }
 
     @Get('pools/rewards')
-    async fetchPoolsRewards(): Promise<any> {
-        const pools = await this._millionsPoolsService.fetchAll();
+    async poolsRewards(): Promise<any> {
+        const pools = await this._millionsPoolsService.fetch();
 
-        if (!pools) {
-            throw new NotFoundException('pools_not_found');
-        }
-
-        const rewards = pools.map((pool) => {
+        const rewards: any[] = pools.map((pool) => {
             return {
-                pool_id: pool.pool_id,
+                pool_id: pool.id,
                 rewards: {
-                    denom: pool.native_denom,
+                    denom: pool.denom_native,
 
                     // Sum all rewards for each validator
                     amount: pool.validators

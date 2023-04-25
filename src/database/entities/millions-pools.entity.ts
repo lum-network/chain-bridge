@@ -2,50 +2,50 @@ import { Column, CreateDateColumn, Entity, PrimaryColumn, UpdateDateColumn } fro
 
 @Entity({ name: 'millions_pools' })
 export class MillionsPoolsEntity {
-    @PrimaryColumn({ type: 'varchar', length: 256 })
-    pool_id: string;
+    @PrimaryColumn({ type: 'integer' })
+    id: number;
 
-    @Column({ type: 'varchar', length: 256 })
+    @Column({ type: 'varchar', length: 16 })
     denom: string;
 
-    @Column({ type: 'varchar', length: 256 })
-    native_denom: string;
+    @Column({ type: 'varchar', length: 64 })
+    denom_native: string;
 
-    @Column({ type: 'varchar', length: 256 })
+    @Column({ type: 'varchar', length: 32 })
     chain_id: string;
 
     @Column({ type: 'varchar', length: 256 })
     connection_id: string;
 
-    @Column({ type: 'varchar', length: 256 })
+    @Column({ type: 'varchar', length: 32 })
     transfer_channel_id: string;
 
-    @Column({ type: 'varchar', length: 256 })
+    @Column({ type: 'varchar', length: 32 })
     controller_port_id: string;
 
-    @Column({ type: 'varchar', length: 256 })
+    @Column({ type: 'varchar', length: 16 })
     bech32_prefix_acc_address: string;
 
-    @Column({ type: 'varchar', length: 256 })
+    @Column({ type: 'varchar', length: 16 })
     bech32_prefix_val_address: string;
 
     @Column({ type: 'varchar', length: 256 })
     min_deposit_amount: string;
 
-    @Column({ type: 'varchar', length: 256 })
+    @Column({ type: 'varchar', length: 128 })
     module_account_address: string;
 
-    @Column({ type: 'varchar', length: 256 })
+    @Column({ type: 'varchar', length: 128 })
     ica_account_address: string;
 
-    @Column({ type: 'varchar', length: 256 })
-    next_draw_id: string;
+    @Column({ type: 'integer' })
+    next_draw_id: number;
 
     @Column({ type: 'varchar', length: 256 })
     tvl_amount: string;
 
-    @Column({ type: 'varchar', length: 256 })
-    depositors_count: string;
+    @Column({ type: 'integer' })
+    depositors_count: number;
 
     @Column({ type: 'integer' })
     last_draw_state: number;
@@ -53,11 +53,11 @@ export class MillionsPoolsEntity {
     @Column({ type: 'integer' })
     state: number;
 
-    @Column({ type: 'varchar', length: 256 })
-    created_at_height: string;
+    @Column({ type: 'integer' })
+    created_at_height: number;
 
-    @Column({ type: 'varchar', length: 256 })
-    updated_at_height: string;
+    @Column({ type: 'integer' })
+    updated_at_height: number;
 
     @Column({ type: 'jsonb', nullable: false, default: () => "'[]'" })
     validators: {

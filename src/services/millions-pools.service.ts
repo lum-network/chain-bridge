@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { MillionsPoolsEntity } from '@app/database';
+
 import { Repository } from 'typeorm';
+
+import { MillionsPoolsEntity } from '@app/database';
 
 @Injectable()
 export class MillionsPoolsService {
@@ -11,7 +13,7 @@ export class MillionsPoolsService {
         return this._repository;
     }
 
-    fetchAll = async (): Promise<MillionsPoolsEntity[]> => {
+    fetch = async (): Promise<MillionsPoolsEntity[]> => {
         return this._repository.find();
     };
 
@@ -26,7 +28,7 @@ export class MillionsPoolsService {
     createOrUpdate = async (entity: Partial<MillionsPoolsEntity>): Promise<MillionsPoolsEntity> => {
         const existingEntity = await this._repository.findOne({
             where: {
-                pool_id: entity.pool_id,
+                id: entity.id,
             },
         });
 
