@@ -100,7 +100,7 @@ export class AccountsController {
                 .catch(() => null),
             this._chainService
                 .getChain(AssetSymbol.LUM)
-                .client.queryClient.distribution.validatorCommission(LumUtils.Bech32.encode(LumConstants.LumBech32PrefixValAddr, LumUtils.Bech32.decode(address).data))
+                .client.queryClient.distribution.validatorCommission(LumUtils.toBech32(LumConstants.LumBech32PrefixValAddr, LumUtils.fromBech32(address).data))
                 .catch(() => null),
             this._chainService
                 .getChain(AssetSymbol.LUM)

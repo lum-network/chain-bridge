@@ -40,10 +40,10 @@ export class ProposalVoteService {
         // Based on the voterAddress address we either encode the operator to have the account address
         // Or we encode the operatorAddress to get the account one
         if (isAddressOperator) {
-            accountAddress = LumUtils.Bech32.encode(LumConstants.LumBech32PrefixAccAddr, LumUtils.Bech32.decode(voterAddress).data);
+            accountAddress = LumUtils.toBech32(LumConstants.LumBech32PrefixAccAddr, LumUtils.fromBech32(voterAddress).data);
             operatorAddress = voterAddress;
         } else {
-            operatorAddress = LumUtils.Bech32.encode(LumConstants.LumBech32PrefixValAddr, LumUtils.Bech32.decode(voterAddress).data);
+            operatorAddress = LumUtils.toBech32(LumConstants.LumBech32PrefixValAddr, LumUtils.fromBech32(voterAddress).data);
             accountAddress = voterAddress;
         }
 

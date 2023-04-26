@@ -1,3 +1,4 @@
+export * from './assets';
 export * from './beams';
 export * from './config';
 export * from './constants';

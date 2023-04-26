@@ -23,6 +23,7 @@ import {
     HealthController,
     HttpExceptionFilter,
     LumNetworkIndicator,
+    MillionsController,
     PaginationInterceptor,
     ResponseInterceptor,
     SearchController,
@@ -45,6 +46,7 @@ import {
     ValidatorDelegationService,
     ProposalService,
     MarketService,
+    MillionsPoolsService,
 } from '@app/services';
 
 import { ConfigMap, metrics, PayloadValidationOptions, SentryModuleOptions } from '@app/utils';
@@ -90,6 +92,7 @@ import { AsyncQueues } from '@app/async';
         CoreController,
         GovernanceController,
         HealthController,
+        MillionsController,
         SearchController,
         StatsController,
         TransactionsController,
@@ -105,6 +108,7 @@ import { AsyncQueues } from '@app/async';
         LumNetworkIndicator,
         MarketService,
         ...metrics,
+        MillionsPoolsService,
         ProposalService,
         ProposalVoteService,
         ProposalDepositService,
@@ -136,7 +140,7 @@ export class ApiModule implements OnModuleInit, OnApplicationBootstrap {
     constructor(private readonly _chainService: ChainService) {}
 
     async onModuleInit() {
-        // We want first LUM to be initialized before intializing the other chains
+        // We want first LUM to be initialized before initializing the other chains
         await this._chainService.initialize();
     }
 
