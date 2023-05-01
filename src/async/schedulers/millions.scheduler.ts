@@ -94,7 +94,6 @@ export class MillionsScheduler {
         }
     }
 
-    //FIXME: Update this to run every 5 minutes
     @Cron(CronExpression.EVERY_MINUTE)
     async prizesSync() {
         if (!this._configService.get<boolean>('MILLIONS_SYNC_ENABLED')) {
