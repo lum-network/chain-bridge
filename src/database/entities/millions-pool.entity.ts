@@ -1,7 +1,7 @@
 import { Column, CreateDateColumn, Entity, PrimaryColumn, UpdateDateColumn } from 'typeorm';
 
 @Entity({ name: 'millions_pools' })
-export class MillionsPoolsEntity {
+export class MillionsPoolEntity {
     @PrimaryColumn({ type: 'integer' })
     id: number;
 

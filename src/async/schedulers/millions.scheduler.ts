@@ -2,17 +2,22 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { ConfigService } from '@nestjs/config';
 
-import { ChainService, MillionsPoolsService } from '@app/services';
+import { ChainService, MillionsPoolService, MillionsPrizeService } from '@app/services';
 import { LumChain } from '@app/services/chains';
 
 import { AssetSymbol, getAssetSymbol } from '@app/utils';
-import { MillionsPoolsEntity } from '@app/database';
+import { MillionsPoolEntity, MillionsPrizeEntity } from '@app/database';
 
 @Injectable()
 export class MillionsScheduler {
     private readonly _logger: Logger = new Logger(MillionsScheduler.name);
 
-    constructor(private readonly _configService: ConfigService, private readonly _millionsPoolsService: MillionsPoolsService, private readonly _chainService: ChainService) {}
+    constructor(
+        private readonly _configService: ConfigService,
+        private readonly _millionsPoolService: MillionsPoolService,
+        private readonly _millionsPrizeService: MillionsPrizeService,
+        private readonly _chainService: ChainService,
+    ) {}
 
     @Cron(CronExpression.EVERY_MINUTE)
     async poolsSync() {
@@ -43,7 +48,7 @@ export class MillionsScheduler {
                 });
             }
 
-            const entity: Partial<MillionsPoolsEntity> = {
+            const entity: Partial<MillionsPoolEntity> = {
                 id: pool.poolId.toNumber(),
                 denom: pool.denom,
                 denom_native: pool.nativeDenom,
@@ -85,7 +90,37 @@ export class MillionsScheduler {
                 },
             };
 
-            await this._millionsPoolsService.createOrUpdate(entity);
+            await this._millionsPoolService.createOrUpdate(entity);
+        }
+    }
+
+    //FIXME: Update this to run every 5 minutes
+    @Cron(CronExpression.EVERY_MINUTE)
+    async prizesSync() {
+        if (!this._configService.get<boolean>('MILLIONS_SYNC_ENABLED')) {
+            return;
+        }
+
+        this._logger.log(`Syncing pools from chain...`);
+        const prizes = await this._chainService.getChain<LumChain>(AssetSymbol.LUM).client.queryClient.millions.prizes();
+        this._logger.debug(`Found ${prizes.length} prizes to sync`);
+
+        for (const prize of prizes) {
+            const entity: Partial<MillionsPrizeEntity> = {
+                id: prize.prizeId.toNumber(),
+                draw_id: prize.drawId.toNumber(),
+                pool_id: prize.poolId.toNumber(),
+                state: prize.state,
+                winner_address: prize.winnerAddress,
+                created_at_height: prize.createdAtHeight.toNumber(),
+                updated_at_height: prize.updatedAtHeight.toNumber(),
+                amount: prize.amount,
+                expires_at: prize.expiresAt,
+                created_at: prize.createdAt,
+                updated_at: prize.updatedAt,
+            };
+
+            await this._millionsPrizeService.createOrUpdate(entity);
         }
     }
 }

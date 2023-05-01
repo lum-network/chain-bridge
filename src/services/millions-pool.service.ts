@@ -3,29 +3,29 @@ import { InjectRepository } from '@nestjs/typeorm';
 
 import { Repository } from 'typeorm';
 
-import { MillionsPoolsEntity } from '@app/database';
+import { MillionsPoolEntity } from '@app/database';
 
 @Injectable()
-export class MillionsPoolsService {
-    constructor(@InjectRepository(MillionsPoolsEntity) private readonly _repository: Repository<MillionsPoolsEntity>) {}
+export class MillionsPoolService {
+    constructor(@InjectRepository(MillionsPoolEntity) private readonly _repository: Repository<MillionsPoolEntity>) {}
 
-    get repository(): Repository<MillionsPoolsEntity> {
+    get repository(): Repository<MillionsPoolEntity> {
         return this._repository;
     }
 
-    fetch = async (): Promise<MillionsPoolsEntity[]> => {
+    fetch = async (): Promise<MillionsPoolEntity[]> => {
         return this._repository.find();
     };
 
-    save = (entity: Partial<MillionsPoolsEntity>): Promise<MillionsPoolsEntity> => {
+    save = (entity: Partial<MillionsPoolEntity>): Promise<MillionsPoolEntity> => {
         return this._repository.save(entity);
     };
 
-    saveBulk = (entities: Partial<MillionsPoolsEntity>[]): Promise<MillionsPoolsEntity[]> => {
+    saveBulk = (entities: Partial<MillionsPoolEntity>[]): Promise<MillionsPoolEntity[]> => {
         return this._repository.save(entities);
     };
 
-    createOrUpdate = async (entity: Partial<MillionsPoolsEntity>): Promise<MillionsPoolsEntity> => {
+    createOrUpdate = async (entity: Partial<MillionsPoolEntity>): Promise<MillionsPoolEntity> => {
         const existingEntity = await this._repository.findOne({
             where: {
                 id: entity.id,
