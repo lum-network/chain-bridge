@@ -13,6 +13,10 @@ export class MillionsPoolService {
         return this._repository;
     }
 
+    getById = async (id: number): Promise<MillionsPoolEntity> => {
+        return this._repository.findOne({ where: { id } });
+    };
+
     fetch = async (): Promise<MillionsPoolEntity[]> => {
         return this._repository.find();
     };
@@ -26,11 +30,7 @@ export class MillionsPoolService {
     };
 
     createOrUpdate = async (entity: Partial<MillionsPoolEntity>): Promise<MillionsPoolEntity> => {
-        const existingEntity = await this._repository.findOne({
-            where: {
-                id: entity.id,
-            },
-        });
+        const existingEntity = await this.getById(entity.id);
 
         if (existingEntity) {
             return this._repository.save({

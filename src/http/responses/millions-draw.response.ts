@@ -5,7 +5,7 @@ import { Exclude, Expose, Type } from 'class-transformer';
 import { BalanceResponse } from '@app/http';
 
 @Exclude()
-export class MillionsPrizeResponse {
+export class MillionsDrawResponse {
     @ApiProperty()
     @Expose()
     id: string;
@@ -20,15 +20,31 @@ export class MillionsPrizeResponse {
 
     @ApiProperty()
     @Expose()
-    prize_id: number;
-
-    @ApiProperty()
-    @Expose()
     state: number;
 
     @ApiProperty()
     @Expose()
-    winner_address: string;
+    error_state: number;
+
+    @ApiProperty()
+    @Expose()
+    rand_seed: string;
+
+    @ApiProperty()
+    @Expose()
+    prize_pool_fresh_amount: string;
+
+    @ApiProperty()
+    @Expose()
+    prize_pool_remains_amount: string;
+
+    @ApiProperty()
+    @Expose()
+    total_winners: number;
+
+    @ApiProperty()
+    @Expose()
+    total_winners_amount: string;
 
     @ApiProperty()
     @Expose()
@@ -41,11 +57,7 @@ export class MillionsPrizeResponse {
     @ApiProperty({ type: () => BalanceResponse })
     @Expose()
     @Type(() => BalanceResponse)
-    amount: BalanceResponse;
-
-    @ApiProperty()
-    @Expose()
-    expires_at?: Date = null;
+    prize_pool: BalanceResponse;
 
     @ApiProperty()
     @Expose()

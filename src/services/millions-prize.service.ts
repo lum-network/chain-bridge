@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { MillionsPrizeEntity } from '@app/database';
+
 import { Repository } from 'typeorm';
+
+import { MillionsPrizeEntity } from '@app/database';
 
 @Injectable()
 export class MillionsPrizeService {
@@ -11,12 +13,18 @@ export class MillionsPrizeService {
         return this._repository;
     }
 
-    getById = async (id: number): Promise<MillionsPrizeEntity> => {
-        return await this._repository.findOne({ where: { id } });
+    getById = async (id: string): Promise<MillionsPrizeEntity> => {
+        return this._repository.findOne({ where: { id } });
     };
 
     fetch = async (skip: number, take: number): Promise<[MillionsPrizeEntity[], number]> => {
-        const query = this._repository.createQueryBuilder('millions_prizes').orderBy('millions_prizes.created_at', 'DESC').skip(skip).take(take);
+        const query = this._repository.createQueryBuilder('millions_prizes').orderBy('millions_prizes.created_at_height', 'DESC').skip(skip).take(take);
+
+        return query.getManyAndCount();
+    };
+
+    fetchBiggest = async (skip: number, take: number): Promise<[MillionsPrizeEntity[], number]> => {
+        const query = this._repository.createQueryBuilder('millions_prizes').orderBy('millions_prizes.raw_amount', 'DESC').skip(skip).take(take);
 
         return query.getManyAndCount();
     };

@@ -4,6 +4,7 @@ export * from './block.service';
 export * from './chain.service';
 export * from './dfract.service';
 export * from './market.service';
+export * from './millions-draw.service';
 export * from './millions-pool.service';
 export * from './millions-prize.service';
 export * from './proposal.service';
