@@ -159,6 +159,15 @@ export enum DfractOnChainApy {
     KI = 'xki',
 }
 
+export enum MillionsPoolState {
+    UNSPECIFIED,
+    CREATED,
+    READY,
+    PAUSED,
+    KILLED,
+    UNRECOGNIZED = -1,
+}
+
 // If we map the enums first, we encounter an error on the initialization onModuleInit
 // Hence, we hardcod the endpoint env
 export const CHAIN_ENV_CONFIG = [
@@ -172,15 +181,6 @@ export const CHAIN_ENV_CONFIG = [
     'STARGAZE_NETWORK_ENDPOINT',
     'EVMOS_NETWORK_ENDPOINT',
 ];
-
-export enum MILLIONS_POOL_STATE {
-    UNSPECIFIED,
-    CREATED,
-    READY,
-    PAUSED,
-    KILLED,
-    UNRECOGNIZED = -1,
-}
 
 // Lum endpoint
 export const LUM_ENV_CONFIG = 'LUM_NETWORK_ENDPOINT';
