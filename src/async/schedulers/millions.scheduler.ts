@@ -42,6 +42,7 @@ export class MillionsScheduler {
                 const chain = await this._chainService.getChain(getAssetSymbol(pool.nativeDenom));
 
                 for (const key in pool.validators) {
+                    // Get the address for the validator according to local pool or ICA pool
                     const address = pool.nativeDenom === LumConstants.MicroLumDenom ? pool.moduleAccountAddress : pool.icaAccountAddress;
 
                     if (!address) {
@@ -130,17 +131,19 @@ export class MillionsScheduler {
         for (const pool of pools) {
             let page: Uint8Array | undefined = undefined;
 
+            // If pool is not ready, we skip it
             if (pool.state !== MILLIONS_POOL_STATE.READY) {
                 continue;
             }
 
+            // Get draws for the pool
             while (true) {
                 const draws = await this._chainService.getChain<LumChain>(AssetSymbol.LUM).client.queryClient.millions.poolDraws(long.fromNumber(pool.id), page);
 
                 for (const draw of draws.draws) {
                     const id = `${pool.id}-${draw.drawId.toNumber()}`;
 
-                    // If draw already exists, we skip it
+                    // If draw already exists in db, we skip it
                     if (await this._millionsDrawService.isExists(id)) {
                         continue;
                     }
@@ -165,6 +168,7 @@ export class MillionsScheduler {
 
                     await this._millionsDrawService.save(formattedDraw);
 
+                    // If draw has prizesRefs, we process them
                     if (draw.prizesRefs && draw.prizesRefs.length) {
                         for (const prizeRef of draw.prizesRefs) {
                             // Get prize info from prizeRef in draw
