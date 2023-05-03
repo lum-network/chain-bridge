@@ -35,7 +35,6 @@ export class MillionsScheduler {
         while (true) {
             const pools = await this._chainService.getChain<LumChain>(AssetSymbol.LUM).client.queryClient.millions.pools(page);
 
-            // For each stored pool, we query chain and ask for pools
             for (const pool of pools.pools) {
                 const validators: { operator_address: string; is_enabled: boolean; bonded_amount: string; rewards_amount }[] = [];
 
