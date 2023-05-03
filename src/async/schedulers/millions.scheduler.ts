@@ -8,7 +8,7 @@ import { LumConstants } from '@lum-network/sdk-javascript';
 import { MillionsDrawEntity, MillionsPoolEntity, MillionsPrizeEntity } from '@app/database';
 import { ChainService, MillionsDrawService, MillionsPoolService, MillionsPrizeService } from '@app/services';
 import { LumChain } from '@app/services/chains';
-import {AssetSymbol, getAssetSymbol, MILLIONS_POOL_STATE} from '@app/utils';
+import { AssetSymbol, getAssetSymbol, MILLIONS_POOL_STATE } from '@app/utils';
 
 @Injectable()
 export class MillionsScheduler {
