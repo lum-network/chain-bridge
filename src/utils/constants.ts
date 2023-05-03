@@ -173,6 +173,15 @@ export const CHAIN_ENV_CONFIG = [
     'EVMOS_NETWORK_ENDPOINT',
 ];
 
+export enum MILLIONS_POOL_STATE {
+    UNSPECIFIED,
+    CREATED,
+    READY,
+    PAUSED,
+    KILLED,
+    UNRECOGNIZED = -1,
+}
+
 // Lum endpoint
 export const LUM_ENV_CONFIG = 'LUM_NETWORK_ENDPOINT';
 

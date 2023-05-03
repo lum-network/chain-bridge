@@ -8,7 +8,7 @@ import { LumConstants } from '@lum-network/sdk-javascript';
 import { MillionsDrawEntity, MillionsPoolEntity, MillionsPrizeEntity } from '@app/database';
 import { ChainService, MillionsDrawService, MillionsPoolService, MillionsPrizeService } from '@app/services';
 import { LumChain } from '@app/services/chains';
-import { AssetSymbol, getAssetSymbol } from '@app/utils';
+import {AssetSymbol, getAssetSymbol, MILLIONS_POOL_STATE} from '@app/utils';
 
 @Injectable()
 export class MillionsScheduler {
@@ -131,7 +131,9 @@ export class MillionsScheduler {
         for (const pool of pools) {
             let page: Uint8Array | undefined = undefined;
 
-            //TODO: if pool is not active, we skip it
+            if (pool.state !== MILLIONS_POOL_STATE.READY) {
+                continue;
+            }
 
             while (true) {
                 const draws = await this._chainService.getChain<LumChain>(AssetSymbol.LUM).client.queryClient.millions.poolDraws(long.fromNumber(pool.id), page);
