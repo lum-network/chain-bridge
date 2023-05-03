@@ -118,7 +118,7 @@ export class MillionsScheduler {
         }
     }
 
-    @Cron(CronExpression.EVERY_MINUTE)
+    @Cron(CronExpression.EVERY_10_MINUTES)
     async drawsSync() {
         if (!this._configService.get<boolean>('MILLIONS_SYNC_ENABLED')) {
             return;
