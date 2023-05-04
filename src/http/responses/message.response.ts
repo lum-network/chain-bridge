@@ -545,3 +545,21 @@ export class DepositRetryMessageResponse extends MessageResponse {
     @Type(() => DepositRetryValueResponse)
     value: DepositRetryValueResponse;
 }
+
+class RegisterPoolValueResponse {}
+
+@Exclude()
+export class RegisterPoolMessageResponse extends MessageResponse {
+    @Expose()
+    @Type(() => RegisterPoolValueResponse)
+    value: RegisterPoolValueResponse;
+}
+
+class UpdatePoolValueResponse {}
+
+@Exclude()
+export class UpdatePoolMessageResponse extends MessageResponse {
+    @Expose()
+    @Type(() => UpdatePoolValueResponse)
+    value: UpdatePoolValueResponse;
+}

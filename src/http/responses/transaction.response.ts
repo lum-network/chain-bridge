@@ -1,41 +1,42 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 import { Exclude, Expose, Type } from 'class-transformer';
-
 import { LumMessages, LumTypes } from '@lum-network/sdk-javascript';
 
 import { BalanceResponse } from '@app/http/responses/balance.response';
 import {
+    AcknowledgementMessageResponse,
+    BeginRedelegateMessageResponse,
     ClaimBeamMessageResponse,
+    ClaimPrizeMessageResponse,
     CreateValidatorMessageResponse,
+    CreateVestingAccountResponse,
     DelegateMessageResponse,
+    DepositMessageResponse,
+    DepositRetryMessageResponse,
     EditValidatorMessageResponse,
+    ExecMessageResponse,
     GetRewardMessageResponse,
+    GrantMessageResponse,
     MessageResponse,
+    MillionsDepositMessageResponse,
     MultiSendResponse,
     OpenBeamMessageResponse,
+    RecvPacketMessageResponse,
+    RegisterPoolMessageResponse,
     SendMessageResponse,
-    UndelegateMessageResponse,
-    UpdateBeamMessageResponse,
     SubmitProposalMessageResponse,
-    DepositMessageResponse,
-    VoteMessageResponse,
-    CreateVestingAccountResponse,
-    BeginRedelegateMessageResponse,
-    WithdrawValidatorCommissionMessageResponse,
-    UnjailMessageResponse,
     TimeoutMessageResponse,
     TransferMessageResponse,
+    UndelegateMessageResponse,
+    UnjailMessageResponse,
+    UpdateBeamMessageResponse,
     UpdateClientMessageResponse,
-    AcknowledgementMessageResponse,
-    RecvPacketMessageResponse,
-    ExecMessageResponse,
-    GrantMessageResponse,
-    MillionsDepositMessageResponse,
-    ClaimPrizeMessageResponse,
+    UpdatePoolMessageResponse,
+    VoteMessageResponse,
     WithdrawDepositMessageResponse,
     WithdrawDepositRetryMessageResponse,
-    DepositRetryMessageResponse,
+    WithdrawValidatorCommissionMessageResponse,
 } from '@app/http/responses/message.response';
 
 @Exclude()
@@ -130,6 +131,8 @@ export class TransactionResponse {
                 { value: WithdrawDepositMessageResponse, name: LumMessages.MsgWithdrawDepositUrl },
                 { value: WithdrawDepositRetryMessageResponse, name: LumMessages.MsgWithdrawDepositRetryUrl },
                 { value: DepositRetryMessageResponse, name: LumMessages.MsgDepositRetryUrl },
+                { value: RegisterPoolMessageResponse, name: LumMessages.MsgRegisterPoolUrl },
+                { value: UpdatePoolMessageResponse, name: LumMessages.MsgUpdatePoolUrl },
             ],
         },
         keepDiscriminatorProperty: true,

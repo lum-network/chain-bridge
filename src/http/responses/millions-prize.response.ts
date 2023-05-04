@@ -24,10 +24,6 @@ export class MillionsPrizeResponse {
 
     @ApiProperty()
     @Expose()
-    state: number;
-
-    @ApiProperty()
-    @Expose()
     winner_address: string;
 
     @ApiProperty()
