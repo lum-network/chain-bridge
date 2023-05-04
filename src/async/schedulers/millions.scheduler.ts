@@ -45,11 +45,13 @@ export class MillionsScheduler {
                 let outstandingPrizePoolAmount = 0;
 
                 try {
+                    // Get rewards and balance from the ICA account
                     const [prizePoolRewards, prizePoolBalance] = await Promise.all([
                         chain.client.queryClient.distribution.delegationTotalRewards(pool.icaDepositAddress),
                         chain.client.queryClient.bank.balance(pool.icaPrizepoolAddress, pool.nativeDenom),
                     ]);
 
+                    // Calculate the outstanding prize pool amount
                     outstandingPrizePoolAmount = parseInt(prizePoolBalance.amount, 10) + prizePoolRewards.total.reduce((a, b) => a + parseInt(b.amount, 10) / CLIENT_PRECISION, 0);
                 } catch (e) {
                     this._logger.warn(e);
