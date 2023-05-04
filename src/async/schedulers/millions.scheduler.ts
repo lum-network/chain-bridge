@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Cron, CronExpression } from '@nestjs/schedule';
 
+import { LumUtils, LumTypes, LumConstants } from '@lum-network/sdk-javascript';
 import dayjs from 'dayjs';
 import long from 'long';
 
@@ -189,7 +190,7 @@ export class MillionsScheduler {
                                 draw_id: draw.drawId.toNumber(),
                                 prize_id: prizeRef.prizeId.toNumber(),
                                 winner_address: prizeRef.winnerAddress,
-                                raw_amount: prizeRef.amount,
+                                raw_amount: Number(LumUtils.convertUnit({ amount: prizeRef.amount, denom: LumConstants.MicroLumDenom }, LumConstants.LumDenom)),
                                 denom_native: pool.denom_native,
                                 amount: {
                                     amount: prizeRef.amount,

@@ -23,8 +23,8 @@ export class MillionsPrizeEntity {
     @Column({ type: 'integer' })
     updated_at_height: number;
 
-    @Column({ type: 'varchar', length: 64 })
-    raw_amount: string;
+    @Column({ type: 'float' })
+    raw_amount: number;
 
     @Column({ type: 'varchar', length: 16 })
     denom_native: string;
