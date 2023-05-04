@@ -1,15 +1,14 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Cron, CronExpression } from '@nestjs/schedule';
 import { ConfigService } from '@nestjs/config';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
-import { LumConstants } from '@lum-network/sdk-javascript';
 import dayjs from 'dayjs';
 import long from 'long';
 
 import { MillionsDrawEntity, MillionsPoolEntity, MillionsPrizeEntity } from '@app/database';
 import { ChainService, MarketService, MillionsDrawService, MillionsPoolService, MillionsPrizeService } from '@app/services';
 import { LumChain } from '@app/services/chains';
-import {AssetSymbol, CLIENT_PRECISION, getAssetSymbol, MillionsPoolState} from '@app/utils';
+import { AssetSymbol, CLIENT_PRECISION, getAssetSymbol, MillionsPoolState } from '@app/utils';
 
 @Injectable()
 export class MillionsScheduler {
@@ -135,6 +134,7 @@ export class MillionsScheduler {
 
         const pools = await this._millionsPoolService.fetch();
         const lumChain = this._chainService.getChain<LumChain>(AssetSymbol.LUM);
+        const { prizeExpirationDelta } = await lumChain.client.queryClient.millions.params();
 
         for (const pool of pools) {
             let page: Uint8Array | undefined = undefined;
@@ -195,7 +195,7 @@ export class MillionsScheduler {
                                 },
                                 created_at_height: draw.createdAtHeight.toNumber(),
                                 updated_at_height: draw.updatedAtHeight.toNumber(),
-                                expires_at: dayjs(draw.createdAt).add(/* TODO: expiration delta */ 1, 'days').toDate(), // draw created_at + params.PrizeExpirationDelta
+                                expires_at: dayjs(draw.createdAt).add(prizeExpirationDelta.seconds.toNumber(), 'seconds').toDate(),
                                 created_at: draw.createdAt,
                                 updated_at: draw.updatedAt,
                                 usd_token_value: await this._marketService.getTokenPrice(getAssetSymbol(pool.denom_native)),

@@ -5,7 +5,6 @@ import { Repository } from 'typeorm';
 
 import { MillionsPrizeEntity } from '@app/database';
 import { MarketService, MillionsPoolService } from '@app/services';
-import { AssetMicroDenom, AssetSymbol, getAssetSymbol, getDenomFromSymbol, MillionsPoolState } from '@app/utils';
 
 @Injectable()
 export class MillionsPrizeService {
