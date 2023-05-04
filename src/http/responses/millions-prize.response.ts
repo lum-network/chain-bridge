@@ -45,6 +45,10 @@ export class MillionsPrizeResponse {
 
     @ApiProperty()
     @Expose()
+    usd_token_value: number;
+
+    @ApiProperty()
+    @Expose()
     expires_at?: Date = null;
 
     @ApiProperty()

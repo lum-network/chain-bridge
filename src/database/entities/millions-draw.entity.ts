@@ -44,6 +44,9 @@ export class MillionsDrawEntity {
         denom: string;
     };
 
+    @Column({ type: 'float' })
+    usd_token_value: number;
+
     @Column({ type: 'date', default: null, nullable: true })
     created_at?: Date = null;
 

@@ -1,4 +1,6 @@
-import { Column, CreateDateColumn, Entity, PrimaryColumn, UpdateDateColumn } from 'typeorm';
+import { Column, Entity, PrimaryColumn } from 'typeorm';
+
+import { AmountModel } from '@app/database/entities/amount.model';
 
 @Entity({ name: 'millions_pools' })
 export class MillionsPoolEntity {
@@ -21,7 +23,10 @@ export class MillionsPoolEntity {
     transfer_channel_id: string;
 
     @Column({ type: 'varchar', length: 32 })
-    controller_port_id: string;
+    ica_deposit_port_id: string;
+
+    @Column({ type: 'varchar', length: 32 })
+    ica_prize_pool_port_id: string;
 
     @Column({ type: 'varchar', length: 16 })
     bech32_prefix_acc_address: string;
@@ -33,10 +38,13 @@ export class MillionsPoolEntity {
     min_deposit_amount: string;
 
     @Column({ type: 'varchar', length: 128 })
-    module_account_address: string;
+    local_address: string;
 
     @Column({ type: 'varchar', length: 128 })
-    ica_account_address: string;
+    ica_deposit_address: string;
+
+    @Column({ type: 'varchar', length: 128 })
+    ica_prize_pool_address: string;
 
     @Column({ type: 'integer' })
     next_draw_id: number;
@@ -46,6 +54,9 @@ export class MillionsPoolEntity {
 
     @Column({ type: 'integer' })
     depositors_count: number;
+
+    @Column({ type: 'varchar', length: 32 })
+    sponsorship_amount: string;
 
     @Column({ type: 'integer' })
     last_draw_state: number;
@@ -64,10 +75,6 @@ export class MillionsPoolEntity {
         operator_address: string;
         is_enabled: boolean;
         bonded_amount: string;
-        rewards_amount: {
-            amount: string;
-            denom: string;
-        }[];
     }[];
 
     @Column({ type: 'jsonb' })
@@ -92,14 +99,14 @@ export class MillionsPoolEntity {
     last_draw_created_at?: Date = null;
 
     @Column({ type: 'jsonb' })
-    available_prize_pool: {
-        amount: string;
-        denom: string;
-    };
+    available_prize_pool: AmountModel;
 
-    @CreateDateColumn({ type: 'date', default: () => 'CURRENT_DATE' })
-    created_at?: Date = new Date();
+    @Column({ type: 'jsonb' })
+    outstanding_prize_pool: AmountModel;
 
-    @UpdateDateColumn({ type: 'date', default: null })
+    @Column({ type: 'date', default: null, nullable: true })
+    created_at?: Date = null;
+
+    @Column({ type: 'date', default: null, nullable: true })
     updated_at?: Date = null;
 }

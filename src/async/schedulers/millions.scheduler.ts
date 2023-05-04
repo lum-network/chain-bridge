@@ -2,13 +2,14 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { ConfigService } from '@nestjs/config';
 
-import long from 'long';
 import { LumConstants } from '@lum-network/sdk-javascript';
+import dayjs from 'dayjs';
+import long from 'long';
 
 import { MillionsDrawEntity, MillionsPoolEntity, MillionsPrizeEntity } from '@app/database';
-import { ChainService, MillionsDrawService, MillionsPoolService, MillionsPrizeService } from '@app/services';
+import { ChainService, MarketService, MillionsDrawService, MillionsPoolService, MillionsPrizeService } from '@app/services';
 import { LumChain } from '@app/services/chains';
-import { AssetSymbol, getAssetSymbol, MillionsPoolState } from '@app/utils';
+import {AssetSymbol, CLIENT_PRECISION, getAssetSymbol, MillionsPoolState} from '@app/utils';
 
 @Injectable()
 export class MillionsScheduler {
@@ -17,6 +18,7 @@ export class MillionsScheduler {
     constructor(
         private readonly _chainService: ChainService,
         private readonly _configService: ConfigService,
+        private readonly _marketService: MarketService,
         private readonly _millionsDrawService: MillionsDrawService,
         private readonly _millionsPoolService: MillionsPoolService,
         private readonly _millionsPrizeService: MillionsPrizeService,
@@ -37,37 +39,30 @@ export class MillionsScheduler {
             const pools = await lumChain.client.queryClient.millions.pools(page);
 
             for (const pool of pools.pools) {
-                // const validators: { operator_address: string; is_enabled: boolean; bonded_amount: string; rewards_amount }[] = [];
+                const validators: { operator_address: string; is_enabled: boolean; bonded_amount: string }[] = [];
 
                 // Get the chain for the pool
                 const chain = this._chainService.getChain(getAssetSymbol(pool.nativeDenom));
+                let outstandingPrizePoolAmount = 0;
 
-                const prizePoolRewards = await chain.client.queryClient.distribution.delegationTotalRewards(pool.ica_prizepool_address);
-                const prizePoolBalance = await chain.client.queryClient.bank.balance(pool.ica_prizepool_address, pool.nativeDenom);
+                try {
+                    const [prizePoolRewards, prizePoolBalance] = await Promise.all([
+                        chain.client.queryClient.distribution.delegationTotalRewards(pool.icaDepositAddress),
+                        chain.client.queryClient.bank.balance(pool.icaPrizepoolAddress, pool.nativeDenom),
+                    ]);
 
+                    outstandingPrizePoolAmount = parseInt(prizePoolBalance.amount, 10) + prizePoolRewards.total.reduce((a, b) => a + parseInt(b.amount, 10) / CLIENT_PRECISION, 0);
+                } catch (e) {
+                    this._logger.warn(e);
+                }
 
-                // for (const key in pool.validators) {
-                //     // Get the address for the validator according to local pool or ICA pool
-                //     const address = pool.nativeDenom === LumConstants.MicroLumDenom ? pool.moduleAccountAddress : pool.icaAccountAddress;
-
-                //     if (!address) {
-                //         continue;
-                //     }
-
-                //     // Get rewards for the module account
-                //     try {
-                //         const accountRewards = await chain.client.queryClient.distribution.delegationRewards(address, key);
-
-                //         validators.push({
-                //             operator_address: key,
-                //             is_enabled: pool.validators[key].isEnabled,
-                //             bonded_amount: pool.validators[key].bondedAmount,
-                //             rewards_amount: accountRewards.rewards,
-                //         });
-                //     } catch (e) {
-                //         this._logger.warn(e);
-                //     }
-                // }
+                for (const key in pool.validators) {
+                    validators.push({
+                        operator_address: key,
+                        is_enabled: pool.validators[key].isEnabled,
+                        bonded_amount: pool.validators[key].bondedAmount,
+                    });
+                }
 
                 const entity: Partial<MillionsPoolEntity> = {
                     id: pool.poolId.toNumber(),
@@ -76,19 +71,20 @@ export class MillionsScheduler {
                     chain_id: pool.chainId,
                     connection_id: pool.connectionId,
                     transfer_channel_id: pool.transferChannelId,
-                    controller_port_id: pool.controllerPortId,
+                    ica_deposit_port_id: pool.icaDepositPortId,
+                    ica_prize_pool_port_id: pool.icaPrizepoolPortId,
                     bech32_prefix_acc_address: pool.bech32PrefixAccAddr,
                     bech32_prefix_val_address: pool.bech32PrefixValAddr,
                     min_deposit_amount: pool.minDepositAmount,
-                    local_address, // the Lum local address for the Pool (always lum address)
-                    ica_deposit_address, // the ICA Deposit address (local if zone == lum)
-                    ica_prizepool_address, // the ICA Withdrawal address (local if zone == lum)
+                    local_address: pool.localAddress,
+                    ica_deposit_address: pool.icaDepositAddress,
+                    ica_prize_pool_address: pool.icaPrizepoolAddress,
                     next_draw_id: pool.nextDrawId.toNumber(),
                     tvl_amount: pool.tvlAmount,
                     depositors_count: pool.depositorsCount.toNumber(),
                     sponsorship_amount: pool.sponsorshipAmount,
                     state: pool.state,
-                    validators: pool.validators,
+                    validators: validators,
                     last_draw_state: pool.lastDrawState,
                     last_draw_created_at: pool.lastDrawCreatedAt,
                     created_at_height: pool.createdAtHeight.toNumber(),
@@ -108,12 +104,12 @@ export class MillionsScheduler {
                         })),
                     },
                     available_prize_pool: {
-                        amount: pool.availablePrizePool.amount,
+                        amount: parseInt(pool.availablePrizePool.amount, 10),
                         denom: pool.availablePrizePool.denom,
                     },
                     outstanding_prize_pool: {
-                        amount: prizePoolBalance.amount + prizePoolRewards.rewards, // TODO - fetch reward for denom (if exist) == NativeDenom
-                        denom: pool.availablePrizePool.denom,
+                        amount: Number(outstandingPrizePoolAmount.toFixed()),
+                        denom: pool.nativeDenom,
                     },
                 };
 
@@ -176,7 +172,7 @@ export class MillionsScheduler {
                         updated_at_height: draw.updatedAtHeight.toNumber(),
                         created_at: draw.createdAt,
                         updated_at: draw.updatedAt,
-                        // TODO: convert amounts into $ based on the draw time
+                        usd_token_value: await this._marketService.getTokenPrice(getAssetSymbol(pool.denom_native)),
                     };
 
                     await this._millionsDrawService.save(formattedDraw);
@@ -185,7 +181,7 @@ export class MillionsScheduler {
                     if (draw.prizesRefs && draw.prizesRefs.length) {
                         for (const prizeRef of draw.prizesRefs) {
                             // Get prize info from prizeRef in draw
-                            let formattedPrize: Partial<MillionsPrizeEntity> = {
+                            const formattedPrize: Partial<MillionsPrizeEntity> = {
                                 id: `${id}-${prizeRef.prizeId.toNumber()}`,
                                 pool_id: pool.id,
                                 draw_id: draw.drawId.toNumber(),
@@ -197,13 +193,14 @@ export class MillionsScheduler {
                                     amount: prizeRef.amount,
                                     denom: pool.denom_native,
                                 },
-                                created_at_height: prize.createdAtHeight.toNumber(), // draw created_at info
-                                updated_at_height: prize.updatedAtHeight.toNumber(), // draw created_at info
-                                expires_at: prize.expiresAt, // draw created_at + params.PrizeExpirationDelta
-                                created_at: prize.createdAt,// draw created_at info
-                                updated_at: prize.updatedAt, // draw created_at info
-                                // TODO: convert amounts into $ based on the draw time
+                                created_at_height: draw.createdAtHeight.toNumber(),
+                                updated_at_height: draw.updatedAtHeight.toNumber(),
+                                expires_at: dayjs(draw.createdAt).add(/* TODO: expiration delta */ 1, 'days').toDate(), // draw created_at + params.PrizeExpirationDelta
+                                created_at: draw.createdAt,
+                                updated_at: draw.updatedAt,
+                                usd_token_value: await this._marketService.getTokenPrice(getAssetSymbol(pool.denom_native)),
                             };
+
                             await this._millionsPrizeService.save(formattedPrize);
                         }
                     }

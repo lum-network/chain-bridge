@@ -14,9 +14,6 @@ export class MillionsPrizeEntity {
     @Column({ type: 'integer' })
     pool_id: number;
 
-    @Column({ type: 'integer' })
-    state: number;
-
     @Column({ type: 'varchar', length: 128 })
     winner_address: string;
 
@@ -37,6 +34,9 @@ export class MillionsPrizeEntity {
         amount: string;
         denom: string;
     };
+
+    @Column({ type: 'float' })
+    usd_token_value: number;
 
     @Column({ type: 'date', default: null, nullable: true })
     expires_at?: Date = null;

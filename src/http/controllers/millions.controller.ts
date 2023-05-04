@@ -5,8 +5,8 @@ import { plainToInstance } from 'class-transformer';
 
 import { MillionsDrawService, MillionsPoolService, MillionsPrizeService } from '@app/services';
 
-import { DataResponse, DataResponseMetadata, MillionsDrawResponse, MillionsPoolResponse, MillionsPoolRewardsResponse, MillionsPrizeResponse } from '@app/http';
-import { CLIENT_PRECISION, ExplorerRequest } from '@app/utils';
+import { DataResponse, DataResponseMetadata, MillionsDrawResponse, MillionsOutstandingPrizeResponse, MillionsPoolResponse, MillionsPrizeResponse } from '@app/http';
+import { ExplorerRequest } from '@app/utils';
 
 @ApiTags('millions')
 @Controller('millions')
@@ -24,8 +24,8 @@ export class MillionsController {
         });
     }
 
-    @ApiOkResponse({ status: 200, type: [MillionsPoolRewardsResponse] })
-    @Get('pools/rewards')
+    @ApiOkResponse({ status: 200, type: [MillionsOutstandingPrizeResponse] })
+    @Get('pools/outstanding-prize')
     async poolsRewards(): Promise<DataResponse> {
         const pools = await this._millionsPoolService.fetch();
 
@@ -33,21 +33,13 @@ export class MillionsController {
             return {
                 id: pool.id,
                 available_prize_pool: pool.available_prize_pool,
-                rewards: {
-                    denom: pool.denom_native,
-
-                    // Sum all rewards for each validator
-                    amount: Math.ceil(
-                        pool.validators.reduce((acc, validator) => {
-                            return acc + parseInt(validator.rewards_amount[0]?.amount ?? '0', 10) / CLIENT_PRECISION;
-                        }, 0),
-                    ),
-                },
+                outstanding_prize_pool: pool.outstanding_prize_pool,
+                sponsorship_amount: pool.sponsorship_amount,
             };
         });
 
         return new DataResponse({
-            result: plainToInstance(MillionsPoolRewardsResponse, rewards),
+            result: plainToInstance(MillionsOutstandingPrizeResponse, rewards),
         });
     }
 

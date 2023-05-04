@@ -61,6 +61,10 @@ export class MillionsDrawResponse {
 
     @ApiProperty()
     @Expose()
+    usd_token_value: number;
+
+    @ApiProperty()
+    @Expose()
     created_at?: Date = null;
 
     @ApiProperty()
