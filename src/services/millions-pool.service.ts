@@ -3,7 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 
 import { Repository } from 'typeorm';
 
-import { MillionsPoolEntity } from '@app/database';
+import { MillionsPoolEntity, MillionsPrizeEntity } from '@app/database';
+import { MillionsPoolState } from '@app/utils';
 
 @Injectable()
 export class MillionsPoolService {
@@ -19,6 +20,15 @@ export class MillionsPoolService {
 
     fetch = async (): Promise<MillionsPoolEntity[]> => {
         return this._repository.find();
+    };
+
+    fetchReady = async (): Promise<MillionsPoolEntity[]> => {
+        // const query = this._repository
+        //     .createQueryBuilder('millions_prizes')
+        //     .orderBy('millions_prizes.created_at_height', 'DESC')
+        //     .where(`millions_prizes.state = ${MillionsPoolState.READY}`);
+
+        return this._repository.find({ where: { state: MillionsPoolState.READY } });
     };
 
     save = (entity: Partial<MillionsPoolEntity>): Promise<MillionsPoolEntity> => {

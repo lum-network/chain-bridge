@@ -29,6 +29,9 @@ export class MillionsPrizeEntity {
     @Column({ type: 'varchar', length: 64 })
     raw_amount: string;
 
+    @Column({ type: 'varchar', length: 16 })
+    denom_native: string;
+
     @Column({ type: 'jsonb' })
     amount: {
         amount: string;

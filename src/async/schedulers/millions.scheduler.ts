@@ -179,6 +179,7 @@ export class MillionsScheduler {
                                 prize_id: prizeRef.prizeId.toNumber(),
                                 winner_address: prizeRef.winnerAddress,
                                 raw_amount: prizeRef.amount,
+                                denom_native: pool.denom_native,
                                 amount: {
                                     amount: prizeRef.amount,
                                     denom: pool.denom_native,
