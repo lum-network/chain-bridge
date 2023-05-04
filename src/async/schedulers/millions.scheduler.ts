@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Cron, CronExpression } from '@nestjs/schedule';
 
-import { LumUtils, LumTypes, LumConstants } from '@lum-network/sdk-javascript';
+import { LumUtils, LumConstants } from '@lum-network/sdk-javascript';
 import dayjs from 'dayjs';
 import long from 'long';
 
