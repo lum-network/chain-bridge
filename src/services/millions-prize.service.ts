@@ -34,7 +34,7 @@ export class MillionsPrizeService {
         return query.getManyAndCount();
     };
 
-    fetchBiggestPerDenom = async (denom: string, skip: number, take: number): Promise<[MillionsPrizeEntity[], number]> => {
+    fetchBiggestByDenom = async (denom: string, skip: number, take: number): Promise<[MillionsPrizeEntity[], number]> => {
         const query = this._repository
             .createQueryBuilder('millions_prizes')
             .where({ denom_native: Like(`%${denom}%`) })

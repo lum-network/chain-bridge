@@ -77,8 +77,8 @@ export class MillionsController {
 
     @ApiOkResponse({ status: 200, type: [MillionsPrizeResponse] })
     @Get('prizes/biggest/:denom')
-    async biggestPrizesPerDenom(@Req() request: ExplorerRequest, @Param('denom') denom: string): Promise<DataResponse> {
-        const [prizes, total] = await this._millionsPrizeService.fetchBiggestPerDenom(denom, request.pagination.skip, request.pagination.limit);
+    async biggestPrizesByDenom(@Req() request: ExplorerRequest, @Param('denom') denom: string): Promise<DataResponse> {
+        const [prizes, total] = await this._millionsPrizeService.fetchBiggestByDenom(denom, request.pagination.skip, request.pagination.limit);
 
         return new DataResponse({
             result: prizes.map((prize) => plainToInstance(MillionsPrizeResponse, prize)),
