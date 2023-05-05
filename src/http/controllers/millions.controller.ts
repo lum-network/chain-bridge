@@ -1,5 +1,5 @@
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
-import { CacheInterceptor, Controller, Get, Req, UseInterceptors } from '@nestjs/common';
+import { CacheInterceptor, Controller, Get, Param, Req, UseInterceptors } from '@nestjs/common';
 
 import { plainToInstance } from 'class-transformer';
 
@@ -63,6 +63,22 @@ export class MillionsController {
     @Get('prizes')
     async prizes(@Req() request: ExplorerRequest): Promise<DataResponse> {
         const [prizes, total] = await this._millionsPrizeService.fetch(request.pagination.skip, request.pagination.limit);
+
+        return new DataResponse({
+            result: prizes.map((prize) => plainToInstance(MillionsPrizeResponse, prize)),
+            metadata: new DataResponseMetadata({
+                page: request.pagination.page,
+                limit: request.pagination.limit,
+                items_count: prizes.length,
+                items_total: total,
+            }),
+        });
+    }
+
+    @ApiOkResponse({ status: 200, type: [MillionsPrizeResponse] })
+    @Get('prizes/biggest/:denom')
+    async biggestPrizesPerDenom(@Req() request: ExplorerRequest, @Param('denom') denom: string): Promise<DataResponse> {
+        const [prizes, total] = await this._millionsPrizeService.fetchBiggestPerDenom(denom, request.pagination.skip, request.pagination.limit);
 
         return new DataResponse({
             result: prizes.map((prize) => plainToInstance(MillionsPrizeResponse, prize)),

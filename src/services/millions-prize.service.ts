@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
-import { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 
 import { MillionsPrizeEntity } from '@app/database';
 import { MarketService, MillionsPoolService } from '@app/services';
@@ -30,6 +30,17 @@ export class MillionsPrizeService {
 
     fetchBiggest = async (skip: number, take: number): Promise<[MillionsPrizeEntity[], number]> => {
         const query = this._repository.createQueryBuilder('millions_prizes').orderBy('millions_prizes.raw_amount * millions_prizes.usd_token_value', 'DESC').skip(skip).take(take);
+
+        return query.getManyAndCount();
+    };
+
+    fetchBiggestPerDenom = async (denom: string, skip: number, take: number): Promise<[MillionsPrizeEntity[], number]> => {
+        const query = this._repository
+            .createQueryBuilder('millions_prizes')
+            .where({ denom_native: Like(`%${denom}%`) })
+            .orderBy('millions_prizes.raw_amount', 'DESC')
+            .skip(skip)
+            .take(take);
 
         return query.getManyAndCount();
     };
