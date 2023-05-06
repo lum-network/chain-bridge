@@ -55,3 +55,18 @@ export class MillionsPrizeResponse {
     @Expose()
     updated_at?: Date = null;
 }
+
+@Exclude()
+export class MillionsPrizeStatsResponse {
+    @ApiProperty()
+    @Expose()
+    biggest_prize_amount: string;
+
+    @ApiProperty()
+    @Expose()
+    total_pool_prizes: number;
+
+    @ApiProperty()
+    @Expose()
+    total_prizes_usd_amount: string;
+}

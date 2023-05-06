@@ -45,6 +45,15 @@ export class MillionsPrizeService {
         return query.getManyAndCount();
     };
 
+    fetchTotalAmountByDenom = async (denom: string): Promise<any> => {
+        const query = this._repository
+            .createQueryBuilder('millions_prizes')
+            .select('SUM(millions_prizes.raw_amount * millions_prizes.usd_token_value)')
+            .where({ denom_native: Like(`%${denom}%`) });
+
+        return query.getRawOne();
+    };
+
     save = (entity: Partial<MillionsPrizeEntity>): Promise<MillionsPrizeEntity> => {
         return this._repository.save(entity);
     };
