@@ -39,8 +39,6 @@ export class MillionsScheduler {
             const pools = await lumChain.client.queryClient.millions.pools(page);
 
             for (const pool of pools.pools) {
-                const validators: { operator_address: string; is_enabled: boolean; bonded_amount: string }[] = [];
-
                 // Get the chain for the pool
                 const chain = this._chainService.getChain(getAssetSymbol(pool.nativeDenom));
                 let outstandingPrizePoolAmount = 0;
@@ -55,16 +53,16 @@ export class MillionsScheduler {
                     // Calculate the outstanding prize pool amount
                     outstandingPrizePoolAmount = parseInt(prizePoolBalance.amount, 10) + prizePoolRewards.total.reduce((a, b) => a + parseInt(b.amount, 10) / CLIENT_PRECISION, 0);
                 } catch (e) {
-                    this._logger.warn(e);
+                    outstandingPrizePoolAmount = 0;
+
+                    this._logger.warn(`Cannot get rewards for pool ${pool.poolId}: ${e}`);
                 }
 
-                for (const key in pool.validators) {
-                    validators.push({
-                        operator_address: key,
-                        is_enabled: pool.validators[key].isEnabled,
-                        bonded_amount: pool.validators[key].bondedAmount,
-                    });
-                }
+                const validators = Object.entries(pool.validators).map(([operatorAddress, validator]) => ({
+                    operator_address: operatorAddress,
+                    is_enabled: validator.isEnabled,
+                    bonded_amount: validator.bondedAmount,
+                }));
 
                 const entity: Partial<MillionsPoolEntity> = {
                     id: pool.poolId.toNumber(),
@@ -135,7 +133,8 @@ export class MillionsScheduler {
 
         this._logger.log(`Syncing draws and prizes from chain...`);
 
-        const pools = await this._millionsPoolService.fetch();
+        const pools = await this._millionsPoolService.fetchReady();
+
         const lumChain = this._chainService.getChain<LumChain>(AssetSymbol.LUM);
         const { prizeExpirationDelta } = await lumChain.client.queryClient.millions.params();
 
@@ -155,7 +154,7 @@ export class MillionsScheduler {
                     const id = `${pool.id}-${draw.drawId.toNumber()}`;
 
                     // If draw already exists in db, we skip it
-                    if (await this._millionsDrawService.isExists(id)) {
+                    if (await this._millionsDrawService.exist(id)) {
                         continue;
                     }
 

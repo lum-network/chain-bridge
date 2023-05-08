@@ -17,7 +17,7 @@ export class MillionsDrawService {
         return this._repository.findOne({ where: { id } });
     };
 
-    isExists = async (id: string): Promise<boolean> => {
+    exist = async (id: string): Promise<boolean> => {
         return this._repository.exist({ where: { id } });
     };
 
