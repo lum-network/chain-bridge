@@ -51,7 +51,9 @@ export class MillionsScheduler {
                     ]);
 
                     // Calculate the outstanding prize pool amount
-                    outstandingPrizePoolAmount = parseInt(prizePoolBalance.amount, 10) + prizePoolRewards.total.reduce((a, b) => a + parseInt(b.amount, 10) / CLIENT_PRECISION, 0);
+                    outstandingPrizePoolAmount =
+                        parseInt(prizePoolBalance.amount, 10) +
+                        prizePoolRewards.total.filter((reward) => reward.denom === pool.nativeDenom).reduce((a, b) => a + parseInt(b.amount, 10) / CLIENT_PRECISION, 0);
                 } catch (e) {
                     outstandingPrizePoolAmount = 0;
 
