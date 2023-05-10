@@ -38,11 +38,7 @@ export class AssetConsumer {
         this._logger.log(`Updating DFR token values...`);
 
         // We only update DFR values once every epoch
-        const [preGovPropMetrics, postGovPropMetrics, proposals] = await Promise.all([
-            this._dfractService.getAssetInfoPreGovProp(),
-            this._dfractService.getAssetInfoPostGovProp(),
-            this._proposalService.fetchType(LUM_DFR_ALLOCATION_TYPE_URL),
-        ]);
+        const [preGovPropMetrics, postGovPropMetrics, proposals] = await Promise.all([this._dfractService.getAssetInfoPreGovProp(), this._dfractService.getAssetInfoPostGovProp(), this._proposalService.fetchType(LUM_DFR_ALLOCATION_TYPE_URL)]);
 
         if (!proposals || !proposals.length) {
             this._logger.warn(`No proposals found for DFR allocation`);

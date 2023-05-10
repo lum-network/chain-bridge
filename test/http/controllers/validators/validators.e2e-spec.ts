@@ -28,18 +28,8 @@ describe('Validators (e2e)', () => {
 
         // We first seed validators and delegations
         await validatorQueryExecutor.saveBulk(validatorsSeed);
-        await validatorDelegationQueryExecutor.createOrUpdate(
-            klubStakingDelegation.delegatorAddress,
-            klubStakingDelegation.validatorAddress,
-            klubStakingDelegation.shares,
-            klubStakingDelegation.balances,
-        );
-        await validatorDelegationQueryExecutor.createOrUpdate(
-            lumFoundationDelegation.delegatorAddress,
-            lumFoundationDelegation.validatorAddress,
-            lumFoundationDelegation.shares,
-            lumFoundationDelegation.balances,
-        );
+        await validatorDelegationQueryExecutor.createOrUpdate(klubStakingDelegation.delegatorAddress, klubStakingDelegation.validatorAddress, klubStakingDelegation.shares, klubStakingDelegation.balances);
+        await validatorDelegationQueryExecutor.createOrUpdate(lumFoundationDelegation.delegatorAddress, lumFoundationDelegation.validatorAddress, lumFoundationDelegation.shares, lumFoundationDelegation.balances);
 
         // We then seed blocks
         await blockQueryExecutor.save(blockSeed1);

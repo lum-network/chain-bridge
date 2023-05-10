@@ -12,19 +12,10 @@ import { LumChain } from '@app/services/chains';
 
 @Injectable()
 export class StatService {
-    constructor(
-        private readonly _blockService: BlockService,
-        private readonly _beamService: BeamService,
-        private readonly _chainService: ChainService,
-        private readonly _transactionService: TransactionService,
-    ) {}
+    constructor(private readonly _blockService: BlockService, private readonly _beamService: BeamService, private readonly _chainService: ChainService, private readonly _transactionService: TransactionService) {}
 
     getKpi = async (): Promise<any> => {
-        const [pending, validated, canceled] = await Promise.all([
-            this._beamService.countByStatus(BeamStatus.OPEN),
-            this._beamService.countByStatus(BeamStatus.CLOSED),
-            this._beamService.countByStatus(BeamStatus.CANCELED),
-        ]);
+        const [pending, validated, canceled] = await Promise.all([this._beamService.countByStatus(BeamStatus.OPEN), this._beamService.countByStatus(BeamStatus.CLOSED), this._beamService.countByStatus(BeamStatus.CANCELED)]);
         const [globalTotal, globalAverage, globalMax] = await Promise.all([this._beamService.sumTotalAmount(), this._beamService.averageTotalAmount(), this._beamService.maxTotalAmount()]);
         const [, , todayMax] = await Promise.all([this._beamService.sumTotalAmount(new Date()), this._beamService.averageTotalAmount(new Date()), this._beamService.maxTotalAmount(new Date())]);
         const merchants = await this._beamService.countDifferentCreatorAddresses();
