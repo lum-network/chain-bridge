@@ -1,5 +1,5 @@
 import { HttpModule } from '@nestjs/axios';
-import { Logger, Module, OnModuleInit, CacheModule, OnApplicationBootstrap, ValidationPipe, HttpException } from '@nestjs/common';
+import { Module, OnModuleInit, CacheModule, OnApplicationBootstrap, ValidationPipe, HttpException } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { BullModule } from '@nestjs/bull';
 import { APP_FILTER, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
@@ -126,8 +126,6 @@ import { AsyncQueues } from '@app/async';
     ],
 })
 export class ApiModule implements OnModuleInit, OnApplicationBootstrap {
-    private readonly _logger: Logger = new Logger(ApiModule.name);
-
     constructor(private readonly _chainService: ChainService) {}
 
     async onModuleInit() {
