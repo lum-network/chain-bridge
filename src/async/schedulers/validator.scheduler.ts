@@ -12,12 +12,7 @@ import { AssetPrefix, AssetSymbol, CLIENT_PRECISION, SIGNED_BLOCK_WINDOW } from 
 export class ValidatorScheduler {
     private readonly _logger: Logger = new Logger(ValidatorScheduler.name);
 
-    constructor(
-        private readonly _configService: ConfigService,
-        private readonly _chainService: ChainService,
-        private readonly _validatorService: ValidatorService,
-        private readonly _validatorDelegationService: ValidatorDelegationService,
-    ) {}
+    constructor(private readonly _configService: ConfigService, private readonly _chainService: ChainService, private readonly _validatorService: ValidatorService, private readonly _validatorDelegationService: ValidatorDelegationService) {}
 
     @Cron(CronExpression.EVERY_5_MINUTES)
     async delegationSync() {

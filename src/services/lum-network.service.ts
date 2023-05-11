@@ -14,22 +14,7 @@ import { Stream } from 'xstream';
 import { Queue } from 'bull';
 import { lastValueFrom, map } from 'rxjs';
 
-import {
-    MODULE_NAMES,
-    QueueJobs,
-    QueuePriority,
-    Queues,
-    apy,
-    TEN_EXPONENT_SIX,
-    CLIENT_PRECISION,
-    computeTotalTokenAmount,
-    computeTotalApy,
-    LUM_STAKING_ADDRESS,
-    AssetSymbol,
-    ApiUrl,
-    LUM_ENV_CONFIG,
-    GenericAssetInfo,
-} from '@app/utils';
+import { MODULE_NAMES, QueueJobs, QueuePriority, Queues, apy, TEN_EXPONENT_SIX, CLIENT_PRECISION, computeTotalTokenAmount, computeTotalApy, LUM_STAKING_ADDRESS, AssetSymbol, ApiUrl, LUM_ENV_CONFIG, GenericAssetInfo } from '@app/utils';
 
 @Injectable()
 export class LumNetworkService {
@@ -38,12 +23,7 @@ export class LumNetworkService {
     private _clientStream: Stream<NewBlockEvent> = null;
     private _client: LumClient = null;
 
-    constructor(
-        @InjectQueue(Queues.BLOCKS) private readonly _queue: Queue,
-        private readonly _configService: ConfigService,
-        private readonly _httpService: HttpService,
-        private readonly _modulesContainer: ModulesContainer,
-    ) {
+    constructor(@InjectQueue(Queues.BLOCKS) private readonly _queue: Queue, private readonly _configService: ConfigService, private readonly _httpService: HttpService, private readonly _modulesContainer: ModulesContainer) {
         // Lil hack to get the current module name
         for (const nestModule of this._modulesContainer.values()) {
             if (MODULE_NAMES.includes(nestModule.metatype.name)) {
@@ -178,13 +158,7 @@ export class LumNetworkService {
     getAssetInfo = async (): Promise<GenericAssetInfo> => {
         try {
             // To compute metrics info we need lum's {unit_price_usd, total_value_usd, supply and apy, totalk_allocated_token}
-            const [price, total_value_usd, supply, percentagYield, totalAllocatedToken] = await Promise.all([
-                this.getPrice(),
-                this.getMcap(),
-                this.getTokenSupply(),
-                this.getApy(),
-                this.getAllocatedToken(),
-            ]);
+            const [price, total_value_usd, supply, percentagYield, totalAllocatedToken] = await Promise.all([this.getPrice(), this.getMcap(), this.getTokenSupply(), this.getApy(), this.getAllocatedToken()]);
 
             return {
                 unit_price_usd: price.market_data.current_price.usd,

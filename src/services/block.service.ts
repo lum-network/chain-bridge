@@ -11,11 +11,7 @@ import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class BlockService {
-    constructor(
-        @InjectRepository(BlockEntity) private readonly _repository: Repository<BlockEntity>,
-        @InjectQueue(Queues.BLOCKS) private readonly _queue: Queue,
-        private readonly _configService: ConfigService,
-    ) {}
+    constructor(@InjectRepository(BlockEntity) private readonly _repository: Repository<BlockEntity>, @InjectQueue(Queues.BLOCKS) private readonly _queue: Queue, private readonly _configService: ConfigService) {}
 
     get repository(): Repository<BlockEntity> {
         return this._repository;

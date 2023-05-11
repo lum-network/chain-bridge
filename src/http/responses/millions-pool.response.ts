@@ -1,5 +1,7 @@
-import { Exclude, Expose, Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
+
+import { Exclude, Expose, Type } from 'class-transformer';
+
 import { BalanceResponse } from '@app/http';
 
 @Exclude()
@@ -61,11 +63,6 @@ class MillionsValidatorResponse {
     @ApiProperty()
     @Expose()
     bonded_amount: string;
-
-    @ApiProperty({ type: () => [BalanceResponse] })
-    @Expose()
-    @Type(() => BalanceResponse)
-    rewards_amount: BalanceResponse[];
 }
 
 @Exclude()
@@ -96,7 +93,11 @@ export class MillionsPoolResponse {
 
     @ApiProperty()
     @Expose()
-    controller_port_id: string;
+    ica_deposit_port_id: string;
+
+    @ApiProperty()
+    @Expose()
+    ica_prize_pool_port_id: string;
 
     @ApiProperty()
     @Expose()
@@ -112,11 +113,15 @@ export class MillionsPoolResponse {
 
     @ApiProperty()
     @Expose()
-    module_account_address: string;
+    local_address: string;
 
     @ApiProperty()
     @Expose()
-    ica_account_address: string;
+    ica_deposit_address: string;
+
+    @ApiProperty()
+    @Expose()
+    ica_prize_pool_address: string;
 
     @ApiProperty()
     @Expose()
@@ -129,6 +134,10 @@ export class MillionsPoolResponse {
     @ApiProperty()
     @Expose()
     depositors_count: number;
+
+    @ApiProperty()
+    @Expose()
+    sponsorship_amount: string;
 
     @ApiProperty()
     @Expose()
@@ -170,13 +179,18 @@ export class MillionsPoolResponse {
     @Type(() => BalanceResponse)
     available_prize_pool: BalanceResponse;
 
+    @ApiProperty({ type: () => BalanceResponse })
+    @Expose()
+    @Type(() => BalanceResponse)
+    outstanding_prize_pool: BalanceResponse;
+
     constructor(data: Partial<MillionsPoolResponse>) {
         Object.assign(this, data);
     }
 }
 
 @Exclude()
-export class MillionsPoolRewardsResponse {
+export class MillionsOutstandingPrizeResponse {
     @ApiProperty()
     @Expose()
     id: number;
@@ -189,5 +203,9 @@ export class MillionsPoolRewardsResponse {
     @ApiProperty({ type: () => BalanceResponse })
     @Expose()
     @Type(() => BalanceResponse)
-    rewards: BalanceResponse;
+    outstanding_prize_pool: BalanceResponse;
+
+    @ApiProperty()
+    @Expose()
+    sponsorship_amount: string;
 }

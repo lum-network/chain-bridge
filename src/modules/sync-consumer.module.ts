@@ -11,20 +11,7 @@ import * as parseRedisUrl from 'parse-redis-url-simple';
 
 import { AssetConsumer, AsyncQueues, BeamConsumer, BlockConsumer, NotificationConsumer } from '@app/async';
 
-import {
-    AssetService,
-    BeamService,
-    BlockService,
-    ChainService,
-    DfractService,
-    MarketService,
-    ProposalDepositService,
-    ProposalService,
-    ProposalVoteService,
-    TransactionService,
-    ValidatorDelegationService,
-    ValidatorService,
-} from '@app/services';
+import { AssetService, BeamService, BlockService, ChainService, DfractService, MarketService, ProposalDepositService, ProposalService, ProposalVoteService, TransactionService, ValidatorDelegationService, ValidatorService } from '@app/services';
 import { ConfigMap, SentryModuleOptions } from '@app/utils';
 import { DatabaseConfig, DatabaseFeatures } from '@app/database';
 
@@ -59,24 +46,7 @@ import { DatabaseConfig, DatabaseFeatures } from '@app/database';
         TypeOrmModule.forFeature(DatabaseFeatures),
     ],
     controllers: [],
-    providers: [
-        AssetService,
-        ChainService,
-        BeamService,
-        BlockService,
-        DfractService,
-        MarketService,
-        ProposalService,
-        ProposalDepositService,
-        ProposalVoteService,
-        TransactionService,
-        ValidatorService,
-        ValidatorDelegationService,
-        AssetConsumer,
-        BeamConsumer,
-        BlockConsumer,
-        NotificationConsumer,
-    ],
+    providers: [AssetService, ChainService, BeamService, BlockService, DfractService, MarketService, ProposalService, ProposalDepositService, ProposalVoteService, TransactionService, ValidatorService, ValidatorDelegationService, AssetConsumer, BeamConsumer, BlockConsumer, NotificationConsumer],
 })
 export class SyncConsumerModule implements OnModuleInit, OnApplicationBootstrap {
     constructor(private readonly _chainService: ChainService) {}

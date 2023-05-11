@@ -12,13 +12,7 @@ import { AssetService, ChainService, DfractService, ProposalService } from '@app
 export class AssetConsumer {
     private readonly _logger: Logger = new Logger(AssetConsumer.name);
 
-    constructor(
-        private readonly _assetService: AssetService,
-        private readonly _chainService: ChainService,
-        private readonly _configService: ConfigService,
-        private readonly _dfractService: DfractService,
-        private readonly _proposalService: ProposalService,
-    ) {}
+    constructor(private readonly _assetService: AssetService, private readonly _chainService: ChainService, private readonly _configService: ConfigService, private readonly _dfractService: DfractService, private readonly _proposalService: ProposalService) {}
 
     @Process(QueueJobs.PROCESS_DAILY)
     async processDailySync() {
@@ -38,11 +32,7 @@ export class AssetConsumer {
         this._logger.log(`Updating DFR token values...`);
 
         // We only update DFR values once every epoch
-        const [preGovPropMetrics, postGovPropMetrics, proposals] = await Promise.all([
-            this._dfractService.getAssetInfoPreGovProp(),
-            this._dfractService.getAssetInfoPostGovProp(),
-            this._proposalService.fetchType(LUM_DFR_ALLOCATION_TYPE_URL),
-        ]);
+        const [preGovPropMetrics, postGovPropMetrics, proposals] = await Promise.all([this._dfractService.getAssetInfoPreGovProp(), this._dfractService.getAssetInfoPostGovProp(), this._proposalService.fetchType(LUM_DFR_ALLOCATION_TYPE_URL)]);
 
         if (!proposals || !proposals.length) {
             this._logger.warn(`No proposals found for DFR allocation`);
