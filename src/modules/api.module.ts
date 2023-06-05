@@ -1,5 +1,5 @@
 import { HttpModule } from '@nestjs/axios';
-import { Logger, Module, OnModuleInit, CacheModule, OnApplicationBootstrap, ValidationPipe, HttpException } from '@nestjs/common';
+import { Module, OnModuleInit, CacheModule, OnApplicationBootstrap, ValidationPipe, HttpException } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { BullModule } from '@nestjs/bull';
 import { APP_FILTER, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
@@ -23,6 +23,7 @@ import {
     HealthController,
     HttpExceptionFilter,
     LumNetworkIndicator,
+    MillionsController,
     PaginationInterceptor,
     ResponseInterceptor,
     SearchController,
@@ -37,14 +38,17 @@ import {
     BlockService,
     ChainService,
     DfractService,
+    MarketService,
+    MillionsDrawService,
+    MillionsPoolService,
+    MillionsPrizeService,
     ProposalDepositService,
+    ProposalService,
     ProposalVoteService,
     StatService,
     TransactionService,
     ValidatorService,
     ValidatorDelegationService,
-    ProposalService,
-    MarketService,
 } from '@app/services';
 
 import { ConfigMap, metrics, PayloadValidationOptions, SentryModuleOptions } from '@app/utils';
@@ -82,19 +86,7 @@ import { AsyncQueues } from '@app/async';
         TypeOrmModule.forRootAsync(DatabaseConfig),
         TypeOrmModule.forFeature(DatabaseFeatures),
     ],
-    controllers: [
-        AccountsController,
-        BeamsController,
-        BlocksController,
-        DfractController,
-        CoreController,
-        GovernanceController,
-        HealthController,
-        SearchController,
-        StatsController,
-        TransactionsController,
-        ValidatorsController,
-    ],
+    controllers: [AccountsController, BeamsController, BlocksController, DfractController, CoreController, GovernanceController, HealthController, MillionsController, SearchController, StatsController, TransactionsController, ValidatorsController],
     providers: [
         AssetService,
         BeamService,
@@ -105,6 +97,9 @@ import { AsyncQueues } from '@app/async';
         LumNetworkIndicator,
         MarketService,
         ...metrics,
+        MillionsDrawService,
+        MillionsPoolService,
+        MillionsPrizeService,
         ProposalService,
         ProposalVoteService,
         ProposalDepositService,
@@ -131,12 +126,10 @@ import { AsyncQueues } from '@app/async';
     ],
 })
 export class ApiModule implements OnModuleInit, OnApplicationBootstrap {
-    private readonly _logger: Logger = new Logger(ApiModule.name);
-
     constructor(private readonly _chainService: ChainService) {}
 
     async onModuleInit() {
-        // We want first LUM to be initialized before intializing the other chains
+        // We want first LUM to be initialized before initializing the other chains
         await this._chainService.initialize();
     }
 

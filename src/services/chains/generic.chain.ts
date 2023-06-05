@@ -156,8 +156,8 @@ export class GenericChain {
 
     getTotalAllocatedToken = async (): Promise<number> => {
         try {
-            const decode = LumUtils.Bech32.decode(LUM_STAKING_ADDRESS);
-            const getDecodedAddress = LumUtils.Bech32.encode(this.prefix, decode.data);
+            const decode = LumUtils.fromBech32(LUM_STAKING_ADDRESS);
+            const getDecodedAddress = LumUtils.toBech32(this.prefix, decode.data);
             return Number(await computeTotalTokenAmount(getDecodedAddress, this.client, this.microDenom, CLIENT_PRECISION, TEN_EXPONENT_SIX));
         } catch (error) {
             return 0;

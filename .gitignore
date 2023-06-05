@@ -35,3 +35,7 @@ lerna-debug.log*
 !.vscode/launch.json
 !.vscode/extensions.json
 blocks.txt
+
+# misc
+.yalc/
+yalc.lock

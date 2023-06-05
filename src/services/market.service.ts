@@ -85,4 +85,14 @@ export class MarketService {
         }
         return val.market_cap;
     };
+
+    getTokensPrices = async (symbols: string[], forceRefresh = false): Promise<{ symbol: string; price: number }[]> => {
+        if (!this._informations.length || forceRefresh) {
+            await this.refreshTokenInformations();
+        }
+
+        const tokens = this._informations.filter((info) => symbols.includes(info.symbol.toUpperCase()));
+
+        return tokens.map((token) => ({ symbol: token.symbol, price: token.price }));
+    };
 }

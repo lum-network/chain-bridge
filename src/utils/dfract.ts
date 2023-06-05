@@ -34,13 +34,7 @@ export const computeTotalTokenAmount = async (getDecodedAddress: string, client:
 };
 
 // Helper function to compute total apy from chains where we can get the info
-export const computeTotalApy = async (
-    client: LumClient,
-    supply: number,
-    inflation: number,
-    applyClientPrecision: number,
-    applyTenExponentSix: number,
-): Promise<{ stakingRatio: number; inflation: number; communityTaxRate: number }> => {
+export const computeTotalApy = async (client: LumClient, supply: number, inflation: number, applyClientPrecision: number, applyTenExponentSix: number): Promise<{ stakingRatio: number; inflation: number; communityTaxRate: number }> => {
     // The total apy is computed based on the following information:
     // 1) The inflation rate which is dependent on the bonding ration and supply
     // 2) The stakingRatio ratio

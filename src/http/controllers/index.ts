@@ -5,6 +5,7 @@ export * from './core.controller';
 export * from './dfract.controller';
 export * from './governance.controller';
 export * from './health.controller';
+export * from './millions.controller';
 export * from './search.controller';
 export * from './stats.controller';
 export * from './transactions.controller';

@@ -12,12 +12,7 @@ import { AssetPrefix, AssetSymbol, CLIENT_PRECISION, SIGNED_BLOCK_WINDOW } from 
 export class ValidatorScheduler {
     private readonly _logger: Logger = new Logger(ValidatorScheduler.name);
 
-    constructor(
-        private readonly _configService: ConfigService,
-        private readonly _chainService: ChainService,
-        private readonly _validatorService: ValidatorService,
-        private readonly _validatorDelegationService: ValidatorDelegationService,
-    ) {}
+    constructor(private readonly _configService: ConfigService, private readonly _chainService: ChainService, private readonly _validatorService: ValidatorService, private readonly _validatorDelegationService: ValidatorDelegationService) {}
 
     @Cron(CronExpression.EVERY_5_MINUTES)
     async delegationSync() {
@@ -70,8 +65,8 @@ export class ValidatorScheduler {
             for (const val of tmValidators.validators) {
                 validators.push({
                     proposer_address: LumUtils.toHex(val.address).toUpperCase(),
-                    consensus_address: LumUtils.Bech32.encode(LumConstants.LumBech32PrefixConsAddr, val.address),
-                    consensus_pubkey: LumUtils.Bech32.encode(LumConstants.LumBech32PrefixConsPub, val.pubkey.data),
+                    consensus_address: LumUtils.toBech32(LumConstants.LumBech32PrefixConsAddr, val.address),
+                    consensus_pubkey: LumUtils.toBech32(LumConstants.LumBech32PrefixConsPub, val.pubkey.data),
                 });
             }
 
@@ -86,13 +81,13 @@ export class ValidatorScheduler {
 
                     for (const val of stakingValidators.validators) {
                         const pubKey = LumRegistry.decode(val.consensusPubkey) as LumTypes.PubKey;
-                        const consensus_pubkey = LumUtils.Bech32.encode(LumConstants.LumBech32PrefixConsPub, pubKey.key);
+                        const consensus_pubkey = LumUtils.toBech32(LumConstants.LumBech32PrefixConsPub, pubKey.key);
 
                         // Find the tendermint validator and add the operator address to it
                         for (let v = 0; v < validators.length; v++) {
                             if (validators[v].consensus_pubkey === consensus_pubkey) {
                                 // Get the account address from the validators operatorAddress
-                                const getDecodedAccountAddress = LumUtils.Bech32.encode(AssetPrefix.LUM, LumUtils.Bech32.decode(val.operatorAddress).data);
+                                const getDecodedAccountAddress = LumUtils.toBech32(AssetPrefix.LUM, LumUtils.fromBech32(val.operatorAddress).data);
 
                                 // Fetch the signing infos and self bonded for validators
                                 const [signingInfos, selfBonded] = await Promise.all([

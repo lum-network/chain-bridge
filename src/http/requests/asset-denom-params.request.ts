@@ -10,18 +10,6 @@ export class AssetDenomParams {
     @Expose()
     @IsNotEmpty()
     @IsString()
-    @IsIn([
-        AssetDenom.AKASH_NETWORK,
-        AssetDenom.COMDEX,
-        AssetDenom.COSMOS,
-        AssetDenom.DFR,
-        AssetDenom.EVMOS,
-        AssetDenom.JUNO,
-        AssetDenom.KI,
-        AssetDenom.LUM,
-        AssetDenom.OSMOSIS,
-        AssetDenom.SENTINEL,
-        AssetDenom.STARGAZE,
-    ])
+    @IsIn([AssetDenom.AKASH_NETWORK, AssetDenom.COMDEX, AssetDenom.COSMOS, AssetDenom.DFR, AssetDenom.EVMOS, AssetDenom.JUNO, AssetDenom.KI, AssetDenom.LUM, AssetDenom.OSMOSIS, AssetDenom.SENTINEL, AssetDenom.STARGAZE])
     denom: string;
 }

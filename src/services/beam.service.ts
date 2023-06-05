@@ -53,9 +53,7 @@ export class BeamService {
                         AND dispatched_at < ${groupTypeToChar(groupType)} + '1 ${groupTypeInterval(groupType)}'::INTERVAL)
                 FROM (
                     SELECT
-                        date_trunc('${groupTypeInterval(groupType)}', generate_series('${startAt}'::DATE, '${endAt}'::DATE, '1 ${groupTypeInterval(groupType)}')) AS ${groupTypeToChar(
-            groupType,
-        )}) ${groupTypeToChar(groupType)}
+                        date_trunc('${groupTypeInterval(groupType)}', generate_series('${startAt}'::DATE, '${endAt}'::DATE, '1 ${groupTypeInterval(groupType)}')) AS ${groupTypeToChar(groupType)}) ${groupTypeToChar(groupType)}
             GROUP BY
                 ${groupTypeToChar(groupType)}
             ORDER BY
@@ -83,9 +81,7 @@ export class BeamService {
                         AND dispatched_at < ${groupTypeToChar(groupType)} + '1 ${groupTypeInterval(groupType)}'::INTERVAL)
                 FROM (
                     SELECT
-                        date_trunc('${groupTypeInterval(groupType)}', generate_series('${startAt}'::DATE, '${endAt}'::DATE, '1 ${groupTypeInterval(groupType)}')) AS ${groupTypeToChar(
-            groupType,
-        )}) ${groupTypeToChar(groupType)}
+                        date_trunc('${groupTypeInterval(groupType)}', generate_series('${startAt}'::DATE, '${endAt}'::DATE, '1 ${groupTypeInterval(groupType)}')) AS ${groupTypeToChar(groupType)}) ${groupTypeToChar(groupType)}
             GROUP BY
                 ${groupTypeToChar(groupType)}
             ORDER BY
@@ -113,9 +109,7 @@ export class BeamService {
                         AND dispatched_at < ${groupTypeToChar(groupType)} + '1 ${groupTypeInterval(groupType)}'::INTERVAL)
                 FROM (
                     SELECT
-                        date_trunc('${groupTypeInterval(groupType)}', generate_series('${startAt}'::DATE, '${endAt}'::DATE, '1 ${groupTypeInterval(groupType)}')) AS ${groupTypeToChar(
-            groupType,
-        )}) ${groupTypeToChar(groupType)}
+                        date_trunc('${groupTypeInterval(groupType)}', generate_series('${startAt}'::DATE, '${endAt}'::DATE, '1 ${groupTypeInterval(groupType)}')) AS ${groupTypeToChar(groupType)}) ${groupTypeToChar(groupType)}
             GROUP BY
                 ${groupTypeToChar(groupType)}
             ORDER BY
