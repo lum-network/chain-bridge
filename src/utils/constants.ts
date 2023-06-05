@@ -56,6 +56,7 @@ export enum Queues {
     BEAMS = 'beams',
     BLOCKS = 'blocks',
     NOTIFICATIONS = 'notifications',
+    MILLIONS_DEPOSITS = 'millions_deposits',
 }
 
 export enum QueueJobs {

@@ -5,7 +5,7 @@ import { Job, Queue } from 'bull';
 import dayjs from 'dayjs';
 import { LumConstants, LumMessages, LumRegistry, LumUtils } from '@lum-network/sdk-javascript';
 
-import { AssetSymbol, getAddressesRelatedToTransaction, isBeam, NotificationChannels, NotificationEvents, QueueJobs, Queues } from '@app/utils';
+import { AssetSymbol, getAddressesRelatedToTransaction, isBeam, isMillionsDeposit, NotificationChannels, NotificationEvents, QueueJobs, Queues } from '@app/utils';
 
 import { BlockService, ChainService, TransactionService, ValidatorService } from '@app/services';
 import { BlockEntity, TransactionEntity } from '@app/database';
@@ -17,6 +17,7 @@ export class BlockConsumer {
     constructor(
         @InjectQueue(Queues.BLOCKS) private readonly _blockQueue: Queue,
         @InjectQueue(Queues.BEAMS) private readonly _beamQueue: Queue,
+        @InjectQueue(Queues.MILLIONS_DEPOSITS) private readonly _millionsQueue: Queue,
         @InjectQueue(Queues.NOTIFICATIONS) private readonly _notificationQueue: Queue,
         private readonly _blockService: BlockService,
         private readonly _chainService: ChainService,
@@ -154,7 +155,7 @@ export class BlockConsumer {
             const transactions = await Promise.all(block.block.txs.map(getFormattedTx));
             await this._transactionService.saveBulk(transactions);
 
-            // Dispatch beams for ingest
+            // Dispatch beams and millions deposits for ingest
             for (const txDoc of transactions) {
                 for (const message of txDoc.messages) {
                     if (isBeam(message.type_url)) {
@@ -163,6 +164,18 @@ export class BlockConsumer {
                             { id: message.value.id, value: message.value, url: message.type_url, time: txDoc.time },
                             {
                                 jobId: `beam-${message.value.id}`,
+                                attempts: 5,
+                                backoff: 60000,
+                            },
+                        );
+                    }
+                    if (isMillionsDeposit(message.type_url)) {
+                        console.log('millions deposit: ', message.type_url);
+                        await this._millionsQueue.add(
+                            QueueJobs.INGEST,
+                            { id: message.value.id, value: message.value, url: message.type_url, time: txDoc.time },
+                            {
+                                jobId: `millions-${message.value.id}`,
                                 attempts: 5,
                                 backoff: 60000,
                             },
