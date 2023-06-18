@@ -54,7 +54,7 @@ export class LumNetworkService {
                                 jobId: `${chainId}-block-${ev.header.height}`,
                                 attempts: 5,
                                 backoff: 60000,
-                                priority: QueuePriority.HIGH,
+                                priority: QueuePriority.URGENT,
                             },
                         );
                     },

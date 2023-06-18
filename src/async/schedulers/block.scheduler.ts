@@ -25,7 +25,7 @@ export class BlockScheduler {
                 toBlock: blockHeight,
             },
             {
-                priority: QueuePriority.NORMAL,
+                priority: QueuePriority.LOW,
             },
         );
     }

@@ -8,7 +8,6 @@ export * from './http';
 export * from './metadata';
 export * from './metrics';
 export * from './microservice';
-export * from './millions';
 export * from './sentry';
 export * from './transactions';
 export * from './validation';

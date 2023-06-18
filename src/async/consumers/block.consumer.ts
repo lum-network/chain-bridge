@@ -5,7 +5,7 @@ import { Job, Queue } from 'bull';
 import dayjs from 'dayjs';
 import { LumConstants, LumMessages, LumRegistry, LumUtils } from '@lum-network/sdk-javascript';
 
-import { AssetSymbol, getAddressesRelatedToTransaction, isBeam, isMillionsDeposit, NotificationChannels, NotificationEvents, QueueJobs, Queues } from '@app/utils';
+import { AssetSymbol, getAddressesRelatedToTransaction, isBeam, NotificationChannels, NotificationEvents, QueueJobs, QueuePriority, Queues } from '@app/utils';
 
 import { BlockService, ChainService, TransactionService, ValidatorService } from '@app/services';
 import { BlockEntity, TransactionEntity } from '@app/database';
@@ -115,7 +115,7 @@ export class BlockConsumer {
                                 }
                             } else if (attr.key === 'amount') {
                                 const amount = parseFloat(attr.value);
-                                const denom = attr.value.substr(amount.toString().length);
+                                const denom = attr.value.substring(amount.toString().length);
 
                                 if (!res.amount) {
                                     res.amount = { amount, denom };
@@ -130,6 +130,45 @@ export class BlockConsumer {
                                 if (ev.type === 'delegate' || ev.type === 'unbond' || ev.type === 'withdraw_rewards') {
                                     res.amount = { amount, denom };
                                 }
+                            }
+                        }
+
+                        // Get Millions deposit/withdrawal information
+                        // TODO: Add deposit_update when available
+                        if (ev.type === 'deposit' || ev.type === 'withdraw_deposit') {
+                            const keyArray = ev.attributes.map((a) => a.key);
+
+                            if (keyArray.includes('pool_id') && keyArray.includes('deposit_id') && keyArray.includes('amount') && keyArray.includes('depositor')) {
+                                const id = Number(ev.attributes.find((a) => a.key === 'deposit_id').value);
+
+                                // Parse amount
+                                const amountValue = ev.attributes.find((a) => a.key === 'amount').value;
+                                const amount = parseFloat(amountValue);
+                                const denom = amountValue.substring(amount.toString().length);
+
+                                // Dispatch Millions Deposits for ingest
+                                await this._millionsQueue.add(
+                                    QueueJobs.INGEST,
+                                    {
+                                        id: id,
+                                        value: {
+                                            poolId: Number(ev.attributes.find((a) => a.key === 'pool_id')?.value || 0),
+                                            withdrawalId: Number(ev.attributes.find((a) => a.key === 'withdrawal_id')?.value || 0),
+                                            depositorAddress: ev.attributes.find((a) => a.key === 'depositor')?.value || '',
+                                            winnerAddress: ev.attributes.find((a) => a.key === 'winner')?.value || '',
+                                            isSponsor: ev.attributes.find((a) => a.key === 'is_sponsor')?.value || false,
+                                            amount: { amount, denom },
+                                        },
+                                        url: LumMessages.MsgMillionsDepositUrl,
+                                        height: blockDoc.height,
+                                    },
+                                    {
+                                        jobId: `millions-deposit-${id}`,
+                                        attempts: 5,
+                                        backoff: 60000,
+                                        priority: QueuePriority.NORMAL,
+                                    },
+                                );
                             }
                         }
                     }
@@ -155,7 +194,7 @@ export class BlockConsumer {
             const transactions = await Promise.all(block.block.txs.map(getFormattedTx));
             await this._transactionService.saveBulk(transactions);
 
-            // Dispatch beams and millions deposits for ingest
+            // Dispatch beams for ingest
             for (const txDoc of transactions) {
                 for (const message of txDoc.messages) {
                     if (isBeam(message.type_url)) {
@@ -166,18 +205,7 @@ export class BlockConsumer {
                                 jobId: `beam-${message.value.id}`,
                                 attempts: 5,
                                 backoff: 60000,
-                            },
-                        );
-                    }
-                    if (isMillionsDeposit(message.type_url)) {
-                        console.log('millions deposit: ', message.type_url);
-                        await this._millionsQueue.add(
-                            QueueJobs.INGEST,
-                            { id: message.value.id, value: message.value, url: message.type_url, time: txDoc.time },
-                            {
-                                jobId: `millions-${message.value.id}`,
-                                attempts: 5,
-                                backoff: 60000,
+                                priority: QueuePriority.NORMAL,
                             },
                         );
                     }
@@ -218,6 +246,7 @@ export class BlockConsumer {
                         jobId: `${job.data.chainId}-block-${i}`,
                         attempts: 5,
                         backoff: 60000,
+                        priority: QueuePriority.LOW,
                     },
                 });
             }
