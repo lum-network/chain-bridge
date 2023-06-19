@@ -5,7 +5,7 @@ import { BullModule } from '@nestjs/bull';
 import { APP_FILTER, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { TerminusModule } from '@nestjs/terminus';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import {CacheModule, CacheStore} from "@nestjs/cache-manager";
+import { CacheModule, CacheStore } from '@nestjs/cache-manager';
 
 import type { RedisClientOptions } from 'redis';
 import { PrometheusModule } from '@willsoto/nestjs-prometheus';

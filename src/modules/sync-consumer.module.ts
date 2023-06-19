@@ -46,7 +46,24 @@ import { DatabaseConfig, DatabaseFeatures } from '@app/database';
         TypeOrmModule.forFeature(DatabaseFeatures),
     ],
     controllers: [],
-    providers: [AssetService, ChainService, BeamService, BlockService, DfractService, MarketService, ProposalService, ProposalDepositService, ProposalVoteService, TransactionService, ValidatorService, ValidatorDelegationService, AssetConsumer, BeamConsumer, BlockConsumer, NotificationConsumer],
+    providers: [
+        AssetService,
+        ChainService,
+        BeamService,
+        BlockService,
+        DfractService,
+        MarketService,
+        ProposalService,
+        ProposalDepositService,
+        ProposalVoteService,
+        TransactionService,
+        ValidatorService,
+        ValidatorDelegationService,
+        AssetConsumer,
+        BeamConsumer,
+        BlockConsumer,
+        NotificationConsumer,
+    ],
 })
 export class SyncConsumerModule implements OnModuleInit, OnApplicationBootstrap {
     constructor(private readonly _chainService: ChainService) {}

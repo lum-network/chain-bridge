@@ -1,7 +1,7 @@
 import { Controller, Get, Logger, UseInterceptors } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { MessagePattern, Payload } from '@nestjs/microservices';
-import {CacheInterceptor} from "@nestjs/cache-manager";
+import { CacheInterceptor } from '@nestjs/cache-manager';
 
 import { plainToInstance } from 'class-transformer';
 import { fromUtf8 } from '@lum-network/sdk-javascript/build/utils';

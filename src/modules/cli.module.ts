@@ -3,7 +3,7 @@ import { HttpModule } from '@nestjs/axios';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { BullModule } from '@nestjs/bull';
-import {CacheModule, CacheStore} from "@nestjs/cache-manager";
+import { CacheModule, CacheStore } from '@nestjs/cache-manager';
 
 import { ConsoleModule } from 'nestjs-console';
 import * as Joi from 'joi';

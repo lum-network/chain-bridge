@@ -12,7 +12,13 @@ import { AssetService, ChainService, DfractService, ProposalService } from '@app
 export class AssetConsumer {
     private readonly _logger: Logger = new Logger(AssetConsumer.name);
 
-    constructor(private readonly _assetService: AssetService, private readonly _chainService: ChainService, private readonly _configService: ConfigService, private readonly _dfractService: DfractService, private readonly _proposalService: ProposalService) {}
+    constructor(
+        private readonly _assetService: AssetService,
+        private readonly _chainService: ChainService,
+        private readonly _configService: ConfigService,
+        private readonly _dfractService: DfractService,
+        private readonly _proposalService: ProposalService,
+    ) {}
 
     @Process(QueueJobs.PROCESS_DAILY)
     async processDailySync() {

@@ -1,6 +1,6 @@
 import { Controller, Get, NotFoundException, Param, UseInterceptors } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
-import {CacheInterceptor} from "@nestjs/cache-manager";
+import { CacheInterceptor } from '@nestjs/cache-manager';
 
 import { LumConstants } from '@lum-network/sdk-javascript';
 

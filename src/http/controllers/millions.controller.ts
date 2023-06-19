@@ -1,6 +1,6 @@
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Controller, Get, Param, Req, UseInterceptors } from '@nestjs/common';
-import {CacheInterceptor} from "@nestjs/cache-manager";
+import { CacheInterceptor } from '@nestjs/cache-manager';
 
 import { plainToInstance } from 'class-transformer';
 
