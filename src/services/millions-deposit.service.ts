@@ -28,10 +28,9 @@ export class MillionsDepositService {
     };
 
     fetchDepositsDrops = async (winnerAddress: string, skip: number, take: number): Promise<[MillionsDepositEntity[], number]> => {
-        // FIXME: Add is_sponsor: Equal(true) ?
         const query = this._repository
             .createQueryBuilder('millions_deposits')
-            .where({ winner_address: Equal(winnerAddress), depositor_address: Not(winnerAddress), withdrawal_id: Equal(0) })
+            .where({ winner_address: Equal(winnerAddress), depositor_address: Not(winnerAddress), withdrawal_id: Equal(0), is_sponsor: Equal(false) })
             .orderBy('millions_deposits.block_height', 'DESC')
             .skip(skip)
             .take(take);
