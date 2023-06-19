@@ -5,6 +5,7 @@ import { LumClient, LumUtils } from '@lum-network/sdk-javascript';
 import { Stream } from 'xstream';
 import { NewBlockEvent } from '@cosmjs/tendermint-rpc';
 import { lastValueFrom, map } from 'rxjs';
+import * as Sentry from '@sentry/node';
 
 import { ApiUrl, apy, AssetDenom, AssetMicroDenom, CLIENT_PRECISION, computeTotalApy, computeTotalTokenAmount, GenericAssetInfo, LUM_STAKING_ADDRESS, TEN_EXPONENT_SIX } from '@app/utils';
 import { AssetService, MarketService } from '@app/services';
@@ -88,7 +89,9 @@ export class GenericChain {
         const useEndpoint = this._config.subscribeToRPC ? this._config.endpoint.replace('https://', 'wss://').replace('http://', 'ws://') : this._config.endpoint;
 
         // Bind and acquire the chain id
-        this._client = await LumClient.connect(useEndpoint);
+        this._client = await LumClient.connect(useEndpoint, (error) => {
+            Sentry.captureException(error);
+        });
         this._chainId = await this._client.getChainId();
 
         // If we want to subscribe to RPC, we have to create a stream
