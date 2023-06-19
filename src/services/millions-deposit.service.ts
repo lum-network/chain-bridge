@@ -50,13 +50,13 @@ export class MillionsDepositService {
     update = async (entity: Partial<MillionsDepositEntity>): Promise<MillionsDepositEntity> => {
         const existingEntity = await this.getById(entity.id);
         existingEntity.id = entity.id;
-        existingEntity.block_height = entity.block_height ?? existingEntity.block_height;
+        existingEntity.block_height = entity.block_height || existingEntity.block_height;
         existingEntity.amount = entity.amount;
-        existingEntity.pool_id = entity.pool_id ?? existingEntity.pool_id;
-        existingEntity.depositor_address = entity.depositor_address ?? existingEntity.depositor_address;
-        existingEntity.winner_address = entity.winner_address ?? existingEntity.winner_address;
+        existingEntity.pool_id = entity.pool_id || existingEntity.pool_id;
+        existingEntity.depositor_address = entity.depositor_address || existingEntity.depositor_address;
+        existingEntity.winner_address = entity.winner_address || existingEntity.winner_address;
         existingEntity.is_sponsor = entity.is_sponsor;
-        existingEntity.withdrawal_id = entity.withdrawal_id ?? existingEntity.withdrawal_id;
+        existingEntity.withdrawal_id = entity.withdrawal_id || existingEntity.withdrawal_id;
 
         return this._repository.save(existingEntity);
     };

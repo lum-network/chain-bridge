@@ -159,11 +159,10 @@ export class BlockConsumer {
                                             isSponsor: ev.attributes.find((a) => a.key === 'is_sponsor')?.value || false,
                                             amount: { amount, denom },
                                         },
-                                        url: LumMessages.MsgMillionsDepositUrl,
                                         height: blockDoc.height,
                                     },
                                     {
-                                        jobId: `millions-deposit-${id}`,
+                                        jobId: `millions-deposit-${id}-${blockDoc.height}`,
                                         attempts: 5,
                                         backoff: 60000,
                                         priority: QueuePriority.NORMAL,

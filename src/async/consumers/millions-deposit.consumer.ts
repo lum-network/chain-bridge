@@ -14,7 +14,7 @@ export class MillionsDepositConsumer {
     constructor(private readonly _millionsDepositService: MillionsDepositService) {}
 
     @Process(QueueJobs.INGEST)
-    async ingestMillionsDeposit(job: Job<{ id: number; value: any; url: string; height: number }>) {
+    async ingestMillionsDeposit(job: Job<{ id: number; value: any; height: number }>) {
         // If no id we exit
         if (!job.data.id) {
             this._logger.error('Failed to ingest Millions deposit as no job id was found');
