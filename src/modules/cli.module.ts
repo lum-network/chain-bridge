@@ -1,8 +1,9 @@
-import { CacheModule, Module, OnModuleInit } from '@nestjs/common';
+import { Module, OnModuleInit } from '@nestjs/common';
 import { HttpModule } from '@nestjs/axios';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { BullModule } from '@nestjs/bull';
+import {CacheModule, CacheStore} from "@nestjs/cache-manager";
 
 import { ConsoleModule } from 'nestjs-console';
 import * as Joi from 'joi';
@@ -28,7 +29,7 @@ import { AssetScheduler, AsyncQueues } from '@app/async';
             useFactory: (configService: ConfigService) => {
                 const parsed = parseRedisUrl.parseRedisUrl(configService.get('REDIS_URL'));
                 return {
-                    store: redisStore,
+                    store: redisStore as unknown as CacheStore,
                     host: parsed[0].host,
                     port: parsed[0].port,
                     password: parsed[0].password,

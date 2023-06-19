@@ -1,5 +1,7 @@
-import { Body, CacheInterceptor, Controller, Get, Param, Post, Req, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Req, UseInterceptors } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { CacheInterceptor } from '@nestjs/cache-manager';
+
 import { plainToInstance } from 'class-transformer';
 
 import { AssetService } from '@app/services';
