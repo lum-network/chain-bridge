@@ -36,11 +36,13 @@ export class MillionsDepositConsumer {
             block_height: job.data.height,
         };
 
+        // If no deposit in db we create it, else we update it
         if (!deposit) {
             await this._millionsDepositService.save(formattedMillionsDeposit);
 
             this._logger.debug(`Millions deposit ${job.data.id} created`);
         } else {
+            // If deposit in db but block height is higher we exit
             if (deposit.block_height > formattedMillionsDeposit.block_height) {
                 this._logger.debug(`Millions deposit ${job.data.id} already ingested`);
                 return;
