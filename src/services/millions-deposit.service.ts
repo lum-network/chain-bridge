@@ -31,7 +31,7 @@ export class MillionsDepositService {
         // FIXME: Add is_sponsor: Equal(true) ?
         const query = this._repository
             .createQueryBuilder('millions_deposits')
-            .where({ winner_address: Equal(winnerAddress), depositor_address: Not(winnerAddress), withdrawal_id: Not(0) })
+            .where({ winner_address: Equal(winnerAddress), depositor_address: Not(winnerAddress), withdrawal_id: Equal(0) })
             .orderBy('millions_deposits.block_height', 'DESC')
             .skip(skip)
             .take(take);
