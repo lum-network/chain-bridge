@@ -25,7 +25,7 @@ export class GovernanceScheduler {
         if (!this._configService.get<boolean>('GOVERNANCE_SYNC_ENABLED')) {
             return;
         }
-        this._logger.log(`[RootSync] Syncing proposals from chain...`);
+        this._logger.log(`Syncing proposals from chain...`);
 
         const proposals = await this._chainService.getChain<LumChain>(AssetSymbol.LUM).getProposals();
         for (const proposal of proposals.proposals) {
@@ -95,7 +95,7 @@ export class GovernanceScheduler {
                 voting_end_time: proposal.votingEndTime,
             });
 
-            this._logger.debug(`[RootSync] Synced proposal #${proposal.id.toNumber()}`);
+            this._logger.debug(`Synced proposal #${proposal.id.toNumber()}`);
         }
     }
 
@@ -104,13 +104,13 @@ export class GovernanceScheduler {
         if (!this._configService.get<boolean>('GOVERNANCE_SYNC_ENABLED')) {
             return;
         }
-        this._logger.log(`[VoteSync] Syncing votes from chain...`);
+        this._logger.log(`Syncing votes from chain...`);
 
         // We need to get the proposalsId in order to fetch the voters
         const proposalIds = await this._chainService.getChain<LumChain>(AssetSymbol.LUM).getOpenVotingProposals();
 
         if (!proposalIds || !proposalIds.length) {
-            this._logger.log(`[VoteSync] No current open proposal to vote on...`);
+            this._logger.log(`No current open proposal to vote on...`);
             return;
         }
 
@@ -134,7 +134,7 @@ export class GovernanceScheduler {
                 }
             }
         }
-        this._logger.log(`[VoteSync] Synced ${proposalIds.length || 0} proposals from chain...`);
+        this._logger.log(`Synced ${proposalIds.length || 0} proposals from chain...`);
     }
 
     @Cron(CronExpression.EVERY_30_SECONDS)
@@ -142,13 +142,13 @@ export class GovernanceScheduler {
         if (!this._configService.get<boolean>('GOVERNANCE_SYNC_ENABLED')) {
             return;
         }
-        this._logger.log(`[DepositSync] Syncing deposits from chain...`);
+        this._logger.log(`Syncing deposits from chain...`);
 
         // We need to get the proposalsId in order to fetch the deposits
         const proposalIds = await this._chainService.getChain<LumChain>(AssetSymbol.LUM).getOpenVotingProposals();
 
         if (!proposalIds || !proposalIds.length) {
-            this._logger.log(`[DepositSync] No active proposals to sync deposits for...`);
+            this._logger.log(`No active proposals to sync deposits for...`);
             return;
         }
 
@@ -168,6 +168,6 @@ export class GovernanceScheduler {
                 await this._governanceProposalDepositService.createOrUpdateDepositors(id, depositorAddress.depositor, depositorAddress.amount);
             }
         }
-        this._logger.log(`[DepositSync] Synced ${proposalIds.length || 0} proposals from chain...`);
+        this._logger.log(`Synced ${proposalIds.length || 0} proposals from chain...`);
     }
 }
