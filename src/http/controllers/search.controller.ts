@@ -1,5 +1,6 @@
-import { CacheInterceptor, Controller, Get, NotFoundException, Param, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, NotFoundException, Param, UseInterceptors } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { CacheInterceptor } from '@nestjs/cache-manager';
 
 import { LumConstants } from '@lum-network/sdk-javascript';
 
@@ -14,20 +15,20 @@ export class SearchController {
     @ApiOkResponse({ status: 200, type: SearchResponse })
     @Get(':data')
     @UseInterceptors(CacheInterceptor)
-    async search(@Param('data') data: string): Promise<DataResponse> {
+    async search(@Param('data') data: string | number): Promise<DataResponse> {
         let retn;
 
         // We check the different combinations
-        if (/^\d+$/.test(data)) {
+        if (/^\d+$/.test(String(data))) {
             retn = { type: 'block', data };
         } else if (String(data).startsWith(LumConstants.LumBech32PrefixValAddr)) {
             retn = { type: 'validator', data };
         } else if (String(data).startsWith(LumConstants.LumBech32PrefixAccAddr)) {
             retn = { type: 'account', data };
         } else {
-            if (await this._blockService.get(parseInt(data, 10))) {
+            if (await this._blockService.get(parseInt(String(data), 10))) {
                 retn = { type: 'block', data };
-            } else if (await this._transactionService.get(data)) {
+            } else if (await this._transactionService.get(String(data))) {
                 retn = { type: 'transaction', data };
             } else {
                 throw new NotFoundException('data_not_found');

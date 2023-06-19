@@ -1,11 +1,13 @@
 import { HttpModule } from '@nestjs/axios';
-import { Module, OnModuleInit, CacheModule, OnApplicationBootstrap, ValidationPipe, HttpException } from '@nestjs/common';
+import { Module, OnModuleInit, OnApplicationBootstrap, ValidationPipe, HttpException } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { BullModule } from '@nestjs/bull';
 import { APP_FILTER, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { TerminusModule } from '@nestjs/terminus';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { CacheModule, CacheStore } from '@nestjs/cache-manager';
 
+import type { RedisClientOptions } from 'redis';
 import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 import * as redisStore from 'cache-manager-redis-store';
 import { SentryInterceptor, SentryModule } from '@ntegral/nestjs-sentry';
@@ -65,12 +67,12 @@ import { AsyncQueues } from '@app/async';
             validationSchema: Joi.object(ConfigMap),
         }),
         ...AsyncQueues.map((queue) => BullModule.registerQueueAsync(queue)),
-        CacheModule.registerAsync({
+        CacheModule.registerAsync<RedisClientOptions>({
             imports: [ConfigModule],
             useFactory: (configService: ConfigService) => {
                 const parsed = parseRedisUrl.parseRedisUrl(configService.get('REDIS_URL'));
                 return {
-                    store: redisStore,
+                    store: redisStore as unknown as CacheStore,
                     host: parsed[0].host,
                     port: parsed[0].port,
                     password: parsed[0].password,
