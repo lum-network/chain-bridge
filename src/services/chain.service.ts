@@ -7,9 +7,8 @@ import { InjectQueue } from '@nestjs/bull';
 import { lastValueFrom } from 'rxjs';
 import { Queue } from 'bull';
 import * as Sentry from '@sentry/node';
-import { NewBlockEvent } from '@cosmjs/tendermint-rpc';
 
-import { AssetPrefix, AssetSymbol, AssetMicroDenom, AssetDenom, GenericAssetInfo, Queues, QueueJobs, QueuePriority, MODULE_NAMES, getUniqueSymbols } from '@app/utils';
+import { AssetPrefix, AssetSymbol, AssetMicroDenom, AssetDenom, GenericAssetInfo, Queues, MODULE_NAMES, getUniqueSymbols } from '@app/utils';
 
 import { AssetService } from '@app/services/asset.service';
 import { MarketService } from '@app/services/market.service';
@@ -17,7 +16,6 @@ import { EvmosChain, GenericChain, JunoChain, LumChain, OsmosisChain, StargazeCh
 
 @Injectable()
 export class ChainService {
-    private readonly _currentModuleName: string = null;
     private readonly _logger: Logger = new Logger(ChainService.name);
     private readonly _clients: { [key: string]: GenericChain } = {};
 
@@ -29,14 +27,6 @@ export class ChainService {
         private readonly _marketService: MarketService,
         private readonly _modulesContainer: ModulesContainer,
     ) {
-        // Lil hack to get the current module name
-        for (const nestModule of this._modulesContainer.values()) {
-            if (MODULE_NAMES.includes(nestModule.metatype.name)) {
-                this._currentModuleName = nestModule.metatype.name;
-                break;
-            }
-        }
-
         // Only initialize other chains if dfract sync enabled
         if (this._configService.get<boolean>('DFRACT_SYNC_ENABLED')) {
             this._clients[AssetSymbol.COSMOS] = new GenericChain({
@@ -171,40 +161,7 @@ export class ChainService {
             endpoint: this._configService.get<string>('LUM_NETWORK_ENDPOINT'),
             denom: AssetDenom.LUM,
             microDenom: AssetMicroDenom.LUM,
-            subscribeToRPC: this._currentModuleName === 'SyncSchedulerModule',
-            postInitCallback: (instance) => {
-                // Only ingest if allowed by the configuration
-                if (this._configService.get<boolean>('INGEST_ENABLED') === false) {
-                    return;
-                }
-
-                // We only set the block listener in case of the sync scheduler module
-                if (this._currentModuleName === 'SyncSchedulerModule') {
-                    instance.clientStream.addListener({
-                        next: async (ev: NewBlockEvent) => {
-                            await this._queue.add(
-                                QueueJobs.INGEST,
-                                {
-                                    blockHeight: ev.header.height,
-                                    notify: true,
-                                },
-                                {
-                                    jobId: `${instance.chainId}-block-${ev.header.height}`,
-                                    attempts: 5,
-                                    backoff: 60000,
-                                    priority: QueuePriority.HIGH,
-                                },
-                            );
-                        },
-                        error: (err: Error) => {
-                            this._logger.error(`Failed to process the block event ${err}`);
-                        },
-                        complete: () => {
-                            this._logger.error(`Stream completed before we had time to process`);
-                        },
-                    });
-                }
-            },
+            subscribeToRPC: false,
         });
     }
 
