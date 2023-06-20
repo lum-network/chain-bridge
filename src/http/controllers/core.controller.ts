@@ -7,7 +7,7 @@ import { plainToInstance } from 'class-transformer';
 import { fromUtf8 } from '@lum-network/sdk-javascript/build/utils';
 
 import { InjectMetric } from '@willsoto/nestjs-prometheus';
-import { Gauge } from 'prom-client';
+import { Gauge, LabelValues } from 'prom-client';
 
 import { ChainService } from '@app/services';
 import { BalanceResponse, DataResponse, LumResponse } from '@app/http/responses';
@@ -35,6 +35,11 @@ export class CoreController {
         @InjectMetric(MetricNames.DFRACT_BACKING_PRICE) private readonly _dfractBackingPrice: Gauge<string>,
         @InjectMetric(MetricNames.DFRACT_MINT_RATIO) private readonly _dfractMintRatio: Gauge<string>,
         @InjectMetric(MetricNames.DFRACT_MARKET_CAP) private readonly _dfractMarketCap: Gauge<string>,
+        // Millions metrics constructors
+        @InjectMetric(MetricNames.MILLIONS_POOL_VALUE_LOCKED) private readonly _millionsPoolValueLocked: Gauge<string>,
+        @InjectMetric(MetricNames.MILLIONS_POOL_DEPOSITORS) private readonly _millionsPoolDepositors: Gauge<string>,
+        @InjectMetric(MetricNames.MILLIONS_POOL_PRIZE_AMOUNT) private readonly _millionsPoolPrizeAmount: Gauge<string>,
+        @InjectMetric(MetricNames.MILLIONS_POOL_PRIZE_WINNERS) private readonly _millionsPoolPrizeWinners: Gauge<string>,
         // General metrics constructors
         @InjectMetric(MetricNames.TWITTER_FOLLOWERS) private readonly _twitterFollowers: Gauge<string>,
         private readonly _chainService: ChainService,
@@ -177,7 +182,7 @@ export class CoreController {
     }
 
     @MessagePattern('updateMetric')
-    async updateMetric(@Payload() data: { name: string; value: number }): Promise<void> {
+    async updateMetric(@Payload() data: { name: string; value: number; labels: object }): Promise<void> {
         if (!data.name || !data.value) {
             return;
         }
@@ -196,13 +201,21 @@ export class CoreController {
         metrics.set(MetricNames.DFRACT_MINT_RATIO, this._dfractMintRatio);
         metrics.set(MetricNames.DFRACT_NEW_DFR_TO_MINT, this._dfractNewDfrToMint);
         metrics.set(MetricNames.TWITTER_FOLLOWERS, this._twitterFollowers);
+        metrics.set(MetricNames.MILLIONS_POOL_VALUE_LOCKED, this._millionsPoolValueLocked);
+        metrics.set(MetricNames.MILLIONS_POOL_DEPOSITORS, this._millionsPoolDepositors);
+        metrics.set(MetricNames.MILLIONS_POOL_PRIZE_AMOUNT, this._millionsPoolPrizeAmount);
+        metrics.set(MetricNames.MILLIONS_POOL_PRIZE_WINNERS, this._millionsPoolPrizeWinners);
 
-        this._logger.log(`Updating metric ${data.name} with value ${data.value}`);
         const setter = metrics.get(data.name);
         if (!setter) {
             this._logger.error(`Metric ${data.name} not found`);
             return;
         }
-        await setter.set(data.value);
+        this._logger.debug(`Updating metric ${data.name} with value ${data.value} (labels ${Object.keys(data.labels || {}).join(',')})`);
+        if (!data.labels || !Object.keys(data.labels).length) {
+            setter.set(data.value);
+        } else {
+            setter.labels(data.labels).set(data.value);
+        }
     }
 }
