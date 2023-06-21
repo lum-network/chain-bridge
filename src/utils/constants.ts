@@ -45,6 +45,7 @@ export enum MetricNames {
     MILLIONS_POOL_DEPOSITORS = 'millions_pool_depositors',
     MILLIONS_POOL_PRIZE_WINNERS = 'millions_pool_prize_winners',
     MILLIONS_POOL_PRIZE_AMOUNT = 'millions_pool_prize_amount',
+    MILLIONS_TWITTER_FOLLOWERS = 'millions_twitter_followers',
     // General metrics enums
     DISCORD_MEMBERS = 'discord_members',
     TWITTER_FOLLOWERS = 'twitter_followers',

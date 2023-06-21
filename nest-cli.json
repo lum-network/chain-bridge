@@ -17,5 +17,9 @@
             "root": "src",
             "entryFile": "sync_scheduler"
         }
+    },
+    "compilerOptions": {
+        "builder": "swc",
+        "typeCheck": true
     }
 }

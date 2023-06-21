@@ -1,4 +1,4 @@
-import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryColumn, UpdateDateColumn, VersionColumn } from 'typeorm';
+import {Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryColumn, Relation, UpdateDateColumn, VersionColumn} from 'typeorm';
 
 import { AmountModel } from '@app/database/entities/amount.model';
 import { BlockEntity } from '@app/database/entities/block.entity';
@@ -79,7 +79,7 @@ export class TransactionEntity {
 
     @ManyToOne(() => BlockEntity, (block) => block.transactions)
     @JoinColumn({ name: 'height', referencedColumnName: 'height' })
-    block: BlockEntity;
+    block: Relation<BlockEntity>;
 
     constructor(props?: Partial<TransactionEntity>) {
         Object.assign(this, props);
