@@ -14,7 +14,7 @@ export class MillionsDepositConsumer {
     constructor(private readonly _millionsDepositService: MillionsDepositService) {}
 
     @Process(QueueJobs.INGEST)
-    async ingestMillionsDeposit(job: Job<{ id: number; value: any; height: number }>) {
+    async ingestMillionsDeposit(job: Job<{ id: string; value: any; height: number }>) {
         // If no id we exit
         if (!job.data.id) {
             this._logger.error('Failed to ingest Millions deposit as no job id was found');
@@ -29,6 +29,7 @@ export class MillionsDepositConsumer {
             id: job.data.id,
             amount: job.data.value.amount,
             pool_id: job.data.value.poolId,
+            deposit_id: job.data.value.depositId,
             withdrawal_id: job.data.value.withdrawalId,
             depositor_address: job.data.value.depositorAddress,
             winner_address: job.data.value.winnerAddress,
@@ -41,16 +42,22 @@ export class MillionsDepositConsumer {
             await this._millionsDepositService.save(formattedMillionsDeposit);
 
             this._logger.debug(`Millions deposit ${job.data.id} created`);
-        } else {
-            // If deposit in db but block height is higher we exit
-            if (deposit.block_height > formattedMillionsDeposit.block_height) {
-                this._logger.debug(`Millions deposit ${job.data.id} already ingested`);
-                return;
-            }
-
-            await this._millionsDepositService.update(formattedMillionsDeposit);
-
-            this._logger.debug(`Millions deposit ${job.data.id} updated`);
+            return;
         }
+
+        // If deposit in db but block height is higher we exit
+        if (deposit.block_height > formattedMillionsDeposit.block_height) {
+            this._logger.debug(`Millions deposit ${job.data.id} already ingested`);
+            return;
+        }
+
+        try {
+            await this._millionsDepositService.update(formattedMillionsDeposit);
+        } catch (e) {
+            this._logger.error(e);
+            return;
+        }
+
+        this._logger.debug(`Millions deposit ${job.data.id} updated`);
     }
 }

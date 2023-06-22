@@ -4,11 +4,14 @@ import { AmountModel } from '@app/database/entities/amount.model';
 
 @Entity({ name: 'millions_deposits' })
 export class MillionsDepositEntity {
-    @PrimaryColumn({ type: 'integer' })
-    id: number;
+    @PrimaryColumn({ type: 'varchar', length: 32 })
+    id: string;
 
     @Column({ type: 'integer' })
     pool_id: number;
+
+    @Column({ type: 'integer' })
+    deposit_id: number;
 
     @Column({ type: 'integer' })
     withdrawal_id: number;

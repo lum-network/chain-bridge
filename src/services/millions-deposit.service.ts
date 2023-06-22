@@ -13,11 +13,11 @@ export class MillionsDepositService {
         return this._repository;
     }
 
-    getById = async (id: number): Promise<MillionsDepositEntity> => {
+    getById = async (id: string): Promise<MillionsDepositEntity> => {
         return this._repository.findOne({ where: { id } });
     };
 
-    exist = async (id: number): Promise<boolean> => {
+    exist = async (id: string): Promise<boolean> => {
         return this._repository.exist({ where: { id } });
     };
 
@@ -48,14 +48,32 @@ export class MillionsDepositService {
 
     update = async (entity: Partial<MillionsDepositEntity>): Promise<MillionsDepositEntity> => {
         const existingEntity = await this.getById(entity.id);
-        existingEntity.id = entity.id;
-        existingEntity.block_height = entity.block_height || existingEntity.block_height;
-        existingEntity.amount = entity.amount;
-        existingEntity.pool_id = entity.pool_id || existingEntity.pool_id;
-        existingEntity.depositor_address = entity.depositor_address || existingEntity.depositor_address;
-        existingEntity.winner_address = entity.winner_address || existingEntity.winner_address;
-        existingEntity.is_sponsor = entity.is_sponsor;
-        existingEntity.withdrawal_id = entity.withdrawal_id || existingEntity.withdrawal_id;
+
+        if (existingEntity === undefined || existingEntity === null) {
+            throw new Error(`MillionsDepositEntity with id ${entity.id} does not exist`);
+        }
+
+        if (entity.block_height !== undefined && entity.block_height !== null && entity.block_height !== 0) {
+            existingEntity.block_height = entity.block_height;
+        }
+        if (entity.amount !== undefined && entity.amount !== null) {
+            existingEntity.amount = entity.amount;
+        }
+        if (entity.pool_id !== undefined && entity.pool_id !== null && entity.pool_id !== 0) {
+            existingEntity.pool_id = entity.pool_id;
+        }
+        if (entity.depositor_address !== undefined && entity.depositor_address !== null && entity.depositor_address !== '') {
+            existingEntity.depositor_address = entity.depositor_address;
+        }
+        if (entity.winner_address !== undefined && entity.winner_address !== null && entity.depositor_address !== '') {
+            existingEntity.winner_address = entity.winner_address;
+        }
+        if (entity.is_sponsor !== undefined && entity.is_sponsor !== null) {
+            existingEntity.is_sponsor = entity.is_sponsor;
+        }
+        if (entity.withdrawal_id !== undefined && entity.withdrawal_id !== null && entity.withdrawal_id !== 0) {
+            existingEntity.withdrawal_id = entity.withdrawal_id;
+        }
 
         return this._repository.save(existingEntity);
     };
