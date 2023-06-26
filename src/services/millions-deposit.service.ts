@@ -65,7 +65,7 @@ export class MillionsDepositService {
         if (entity.depositor_address !== undefined && entity.depositor_address !== null && entity.depositor_address !== '') {
             existingEntity.depositor_address = entity.depositor_address;
         }
-        if (entity.winner_address !== undefined && entity.winner_address !== null && entity.depositor_address !== '') {
+        if (entity.winner_address !== undefined && entity.winner_address !== null && entity.winner_address !== '') {
             existingEntity.winner_address = entity.winner_address;
         }
         if (entity.is_sponsor !== undefined && entity.is_sponsor !== null) {
