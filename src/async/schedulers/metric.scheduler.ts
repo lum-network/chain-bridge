@@ -74,7 +74,7 @@ export class MetricScheduler {
             return;
         }
 
-        this._logger.log(`Syncing millions basics...`);
+        this._logger.log(`[MillionsBasics] Syncing...`);
 
         // Acquire list of pools
         let page: Uint8Array | undefined = undefined;
@@ -138,6 +138,7 @@ export class MetricScheduler {
         }
 
         // Broadcast metrics
+        this._logger.debug(`[MillionsBasics] Broadcasting metrics...`)
         for (const pool of pools) {
             await makeRequest(this._client, 'updateMetric', { name: MetricNames.MILLIONS_POOL_VALUE_LOCKED, value: Number(pool.tvlAmount), labels: { pool_id: pool.poolId.toNumber() } });
             await makeRequest(this._client, 'updateMetric', { name: MetricNames.MILLIONS_POOL_DEPOSITORS, value: Number(pool.depositorsCount.toNumber()), labels: { pool_id: pool.poolId.toNumber() } });
@@ -148,6 +149,7 @@ export class MetricScheduler {
         for (const withdrawalState of Object.keys(withdrawalMetas)) {
             await makeRequest(this._client, 'updateMetric', { name: MetricNames.MILLIONS_WITHDRAWALS, value: Number(withdrawalMetas[withdrawalState]), labels: { withdrawal_state: withdrawalStateToString(Number(withdrawalState)) } });
         }
+        this._logger.debug(`[MillionsBasics] Metrics broadcasted`);
     }
 
     @Cron(CronExpression.EVERY_MINUTE)
@@ -156,7 +158,7 @@ export class MetricScheduler {
             return;
         }
 
-        this._logger.log(`Syncing millions draws...`);
+        this._logger.debug(`[MillionsDraws] Syncing...`);
 
         // Acquire pool draws
         let page: Uint8Array | undefined = undefined;
@@ -172,9 +174,11 @@ export class MetricScheduler {
         }
 
         // Broadcast metrics
+        this._logger.debug(`[MillionsDraws] Metrics acquired, now broadcasting...`);
         for (const draw of draws) {
             await makeRequest(this._client, 'updateMetric', { name: MetricNames.MILLIONS_POOL_PRIZE_AMOUNT, value: Number(draw.totalWinAmount), labels: { pool_id: draw.poolId.toNumber(), draw_id: draw.drawId.toNumber() } });
             await makeRequest(this._client, 'updateMetric', { name: MetricNames.MILLIONS_POOL_PRIZE_WINNERS, value: Number(draw.totalWinCount.toNumber()), labels: { pool_id: draw.poolId.toNumber(), draw_id: draw.drawId.toNumber() } });
         }
+        this._logger.debug(`[MillionsDraws] Metrics broadcasted`);
     }
 }
