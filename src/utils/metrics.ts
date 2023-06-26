@@ -74,6 +74,16 @@ export const metrics = [
         help: 'Current number of prize winners in millions pool',
         labelNames: ['pool_id', 'draw_id'],
     }),
+    makeGaugeProvider({
+        name: MetricNames.MILLIONS_DEPOSITS,
+        help: 'Current number of deposits in millions',
+        labelNames: ['deposit_state'],
+    }),
+    makeGaugeProvider({
+        name: MetricNames.MILLIONS_WITHDRAWALS,
+        help: 'Current number of withdrawals in millions',
+        labelNames: ['withdrawal_state'],
+    }),
     // General Metrics
     makeGaugeProvider({
         name: MetricNames.DISCORD_MEMBERS,

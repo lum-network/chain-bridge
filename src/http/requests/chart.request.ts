@@ -15,14 +15,14 @@ export class ChartRequest {
     end_at: Date;
 
     @ApiProperty({
-        enum: ChartTypes
+        enum: ChartTypes,
     })
     @IsNotEmpty()
     @IsString()
     type: ChartTypes;
 
     @ApiProperty({
-        enum: ChartGroupType
+        enum: ChartGroupType,
     })
     @IsOptional()
     @IsNotEmpty()

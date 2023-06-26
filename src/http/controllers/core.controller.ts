@@ -40,6 +40,8 @@ export class CoreController {
         @InjectMetric(MetricNames.MILLIONS_POOL_DEPOSITORS) private readonly _millionsPoolDepositors: Gauge<string>,
         @InjectMetric(MetricNames.MILLIONS_POOL_PRIZE_AMOUNT) private readonly _millionsPoolPrizeAmount: Gauge<string>,
         @InjectMetric(MetricNames.MILLIONS_POOL_PRIZE_WINNERS) private readonly _millionsPoolPrizeWinners: Gauge<string>,
+        @InjectMetric(MetricNames.MILLIONS_DEPOSITS) private readonly _millionsDeposits: Gauge<string>,
+        @InjectMetric(MetricNames.MILLIONS_WITHDRAWALS) private readonly _millionsWithdrawals: Gauge<string>,
         // General metrics constructors
         @InjectMetric(MetricNames.TWITTER_FOLLOWERS) private readonly _twitterFollowers: Gauge<string>,
         private readonly _chainService: ChainService,
@@ -205,6 +207,8 @@ export class CoreController {
         metrics.set(MetricNames.MILLIONS_POOL_DEPOSITORS, this._millionsPoolDepositors);
         metrics.set(MetricNames.MILLIONS_POOL_PRIZE_AMOUNT, this._millionsPoolPrizeAmount);
         metrics.set(MetricNames.MILLIONS_POOL_PRIZE_WINNERS, this._millionsPoolPrizeWinners);
+        metrics.set(MetricNames.MILLIONS_DEPOSITS, this._millionsDeposits);
+        metrics.set(MetricNames.MILLIONS_WITHDRAWALS, this._millionsWithdrawals);
 
         const setter = metrics.get(data.name);
         if (!setter) {

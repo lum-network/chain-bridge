@@ -1,4 +1,4 @@
-import {Column, CreateDateColumn, Entity, OneToMany, PrimaryColumn, Relation, UpdateDateColumn, VersionColumn} from 'typeorm';
+import { Column, CreateDateColumn, Entity, OneToMany, PrimaryColumn, Relation, UpdateDateColumn, VersionColumn } from 'typeorm';
 
 import { TransactionEntity } from '@app/database/entities/transaction.entity';
 

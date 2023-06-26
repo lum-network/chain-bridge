@@ -5,11 +5,13 @@ import { ConfigService } from '@nestjs/config';
 
 import { LumConstants } from '@lum-network/sdk-javascript';
 import { Pool } from '@lum-network/sdk-javascript/build/codec/lum-network/millions/pool';
+import { Draw } from '@lum-network/sdk-javascript/build/codec/lum-network/millions/draw';
+import { DepositState } from '@lum-network/sdk-javascript/build/codec/lum-network/millions/deposit';
+import { WithdrawalState } from '@lum-network/sdk-javascript/build/codec/lum-network/millions/withdrawal';
 
 import { AssetSymbol, CLIENT_PRECISION, makeRequest, MetricNames } from '@app/utils';
 import { ChainService, DfractService } from '@app/services';
 import { LumChain } from '@app/services/chains';
-import { Draw } from '@lum-network/sdk-javascript/build/codec/lum-network/millions/draw';
 
 @Injectable()
 export class MetricScheduler {
@@ -63,15 +65,14 @@ export class MetricScheduler {
         ]);
     }
 
-    @Cron(CronExpression.EVERY_MINUTE)
-    async updateMillions() {
+    @Cron(CronExpression.EVERY_30_SECONDS)
+    async updateMillionsBasic() {
         if (!this._configService.get<boolean>('METRIC_SYNC_ENABLED')) {
             return;
         }
 
         // Acquire list of pools
         let page: Uint8Array | undefined = undefined;
-        page = undefined;
         const pools: Pool[] = [];
         while (true) {
             const lPools = await this._chainService.getChain<LumChain>(AssetSymbol.LUM).client.queryClient.millions.pools(page);
@@ -83,18 +84,51 @@ export class MetricScheduler {
             }
         }
 
-        // Acquire pool draws
-        const draws: Draw[] = [];
-        for (const pool of pools) {
+        // Acquire deposits
+        const depositMetas: any = {
+            [DepositState.DEPOSIT_STATE_UNSPECIFIED]: 0,
+            [DepositState.DEPOSIT_STATE_IBC_TRANSFER]: 0,
+            [DepositState.DEPOSIT_STATE_ICA_DELEGATE]: 0,
+            [DepositState.DEPOSIT_STATE_SUCCESS]: 0,
+            [DepositState.DEPOSIT_STATE_FAILURE]: 0,
+        };
+        while (true) {
             page = undefined;
-            while (true) {
-                const lDraws = await this._chainService.getChain<LumChain>(AssetSymbol.LUM).client.queryClient.millions.poolDraws(pool.poolId, page);
-                draws.push(...lDraws.draws);
-                if (lDraws.pagination && lDraws.pagination.nextKey && lDraws.pagination.nextKey.length > 0) {
-                    page = lDraws.pagination.nextKey;
-                } else {
-                    break;
-                }
+            const deposits = await this._chainService.getChain<LumChain>(AssetSymbol.LUM).client.queryClient.millions.deposits(page);
+
+            // Increase the given state
+            for (const deposit of deposits.deposits) {
+                depositMetas[deposit.state]++;
+            }
+
+            if (deposits.pagination && deposits.pagination.nextKey && deposits.pagination.nextKey.length > 0) {
+                page = deposits.pagination.nextKey;
+            } else {
+                break;
+            }
+        }
+
+        // Acquire withdrawals
+        const withdrawalMetas: any = {
+            [WithdrawalState.WITHDRAWAL_STATE_UNSPECIFIED]: 0,
+            [WithdrawalState.WITHDRAWAL_STATE_ICA_UNDELEGATE]: 0,
+            [WithdrawalState.WITHDRAWAL_STATE_ICA_UNBONDING]: 0,
+            [WithdrawalState.WITHDRAWAL_STATE_IBC_TRANSFER]: 0,
+            [WithdrawalState.WITHDRAWAL_STATE_FAILURE]: 0,
+        };
+        while (true) {
+            page = undefined;
+            const withdrawals = await this._chainService.getChain<LumChain>(AssetSymbol.LUM).client.queryClient.millions.withdrawals(page);
+
+            // Increase the given state
+            for (const withdrawal of withdrawals.withdrawals) {
+                withdrawalMetas[withdrawal.state]++;
+            }
+
+            if (withdrawals.pagination && withdrawals.pagination.nextKey && withdrawals.pagination.nextKey.length > 0) {
+                page = withdrawals.pagination.nextKey;
+            } else {
+                break;
             }
         }
 
@@ -103,6 +137,34 @@ export class MetricScheduler {
             await makeRequest(this._client, 'updateMetric', { name: MetricNames.MILLIONS_POOL_VALUE_LOCKED, value: Number(pool.tvlAmount), labels: { pool_id: pool.poolId.toNumber() } });
             await makeRequest(this._client, 'updateMetric', { name: MetricNames.MILLIONS_POOL_DEPOSITORS, value: Number(pool.depositorsCount.toNumber()), labels: { pool_id: pool.poolId.toNumber() } });
         }
+        for (const depositState of Object.keys(depositMetas)) {
+            await makeRequest(this._client, 'updateMetric', { name: MetricNames.MILLIONS_DEPOSITS, value: Number(depositMetas[depositState]), labels: { deposit_state: depositState } });
+        }
+        for (const withdrawalState of Object.keys(withdrawalMetas)) {
+            await makeRequest(this._client, 'updateMetric', { name: MetricNames.MILLIONS_WITHDRAWALS, value: Number(withdrawalMetas[withdrawalState]), labels: { withdrawal_state: withdrawalState } });
+        }
+    }
+
+    @Cron(CronExpression.EVERY_MINUTE)
+    async updateMillionsDraws() {
+        if (!this._configService.get<boolean>('METRIC_SYNC_ENABLED')) {
+            return;
+        }
+
+        // Acquire pool draws
+        let page: Uint8Array | undefined = undefined;
+        const draws: Draw[] = [];
+        while (true) {
+            const lDraws = await this._chainService.getChain<LumChain>(AssetSymbol.LUM).client.queryClient.millions.draws(page);
+            draws.push(...lDraws.draws);
+            if (lDraws.pagination && lDraws.pagination.nextKey && lDraws.pagination.nextKey.length > 0) {
+                page = lDraws.pagination.nextKey;
+            } else {
+                break;
+            }
+        }
+
+        // Broadcast metrics
         for (const draw of draws) {
             await makeRequest(this._client, 'updateMetric', { name: MetricNames.MILLIONS_POOL_PRIZE_AMOUNT, value: Number(draw.totalWinAmount), labels: { pool_id: draw.poolId.toNumber(), draw_id: draw.drawId.toNumber() } });
             await makeRequest(this._client, 'updateMetric', { name: MetricNames.MILLIONS_POOL_PRIZE_WINNERS, value: Number(draw.totalWinCount.toNumber()), labels: { pool_id: draw.poolId.toNumber(), draw_id: draw.drawId.toNumber() } });

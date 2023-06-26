@@ -1,4 +1,4 @@
-import {Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryColumn, Relation, UpdateDateColumn, VersionColumn} from 'typeorm';
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryColumn, Relation, UpdateDateColumn, VersionColumn } from 'typeorm';
 
 import { AmountModel } from '@app/database/entities/amount.model';
 import { BlockEntity } from '@app/database/entities/block.entity';
