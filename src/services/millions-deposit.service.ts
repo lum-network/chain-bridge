@@ -13,11 +13,11 @@ export class MillionsDepositService {
         return this._repository;
     }
 
-    getById = async (id: string): Promise<MillionsDepositEntity> => {
+    getById = async (id: number): Promise<MillionsDepositEntity> => {
         return this._repository.findOne({ where: { id } });
     };
 
-    exist = async (id: string): Promise<boolean> => {
+    exist = async (id: number): Promise<boolean> => {
         return this._repository.exist({ where: { id } });
     };
 
@@ -49,8 +49,8 @@ export class MillionsDepositService {
     update = async (entity: Partial<MillionsDepositEntity>): Promise<MillionsDepositEntity> => {
         const existingEntity = await this.getById(entity.id);
 
-        if (existingEntity === undefined || existingEntity === null) {
-            throw new Error(`MillionsDepositEntity with id ${entity.id} does not exist`);
+        if (existingEntity === null) {
+            return null;
         }
 
         if (entity.block_height !== undefined && entity.block_height !== null && entity.block_height !== 0) {

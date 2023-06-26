@@ -139,7 +139,7 @@ export class BlockConsumer {
                             const keyArray = ev.attributes.map((a) => a.key);
 
                             if (keyArray.includes('pool_id') && keyArray.includes('deposit_id') && keyArray.includes('amount') && keyArray.includes('depositor')) {
-                                const id = `${ev.attributes.find((a) => a.key === 'pool_id').value}:${ev.attributes.find((a) => a.key === 'deposit_id').value}`;
+                                const id = ev.attributes.find((a) => a.key === 'deposit_id').value;
 
                                 // Parse amount
                                 const amountValue = ev.attributes.find((a) => a.key === 'amount').value;
@@ -153,7 +153,6 @@ export class BlockConsumer {
                                         id: id,
                                         value: {
                                             poolId: Number(ev.attributes.find((a) => a.key === 'pool_id')?.value || 0),
-                                            depositId: Number(ev.attributes.find((a) => a.key === 'deposit_id')?.value || 0),
                                             withdrawalId: Number(ev.attributes.find((a) => a.key === 'withdrawal_id')?.value || 0),
                                             depositorAddress: ev.attributes.find((a) => a.key === 'depositor')?.value || '',
                                             winnerAddress: ev.attributes.find((a) => a.key === 'winner')?.value || '',
