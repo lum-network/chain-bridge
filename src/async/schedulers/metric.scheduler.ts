@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import {Inject, Injectable, Logger} from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { ClientProxy } from '@nestjs/microservices';
 import { ConfigService } from '@nestjs/config';
@@ -15,6 +15,7 @@ import { LumChain } from '@app/services/chains';
 
 @Injectable()
 export class MetricScheduler {
+    private readonly _logger: Logger = new Logger(MetricScheduler);
     constructor(@Inject('API') private readonly _client: ClientProxy, private readonly _configService: ConfigService, private readonly _dfrService: DfractService, private readonly _chainService: ChainService) {}
 
     // As we rely on external APIs to compute some DFR metrics we trigger the cron every min to avoid rate limiting and error chaining
@@ -23,6 +24,8 @@ export class MetricScheduler {
         if (!this._configService.get<boolean>('METRIC_SYNC_ENABLED')) {
             return;
         }
+
+        this._logger.log(`Syncing global metrics...`);
 
         // Acquire data
         const [lumCommunityPool, lumSupply, lumPrice, lumPriceEUR, lumCommunityData, dfrApy, dfrBackingPrice, dfrSupply, dfrMcap, dfrBalance, newDfrToMint, dfrMintRatio] = await Promise.all([
@@ -70,6 +73,8 @@ export class MetricScheduler {
         if (!this._configService.get<boolean>('METRIC_SYNC_ENABLED')) {
             return;
         }
+
+        this._logger.log(`Syncing millions basics...`);
 
         // Acquire list of pools
         let page: Uint8Array | undefined = undefined;
@@ -150,6 +155,8 @@ export class MetricScheduler {
         if (!this._configService.get<boolean>('METRIC_SYNC_ENABLED')) {
             return;
         }
+
+        this._logger.log(`Syncing millions draws...`);
 
         // Acquire pool draws
         let page: Uint8Array | undefined = undefined;
