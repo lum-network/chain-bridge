@@ -137,7 +137,7 @@ export class MetricScheduler {
         ]);
     }
 
-    @Cron(CronExpression.EVERY_MINUTE)
+    @Cron(CronExpression.EVERY_30_SECONDS)
     async updateMillionsBasic() {
         if (!this._configService.get<boolean>('METRIC_SYNC_ENABLED')) {
             return;
@@ -166,8 +166,8 @@ export class MetricScheduler {
             [DepositState.DEPOSIT_STATE_SUCCESS]: 0,
             [DepositState.DEPOSIT_STATE_FAILURE]: 0,
         };
+        page = undefined;
         while (true) {
-            page = undefined;
             const deposits = await this._chainService.getChain<LumChain>(AssetSymbol.LUM).client.queryClient.millions.deposits(page);
 
             // Increase the given state
@@ -190,8 +190,8 @@ export class MetricScheduler {
             [WithdrawalState.WITHDRAWAL_STATE_IBC_TRANSFER]: 0,
             [WithdrawalState.WITHDRAWAL_STATE_FAILURE]: 0,
         };
+        page = undefined;
         while (true) {
-            page = undefined;
             const withdrawals = await this._chainService.getChain<LumChain>(AssetSymbol.LUM).client.queryClient.millions.withdrawals(page);
 
             // Increase the given state
@@ -245,8 +245,8 @@ export class MetricScheduler {
         // Broadcast metrics
         this._logger.debug(`[MillionsDraws] Metrics acquired, now broadcasting...`);
         for (const draw of draws) {
-            // await this.updateMetric({ name: MetricNames.MILLIONS_POOL_PRIZE_AMOUNT, value: Number(draw.totalWinAmount), labels: { pool_id: draw.poolId.toNumber(), draw_id: draw.drawId.toNumber() } });
-            // await this.updateMetric({ name: MetricNames.MILLIONS_POOL_PRIZE_WINNERS, value: Number(draw.totalWinCount.toNumber()), labels: { pool_id: draw.poolId.toNumber(), draw_id: draw.drawId.toNumber() } });
+            await this.updateMetric({ name: MetricNames.MILLIONS_POOL_PRIZE_AMOUNT, value: Number(draw.totalWinAmount), labels: { pool_id: draw.poolId.toNumber(), draw_id: draw.drawId.toNumber() } });
+            await this.updateMetric({ name: MetricNames.MILLIONS_POOL_PRIZE_WINNERS, value: Number(draw.totalWinCount.toNumber()), labels: { pool_id: draw.poolId.toNumber(), draw_id: draw.drawId.toNumber() } });
         }
         this._logger.debug(`[MillionsDraws] Metrics broadcasted`);
     }
