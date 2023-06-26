@@ -9,7 +9,7 @@ import { Draw } from '@lum-network/sdk-javascript/build/codec/lum-network/millio
 import { DepositState } from '@lum-network/sdk-javascript/build/codec/lum-network/millions/deposit';
 import { WithdrawalState } from '@lum-network/sdk-javascript/build/codec/lum-network/millions/withdrawal';
 
-import { AssetSymbol, CLIENT_PRECISION, makeRequest, MetricNames } from '@app/utils';
+import { AssetSymbol, CLIENT_PRECISION, depositStateToString, makeRequest, MetricNames, withdrawalStateToString } from '@app/utils';
 import { ChainService, DfractService } from '@app/services';
 import { LumChain } from '@app/services/chains';
 
@@ -138,10 +138,10 @@ export class MetricScheduler {
             await makeRequest(this._client, 'updateMetric', { name: MetricNames.MILLIONS_POOL_DEPOSITORS, value: Number(pool.depositorsCount.toNumber()), labels: { pool_id: pool.poolId.toNumber() } });
         }
         for (const depositState of Object.keys(depositMetas)) {
-            await makeRequest(this._client, 'updateMetric', { name: MetricNames.MILLIONS_DEPOSITS, value: Number(depositMetas[depositState]), labels: { deposit_state: depositState } });
+            await makeRequest(this._client, 'updateMetric', { name: MetricNames.MILLIONS_DEPOSITS, value: Number(depositMetas[depositState]), labels: { deposit_state: depositStateToString(Number(depositState)) } });
         }
         for (const withdrawalState of Object.keys(withdrawalMetas)) {
-            await makeRequest(this._client, 'updateMetric', { name: MetricNames.MILLIONS_WITHDRAWALS, value: Number(withdrawalMetas[withdrawalState]), labels: { withdrawal_state: withdrawalState } });
+            await makeRequest(this._client, 'updateMetric', { name: MetricNames.MILLIONS_WITHDRAWALS, value: Number(withdrawalMetas[withdrawalState]), labels: { withdrawal_state: withdrawalStateToString(Number(withdrawalState)) } });
         }
     }
 
