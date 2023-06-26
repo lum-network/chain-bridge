@@ -53,25 +53,25 @@ export class MillionsDepositService {
             return null;
         }
 
-        if (entity.block_height !== undefined && entity.block_height !== null && entity.block_height !== 0) {
+        if (entity.block_height !== undefined && entity.block_height !== null) {
             existingEntity.block_height = entity.block_height;
         }
         if (entity.amount !== undefined && entity.amount !== null) {
             existingEntity.amount = entity.amount;
         }
-        if (entity.pool_id !== undefined && entity.pool_id !== null && entity.pool_id !== 0) {
+        if (entity.pool_id !== undefined && entity.pool_id !== null) {
             existingEntity.pool_id = entity.pool_id;
         }
-        if (entity.depositor_address !== undefined && entity.depositor_address !== null && entity.depositor_address !== '') {
+        if (entity.depositor_address !== undefined && entity.depositor_address !== null) {
             existingEntity.depositor_address = entity.depositor_address;
         }
-        if (entity.winner_address !== undefined && entity.winner_address !== null && entity.winner_address !== '') {
+        if (entity.winner_address !== undefined && entity.winner_address !== null) {
             existingEntity.winner_address = entity.winner_address;
         }
         if (entity.is_sponsor !== undefined && entity.is_sponsor !== null) {
             existingEntity.is_sponsor = entity.is_sponsor;
         }
-        if (entity.withdrawal_id !== undefined && entity.withdrawal_id !== null && entity.withdrawal_id !== 0) {
+        if (entity.withdrawal_id !== undefined && entity.withdrawal_id !== null) {
             existingEntity.withdrawal_id = entity.withdrawal_id;
         }
 
