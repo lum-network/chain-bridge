@@ -6,9 +6,6 @@ import { CacheInterceptor } from '@nestjs/cache-manager';
 import { plainToInstance } from 'class-transformer';
 import { fromUtf8 } from '@lum-network/sdk-javascript/build/utils';
 
-import { InjectMetric } from '@willsoto/nestjs-prometheus';
-import { Gauge, LabelValues } from 'prom-client';
-
 import { ChainService } from '@app/services';
 import { BalanceResponse, DataResponse, LumResponse } from '@app/http/responses';
 import { GatewayWebsocket } from '@app/websocket';
@@ -20,33 +17,7 @@ import { LumChain } from '@app/services/chains';
 export class CoreController {
     private readonly _logger: Logger = new Logger(CoreController.name);
 
-    constructor(
-        // Lum metrics constructors
-        @InjectMetric(MetricNames.COMMUNITY_POOL_SUPPLY) private readonly _communityPoolSupply: Gauge<string>,
-        @InjectMetric(MetricNames.LUM_CURRENT_SUPPLY) private readonly _lumCurrentSupply: Gauge<string>,
-        @InjectMetric(MetricNames.MARKET_CAP) private readonly _marketCap: Gauge<string>,
-        @InjectMetric(MetricNames.LUM_PRICE_EUR) private readonly _lumPriceEUR: Gauge<string>,
-        @InjectMetric(MetricNames.LUM_PRICE_USD) private readonly _lumPriceUSD: Gauge<string>,
-        // Dfr metrics constructors
-        @InjectMetric(MetricNames.DFRACT_CURRENT_SUPPLY) private readonly _dfractCurrentSupply: Gauge<string>,
-        @InjectMetric(MetricNames.DFRACT_MA_BALANCE) private readonly _dfractMaBalance: Gauge<string>,
-        @InjectMetric(MetricNames.DFRACT_APY) private readonly _dfractApy: Gauge<string>,
-        @InjectMetric(MetricNames.DFRACT_NEW_DFR_TO_MINT) private readonly _dfractNewDfrToMint: Gauge<string>,
-        @InjectMetric(MetricNames.DFRACT_BACKING_PRICE) private readonly _dfractBackingPrice: Gauge<string>,
-        @InjectMetric(MetricNames.DFRACT_MINT_RATIO) private readonly _dfractMintRatio: Gauge<string>,
-        @InjectMetric(MetricNames.DFRACT_MARKET_CAP) private readonly _dfractMarketCap: Gauge<string>,
-        // Millions metrics constructors
-        @InjectMetric(MetricNames.MILLIONS_POOL_VALUE_LOCKED) private readonly _millionsPoolValueLocked: Gauge<string>,
-        @InjectMetric(MetricNames.MILLIONS_POOL_DEPOSITORS) private readonly _millionsPoolDepositors: Gauge<string>,
-        @InjectMetric(MetricNames.MILLIONS_POOL_PRIZE_AMOUNT) private readonly _millionsPoolPrizeAmount: Gauge<string>,
-        @InjectMetric(MetricNames.MILLIONS_POOL_PRIZE_WINNERS) private readonly _millionsPoolPrizeWinners: Gauge<string>,
-        @InjectMetric(MetricNames.MILLIONS_DEPOSITS) private readonly _millionsDeposits: Gauge<string>,
-        @InjectMetric(MetricNames.MILLIONS_WITHDRAWALS) private readonly _millionsWithdrawals: Gauge<string>,
-        // General metrics constructors
-        @InjectMetric(MetricNames.TWITTER_FOLLOWERS) private readonly _twitterFollowers: Gauge<string>,
-        private readonly _chainService: ChainService,
-        private readonly _messageGateway: GatewayWebsocket,
-    ) {}
+    constructor(private readonly _chainService: ChainService, private readonly _messageGateway: GatewayWebsocket) {}
 
     @UseInterceptors(CacheInterceptor)
     @ApiOkResponse({ status: 200, type: LumResponse })
@@ -180,46 +151,6 @@ export class CoreController {
         this._logger.log(`Dispatching notification on channel ${data.channel}...`);
         if (this._messageGateway && this._messageGateway._server) {
             this._messageGateway._server.to(data.channel).emit(data.event, data.data);
-        }
-    }
-
-    @MessagePattern('updateMetric')
-    async updateMetric(@Payload() data: { name: string; value: number; labels: object }): Promise<void> {
-        if (!data.name || !data.value) {
-            return;
-        }
-
-        const metrics = new Map<string, Gauge<string>>();
-        metrics.set(MetricNames.COMMUNITY_POOL_SUPPLY, this._communityPoolSupply);
-        metrics.set(MetricNames.LUM_CURRENT_SUPPLY, this._lumCurrentSupply);
-        metrics.set(MetricNames.MARKET_CAP, this._marketCap);
-        metrics.set(MetricNames.LUM_PRICE_EUR, this._lumPriceEUR);
-        metrics.set(MetricNames.LUM_PRICE_USD, this._lumPriceUSD);
-        metrics.set(MetricNames.DFRACT_APY, this._dfractApy);
-        metrics.set(MetricNames.DFRACT_BACKING_PRICE, this._dfractBackingPrice);
-        metrics.set(MetricNames.DFRACT_CURRENT_SUPPLY, this._dfractCurrentSupply);
-        metrics.set(MetricNames.DFRACT_MARKET_CAP, this._dfractMarketCap);
-        metrics.set(MetricNames.DFRACT_MA_BALANCE, this._dfractMaBalance);
-        metrics.set(MetricNames.DFRACT_MINT_RATIO, this._dfractMintRatio);
-        metrics.set(MetricNames.DFRACT_NEW_DFR_TO_MINT, this._dfractNewDfrToMint);
-        metrics.set(MetricNames.TWITTER_FOLLOWERS, this._twitterFollowers);
-        metrics.set(MetricNames.MILLIONS_POOL_VALUE_LOCKED, this._millionsPoolValueLocked);
-        metrics.set(MetricNames.MILLIONS_POOL_DEPOSITORS, this._millionsPoolDepositors);
-        metrics.set(MetricNames.MILLIONS_POOL_PRIZE_AMOUNT, this._millionsPoolPrizeAmount);
-        metrics.set(MetricNames.MILLIONS_POOL_PRIZE_WINNERS, this._millionsPoolPrizeWinners);
-        metrics.set(MetricNames.MILLIONS_DEPOSITS, this._millionsDeposits);
-        metrics.set(MetricNames.MILLIONS_WITHDRAWALS, this._millionsWithdrawals);
-
-        const setter = metrics.get(data.name);
-        if (!setter) {
-            this._logger.error(`Metric ${data.name} not found`);
-            return;
-        }
-        this._logger.debug(`Updating metric ${data.name} with value ${data.value} (labels ${Object.keys(data.labels || {}).join(',')})`);
-        if (!data.labels || !Object.keys(data.labels).length) {
-            setter.set(data.value);
-        } else {
-            setter.labels(data.labels).set(data.value);
         }
     }
 }

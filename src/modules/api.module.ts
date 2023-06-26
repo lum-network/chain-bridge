@@ -5,6 +5,7 @@ import { BullModule } from '@nestjs/bull';
 import { APP_FILTER, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { TerminusModule } from '@nestjs/terminus';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ScheduleModule } from '@nestjs/schedule';
 import { CacheModule, CacheStore } from '@nestjs/cache-manager';
 
 import type { RedisClientOptions } from 'redis';
@@ -57,7 +58,7 @@ import { ConfigMap, metrics, PayloadValidationOptions, SentryModuleOptions } fro
 
 import { GatewayWebsocket } from '@app/websocket';
 import { DatabaseConfig, DatabaseFeatures } from '@app/database';
-import { AsyncQueues } from '@app/async';
+import { AsyncQueues, MetricScheduler } from '@app/async';
 
 @Module({
     imports: [
@@ -81,6 +82,7 @@ import { AsyncQueues } from '@app/async';
             },
             inject: [ConfigService],
         }),
+        ScheduleModule.forRoot(),
         SentryModule.forRootAsync(SentryModuleOptions),
         TerminusModule,
         HttpModule,
@@ -99,6 +101,7 @@ import { AsyncQueues } from '@app/async';
         LumNetworkIndicator,
         MarketService,
         ...metrics,
+        MetricScheduler,
         MillionsDrawService,
         MillionsPoolService,
         MillionsPrizeService,

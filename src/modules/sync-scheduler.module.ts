@@ -12,7 +12,7 @@ import { Queue } from 'bull';
 import { SentryModule } from '@ntegral/nestjs-sentry';
 import * as parseRedisUrl from 'parse-redis-url-simple';
 
-import { AssetScheduler, AsyncQueues, BlockScheduler, GovernanceScheduler, MetricScheduler, MillionsScheduler, ValidatorScheduler } from '@app/async';
+import { AssetScheduler, AsyncQueues, BlockScheduler, GovernanceScheduler, MillionsScheduler, ValidatorScheduler } from '@app/async';
 
 import {
     AssetService,
@@ -76,7 +76,6 @@ import { DatabaseConfig, DatabaseFeatures } from '@app/database';
         DfractService,
         MarketService,
         GovernanceScheduler,
-        MetricScheduler,
         MillionsDrawService,
         MillionsScheduler,
         MillionsPoolService,
