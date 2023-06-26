@@ -1,4 +1,4 @@
-import {Inject, Injectable, Logger} from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { ClientProxy } from '@nestjs/microservices';
 import { ConfigService } from '@nestjs/config';
@@ -15,7 +15,7 @@ import { LumChain } from '@app/services/chains';
 
 @Injectable()
 export class MetricScheduler {
-    private readonly _logger: Logger = new Logger(MetricScheduler);
+    private readonly _logger: Logger = new Logger(MetricScheduler.name);
     constructor(@Inject('API') private readonly _client: ClientProxy, private readonly _configService: ConfigService, private readonly _dfrService: DfractService, private readonly _chainService: ChainService) {}
 
     // As we rely on external APIs to compute some DFR metrics we trigger the cron every min to avoid rate limiting and error chaining
