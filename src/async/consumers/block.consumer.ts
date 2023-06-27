@@ -155,7 +155,7 @@ export class BlockConsumer {
                                             poolId: Number(ev.attributes.find((a) => a.key === 'pool_id')?.value || undefined),
                                             withdrawalId: Number(ev.attributes.find((a) => a.key === 'withdrawal_id')?.value || undefined),
                                             depositorAddress: ev.attributes.find((a) => a.key === 'depositor')?.value || undefined,
-                                            winnerAddress: ev.attributes.find((a) => a.key === 'winner')?.value || undefined,
+                                            winnerAddress: ev.attributes.find((a) => a.key === 'winner')?.value || ev.attributes.find((a) => a.key === 'recipient')?.value || undefined,
                                             isSponsor: Boolean(ev.attributes.find((a) => a.key === 'is_sponsor')?.value || false),
                                             amount: { amount, denom },
                                         },

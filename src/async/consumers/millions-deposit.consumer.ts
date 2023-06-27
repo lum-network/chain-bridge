@@ -29,16 +29,21 @@ export class MillionsDepositConsumer {
             id: job.data.id,
             amount: job.data.value.amount,
             pool_id: job.data.value.poolId,
-            withdrawal_id: job.data.value.withdrawalId,
-            depositor_address: job.data.value.depositorAddress,
-            winner_address: job.data.value.winnerAddress,
-            is_sponsor: job.data.value.isSponsor,
+            withdrawal_id: job.data.value.withdrawalId || 0,
+            depositor_address: job.data.value.depositorAddress || undefined,
+            winner_address: job.data.value.winnerAddress || undefined,
+            is_sponsor: job.data.value.isSponsor || false,
             block_height: job.data.height,
         };
 
         // If no deposit in db we create it, else we update it
         if (!deposit) {
-            await this._millionsDepositService.save(formattedMillionsDeposit);
+            try {
+                await this._millionsDepositService.save(formattedMillionsDeposit);
+            } catch (error) {
+                this._logger.error(`Failed to create MillionsDepositEntity with id ${job.data.id} : ${error}`);
+                return;
+            }
 
             this._logger.debug(`Millions deposit ${job.data.id} created`);
             return;
