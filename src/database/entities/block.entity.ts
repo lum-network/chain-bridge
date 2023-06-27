@@ -1,4 +1,4 @@
-import { Column, CreateDateColumn, Entity, OneToMany, PrimaryColumn, UpdateDateColumn, VersionColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, OneToMany, PrimaryColumn, Relation, UpdateDateColumn, VersionColumn } from 'typeorm';
 
 import { TransactionEntity } from '@app/database/entities/transaction.entity';
 
@@ -38,7 +38,7 @@ export class BlockEntity {
     nonce?: number = 0;
 
     @OneToMany(() => TransactionEntity, (tx) => tx.block)
-    transactions: TransactionEntity[];
+    transactions: Relation<TransactionEntity>[];
 
     constructor(props?: Partial<BlockEntity>) {
         Object.assign(this, props);

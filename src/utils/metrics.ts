@@ -53,6 +53,37 @@ export const metrics = [
         name: MetricNames.DFRACT_NEW_DFR_TO_MINT,
         help: 'Current number of DFR to mint',
     }),
+    // Millions Metrics
+    makeGaugeProvider({
+        name: MetricNames.MILLIONS_POOL_VALUE_LOCKED,
+        help: 'Current value locked in millions pool',
+        labelNames: ['pool_id'],
+    }),
+    makeGaugeProvider({
+        name: MetricNames.MILLIONS_POOL_DEPOSITORS,
+        help: 'Current number of depositors in millions pool',
+        labelNames: ['pool_id'],
+    }),
+    makeGaugeProvider({
+        name: MetricNames.MILLIONS_POOL_PRIZE_AMOUNT,
+        help: 'Current prize amount in millions pool',
+        labelNames: ['pool_id', 'draw_id'],
+    }),
+    makeGaugeProvider({
+        name: MetricNames.MILLIONS_POOL_PRIZE_WINNERS,
+        help: 'Current number of prize winners in millions pool',
+        labelNames: ['pool_id', 'draw_id'],
+    }),
+    makeGaugeProvider({
+        name: MetricNames.MILLIONS_DEPOSITS,
+        help: 'Current number of deposits in millions',
+        labelNames: ['deposit_state'],
+    }),
+    makeGaugeProvider({
+        name: MetricNames.MILLIONS_WITHDRAWALS,
+        help: 'Current number of withdrawals in millions',
+        labelNames: ['withdrawal_state'],
+    }),
     // General Metrics
     makeGaugeProvider({
         name: MetricNames.DISCORD_MEMBERS,

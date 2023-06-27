@@ -40,6 +40,13 @@ export enum MetricNames {
     DFRACT_MA_BALANCE = 'dfract_ma_balance',
     DFRACT_MINT_RATIO = 'dfract_mint_ratio',
     DFRACT_NEW_DFR_TO_MINT = 'dfract_new_dfr_to_mint',
+    // Millions Enum
+    MILLIONS_POOL_VALUE_LOCKED = 'millions_pool_value_locked',
+    MILLIONS_POOL_DEPOSITORS = 'millions_pool_depositors',
+    MILLIONS_POOL_PRIZE_WINNERS = 'millions_pool_prize_winners',
+    MILLIONS_POOL_PRIZE_AMOUNT = 'millions_pool_prize_amount',
+    MILLIONS_DEPOSITS = 'millions_deposits',
+    MILLIONS_WITHDRAWALS = 'millions_withdrawals',
     // General metrics enums
     DISCORD_MEMBERS = 'discord_members',
     TWITTER_FOLLOWERS = 'twitter_followers',
