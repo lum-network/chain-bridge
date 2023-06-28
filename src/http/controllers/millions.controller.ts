@@ -4,16 +4,20 @@ import { CacheInterceptor } from '@nestjs/cache-manager';
 
 import { plainToInstance } from 'class-transformer';
 
-import { MillionsDrawService, MillionsPoolService, MillionsPrizeService } from '@app/services';
-
-import { DataResponse, DataResponseMetadata, MillionsDrawResponse, MillionsOutstandingPrizeResponse, MillionsPoolResponse, MillionsPrizeResponse, MillionsPrizeStatsResponse } from '@app/http';
+import { DataResponse, DataResponseMetadata, MillionsDepositResponse, MillionsDrawResponse, MillionsOutstandingPrizeResponse, MillionsPoolResponse, MillionsPrizeResponse, MillionsPrizeStatsResponse } from '@app/http';
+import { MillionsDepositService, MillionsDrawService, MillionsPoolService, MillionsPrizeService } from '@app/services';
 import { ExplorerRequest } from '@app/utils';
 
 @ApiTags('millions')
 @Controller('millions')
 @UseInterceptors(CacheInterceptor)
 export class MillionsController {
-    constructor(private readonly _millionsDrawService: MillionsDrawService, private readonly _millionsPoolService: MillionsPoolService, private readonly _millionsPrizeService: MillionsPrizeService) {}
+    constructor(
+        private readonly _millionsDepositService: MillionsDepositService,
+        private readonly _millionsDrawService: MillionsDrawService,
+        private readonly _millionsPoolService: MillionsPoolService,
+        private readonly _millionsPrizeService: MillionsPrizeService,
+    ) {}
 
     @ApiOkResponse({ status: 200, type: [MillionsPoolResponse] })
     @Get('pools')
@@ -122,6 +126,38 @@ export class MillionsController {
                 total_pool_prizes: total,
                 biggest_prize_amount: biggestPrizeAmount,
                 total_prizes_usd_amount: totalPrizesUsdAmount,
+            }),
+        });
+    }
+
+    @ApiOkResponse({ status: 200, type: MillionsDepositResponse })
+    @Get('deposits')
+    async deposits(@Req() request: ExplorerRequest): Promise<DataResponse> {
+        const [deposits, total] = await this._millionsDepositService.fetch(request.pagination.skip, request.pagination.limit);
+
+        return new DataResponse({
+            result: deposits.map((deposit) => plainToInstance(MillionsDepositResponse, deposit)),
+            metadata: new DataResponseMetadata({
+                page: request.pagination.page,
+                limit: request.pagination.limit,
+                items_count: deposits.length,
+                items_total: total,
+            }),
+        });
+    }
+
+    @ApiOkResponse({ status: 200, type: MillionsDepositResponse })
+    @Get('deposits/drops/:winnerAddress')
+    async depositsByWinnerAddress(@Req() request: ExplorerRequest, @Param('winnerAddress') winnerAddress: string): Promise<DataResponse> {
+        const [deposits, total] = await this._millionsDepositService.fetchDepositsDrops(winnerAddress, request.pagination.skip, request.pagination.limit);
+
+        return new DataResponse({
+            result: deposits.map((deposit) => plainToInstance(MillionsDepositResponse, deposit)),
+            metadata: new DataResponseMetadata({
+                page: request.pagination.page,
+                limit: request.pagination.limit,
+                items_count: deposits.length,
+                items_total: total,
             }),
         });
     }

@@ -63,6 +63,7 @@ export enum Queues {
     BEAMS = 'beams',
     BLOCKS = 'blocks',
     NOTIFICATIONS = 'notifications',
+    MILLIONS_DEPOSITS = 'millions_deposits',
 }
 
 export enum QueueJobs {
@@ -77,6 +78,7 @@ export enum QueuePriority {
     URGENT = 1,
     HIGH = 2,
     NORMAL = 3,
+    LOW = 4,
 }
 
 export enum NotificationChannels {

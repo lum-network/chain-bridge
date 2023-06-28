@@ -11,6 +11,7 @@ export * from './description.response';
 export * from './depositor.response';
 export * from './lum.response';
 export * from './message.response';
+export * from './millions-deposit.response';
 export * from './millions-draw.response';
 export * from './millions-pool.response';
 export * from './millions-prize.response';

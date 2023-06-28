@@ -45,6 +45,18 @@ export const AsyncQueues: BullModuleAsyncOptions[] = [
         }),
     },
     {
+        name: Queues.MILLIONS_DEPOSITS,
+        imports: [ConfigModule],
+        inject: [ConfigService],
+        useFactory: (configService: ConfigService) => ({
+            url: configService.get<string>('REDIS_URL'),
+            defaultJobOptions: {
+                removeOnComplete: false,
+                removeOnFail: false,
+            },
+        }),
+    },
+    {
         name: Queues.NOTIFICATIONS,
         imports: [ConfigModule],
         inject: [ConfigService],
