@@ -80,7 +80,7 @@ export class MetricScheduler {
             return;
         }
         this._logger.debug(`Updating metric ${data.name} with value ${data.value} (labels ${Object.keys(data.labels || {}).join(',')})`);
-        if (!data.labels && !Object.keys(data.labels).length) {
+        if (data.labels === null || data.labels === undefined) {
             setter.set(data.value);
         } else {
             setter.labels(data.labels).set(data.value);
