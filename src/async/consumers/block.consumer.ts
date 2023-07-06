@@ -21,9 +21,9 @@ export class BlockConsumer {
         @InjectQueue(Queues.NOTIFICATIONS) private readonly _notificationQueue: Queue,
         private readonly _blockService: BlockService,
         private readonly _chainService: ChainService,
+        private readonly _millionsScheduler: MillionsScheduler,
         private readonly _transactionService: TransactionService,
         private readonly _validatorService: ValidatorService,
-        private readonly _millionsScheduler: MillionsScheduler,
     ) {}
 
     @Process(QueueJobs.INGEST)
