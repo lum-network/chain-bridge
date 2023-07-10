@@ -12,7 +12,7 @@ import { Draw } from '@lum-network/sdk-javascript/build/codec/lum-network/millio
 import { DepositState } from '@lum-network/sdk-javascript/build/codec/lum-network/millions/deposit';
 import { WithdrawalState } from '@lum-network/sdk-javascript/build/codec/lum-network/millions/withdrawal';
 
-import { AssetSymbol, CLIENT_PRECISION, depositStateToString, MetricNames, withdrawalStateToString } from '@app/utils';
+import { AssetSymbol, CLIENT_PRECISION, depositStateToString, MetricNames, sleep, withdrawalStateToString } from "@app/utils";
 import { ChainService, DfractService } from '@app/services';
 import { LumChain } from '@app/services/chains';
 
@@ -83,8 +83,6 @@ export class MetricScheduler {
         if (data.labels === null || data.labels === undefined) {
             setter.set(data.value);
         } else {
-            // We start by cleaning the old values for the given label before updating
-            setter.remove(data.labels);
             setter.labels(data.labels).set(data.value);
         }
     }
@@ -212,11 +210,14 @@ export class MetricScheduler {
         this._logger.debug(`[MillionsBasics] Broadcasting metrics...`);
         for (const pool of pools) {
             await this.updateMetric({ name: MetricNames.MILLIONS_POOL_VALUE_LOCKED, value: Number(pool.tvlAmount), labels: { pool_id: pool.poolId.toNumber() } });
+            await sleep(500);
             await this.updateMetric({ name: MetricNames.MILLIONS_POOL_DEPOSITORS, value: Number(pool.depositorsCount.toNumber()), labels: { pool_id: pool.poolId.toNumber() } });
         }
+        await sleep(1000);
         for (const depositState of Object.keys(depositMetas)) {
             await this.updateMetric({ name: MetricNames.MILLIONS_DEPOSITS, value: Number(depositMetas[depositState]), labels: { deposit_state: depositStateToString(Number(depositState)) } });
         }
+        await sleep(1000);
         for (const withdrawalState of Object.keys(withdrawalMetas)) {
             await this.updateMetric({ name: MetricNames.MILLIONS_WITHDRAWALS, value: Number(withdrawalMetas[withdrawalState]), labels: { withdrawal_state: withdrawalStateToString(Number(withdrawalState)) } });
         }
