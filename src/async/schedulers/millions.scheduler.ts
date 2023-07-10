@@ -141,11 +141,6 @@ export class MillionsScheduler {
         for (const pool of pools) {
             let page: Uint8Array | undefined = undefined;
 
-            // If pool is not ready, we skip it
-            if (pool.state !== MillionsPoolState.READY) {
-                continue;
-            }
-
             // Get draws for the pool
             while (true) {
                 const draws = await lumChain.client.queryClient.millions.poolDraws(long.fromNumber(pool.id), page);

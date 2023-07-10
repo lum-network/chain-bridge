@@ -79,11 +79,12 @@ export class MetricScheduler {
             this._logger.error(`Metric ${data.name} not found`);
             return;
         }
-        setter.reset();
         this._logger.debug(`Updating metric ${data.name} with value ${data.value} (labels ${Object.keys(data.labels || {}).join(',')})`);
         if (data.labels === null || data.labels === undefined) {
             setter.set(data.value);
         } else {
+            // We start by cleaning the old values for the given label before updating
+            setter.remove(data.labels);
             setter.labels(data.labels).set(data.value);
         }
     }
