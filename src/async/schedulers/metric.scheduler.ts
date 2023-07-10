@@ -79,6 +79,7 @@ export class MetricScheduler {
             this._logger.error(`Metric ${data.name} not found`);
             return;
         }
+        setter.reset();
         this._logger.debug(`Updating metric ${data.name} with value ${data.value} (labels ${Object.keys(data.labels || {}).join(',')})`);
         if (data.labels === null || data.labels === undefined) {
             setter.set(data.value);
