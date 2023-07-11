@@ -5,7 +5,6 @@ import { Job, Queue } from 'bull';
 import dayjs from 'dayjs';
 import { LumConstants, LumMessages, LumRegistry, LumUtils } from '@lum-network/sdk-javascript';
 
-import { MillionsScheduler } from '@app/async';
 import { BlockEntity, TransactionEntity } from '@app/database';
 import { BlockService, ChainService, TransactionService, ValidatorService } from '@app/services';
 import { AssetSymbol, getAddressesRelatedToTransaction, isBeam, NotificationChannels, NotificationEvents, QueueJobs, QueuePriority, Queues } from '@app/utils';
@@ -21,7 +20,6 @@ export class BlockConsumer {
         @InjectQueue(Queues.NOTIFICATIONS) private readonly _notificationQueue: Queue,
         private readonly _blockService: BlockService,
         private readonly _chainService: ChainService,
-        private readonly _millionsScheduler: MillionsScheduler,
         private readonly _transactionService: TransactionService,
         private readonly _validatorService: ValidatorService,
     ) {}
@@ -174,7 +172,8 @@ export class BlockConsumer {
 
                         // Sync Millions Draw
                         if (ev.type === 'draw_success') {
-                            this._millionsScheduler.drawsSync().finally(() => null);
+                            // FAULTY AF - NEED REVAMP - DISABLED FOR NOW
+                            // this._millionsScheduler.drawsSync().finally(() => null);
                         }
                     }
                 }
