@@ -24,7 +24,7 @@ export class MillionsScheduler {
         private readonly _millionsPrizeService: MillionsPrizeService,
     ) {}
 
-    @Cron(CronExpression.EVERY_MINUTE)
+    @Cron(CronExpression.EVERY_10_MINUTES)
     async poolsSync() {
         if (!this._configService.get<boolean>('MILLIONS_SYNC_ENABLED')) {
             return;
