@@ -13,7 +13,7 @@ export class MillionsDrawService {
         return this._repository;
     }
 
-    getById = async (id: string): Promise<MillionsDrawEntity> => {
+    getById = async (id: string): Promise<MillionsDrawEntity | null> => {
         return this._repository.findOne({ where: { id } });
     };
 

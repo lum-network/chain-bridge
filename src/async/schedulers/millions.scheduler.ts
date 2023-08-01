@@ -153,6 +153,9 @@ export class MillionsScheduler {
                         continue;
                     }
 
+                    // Get Draw from db if exists
+                    const savedDraw = await this._millionsDrawService.getById(id);
+
                     const formattedDraw: Partial<MillionsDrawEntity> = {
                         id: id,
                         pool_id: pool.id,
@@ -172,7 +175,10 @@ export class MillionsScheduler {
                         usd_token_value: await this._marketService.getTokenPrice(getAssetSymbol(pool.denom_native)),
                     };
 
-                    await this._millionsDrawService.save(formattedDraw);
+                    // If draw doesn't exist in db, we save it
+                    if (!savedDraw) {
+                        await this._millionsDrawService.save(formattedDraw);
+                    }
 
                     // If draw has prizesRefs, we process them
                     if (draw.prizesRefs && draw.prizesRefs.length) {
@@ -195,10 +201,10 @@ export class MillionsScheduler {
                                 expires_at: dayjs(draw.createdAt).add(prizeExpirationDelta.seconds.toNumber(), 'seconds').toDate(),
                                 created_at: draw.createdAt,
                                 updated_at: draw.updatedAt,
-                                usd_token_value: await this._marketService.getTokenPrice(getAssetSymbol(pool.denom_native)),
+                                usd_token_value: savedDraw ? savedDraw.usd_token_value : formattedDraw.usd_token_value,
                             };
 
-                            await this._millionsPrizeService.save(formattedPrize);
+                            await this._millionsPrizeService.createOrUpdate(formattedPrize);
                         }
                     }
                 }
