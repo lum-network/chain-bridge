@@ -148,8 +148,8 @@ export class MillionsScheduler {
                 for (const draw of draws.draws) {
                     const id = `${pool.id}-${draw.drawId.toNumber()}`;
 
-                    // If draw already exists in db, we skip it
-                    if (await this._millionsDrawService.exist(id)) {
+                    // If draw already exists more than 2 weeks in db, we skip it
+                    if (await this._millionsDrawService.existMoreThan(id, 3600 * 24 * 7 * 2)) {
                         continue;
                     }
 

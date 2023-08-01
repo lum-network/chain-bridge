@@ -21,6 +21,13 @@ export class MillionsDrawService {
         return this._repository.exist({ where: { id } });
     };
 
+    existMoreThan = async (id: string, timeInSec: number): Promise<boolean> => {
+        const date = new Date();
+        date.setSeconds(date.getSeconds() - timeInSec);
+
+        return this._repository.createQueryBuilder('millions_draws').where('millions_draws.id = :id', { id }).andWhere('millions_draws.created_at <= :date', { date }).getExists();
+    };
+
     fetch = async (skip: number, take: number): Promise<[MillionsDrawEntity[], number]> => {
         const query = this._repository.createQueryBuilder('millions_draws').orderBy('millions_draws.created_at_height', 'DESC').skip(skip).take(take);
 
