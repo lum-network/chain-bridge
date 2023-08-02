@@ -133,7 +133,7 @@ export class BlockConsumer {
                         }
 
                         // Get Millions deposit/edit/withdrawal information
-                        if (ev.type === 'deposit' || ev.type === 'withdraw_deposit' || 'deposit_edit') {
+                        if (ev.type === 'deposit' || ev.type === 'withdraw_deposit' || ev.type === 'deposit_edit') {
                             const keyArray = ev.attributes.map((a) => a.key);
 
                             if (keyArray.includes('pool_id') && keyArray.includes('deposit_id') && keyArray.includes('depositor')) {
@@ -141,9 +141,10 @@ export class BlockConsumer {
 
                                 // Parse amount
                                 let amountObj: { amount: number; denom: string } | undefined = undefined;
+                                const amountAttr = ev.attributes.find((a) => a.key === 'amount');
 
-                                if (ev.attributes.find((a) => a.key === 'amount')) {
-                                    const amountValue = ev.attributes.find((a) => a.key === 'amount').value;
+                                if (amountAttr) {
+                                    const amountValue = amountAttr.value;
                                     const amount = parseFloat(amountValue);
                                     const denom = amountValue.substring(amount.toString().length);
 
