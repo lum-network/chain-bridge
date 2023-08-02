@@ -9,7 +9,7 @@ import long from 'long';
 import { MillionsDrawEntity, MillionsPoolEntity, MillionsPrizeEntity } from '@app/database';
 import { ChainService, MarketService, MillionsDrawService, MillionsPoolService, MillionsPrizeService } from '@app/services';
 import { LumChain } from '@app/services/chains';
-import { AssetSymbol, CLIENT_PRECISION, getAssetSymbol, MillionsPoolState } from '@app/utils';
+import { AssetSymbol, CLIENT_PRECISION, getAssetSymbol } from '@app/utils';
 
 @Injectable()
 export class MillionsScheduler {
