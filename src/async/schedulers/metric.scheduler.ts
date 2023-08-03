@@ -12,7 +12,7 @@ import { Draw } from '@lum-network/sdk-javascript/build/codec/lum-network/millio
 import { DepositState } from '@lum-network/sdk-javascript/build/codec/lum-network/millions/deposit';
 import { WithdrawalState } from '@lum-network/sdk-javascript/build/codec/lum-network/millions/withdrawal';
 
-import { AssetSymbol, CLIENT_PRECISION, depositStateToString, MetricNames, sleep, withdrawalStateToString } from "@app/utils";
+import { AssetSymbol, CLIENT_PRECISION, depositStateToString, MetricNames, sleep, withdrawalStateToString } from '@app/utils';
 import { ChainService, DfractService } from '@app/services';
 import { LumChain } from '@app/services/chains';
 

@@ -5,14 +5,17 @@ import { CacheInterceptor } from '@nestjs/cache-manager';
 import { plainToInstance } from 'class-transformer';
 
 import { DataResponse, DataResponseMetadata, MillionsDepositResponse, MillionsDrawResponse, MillionsOutstandingPrizeResponse, MillionsPoolResponse, MillionsPrizeResponse, MillionsPrizeStatsResponse } from '@app/http';
-import { MillionsDepositService, MillionsDrawService, MillionsPoolService, MillionsPrizeService } from '@app/services';
-import { ExplorerRequest } from '@app/utils';
+import { ChainService, MillionsDepositService, MillionsDrawService, MillionsPoolService, MillionsPrizeService } from '@app/services';
+import { AssetSymbol, ExplorerRequest } from '@app/utils';
+import { LumChain } from '@app/services/chains';
+import { Deposit, DepositState } from '@lum-network/sdk-javascript/build/codec/lum-network/millions/deposit';
 
 @ApiTags('millions')
 @Controller('millions')
 @UseInterceptors(CacheInterceptor)
 export class MillionsController {
     constructor(
+        private readonly _chainService: ChainService,
         private readonly _millionsDepositService: MillionsDepositService,
         private readonly _millionsDrawService: MillionsDrawService,
         private readonly _millionsPoolService: MillionsPoolService,
@@ -158,6 +161,35 @@ export class MillionsController {
                 limit: request.pagination.limit,
                 items_count: deposits.length,
                 items_total: total,
+            }),
+        });
+    }
+
+    @Get('live/deposits')
+    async liveDeposits(): Promise<DataResponse> {
+        const chain = this._chainService.getChain<LumChain>(AssetSymbol.LUM);
+
+        // Acquire deposits
+        let page = undefined;
+        const deposits: Deposit[] = [];
+        while (true) {
+            const lDeps = await chain.client.queryClient.millions.deposits(page);
+            deposits.push(...lDeps.deposits);
+
+            if (lDeps.pagination && lDeps.pagination.nextKey && lDeps.pagination.nextKey.length > 0) {
+                page = lDeps.pagination.nextKey;
+            } else {
+                break;
+            }
+        }
+
+        return new DataResponse({
+            result: deposits,
+            metadata: new DataResponseMetadata({
+                page: 0,
+                limit: 0,
+                items_count: deposits.length,
+                items_total: deposits.length,
             }),
         });
     }
