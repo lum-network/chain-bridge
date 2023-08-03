@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
+import dayjs from 'dayjs';
 import { Repository } from 'typeorm';
 
 import { MillionsDrawEntity } from '@app/database';
@@ -13,12 +14,24 @@ export class MillionsDrawService {
         return this._repository;
     }
 
-    getById = async (id: string): Promise<MillionsDrawEntity> => {
+    getById = async (id: string): Promise<MillionsDrawEntity | null> => {
         return this._repository.findOne({ where: { id } });
     };
 
     exist = async (id: string): Promise<boolean> => {
         return this._repository.exist({ where: { id } });
+    };
+
+    existMoreThan = async (id: string, timeInSec: number): Promise<boolean> => {
+        const date = dayjs();
+        date.subtract(timeInSec, 'second');
+
+        const query = this._repository
+            .createQueryBuilder('millions_draws')
+            .where('millions_draws.id = :id', { id })
+            .andWhere('millions_draws.created_at <= :date', { date: date.format('YYYY-MM-DD HH:mm:ss') });
+
+        return query.getExists();
     };
 
     fetch = async (skip: number, take: number): Promise<[MillionsDrawEntity[], number]> => {
