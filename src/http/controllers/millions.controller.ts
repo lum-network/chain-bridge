@@ -3,12 +3,12 @@ import { Controller, Get, Param, Req, UseInterceptors } from '@nestjs/common';
 import { CacheInterceptor } from '@nestjs/cache-manager';
 
 import { plainToInstance } from 'class-transformer';
+import { Deposit } from '@lum-network/sdk-javascript/build/codec/lum-network/millions/deposit';
 
 import { DataResponse, DataResponseMetadata, MillionsDepositResponse, MillionsDrawResponse, MillionsOutstandingPrizeResponse, MillionsPoolResponse, MillionsPrizeResponse, MillionsPrizeStatsResponse } from '@app/http';
 import { ChainService, MillionsDepositService, MillionsDrawService, MillionsPoolService, MillionsPrizeService } from '@app/services';
 import { AssetSymbol, ExplorerRequest } from '@app/utils';
 import { LumChain } from '@app/services/chains';
-import { Deposit, DepositState } from '@lum-network/sdk-javascript/build/codec/lum-network/millions/deposit';
 
 @ApiTags('millions')
 @Controller('millions')
