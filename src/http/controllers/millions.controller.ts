@@ -4,6 +4,7 @@ import { CacheInterceptor } from '@nestjs/cache-manager';
 
 import { plainToInstance } from 'class-transformer';
 import { Deposit } from '@lum-network/sdk-javascript/build/codec/lum-network/millions/deposit';
+import { Withdrawal } from '@lum-network/sdk-javascript/build/codec/lum-network/millions/withdrawal';
 
 import { DataResponse, DataResponseMetadata, MillionsDepositResponse, MillionsDrawResponse, MillionsOutstandingPrizeResponse, MillionsPoolResponse, MillionsPrizeResponse, MillionsPrizeStatsResponse } from '@app/http';
 import { ChainService, MillionsDepositService, MillionsDrawService, MillionsPoolService, MillionsPrizeService } from '@app/services';
@@ -190,6 +191,35 @@ export class MillionsController {
                 limit: 0,
                 items_count: deposits.length,
                 items_total: deposits.length,
+            }),
+        });
+    }
+
+    @Get('live/withdrawals')
+    async liveWithdrawals(): Promise<DataResponse> {
+        const chain = this._chainService.getChain<LumChain>(AssetSymbol.LUM);
+
+        // Acquire deposits
+        let page = undefined;
+        const withdrawals: Withdrawal[] = [];
+        while (true) {
+            const lWdls = await chain.client.queryClient.millions.withdrawals(page);
+            withdrawals.push(...lWdls.withdrawals);
+
+            if (lWdls.pagination && lWdls.pagination.nextKey && lWdls.pagination.nextKey.length > 0) {
+                page = lWdls.pagination.nextKey;
+            } else {
+                break;
+            }
+        }
+
+        return new DataResponse({
+            result: withdrawals,
+            metadata: new DataResponseMetadata({
+                page: 0,
+                limit: 0,
+                items_count: withdrawals.length,
+                items_total: withdrawals.length,
             }),
         });
     }
