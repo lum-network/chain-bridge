@@ -8,7 +8,7 @@ import { lastValueFrom } from 'rxjs';
 import { Queue } from 'bull';
 import * as Sentry from '@sentry/node';
 
-import { AssetPrefix, AssetSymbol, AssetMicroDenom, AssetDenom, GenericAssetInfo, Queues, MODULE_NAMES, getUniqueSymbols } from '@app/utils';
+import { AssetPrefix, AssetSymbol, AssetMicroDenom, AssetDenom, GenericAssetInfo, Queues, getUniqueSymbols } from '@app/utils';
 
 import { AssetService } from '@app/services/asset.service';
 import { MarketService } from '@app/services/market.service';

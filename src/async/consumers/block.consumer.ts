@@ -132,18 +132,24 @@ export class BlockConsumer {
                             }
                         }
 
-                        // Get Millions deposit/withdrawal information
-                        // TODO: Add deposit_update when available
-                        if (ev.type === 'deposit' || ev.type === 'withdraw_deposit') {
+                        // Get Millions deposit/edit/withdrawal information
+                        if (ev.type === 'deposit' || ev.type === 'withdraw_deposit' || ev.type === 'deposit_edit') {
                             const keyArray = ev.attributes.map((a) => a.key);
 
-                            if (keyArray.includes('pool_id') && keyArray.includes('deposit_id') && keyArray.includes('amount') && keyArray.includes('depositor')) {
+                            if (keyArray.includes('pool_id') && keyArray.includes('deposit_id') && keyArray.includes('depositor')) {
                                 const id = ev.attributes.find((a) => a.key === 'deposit_id').value;
 
                                 // Parse amount
-                                const amountValue = ev.attributes.find((a) => a.key === 'amount').value;
-                                const amount = parseFloat(amountValue);
-                                const denom = amountValue.substring(amount.toString().length);
+                                let amountObj: { amount: number; denom: string } | undefined = undefined;
+                                const amountAttr = ev.attributes.find((a) => a.key === 'amount');
+
+                                if (amountAttr) {
+                                    const amountValue = amountAttr.value;
+                                    const amount = parseFloat(amountValue);
+                                    const denom = amountValue.substring(amount.toString().length);
+
+                                    amountObj = { amount, denom };
+                                }
 
                                 // Dispatch Millions Deposits for ingest
                                 await this._millionsQueue.add(
@@ -155,8 +161,8 @@ export class BlockConsumer {
                                             withdrawalId: Number(ev.attributes.find((a) => a.key === 'withdrawal_id')?.value || undefined),
                                             depositorAddress: ev.attributes.find((a) => a.key === 'depositor')?.value || undefined,
                                             winnerAddress: ev.attributes.find((a) => a.key === 'winner')?.value || ev.attributes.find((a) => a.key === 'recipient')?.value || undefined,
-                                            isSponsor: Boolean(ev.attributes.find((a) => a.key === 'is_sponsor')?.value || false),
-                                            amount: { amount, denom },
+                                            isSponsor: (ev.attributes.find((a) => a.key === 'sponsor')?.value || false) as boolean,
+                                            amount: amountObj,
                                         },
                                         height: blockDoc.height,
                                     },

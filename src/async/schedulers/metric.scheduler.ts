@@ -7,10 +7,10 @@ import { Gauge } from 'prom-client';
 import { InjectMetric } from '@willsoto/nestjs-prometheus';
 
 import { LumConstants } from '@lum-network/sdk-javascript';
-import { Pool } from '@lum-network/sdk-javascript/build/codec/lum-network/millions/pool';
-import { Draw } from '@lum-network/sdk-javascript/build/codec/lum-network/millions/draw';
-import { DepositState } from '@lum-network/sdk-javascript/build/codec/lum-network/millions/deposit';
-import { WithdrawalState } from '@lum-network/sdk-javascript/build/codec/lum-network/millions/withdrawal';
+import { Pool } from '@lum-network/sdk-javascript/build/codec/lum/network/millions/pool';
+import { Draw } from '@lum-network/sdk-javascript/build/codec/lum/network/millions/draw';
+import { DepositState } from '@lum-network/sdk-javascript/build/codec/lum/network/millions/deposit';
+import { WithdrawalState } from '@lum-network/sdk-javascript/build/codec/lum/network/millions/withdrawal';
 
 import { AssetSymbol, CLIENT_PRECISION, depositStateToString, MetricNames, sleep, withdrawalStateToString } from '@app/utils';
 import { ChainService, DfractService } from '@app/services';

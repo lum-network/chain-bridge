@@ -1,6 +1,6 @@
 import { Column, CreateDateColumn, Entity, PrimaryColumn, UpdateDateColumn, VersionColumn } from 'typeorm';
 
-import { BeamData } from '@lum-network/sdk-javascript/build/codec/lum-network/beam/beam';
+import { BeamData } from '@lum-network/sdk-javascript/build/codec/lum/network/beam/beam';
 
 import { AmountModel } from '@app/database/entities/amount.model';
 import { BeamEvent, BeamStatus } from '@app/utils';

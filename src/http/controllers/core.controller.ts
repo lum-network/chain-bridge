@@ -9,7 +9,7 @@ import { fromUtf8 } from '@lum-network/sdk-javascript/build/utils';
 import { ChainService } from '@app/services';
 import { BalanceResponse, DataResponse, LumResponse } from '@app/http/responses';
 import { GatewayWebsocket } from '@app/websocket';
-import { AssetSymbol, CLIENT_PRECISION, MetricNames } from '@app/utils';
+import { AssetSymbol, CLIENT_PRECISION } from '@app/utils';
 import { LumChain } from '@app/services/chains';
 
 @ApiTags('core')
