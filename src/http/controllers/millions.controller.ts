@@ -3,8 +3,8 @@ import { Controller, Get, Param, Req, UseInterceptors } from '@nestjs/common';
 import { CacheInterceptor } from '@nestjs/cache-manager';
 
 import { plainToInstance } from 'class-transformer';
-import { Deposit } from '@lum-network/sdk-javascript/build/codec/lum-network/millions/deposit';
-import { Withdrawal } from '@lum-network/sdk-javascript/build/codec/lum-network/millions/withdrawal';
+import { Deposit } from '@lum-network/sdk-javascript/build/codec/lum/network/millions/deposit';
+import { Withdrawal } from '@lum-network/sdk-javascript/build/codec/lum/network/millions/withdrawal';
 
 import { DataResponse, DataResponseMetadata, MillionsDepositResponse, MillionsDrawResponse, MillionsOutstandingPrizeResponse, MillionsPoolResponse, MillionsPrizeResponse, MillionsPrizeStatsResponse } from '@app/http';
 import { ChainService, MillionsDepositService, MillionsDrawService, MillionsPoolService, MillionsPrizeService } from '@app/services';
