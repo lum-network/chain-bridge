@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
+import { InjectRepository } from '@nestjs/typeorm';
 
+import { MoreThan, Repository } from 'typeorm';
 import { lastValueFrom, map } from 'rxjs';
 
 import { ApiUrl } from '@app/utils';
 import { MarketEntity } from '@app/database';
-import { MoreThan, Repository } from 'typeorm';
-import { InjectRepository } from '@nestjs/typeorm';
 
 export interface TokenInformation {
     price: number;
