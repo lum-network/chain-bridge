@@ -34,10 +34,6 @@ export class MarketService {
 
     constructor(@InjectRepository(MarketEntity) private readonly _repository: Repository<MarketEntity>, private readonly _httpService: HttpService) {}
 
-    get repository(): Repository<MarketEntity> {
-        return this._repository;
-    }
-
     refreshTokenInformations = async (): Promise<TokenInformation[]> => {
         try {
             const response = await lastValueFrom(
