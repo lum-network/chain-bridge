@@ -4,6 +4,9 @@ import { HttpService } from '@nestjs/axios';
 import { lastValueFrom, map } from 'rxjs';
 
 import { ApiUrl } from '@app/utils';
+import { MarketEntity } from '@app/database';
+import { MoreThan, Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 
 export interface TokenInformation {
     price: number;
@@ -29,7 +32,11 @@ export class MarketService {
     private _informations: TokenInformation[] = [];
     private _marketCaps: TokenMarketCap[] = [];
 
-    constructor(private readonly _httpService: HttpService) {}
+    constructor(@InjectRepository(MarketEntity) private readonly _repository: Repository<MarketEntity>, private readonly _httpService: HttpService) {}
+
+    get repository(): Repository<MarketEntity> {
+        return this._repository;
+    }
 
     refreshTokenInformations = async (): Promise<TokenInformation[]> => {
         try {
@@ -86,13 +93,48 @@ export class MarketService {
         return val.market_cap;
     };
 
-    getTokensPrices = async (symbols: string[], forceRefresh = false): Promise<{ symbol: string; price: number }[]> => {
-        if (!this._informations.length || forceRefresh) {
-            await this.refreshTokenInformations();
-        }
+    save = async (symbol: string, price: number): Promise<MarketEntity> => {
+        const entity = new MarketEntity({
+            denom: symbol.toLocaleLowerCase(),
+            price,
+        });
+        return this._repository.save(entity);
+    };
 
-        const tokens = this._informations.filter((info) => symbols.includes(info.symbol.toUpperCase()));
+    fetchAllMarketData = async (skip: number, take: number): Promise<[MarketEntity[], number]> => {
+        const query = this._repository.createQueryBuilder('market').skip(skip).take(take).orderBy('id', 'ASC');
+        return query.getManyAndCount();
+    };
 
-        return tokens.map((token) => ({ symbol: token.symbol, price: token.price }));
+    fetchMarketDataSinceDate = async (skip: number, take: number, denom: string, date: Date): Promise<[MarketEntity[], number]> => {
+        const data = await this._repository.find({
+            where: {
+                denom: denom.toLocaleLowerCase(),
+                created_at: MoreThan(date),
+            },
+            skip,
+            take,
+        });
+        const totalCount = await this._repository.count({
+            where: {
+                denom: denom.toLocaleLowerCase(),
+                created_at: MoreThan(date),
+            },
+        });
+        return [data, totalCount];
+    };
+
+    fetchLatestMarketDataByDenom = async (denom: string): Promise<MarketEntity[]> => {
+        const data = await this._repository.find({
+            where: {
+                denom,
+            },
+            order: {
+                id: 'DESC',
+            },
+            take: 1,
+        });
+
+        return data;
     };
 }

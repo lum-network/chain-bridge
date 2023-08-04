@@ -1,4 +1,4 @@
-import { AssetMicroDenom, AssetSymbol } from '@app/utils/constants';
+import { AssetMicroDenom, AssetSymbol, MillionsMarketSymbol } from '@app/utils/constants';
 
 export const getAssetSymbol = (denom: string): AssetSymbol => {
     switch (denom) {
@@ -24,6 +24,21 @@ export const getAssetSymbol = (denom: string): AssetSymbol => {
             return AssetSymbol.EVMOS;
         case AssetMicroDenom.DFR:
             return AssetSymbol.DFR;
+    }
+};
+
+export const getMillionsMarketSymbol = (denom: string): MillionsMarketSymbol => {
+    switch (denom) {
+        case MillionsMarketSymbol.COSMOS:
+            return MillionsMarketSymbol.COSMOS;
+        case MillionsMarketSymbol.CRONOS:
+            return MillionsMarketSymbol.CRONOS;
+        case MillionsMarketSymbol.OSMOSIS:
+            return MillionsMarketSymbol.OSMOSIS;
+        case MillionsMarketSymbol.LUM:
+            return MillionsMarketSymbol.LUM;
+        case MillionsMarketSymbol.STARGAZE:
+            return MillionsMarketSymbol.STARGAZE;
     }
 };
 

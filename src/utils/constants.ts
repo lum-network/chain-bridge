@@ -160,6 +160,14 @@ export enum AssetDenom {
     DFR = 'dfr',
 }
 
+export enum MillionsMarketSymbol {
+    COSMOS = 'ATOM',
+    CRONOS = 'CRO',
+    LUM = 'LUM',
+    OSMOSIS = 'OSMO',
+    STARGAZE = 'STARS',
+}
+
 export enum DfractOnChainApy {
     COSMOS = 'atom',
     AKASH_NETWORK = 'akt',
