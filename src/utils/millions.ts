@@ -30,6 +30,8 @@ export const withdrawalStateToString = (state: WithdrawalState): string => {
             return 'TRANSFER';
         case WithdrawalState.WITHDRAWAL_STATE_FAILURE:
             return 'FAILURE';
+        case WithdrawalState.WITHDRAWAL_STATE_PENDING:
+            return 'PENDING';
         default:
             return 'UNKNOWN';
     }
