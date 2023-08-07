@@ -36,7 +36,7 @@ export class MarketController {
     @ApiOkResponse({ status: 200, type: MarketResponse })
     @DefaultTake(50)
     @Post('data/since')
-    async getHistoricalMarketDataByDenom(@Req() request: ExplorerRequest, @Body() body: MarketRequest): Promise<DataResponse> {
+    async getHistoricalMarketData(@Req() request: ExplorerRequest, @Body() body: MarketRequest): Promise<DataResponse> {
         const [result, total] = await this._marketService.fetchMarketDataSinceDate(request.pagination.skip, request.pagination.limit, body.since);
 
         return new DataResponse({
@@ -52,7 +52,7 @@ export class MarketController {
 
     @ApiOkResponse({ status: 200, type: MarketResponse })
     @Get('data/latest')
-    async getLatestMarketDataByDenom(): Promise<DataResponse> {
+    async getLatestMarketData(): Promise<DataResponse> {
         const result = await this._marketService.fetchLatestMarketData();
 
         return new DataResponse({
