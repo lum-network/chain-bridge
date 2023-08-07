@@ -188,6 +188,7 @@ export class MetricScheduler {
             [WithdrawalState.WITHDRAWAL_STATE_ICA_UNDELEGATE]: 0,
             [WithdrawalState.WITHDRAWAL_STATE_ICA_UNBONDING]: 0,
             [WithdrawalState.WITHDRAWAL_STATE_IBC_TRANSFER]: 0,
+            [WithdrawalState.WITHDRAWAL_STATE_PENDING]: 0,
             [WithdrawalState.WITHDRAWAL_STATE_FAILURE]: 0,
         };
         page = undefined;

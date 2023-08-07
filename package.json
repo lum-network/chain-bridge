@@ -34,7 +34,7 @@
     "dependencies": {
         "@bull-board/api": "^4.11.0",
         "@bull-board/express": "^4.11.0",
-        "@lum-network/sdk-javascript": "^0.8.8",
+        "@lum-network/sdk-javascript": "^0.8.9",
         "@nestjs/axios": "^3.0.0",
         "@nestjs/bull": "^10.0.1",
         "@nestjs/cache-manager": "^2.1.0",
