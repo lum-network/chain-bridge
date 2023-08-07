@@ -4,6 +4,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 
 import { MarketService } from '@app/services';
 import { MillionsMarketSymbol, getMillionsMarketSymbol } from '@app/utils';
+import { MarketData } from '@app/database';
 
 @Injectable()
 export class MarketScheduler {
@@ -19,17 +20,27 @@ export class MarketScheduler {
 
         this._logger.log(`[Market] Syncing price market data...`);
 
-        for (const symbol of Object.values(MillionsMarketSymbol)) {
-            const price = await this._marketService.getTokenPrice(getMillionsMarketSymbol(symbol), true);
+        const data: MarketData[] = [];
 
-            // Exit if no data
+        for (const symbol of Object.values(MillionsMarketSymbol)) {
+            const price = await this._marketService.getTokenPrice(getMillionsMarketSymbol(symbol));
+
+            // Exit if any missing data
             if (!price) {
                 this._logger.error(`[Market] Price for ${symbol} not found`);
                 return;
             }
 
-            await this._marketService.save(symbol, price);
-            this._logger.debug(`[Market] Persisted price market data for ${symbol}`);
+            // Collect the prices
+            data.push({
+                denom: symbol.toLocaleLowerCase(),
+                price,
+            });
+
+            this._logger.debug(`[Market] Fetched price market data for ${symbol}`);
         }
+
+        await this._marketService.saveBulk(data);
+        this._logger.debug(`[Market] Persisted price market data for all symbols`);
     }
 }

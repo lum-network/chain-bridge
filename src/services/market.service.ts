@@ -6,7 +6,7 @@ import { MoreThan, Repository } from 'typeorm';
 import { lastValueFrom, map } from 'rxjs';
 
 import { ApiUrl } from '@app/utils';
-import { MarketEntity } from '@app/database';
+import { MarketData, MarketEntity } from '@app/database';
 
 export interface TokenInformation {
     price: number;
@@ -89,10 +89,9 @@ export class MarketService {
         return val.market_cap;
     };
 
-    save = async (symbol: string, price: number): Promise<MarketEntity> => {
+    saveBulk = async (data: MarketData[]): Promise<MarketEntity> => {
         const entity = new MarketEntity({
-            denom: symbol.toLocaleLowerCase(),
-            price,
+            market_data: data,
         });
         return this._repository.save(entity);
     };
@@ -102,10 +101,9 @@ export class MarketService {
         return query.getManyAndCount();
     };
 
-    fetchMarketDataSinceDate = async (skip: number, take: number, denom: string, date: Date): Promise<[MarketEntity[], number]> => {
+    fetchMarketDataSinceDate = async (skip: number, take: number, date: Date): Promise<[MarketEntity[], number]> => {
         const data = await this._repository.find({
             where: {
-                denom: denom.toLocaleLowerCase(),
                 created_at: MoreThan(date),
             },
             skip,
@@ -113,18 +111,14 @@ export class MarketService {
         });
         const totalCount = await this._repository.count({
             where: {
-                denom: denom.toLocaleLowerCase(),
                 created_at: MoreThan(date),
             },
         });
         return [data, totalCount];
     };
 
-    fetchLatestMarketDataByDenom = async (denom: string): Promise<MarketEntity[]> => {
+    fetchLatestMarketData = async (): Promise<MarketEntity[]> => {
         const data = await this._repository.find({
-            where: {
-                denom,
-            },
             order: {
                 id: 'DESC',
             },
