@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 
 import { MoreThan, Repository } from 'typeorm';
 import { lastValueFrom, map } from 'rxjs';
+import dayjs from 'dayjs';
 
 import { ApiUrl } from '@app/utils';
 import { MarketData, MarketEntity } from '@app/database';
@@ -71,6 +72,7 @@ export class MarketService {
         if (!this._informations.length || forceRefresh) {
             await this.refreshTokenInformations();
         }
+
         const val = this._informations.find((info) => info.symbol.toLowerCase() === symbol.toLowerCase());
         if (!val) {
             return 0;
@@ -90,7 +92,11 @@ export class MarketService {
     };
 
     createMarketData = async (data: MarketData[]): Promise<MarketEntity> => {
+        const currentDate = dayjs();
+        const compositeKey = currentDate.format('YYYY-DD-MM:HH');
+
         const entity = new MarketEntity({
+            id: compositeKey,
             market_data: data,
         });
         return this._repository.save(entity);

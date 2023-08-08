@@ -1,17 +1,14 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, PrimaryColumn, UpdateDateColumn } from 'typeorm';
 
 export class MarketData {
-    @Column({ type: 'varchar', length: 32 })
     denom: string;
-
-    @Column({ type: 'float' })
     price: number;
 }
 
 @Entity({ name: 'market' })
 export class MarketEntity {
-    @PrimaryGeneratedColumn()
-    id: number;
+    @PrimaryColumn()
+    id: string;
 
     @Column({ type: 'jsonb', nullable: false, default: () => "'[]'" })
     market_data: MarketData[] = [];

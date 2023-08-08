@@ -25,10 +25,8 @@ export class MarketScheduler {
         for (const symbol of Object.values(MillionsMarketSymbol)) {
             const price = await this._marketService.getTokenPrice(getMillionsMarketSymbol(symbol));
 
-            // Exit if any missing data
             if (!price) {
                 this._logger.error(`[Market] Price for ${symbol} not found`);
-                return;
             }
 
             // Collect the prices
