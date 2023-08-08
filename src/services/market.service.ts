@@ -89,7 +89,7 @@ export class MarketService {
         return val.market_cap;
     };
 
-    saveBulk = async (data: MarketData[]): Promise<MarketEntity> => {
+    createMarketData = async (data: MarketData[]): Promise<MarketEntity> => {
         const entity = new MarketEntity({
             market_data: data,
         });

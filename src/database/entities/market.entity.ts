@@ -1,6 +1,5 @@
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 
-@Entity({ name: 'market_data' })
 export class MarketData {
     @Column({ type: 'varchar', length: 32 })
     denom: string;

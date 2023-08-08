@@ -40,7 +40,7 @@ export class MarketScheduler {
             this._logger.debug(`[Market] Fetched price market data for ${symbol}`);
         }
 
-        await this._marketService.saveBulk(data);
+        await this._marketService.createMarketData(data);
         this._logger.debug(`[Market] Persisted price market data for all symbols`);
     }
 }

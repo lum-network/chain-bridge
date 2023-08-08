@@ -1,6 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
 
+import { MarketData } from '@app/database';
+
 export class MarketResponse {
     @ApiProperty()
     @Expose()
@@ -8,21 +10,13 @@ export class MarketResponse {
 
     @ApiProperty()
     @Expose()
-    denom: string;
+    market_data: MarketData;
 
     @ApiProperty()
     @Expose()
-    price: number;
+    created_at: Date;
 
     @ApiProperty()
     @Expose()
-    created_at?: Date = null;
-
-    @ApiProperty()
-    @Expose()
-    updated_at?: Date = null;
-
-    constructor(data: Partial<MarketResponse>) {
-        Object.assign(this, data);
-    }
+    updated_at?: Date;
 }
