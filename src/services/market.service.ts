@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { InjectRepository } from '@nestjs/typeorm';
 
-import { MoreThan, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { lastValueFrom, map } from 'rxjs';
 import dayjs from 'dayjs';
 
