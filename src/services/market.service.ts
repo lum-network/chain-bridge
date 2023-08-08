@@ -108,19 +108,8 @@ export class MarketService {
     };
 
     fetchMarketDataSinceDate = async (skip: number, take: number, date: Date): Promise<[MarketEntity[], number]> => {
-        const data = await this._repository.find({
-            where: {
-                created_at: MoreThan(date),
-            },
-            skip,
-            take,
-        });
-        const totalCount = await this._repository.count({
-            where: {
-                created_at: MoreThan(date),
-            },
-        });
-        return [data, totalCount];
+        const query = this._repository.createQueryBuilder('market').where('created_at >= :date', { date }).skip(skip).take(take);
+        return query.getManyAndCount();
     };
 
     fetchLatestMarketData = async (): Promise<MarketEntity[]> => {
