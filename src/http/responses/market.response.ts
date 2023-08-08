@@ -10,7 +10,7 @@ export class MarketResponse {
 
     @ApiProperty()
     @Expose()
-    market_data: MarketData;
+    market_data: MarketData[];
 
     @ApiProperty()
     @Expose()
