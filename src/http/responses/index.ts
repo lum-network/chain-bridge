@@ -10,6 +10,7 @@ export * from './delegation.response';
 export * from './description.response';
 export * from './depositor.response';
 export * from './lum.response';
+export * from './market.response';
 export * from './message.response';
 export * from './millions-deposit.response';
 export * from './millions-draw.response';

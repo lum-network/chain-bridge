@@ -1,9 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
+import { InjectRepository } from '@nestjs/typeorm';
 
+import { Repository } from 'typeorm';
 import { lastValueFrom, map } from 'rxjs';
+import dayjs from 'dayjs';
 
 import { ApiUrl } from '@app/utils';
+import { MarketData, MarketEntity } from '@app/database';
 
 export interface TokenInformation {
     price: number;
@@ -29,7 +33,7 @@ export class MarketService {
     private _informations: TokenInformation[] = [];
     private _marketCaps: TokenMarketCap[] = [];
 
-    constructor(private readonly _httpService: HttpService) {}
+    constructor(@InjectRepository(MarketEntity) private readonly _repository: Repository<MarketEntity>, private readonly _httpService: HttpService) {}
 
     refreshTokenInformations = async (): Promise<TokenInformation[]> => {
         try {
@@ -68,6 +72,7 @@ export class MarketService {
         if (!this._informations.length || forceRefresh) {
             await this.refreshTokenInformations();
         }
+
         const val = this._informations.find((info) => info.symbol.toLowerCase() === symbol.toLowerCase());
         if (!val) {
             return 0;
@@ -86,13 +91,35 @@ export class MarketService {
         return val.market_cap;
     };
 
-    getTokensPrices = async (symbols: string[], forceRefresh = false): Promise<{ symbol: string; price: number }[]> => {
-        if (!this._informations.length || forceRefresh) {
-            await this.refreshTokenInformations();
-        }
+    createMarketData = async (data: MarketData[]): Promise<MarketEntity> => {
+        const currentDate = dayjs();
+        const compositeKey = currentDate.format('YYYY-DD-MM:HH');
 
-        const tokens = this._informations.filter((info) => symbols.includes(info.symbol.toUpperCase()));
+        const entity = new MarketEntity({
+            id: compositeKey,
+            market_data: data,
+        });
+        return this._repository.save(entity);
+    };
 
-        return tokens.map((token) => ({ symbol: token.symbol, price: token.price }));
+    fetchAllMarketData = async (skip: number, take: number): Promise<[MarketEntity[], number]> => {
+        const query = this._repository.createQueryBuilder('market').skip(skip).take(take).orderBy('id', 'ASC');
+        return query.getManyAndCount();
+    };
+
+    fetchMarketDataSinceDate = async (skip: number, take: number, date: Date): Promise<[MarketEntity[], number]> => {
+        const query = this._repository.createQueryBuilder('market').where('created_at >= :date', { date }).skip(skip).take(take);
+        return query.getManyAndCount();
+    };
+
+    fetchLatestMarketData = async (): Promise<MarketEntity[]> => {
+        const data = await this._repository.find({
+            order: {
+                id: 'DESC',
+            },
+            take: 1,
+        });
+
+        return data;
     };
 }
