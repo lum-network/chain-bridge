@@ -221,7 +221,7 @@ export class MillionsScheduler {
         }
     }
 
-    @Cron(CronExpression.EVERY_DAY_AT_1AM)
+    @Cron(CronExpression.EVERY_HOUR)
     async depositorsSync() {
         if (!this._configService.get<boolean>('MILLIONS_SYNC_ENABLED')) {
             return;
