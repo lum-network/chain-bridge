@@ -13,6 +13,7 @@ export * from './lum.response';
 export * from './market.response';
 export * from './message.response';
 export * from './millions-deposit.response';
+export * from './millions-depositor.response';
 export * from './millions-draw.response';
 export * from './millions-pool.response';
 export * from './millions-prize.response';

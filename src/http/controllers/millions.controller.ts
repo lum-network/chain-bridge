@@ -1,13 +1,13 @@
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
-import { Controller, Get, Param, Req, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, NotFoundException, Param, Req, UseInterceptors } from '@nestjs/common';
 import { CacheInterceptor } from '@nestjs/cache-manager';
 
 import { plainToInstance } from 'class-transformer';
 import { Deposit } from '@lum-network/sdk-javascript/build/codec/lum/network/millions/deposit';
 import { Withdrawal } from '@lum-network/sdk-javascript/build/codec/lum/network/millions/withdrawal';
 
-import { DataResponse, DataResponseMetadata, MillionsDepositResponse, MillionsDrawResponse, MillionsOutstandingPrizeResponse, MillionsPoolResponse, MillionsPrizeResponse, MillionsPrizeStatsResponse } from '@app/http';
-import { ChainService, MillionsDepositService, MillionsDrawService, MillionsPoolService, MillionsPrizeService } from '@app/services';
+import { DataResponse, DataResponseMetadata, MillionsDepositorResponse, MillionsDepositResponse, MillionsDrawResponse, MillionsOutstandingPrizeResponse, MillionsPoolResponse, MillionsPrizeResponse, MillionsPrizeStatsResponse } from '@app/http';
+import { ChainService, MillionsDepositService, MillionsDepositorService, MillionsDrawService, MillionsPoolService, MillionsPrizeService } from '@app/services';
 import { AssetSymbol, ExplorerRequest } from '@app/utils';
 import { LumChain } from '@app/services/chains';
 
@@ -18,6 +18,7 @@ export class MillionsController {
     constructor(
         private readonly _chainService: ChainService,
         private readonly _millionsDepositService: MillionsDepositService,
+        private readonly _millionsDepositorService: MillionsDepositorService,
         private readonly _millionsDrawService: MillionsDrawService,
         private readonly _millionsPoolService: MillionsPoolService,
         private readonly _millionsPrizeService: MillionsPrizeService,
@@ -163,6 +164,41 @@ export class MillionsController {
                 items_count: deposits.length,
                 items_total: total,
             }),
+        });
+    }
+
+    @ApiOkResponse({ status: 200, type: MillionsDepositorResponse })
+    @Get('depositors/:poolId')
+    async depositorsByPoolId(@Req() request: ExplorerRequest, @Param('poolId') poolId: number): Promise<DataResponse> {
+        const [depositors, total] = await this._millionsDepositorService.fetchByPoolId(poolId, request.pagination.skip, request.pagination.limit);
+
+        return new DataResponse({
+            result: depositors.map((deposit) => plainToInstance(MillionsDepositorResponse, deposit)),
+            metadata: new DataResponseMetadata({
+                page: request.pagination.page,
+                limit: request.pagination.limit,
+                items_count: depositors.length,
+                items_total: total,
+            }),
+        });
+    }
+
+    @ApiOkResponse({ status: 200, type: MillionsDepositorResponse })
+    @Get('depositors/:poolId/:address')
+    async depositorsByPoolIdAndAddress(@Req() request: ExplorerRequest, @Param('poolId') poolId: number, @Param('address') address: string): Promise<DataResponse> {
+        const depositor = await this._millionsDepositorService.getByPoolIdAndAddress(poolId, address);
+
+        if (!depositor) {
+            throw new NotFoundException('Depositor not found');
+        }
+
+        const before = await this._millionsDepositorService.getByPoolIdAndRank(poolId, depositor.rank - 1);
+        const after = await this._millionsDepositorService.getByPoolIdAndRank(poolId, depositor.rank + 1);
+
+        const depositors = [before, depositor, after];
+
+        return new DataResponse({
+            result: depositors.map((deposit) => plainToInstance(MillionsDepositorResponse, deposit)),
         });
     }
 
