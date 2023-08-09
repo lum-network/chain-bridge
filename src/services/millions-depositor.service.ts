@@ -20,15 +20,11 @@ export class MillionsDepositorService {
     };
 
     getByPoolIdAndAddress = async (poolId: number, address: string): Promise<MillionsDepositorEntity | null> => {
-        const query = this._repository.createQueryBuilder('millions_depositors').where({ pool_id: poolId, address: address });
-
-        return query.getOne();
+        return this._repository.findOne({ where: { pool_id: poolId, address: address } });
     };
 
     getByPoolIdAndRank = async (poolId: number, rank: number): Promise<MillionsDepositorEntity | null> => {
-        const query = this._repository.createQueryBuilder('millions_depositors').where({ pool_id: poolId, rank: rank });
-
-        return query.getOne();
+        return this._repository.findOne({ where: { pool_id: poolId, rank: rank } });
     };
 
     save = (entity: Partial<MillionsDepositorEntity>): Promise<MillionsDepositorEntity> => {
