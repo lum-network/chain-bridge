@@ -3,13 +3,14 @@ import { ConfigService } from '@nestjs/config';
 import { Cron, CronExpression } from '@nestjs/schedule';
 
 import { LumUtils, LumConstants } from '@lum-network/sdk-javascript';
+import { Deposit } from '@lum-network/sdk-javascript/build/codec/lum/network/millions/deposit';
 import dayjs from 'dayjs';
 import long from 'long';
 
-import { MillionsDrawEntity, MillionsPoolEntity, MillionsPrizeEntity } from '@app/database';
-import { ChainService, MarketService, MillionsDrawService, MillionsPoolService, MillionsPrizeService } from '@app/services';
+import { MillionsDepositorEntity, MillionsDrawEntity, MillionsPoolEntity, MillionsPrizeEntity } from '@app/database';
+import { ChainService, MarketService, MillionsDepositorService, MillionsDrawService, MillionsPoolService, MillionsPrizeService } from '@app/services';
 import { LumChain } from '@app/services/chains';
-import { AssetSymbol, CLIENT_PRECISION, getAssetSymbol } from '@app/utils';
+import { AssetSymbol, CLIENT_PRECISION, getAssetSymbol, groupAndSumDeposits } from '@app/utils';
 
 @Injectable()
 export class MillionsScheduler {
@@ -19,6 +20,7 @@ export class MillionsScheduler {
         private readonly _chainService: ChainService,
         private readonly _configService: ConfigService,
         private readonly _marketService: MarketService,
+        private readonly _millionsDepositorService: MillionsDepositorService,
         private readonly _millionsDrawService: MillionsDrawService,
         private readonly _millionsPoolService: MillionsPoolService,
         private readonly _millionsPrizeService: MillionsPrizeService,
@@ -216,6 +218,59 @@ export class MillionsScheduler {
                     break;
                 }
             }
+        }
+    }
+
+    @Cron(CronExpression.EVERY_DAY_AT_1AM)
+    async depositorsSync() {
+        if (!this._configService.get<boolean>('MILLIONS_SYNC_ENABLED')) {
+            return;
+        }
+
+        this._logger.log(`Syncing depositors from chain...`);
+
+        const pools = await this._millionsPoolService.fetchReady();
+        const lumChain = this._chainService.getChain<LumChain>(AssetSymbol.LUM);
+
+        for (const pool of pools) {
+            let page: Uint8Array | undefined = undefined;
+            const allDeposits: Deposit[] = [];
+
+            // Get all deposits for the pool
+            while (true) {
+                const deposits = await lumChain.client.queryClient.millions.poolDeposits(long.fromNumber(pool.id), page);
+
+                allDeposits.push(...deposits.deposits);
+
+                // If we have pagination key, we just patch it, and it will process in the next loop
+                if (deposits.pagination && deposits.pagination.nextKey && deposits.pagination.nextKey.length) {
+                    page = deposits.pagination.nextKey;
+                } else {
+                    break;
+                }
+            }
+
+            // Group deposits by depositor address, sum amounts and ignore sponsors
+            const aggregatedDeposits = groupAndSumDeposits(allDeposits);
+
+            // Sort deposits by amount
+            const sortedDeposits = aggregatedDeposits.sort((a, b) => b.rawAmount - a.rawAmount);
+
+            // Format deposits to db entity
+            const formattedDeposits = sortedDeposits.map((deposit, index) => {
+                return {
+                    id: `${pool.id}-${deposit.depositorAddress}`,
+                    address: deposit.depositorAddress,
+                    pool_id: pool.id,
+                    amount: deposit.rawAmount,
+                    rank: index + 1,
+                    native_denom: pool.denom_native,
+                } as MillionsDepositorEntity;
+            });
+
+            // Delete all old deposits for the pool and save new
+            await this._millionsDepositorService.deleteByPoolId(pool.id);
+            await this._millionsDepositorService.saveBulk(formattedDeposits);
         }
     }
 }
