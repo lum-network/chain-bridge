@@ -1,5 +1,9 @@
-import { DepositState } from '@lum-network/sdk-javascript/build/codec/lum/network/millions/deposit';
+import { Deposit, DepositState } from '@lum-network/sdk-javascript/build/codec/lum/network/millions/deposit';
 import { WithdrawalState } from '@lum-network/sdk-javascript/build/codec/lum/network/millions/withdrawal';
+
+export interface DepositWithRawAmount extends Deposit {
+    rawAmount: number;
+}
 
 export const depositStateToString = (state: DepositState): string => {
     switch (state) {
@@ -35,4 +39,21 @@ export const withdrawalStateToString = (state: WithdrawalState): string => {
         default:
             return 'UNKNOWN';
     }
+};
+
+export const groupAndSumDeposits = (deposits: Deposit[]): DepositWithRawAmount[] => {
+    const groupedDeposits: { [address: string]: DepositWithRawAmount } = {};
+
+    deposits.forEach((deposit) => {
+        if (!groupedDeposits[deposit.depositorAddress]) {
+            groupedDeposits[deposit.depositorAddress] = {
+                ...deposit,
+                rawAmount: deposit.isSponsor ? 0 : Number(deposit.amount.amount),
+            };
+        } else if (!deposit.isSponsor) {
+            groupedDeposits[deposit.depositorAddress].rawAmount += Number(deposit.amount.amount);
+        }
+    });
+
+    return Object.values(groupedDeposits);
 };
