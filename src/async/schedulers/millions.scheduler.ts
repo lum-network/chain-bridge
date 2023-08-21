@@ -221,7 +221,7 @@ export class MillionsScheduler {
         }
     }
 
-    @Cron(CronExpression.EVERY_HOUR)
+    @Cron(CronExpression.EVERY_10_MINUTES)
     async depositorsSync() {
         if (!this._configService.get<boolean>('MILLIONS_SYNC_ENABLED')) {
             return;
@@ -272,5 +272,11 @@ export class MillionsScheduler {
             await this._millionsDepositorService.deleteByPoolId(pool.id);
             await this._millionsDepositorService.saveBulk(formattedDeposits);
         }
+    }
+
+    // Every hour at 30
+    @Cron('30 * * * *')
+    async biggestPrizesSync() {
+
     }
 }

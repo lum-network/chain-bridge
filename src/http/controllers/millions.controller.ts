@@ -86,9 +86,9 @@ export class MillionsController {
     }
 
     @ApiOkResponse({ status: 200, type: [MillionsPrizeResponse] })
-    @Get('prizes/biggest/:denom')
-    async biggestPrizesByDenom(@Req() request: ExplorerRequest, @Param('denom') denom: string): Promise<DataResponse> {
-        const [prizes, total] = await this._millionsPrizeService.fetchBiggestByDenom(denom, request.pagination.skip, request.pagination.limit);
+    @Get('prizes/biggest/:poolId')
+    async biggestPrizesByDenom(@Req() request: ExplorerRequest, @Param('poolId') poolId: string): Promise<DataResponse> {
+        const [prizes, total] = await this._millionsPrizeService.fetchBiggestByPoolId(poolId, request.pagination.skip, request.pagination.limit);
 
         return new DataResponse({
             result: prizes.map((prize) => plainToInstance(MillionsPrizeResponse, prize)),
@@ -101,10 +101,26 @@ export class MillionsController {
         });
     }
 
+    // @ApiOkResponse({ status: 200, type: [MillionsPrizeResponse] })
+    // @Get('prizes/biggest')
+    // async biggestPrizes(@Req() request: ExplorerRequest): Promise<DataResponse> {
+    //     const [prizes, total] = await this._millionsPrizeService.fetchBiggest(request.pagination.skip, request.pagination.limit);
+    //
+    //     return new DataResponse({
+    //         result: prizes.map((prize) => plainToInstance(MillionsPrizeResponse, prize)),
+    //         metadata: new DataResponseMetadata({
+    //             page: request.pagination.page,
+    //             limit: request.pagination.limit,
+    //             items_count: prizes.length,
+    //             items_total: total,
+    //         }),
+    //     });
+    // }
+
     @ApiOkResponse({ status: 200, type: [MillionsPrizeResponse] })
     @Get('prizes/biggest')
     async biggestPrizes(@Req() request: ExplorerRequest): Promise<DataResponse> {
-        const [prizes, total] = await this._millionsPrizeService.fetchBiggest(request.pagination.skip, request.pagination.limit);
+        const [prizes, total] = await this._millionsPrizeService.fetchBiggestPerAddresses(request.pagination.skip, request.pagination.limit);
 
         return new DataResponse({
             result: prizes.map((prize) => plainToInstance(MillionsPrizeResponse, prize)),
@@ -118,10 +134,10 @@ export class MillionsController {
     }
 
     @ApiOkResponse({ status: 200, type: MillionsPrizeStatsResponse })
-    @Get('prizes/stats/:denom')
-    async prizeStatsByDenom(@Param('denom') denom: string): Promise<DataResponse> {
-        const [biggestPrize, total] = await this._millionsPrizeService.fetchBiggestByDenom(denom, 0, 1);
-        const totalPrizesAmount = await this._millionsPrizeService.fetchTotalAmountByDenom(denom);
+    @Get('prizes/stats/:poolId')
+    async prizeStatsByPoolId(@Param('poolId') poolId: string): Promise<DataResponse> {
+        const [biggestPrize, total] = await this._millionsPrizeService.fetchBiggestByPoolId(poolId, 0, 1);
+        const totalPrizesAmount = await this._millionsPrizeService.getTotalAmountByPoolId(poolId);
 
         const biggestPrizeAmount = biggestPrize.length > 0 ? biggestPrize[0].amount.amount : 0;
         const totalPrizesUsdAmount = totalPrizesAmount.sum ? totalPrizesAmount.sum.toFixed(2) : '0';
