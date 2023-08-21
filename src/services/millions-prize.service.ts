@@ -24,6 +24,12 @@ export class MillionsPrizeService {
         return query.getManyAndCount();
     };
 
+    fetchByAddress = async (address: string, skip: number, take: number): Promise<[MillionsPrizeEntity[], number]> => {
+        const query = this._repository.createQueryBuilder('millions_prizes').where({ winner_address: address }).orderBy('millions_prizes.created_at_height', 'DESC').skip(skip).take(take);
+
+        return query.getManyAndCount();
+    };
+
     fetchBiggest = async (skip: number, take: number): Promise<[MillionsPrizeEntity[], number]> => {
         const query = this._repository.createQueryBuilder('millions_prizes').orderBy('millions_prizes.raw_amount * millions_prizes.usd_token_value', 'DESC').skip(skip).take(take);
 
