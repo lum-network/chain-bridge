@@ -6,7 +6,18 @@ import { plainToInstance } from 'class-transformer';
 import { Deposit } from '@lum-network/sdk-javascript/build/codec/lum/network/millions/deposit';
 import { Withdrawal } from '@lum-network/sdk-javascript/build/codec/lum/network/millions/withdrawal';
 
-import { DataResponse, DataResponseMetadata, MillionsDepositorResponse, MillionsDepositResponse, MillionsDrawResponse, MillionsOutstandingPrizeResponse, MillionsPoolResponse, MillionsPrizeResponse, MillionsPrizeStatsResponse } from '@app/http';
+import {
+    DataResponse,
+    DataResponseMetadata,
+    MillionsDepositorResponse,
+    MillionsDepositResponse,
+    MillionsDrawResponse,
+    MillionsOutstandingPrizeResponse,
+    MillionsPoolResponse,
+    MillionsPrizeResponse,
+    MillionsPrizeStatsResponse,
+    MillionsPrizeTotalAmountResponse,
+} from '@app/http';
 import { ChainService, MillionsDepositService, MillionsDepositorService, MillionsDrawService, MillionsPoolService, MillionsPrizeService } from '@app/services';
 import { AssetSymbol, ExplorerRequest } from '@app/utils';
 import { LumChain } from '@app/services/chains';
@@ -87,7 +98,7 @@ export class MillionsController {
 
     @ApiOkResponse({ status: 200, type: [MillionsPrizeResponse] })
     @Get('prizes/biggest/:poolId')
-    async biggestPrizesByDenom(@Req() request: ExplorerRequest, @Param('poolId') poolId: string): Promise<DataResponse> {
+    async biggestPrizesByPoolId(@Req() request: ExplorerRequest, @Param('poolId') poolId: string): Promise<DataResponse> {
         const [prizes, total] = await this._millionsPrizeService.fetchBiggestByPoolId(poolId, request.pagination.skip, request.pagination.limit);
 
         return new DataResponse({
@@ -117,18 +128,31 @@ export class MillionsController {
     //     });
     // }
 
-    @ApiOkResponse({ status: 200, type: [MillionsPrizeResponse] })
-    @Get('prizes/biggest')
-    async biggestPrizes(@Req() request: ExplorerRequest): Promise<DataResponse> {
-        const [prizes, total] = await this._millionsPrizeService.fetchBiggestPerAddresses(request.pagination.skip, request.pagination.limit);
+    // @ApiOkResponse({ status: 200, type: [MillionsPrizeResponse] })
+    // @Get('prizes/biggest')
+    // async biggestPrizes(@Req() request: ExplorerRequest): Promise<DataResponse> {
+    //     const [prizes, total] = await this._millionsPrizeService.fetchBiggestPerAddresses(request.pagination.skip, request.pagination.limit);
+    //
+    //     return new DataResponse({
+    //         result: prizes.map((prize) => plainToInstance(MillionsPrizeResponse, prize)),
+    //         metadata: new DataResponseMetadata({
+    //             page: request.pagination.page,
+    //             limit: request.pagination.limit,
+    //             items_count: prizes.length,
+    //             items_total: total,
+    //         }),
+    //     });
+    // }
+
+    @ApiOkResponse({ status: 200, type: [MillionsPrizeTotalAmountResponse] })
+    @Get('prizes/:poolId/total-amount/:address')
+    async totalAmountByPoolIdAndAddress(@Param('poolId') poolId: string, @Param('address') address: string): Promise<DataResponse> {
+        const total = await this._millionsPrizeService.getTotalAmountByPoolIdAndAddress(poolId, address);
 
         return new DataResponse({
-            result: prizes.map((prize) => plainToInstance(MillionsPrizeResponse, prize)),
-            metadata: new DataResponseMetadata({
-                page: request.pagination.page,
-                limit: request.pagination.limit,
-                items_count: prizes.length,
-                items_total: total,
+            result: plainToInstance(MillionsPrizeTotalAmountResponse, {
+                total_amount: total.total_amount,
+                pool_id: poolId,
             }),
         });
     }

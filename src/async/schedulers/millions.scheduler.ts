@@ -151,7 +151,8 @@ export class MillionsScheduler {
                     const id = `${pool.id}-${draw.drawId.toNumber()}`;
 
                     // If draw already exists more than 2 weeks in db, we skip it
-                    if (await this._millionsDrawService.existMoreThan(id, 3600 * 24 * 7 * 2)) {
+                    // FIXME: Increase temporary this value of 2 weeks to 3 months
+                    if (await this._millionsDrawService.existMoreThan(id, 3600 * 24 * 30 * 3/*3600 * 24 * 7 * 2*/)) {
                         continue;
                     }
 
@@ -272,11 +273,5 @@ export class MillionsScheduler {
             await this._millionsDepositorService.deleteByPoolId(pool.id);
             await this._millionsDepositorService.saveBulk(formattedDeposits);
         }
-    }
-
-    // Every hour at 30
-    @Cron('30 * * * *')
-    async biggestPrizesSync() {
-
     }
 }

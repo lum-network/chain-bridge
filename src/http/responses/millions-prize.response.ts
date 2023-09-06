@@ -70,3 +70,14 @@ export class MillionsPrizeStatsResponse {
     @Expose()
     total_prizes_usd_amount: string;
 }
+
+@Exclude()
+export class MillionsPrizeTotalAmountResponse {
+    @ApiProperty()
+    @Expose()
+    total_amount: string;
+
+    @ApiProperty()
+    @Expose()
+    pool_id: number;
+}
