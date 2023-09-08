@@ -22,7 +22,7 @@ export class MillionsBiggestWinnerService {
     };
 
     fetch = async (skip: number, take: number): Promise<[MillionsBiggestWinnerEntity[], number]> => {
-        const query = this._repository.createQueryBuilder('millions_biggest_winner').where('millions_biggest_winner.apr >= 1').orderBy('millions_biggest_winner.apr', 'DESC').skip(skip).take(take);
+        const query = this._repository.createQueryBuilder('millions_biggest_winner').where('millions_biggest_winner.sum_of_deposits > 0').orderBy('millions_biggest_winner.apr', 'DESC').skip(skip).take(take);
 
         return query.getManyAndCount();
     };
