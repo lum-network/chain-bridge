@@ -211,6 +211,9 @@ export class MillionsScheduler {
                                 usd_token_value: savedDraw ? savedDraw.usd_token_value : formattedDraw.usd_token_value,
                             };
 
+                            await this._millionsPrizeService.createOrUpdate(formattedPrize);
+
+                            // Sum up prizes by winner address
                             if (winners[formattedPrize.winner_address]?.id) {
                                 winners[formattedPrize.winner_address].raw_amount += formattedPrize.raw_amount;
                             } else {
@@ -226,8 +229,6 @@ export class MillionsScheduler {
                                     pool_id: formattedPrize.pool_id,
                                 };
                             }
-
-                            await this._millionsPrizeService.createOrUpdate(formattedPrize);
                         }
 
                         for (const winner of Object.values(winners)) {
@@ -238,6 +239,7 @@ export class MillionsScheduler {
                             while (true) {
                                 const deposits = await lumChain.client.queryClient.millions.accountPoolDeposits(winner.id, draw.poolId, page);
 
+                                // Sum up all deposits before this draw
                                 sumOfDepositsBeforeDraw += deposits.deposits.reduce((acc, deposit) => {
                                     if (deposit.createdAtHeight.toNumber() < draw.createdAtHeight.toNumber() && !deposit.isSponsor) {
                                         return acc + Number(LumUtils.convertUnit({ amount: deposit.amount.amount, denom: LumConstants.MicroLumDenom }, LumConstants.LumDenom));
