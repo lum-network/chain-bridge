@@ -72,12 +72,44 @@ export class MillionsPrizeStatsResponse {
 }
 
 @Exclude()
-export class MillionsPrizeTotalAmountResponse {
+export class MillionsBiggestWinnerResponse {
     @ApiProperty()
     @Expose()
-    total_amount: string;
+    id: string;
+
+    @ApiProperty()
+    @Expose()
+    draw_id: number;
+
+    @ApiProperty()
+    @Expose()
+    raw_amount: number;
 
     @ApiProperty()
     @Expose()
     pool_id: number;
+
+    @ApiProperty()
+    @Expose()
+    denom_native: string;
+
+    @ApiProperty()
+    @Expose()
+    sum_of_deposits: number;
+
+    @ApiProperty()
+    @Expose()
+    apr: number;
+
+    @ApiProperty()
+    @Expose()
+    created_at: Date;
+
+    @ApiProperty()
+    @Expose()
+    updated_at: Date;
+
+    @ApiProperty()
+    @Expose()
+    created_at_height: number;
 }

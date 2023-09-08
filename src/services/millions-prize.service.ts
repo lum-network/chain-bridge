@@ -48,12 +48,6 @@ export class MillionsPrizeService {
         return query.getRawOne();
     };
 
-    getTotalAmountByPoolIdAndAddress = async (poolId: string, address: string): Promise<any> => {
-        const query = this._repository.createQueryBuilder('millions_prizes').select('SUM(millions_prizes.raw_amount)', 'total_amount').where({ pool_id: poolId, winner_address: address });
-
-        return query.getRawOne();
-    };
-
     save = (entity: Partial<MillionsPrizeEntity>): Promise<MillionsPrizeEntity> => {
         return this._repository.save(entity);
     };

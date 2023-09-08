@@ -16,9 +16,9 @@ import {
     MillionsPoolResponse,
     MillionsPrizeResponse,
     MillionsPrizeStatsResponse,
-    MillionsPrizeTotalAmountResponse,
+    MillionsBiggestWinnerResponse,
 } from '@app/http';
-import { ChainService, MillionsDepositService, MillionsDepositorService, MillionsDrawService, MillionsPoolService, MillionsPrizeService } from '@app/services';
+import { ChainService, MillionsDepositService, MillionsDepositorService, MillionsDrawService, MillionsPoolService, MillionsPrizeService, MillionsBiggestWinnerService } from '@app/services';
 import { AssetSymbol, ExplorerRequest } from '@app/utils';
 import { LumChain } from '@app/services/chains';
 
@@ -28,6 +28,7 @@ import { LumChain } from '@app/services/chains';
 export class MillionsController {
     constructor(
         private readonly _chainService: ChainService,
+        private readonly _millionsBiggestWinnerService: MillionsBiggestWinnerService,
         private readonly _millionsDepositService: MillionsDepositService,
         private readonly _millionsDepositorService: MillionsDepositorService,
         private readonly _millionsDrawService: MillionsDrawService,
@@ -128,47 +129,34 @@ export class MillionsController {
         });
     }
 
-    // @ApiOkResponse({ status: 200, type: [MillionsPrizeResponse] })
-    // @Get('prizes/biggest')
-    // async biggestPrizes(@Req() request: ExplorerRequest): Promise<DataResponse> {
-    //     const [prizes, total] = await this._millionsPrizeService.fetchBiggest(request.pagination.skip, request.pagination.limit);
-    //
-    //     return new DataResponse({
-    //         result: prizes.map((prize) => plainToInstance(MillionsPrizeResponse, prize)),
-    //         metadata: new DataResponseMetadata({
-    //             page: request.pagination.page,
-    //             limit: request.pagination.limit,
-    //             items_count: prizes.length,
-    //             items_total: total,
-    //         }),
-    //     });
-    // }
-
-    // @ApiOkResponse({ status: 200, type: [MillionsPrizeResponse] })
-    // @Get('prizes/biggest')
-    // async biggestPrizes(@Req() request: ExplorerRequest): Promise<DataResponse> {
-    //     const [prizes, total] = await this._millionsPrizeService.fetchBiggestPerAddresses(request.pagination.skip, request.pagination.limit);
-    //
-    //     return new DataResponse({
-    //         result: prizes.map((prize) => plainToInstance(MillionsPrizeResponse, prize)),
-    //         metadata: new DataResponseMetadata({
-    //             page: request.pagination.page,
-    //             limit: request.pagination.limit,
-    //             items_count: prizes.length,
-    //             items_total: total,
-    //         }),
-    //     });
-    // }
-
-    @ApiOkResponse({ status: 200, type: [MillionsPrizeTotalAmountResponse] })
-    @Get('prizes/:poolId/total-amount/:address')
-    async totalAmountByPoolIdAndAddress(@Param('poolId') poolId: string, @Param('address') address: string): Promise<DataResponse> {
-        const total = await this._millionsPrizeService.getTotalAmountByPoolIdAndAddress(poolId, address);
+    @ApiOkResponse({ status: 200, type: [MillionsPrizeResponse] })
+    @Get('prizes/biggest')
+    async biggestPrizes(@Req() request: ExplorerRequest): Promise<DataResponse> {
+        const [prizes, total] = await this._millionsPrizeService.fetchBiggest(request.pagination.skip, request.pagination.limit);
 
         return new DataResponse({
-            result: plainToInstance(MillionsPrizeTotalAmountResponse, {
-                total_amount: total.total_amount,
-                pool_id: poolId,
+            result: prizes.map((prize) => plainToInstance(MillionsPrizeResponse, prize)),
+            metadata: new DataResponseMetadata({
+                page: request.pagination.page,
+                limit: request.pagination.limit,
+                items_count: prizes.length,
+                items_total: total,
+            }),
+        });
+    }
+
+    @ApiOkResponse({ status: 200, type: [MillionsBiggestWinnerResponse] })
+    @Get('prizes/biggest-apr')
+    async biggestAprPrizes(@Req() request: ExplorerRequest): Promise<DataResponse> {
+        const [prizes, total] = await this._millionsBiggestWinnerService.fetch(request.pagination.skip, request.pagination.limit);
+
+        return new DataResponse({
+            result: prizes.map((prize) => plainToInstance(MillionsBiggestWinnerResponse, prize)),
+            metadata: new DataResponseMetadata({
+                page: request.pagination.page,
+                limit: request.pagination.limit,
+                items_count: prizes.length,
+                items_total: total,
             }),
         });
     }
