@@ -1,4 +1,4 @@
-import { Column, Entity, PrimaryColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, PrimaryColumn, UpdateDateColumn } from 'typeorm';
 
 @Entity({ name: 'millions_biggest_winner' })
 export class MillionsBiggestWinnerEntity {
@@ -23,12 +23,12 @@ export class MillionsBiggestWinnerEntity {
     @Column({ type: 'float' })
     apr: number;
 
-    @Column({ type: 'date' })
-    created_at: Date;
-
-    @Column({ type: 'date' })
-    updated_at: Date;
-
     @Column({ type: 'integer' })
     created_at_height: number;
+
+    @CreateDateColumn()
+    created_at: Date = new Date();
+
+    @UpdateDateColumn({ nullable: true })
+    updated_at: Date = null;
 }

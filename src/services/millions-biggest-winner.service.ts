@@ -35,12 +35,10 @@ export class MillionsBiggestWinnerService {
                 return this._repository.save({
                     ...existingEntity,
                     ...entity,
-                    created_at: existingEntity.created_at,
-                    updated_at: entity.created_at,
                 });
             }
         } else {
-            return this._repository.save({ ...entity, updated_at: entity.created_at });
+            return this._repository.save(entity);
         }
     };
 }
