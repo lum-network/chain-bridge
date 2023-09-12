@@ -32,10 +32,29 @@ export class MillionsBiggestWinnerService {
 
         if (existingEntity) {
             if (existingEntity.apr < entity.apr) {
-                return this._repository.save({
-                    ...existingEntity,
-                    ...entity,
-                });
+                if (entity.apr !== undefined && entity.apr !== null) {
+                    existingEntity.apr = entity.apr;
+                }
+                if (entity.raw_amount !== undefined && entity.raw_amount !== null) {
+                    existingEntity.raw_amount = entity.raw_amount;
+                }
+                if (entity.sum_of_deposits !== undefined && entity.sum_of_deposits !== null) {
+                    existingEntity.sum_of_deposits = entity.sum_of_deposits;
+                }
+                if (entity.pool_id !== undefined && entity.pool_id !== null) {
+                    existingEntity.pool_id = entity.pool_id;
+                }
+                if (entity.created_at_height !== undefined && entity.created_at_height !== null) {
+                    existingEntity.created_at_height = entity.created_at_height;
+                }
+                if (entity.denom_native !== undefined && entity.denom_native !== null) {
+                    existingEntity.denom_native = entity.denom_native;
+                }
+                if (entity.draw_id !== undefined && entity.draw_id !== null) {
+                    existingEntity.draw_id = entity.draw_id;
+                }
+
+                return this._repository.save(existingEntity);
             }
         } else {
             return this._repository.save(entity);
