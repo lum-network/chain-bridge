@@ -42,7 +42,7 @@ export class MillionsPrizeService {
         return query.getManyAndCount();
     };
 
-    getTotalAmountByPoolId = async (poolId: string): Promise<MillionsPrizeEntity> => {
+    getTotalAmountByPoolId = async (poolId: string): Promise<{ sum: number }> => {
         const query = this._repository.createQueryBuilder('millions_prizes').select('SUM(millions_prizes.raw_amount * millions_prizes.usd_token_value)').where({ pool_id: poolId });
 
         return query.getRawOne();
