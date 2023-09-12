@@ -56,6 +56,8 @@ export class MillionsBiggestWinnerService {
 
                 return this._repository.save(existingEntity);
             }
+
+            return existingEntity;
         } else {
             return this._repository.save(entity);
         }
