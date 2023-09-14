@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
-import { Like, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 
 import { MillionsPrizeEntity } from '@app/database';
 import { MarketService, MillionsPoolService } from '@app/services';
@@ -36,22 +36,14 @@ export class MillionsPrizeService {
         return query.getManyAndCount();
     };
 
-    fetchBiggestByDenom = async (denom: string, skip: number, take: number): Promise<[MillionsPrizeEntity[], number]> => {
-        const query = this._repository
-            .createQueryBuilder('millions_prizes')
-            .where({ denom_native: Like(`%${denom}%`) })
-            .orderBy('millions_prizes.raw_amount', 'DESC')
-            .skip(skip)
-            .take(take);
+    fetchBiggestByPoolId = async (poolId: string, skip: number, take: number): Promise<[MillionsPrizeEntity[], number]> => {
+        const query = this._repository.createQueryBuilder('millions_prizes').where({ pool_id: poolId }).orderBy('millions_prizes.raw_amount', 'DESC').skip(skip).take(take);
 
         return query.getManyAndCount();
     };
 
-    fetchTotalAmountByDenom = async (denom: string): Promise<any> => {
-        const query = this._repository
-            .createQueryBuilder('millions_prizes')
-            .select('SUM(millions_prizes.raw_amount * millions_prizes.usd_token_value)')
-            .where({ denom_native: Like(`%${denom}%`) });
+    getTotalAmountByPoolId = async (poolId: string): Promise<{ sum: number }> => {
+        const query = this._repository.createQueryBuilder('millions_prizes').select('SUM(millions_prizes.raw_amount * millions_prizes.usd_token_value)').where({ pool_id: poolId });
 
         return query.getRawOne();
     };

@@ -7,8 +7,8 @@ import { Deposit } from '@lum-network/sdk-javascript/build/codec/lum/network/mil
 import dayjs from 'dayjs';
 import long from 'long';
 
-import { MillionsDepositorEntity, MillionsDrawEntity, MillionsPoolEntity, MillionsPrizeEntity } from '@app/database';
-import { ChainService, MarketService, MillionsDepositorService, MillionsDrawService, MillionsPoolService, MillionsPrizeService } from '@app/services';
+import { MillionsBiggestWinnerEntity, MillionsDepositorEntity, MillionsDrawEntity, MillionsPoolEntity, MillionsPrizeEntity } from '@app/database';
+import { ChainService, MarketService, MillionsBiggestWinnerService, MillionsDepositorService, MillionsDrawService, MillionsPoolService, MillionsPrizeService } from '@app/services';
 import { LumChain } from '@app/services/chains';
 import { AssetSymbol, CLIENT_PRECISION, getAssetSymbol, groupAndSumDeposits } from '@app/utils';
 
@@ -20,6 +20,7 @@ export class MillionsScheduler {
         private readonly _chainService: ChainService,
         private readonly _configService: ConfigService,
         private readonly _marketService: MarketService,
+        private readonly _millionsBiggestWinnerService: MillionsBiggestWinnerService,
         private readonly _millionsDepositorService: MillionsDepositorService,
         private readonly _millionsDrawService: MillionsDrawService,
         private readonly _millionsPoolService: MillionsPoolService,
@@ -127,13 +128,14 @@ export class MillionsScheduler {
         }
     }
 
-    @Cron(CronExpression.EVERY_10_MINUTES)
+    // Every 10 minutes delay 2 minutes
+    @Cron('2-59/10 * * * *')
     async drawsSync() {
         if (!this._configService.get<boolean>('MILLIONS_SYNC_ENABLED')) {
             return;
         }
 
-        this._logger.log(`Syncing draws and prizes from chain...`);
+        this._logger.log(`Syncing draws prizes and biggest winners from chain...`);
 
         const pools = await this._millionsPoolService.fetchReady();
 
@@ -151,7 +153,8 @@ export class MillionsScheduler {
                     const id = `${pool.id}-${draw.drawId.toNumber()}`;
 
                     // If draw already exists more than 2 weeks in db, we skip it
-                    if (await this._millionsDrawService.existMoreThan(id, 3600 * 24 * 7 * 2)) {
+                    // FIXME: Increase temporary this value of 2 weeks to 3 months
+                    if (await this._millionsDrawService.existMoreThan(id, 3600 * 24 * 30 * 3 /*3600 * 24 * 7 * 2*/)) {
                         continue;
                     }
 
@@ -184,6 +187,8 @@ export class MillionsScheduler {
 
                     // If draw has prizesRefs, we process them
                     if (draw.prizesRefs && draw.prizesRefs.length) {
+                        const winners: { [address: string]: Partial<MillionsBiggestWinnerEntity> } = {};
+
                         for (const prizeRef of draw.prizesRefs) {
                             // Get prize info from prizeRef in draw
                             const formattedPrize: Partial<MillionsPrizeEntity> = {
@@ -207,6 +212,54 @@ export class MillionsScheduler {
                             };
 
                             await this._millionsPrizeService.createOrUpdate(formattedPrize);
+
+                            // Sum up prizes by winner address
+                            if (winners[formattedPrize.winner_address]?.id) {
+                                winners[formattedPrize.winner_address].raw_amount += formattedPrize.raw_amount;
+                            } else {
+                                winners[formattedPrize.winner_address] = {
+                                    id: formattedPrize.winner_address,
+                                    raw_amount: formattedPrize.raw_amount,
+                                    draw_id: formattedPrize.draw_id,
+                                    denom_native: formattedPrize.denom_native,
+                                    created_at: formattedPrize.created_at,
+                                    sum_of_deposits: 0,
+                                    apr: 0,
+                                    created_at_height: formattedPrize.created_at_height,
+                                    pool_id: formattedPrize.pool_id,
+                                };
+                            }
+                        }
+
+                        for (const winner of Object.values(winners)) {
+                            let page: Uint8Array | undefined = undefined;
+                            let sumOfDepositsBeforeDraw = 0;
+
+                            // Get all deposits for the winner address
+                            while (true) {
+                                const deposits = await lumChain.client.queryClient.millions.accountPoolDeposits(winner.id, draw.poolId, page);
+
+                                // Sum up all deposits before this draw
+                                sumOfDepositsBeforeDraw += deposits.deposits.reduce((acc, deposit) => {
+                                    if (deposit.createdAtHeight.toNumber() < draw.createdAtHeight.toNumber() && !deposit.isSponsor) {
+                                        return acc + Number(LumUtils.convertUnit({ amount: deposit.amount.amount, denom: LumConstants.MicroLumDenom }, LumConstants.LumDenom));
+                                    }
+
+                                    return acc;
+                                }, 0);
+
+                                // If we have pagination key, we just patch it, and it will process in the next loop
+                                if (deposits.pagination && deposits.pagination.nextKey && deposits.pagination.nextKey.length) {
+                                    page = deposits.pagination.nextKey;
+                                } else {
+                                    break;
+                                }
+                            }
+
+                            winner.sum_of_deposits = sumOfDepositsBeforeDraw;
+                            winner.apr = (winner.raw_amount / winner.sum_of_deposits) * 100;
+
+                            await this._millionsBiggestWinnerService.createOrUpdateAccordingToApr(winner);
                         }
                     }
                 }
@@ -219,9 +272,11 @@ export class MillionsScheduler {
                 }
             }
         }
+
+        this._logger.log(`Draws prizes and biggest winners synced!`);
     }
 
-    @Cron(CronExpression.EVERY_HOUR)
+    @Cron(CronExpression.EVERY_10_MINUTES)
     async depositorsSync() {
         if (!this._configService.get<boolean>('MILLIONS_SYNC_ENABLED')) {
             return;

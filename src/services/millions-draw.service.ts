@@ -24,12 +24,12 @@ export class MillionsDrawService {
 
     existMoreThan = async (id: string, timeInSec: number): Promise<boolean> => {
         const date = dayjs();
-        date.subtract(timeInSec, 'second');
+        const dateToCompare = date.subtract(timeInSec, 'second');
 
         const query = this._repository
             .createQueryBuilder('millions_draws')
             .where('millions_draws.id = :id', { id })
-            .andWhere('millions_draws.created_at <= :date', { date: date.format('YYYY-MM-DD HH:mm:ss') });
+            .andWhere('millions_draws.created_at <= :date', { date: dateToCompare.format('YYYY-MM-DD HH:mm:ss') });
 
         return query.getExists();
     };

@@ -2,6 +2,7 @@ export * from './asset.entity';
 export * from './beam.entity';
 export * from './block.entity';
 export * from './market.entity';
+export * from './millions-biggest-winner.entity';
 export * from './millions-deposit.entity';
 export * from './millions-depositor.entity';
 export * from './millions-draw.entity';
