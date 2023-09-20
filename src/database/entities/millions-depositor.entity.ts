@@ -8,7 +8,7 @@ export class MillionsDepositorEntity {
     @Column({ type: 'integer' })
     pool_id: number;
 
-    @Column({ type: 'integer' })
+    @Column({ type: 'bigint' })
     amount: number;
 
     @Column({ type: 'integer' })
