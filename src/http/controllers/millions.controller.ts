@@ -281,6 +281,7 @@ export class MillionsController {
         });
     }
 
+    @ApiOkResponse({ status: 200, type: MillionsCampaignResponse })
     @Post('campaigns/participate')
     async participateCampaign(@Req() request: MillionsCampaignParticipationRequest): Promise<DataResponse> {
         const campaign = await this._millionsCampaignService.getById(request.campaign_id);
