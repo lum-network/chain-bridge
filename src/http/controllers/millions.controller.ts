@@ -9,6 +9,7 @@ import { Withdrawal } from '@lum-network/sdk-javascript/build/codec/lum/network/
 import {
     DataResponse,
     DataResponseMetadata,
+    MillionsCampaignResponse,
     MillionsDepositorResponse,
     MillionsDepositResponse,
     MillionsDrawResponse,
@@ -18,7 +19,7 @@ import {
     MillionsPrizeStatsResponse,
     MillionsBiggestWinnerResponse,
 } from '@app/http';
-import { ChainService, MillionsDepositService, MillionsDepositorService, MillionsDrawService, MillionsPoolService, MillionsPrizeService, MillionsBiggestWinnerService } from '@app/services';
+import { ChainService, MillionsBiggestWinnerService, MillionsCampaignService, MillionsDepositService, MillionsDepositorService, MillionsDrawService, MillionsPoolService, MillionsPrizeService } from '@app/services';
 import { AssetSymbol, ExplorerRequest } from '@app/utils';
 import { LumChain } from '@app/services/chains';
 
@@ -29,6 +30,7 @@ export class MillionsController {
     constructor(
         private readonly _chainService: ChainService,
         private readonly _millionsBiggestWinnerService: MillionsBiggestWinnerService,
+        private readonly _millionsCampaignService: MillionsCampaignService,
         private readonly _millionsDepositService: MillionsDepositService,
         private readonly _millionsDepositorService: MillionsDepositorService,
         private readonly _millionsDrawService: MillionsDrawService,
@@ -243,6 +245,36 @@ export class MillionsController {
 
         return new DataResponse({
             result: depositors.map((deposit) => plainToInstance(MillionsDepositorResponse, deposit)),
+        });
+    }
+
+    @ApiOkResponse({ status: 200, type: MillionsCampaignResponse })
+    @Get('campaigns')
+    async campaigns(@Req() request: ExplorerRequest): Promise<DataResponse> {
+        const [campaigns, total] = await this._millionsCampaignService.fetch(request.pagination.skip, request.pagination.limit);
+
+        return new DataResponse({
+            result: campaigns.map((campaign) => plainToInstance(MillionsCampaignResponse, campaign)),
+            metadata: new DataResponseMetadata({
+                page: request.pagination.page,
+                limit: request.pagination.limit,
+                items_count: campaigns.length,
+                items_total: total,
+            }),
+        });
+    }
+
+    @ApiOkResponse({ status: 200, type: MillionsCampaignResponse })
+    @Get('campaigns/:id')
+    async campaignById(@Param('id') id: string): Promise<DataResponse> {
+        const campaign = await this._millionsCampaignService.getById(id);
+
+        if (!campaign) {
+            throw new NotFoundException('Campaign not found');
+        }
+
+        return new DataResponse({
+            result: plainToInstance(MillionsCampaignResponse, campaign),
         });
     }
 

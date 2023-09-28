@@ -5,6 +5,7 @@ export * from './chain.service';
 export * from './dfract.service';
 export * from './market.service';
 export * from './millions-biggest-winner.service';
+export * from './millions-campaign.service';
 export * from './millions-deposit.service';
 export * from './millions-depositor.service';
 export * from './millions-draw.service';
