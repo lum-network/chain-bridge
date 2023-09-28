@@ -17,7 +17,7 @@ export class MillionsCampaignEntity {
     @Column({ type: 'date', default: null, nullable: true })
     end_at?: Date = null;
 
-    @Column({ type: 'varchar', length: 128 })
+    @Column({ type: 'varchar', length: 64 })
     password: string;
 
     @CreateDateColumn()
