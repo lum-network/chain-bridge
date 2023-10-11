@@ -11,6 +11,12 @@ export class MillionsCampaignEntity {
     @Column({ type: 'varchar', length: 1024 })
     description: string;
 
+    @Column({ type: 'varchar', length: 64 })
+    username: string;
+
+    @Column({ type: 'varchar', length: 512 })
+    image: string;
+
     @Column({ type: 'date', default: null, nullable: true })
     start_at: Date = null;
 
