@@ -44,9 +44,13 @@ export const groupAndSumDeposits = (deposits: Deposit[]): DepositWithRawAmount[]
 
     for (const deposit of deposits) {
         if (!groupedDeposits[deposit.depositorAddress]) {
+            if (deposit.isSponsor) {
+                continue;
+            }
+
             groupedDeposits[deposit.depositorAddress] = {
                 ...deposit,
-                rawAmount: deposit.isSponsor ? 0 : Number(deposit.amount.amount),
+                rawAmount: Number(deposit.amount.amount),
             };
         } else if (!deposit.isSponsor) {
             groupedDeposits[deposit.depositorAddress].rawAmount += Number(deposit.amount.amount);
