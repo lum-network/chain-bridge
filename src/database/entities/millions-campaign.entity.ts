@@ -12,10 +12,10 @@ export class MillionsCampaignEntity {
     description: string;
 
     @Column({ type: 'date', default: null, nullable: true })
-    start_at?: Date = null;
+    start_at: Date = null;
 
     @Column({ type: 'date', default: null, nullable: true })
-    end_at?: Date = null;
+    end_at: Date = null;
 
     @Column({ type: 'varchar', length: 64 })
     password: string;

@@ -291,11 +291,11 @@ export class MillionsController {
         }
 
         if (!(await bcrypt.compare(request.password, campaign.password))) {
-            throw new NotFoundException('Password is incorrect');
+            throw new Error('Password is incorrect');
         }
 
         if (await this._millionsCampaignMemberService.getByCampaignIdAndWalletAddress(request.campaign_id, request.wallet_address)) {
-            throw new NotFoundException('You already participated in this campaign');
+            throw new Error('You already participated in this campaign');
         }
 
         await this._millionsCampaignMemberService.save({
