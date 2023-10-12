@@ -18,6 +18,14 @@ export class MillionsCampaignResponse {
 
     @ApiProperty()
     @Expose()
+    username: string;
+
+    @ApiProperty()
+    @Expose()
+    image: string;
+
+    @ApiProperty()
+    @Expose()
     start_at: Date;
 
     @ApiProperty()
