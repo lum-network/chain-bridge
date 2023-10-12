@@ -1,4 +1,7 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, Relation, UpdateDateColumn } from 'typeorm';
+
+import { AmountModel } from '@app/database/entities/amount.model';
+import { MillionsCampaignMemberEntity } from '@app/database';
 
 @Entity({ name: 'millions_campaign' })
 export class MillionsCampaignEntity {
@@ -17,6 +20,12 @@ export class MillionsCampaignEntity {
     @Column({ type: 'varchar', length: 512 })
     image: string;
 
+    @Column({ type: 'integer' })
+    drops: number;
+
+    @Column({ type: 'json', nullable: true })
+    amount?: AmountModel;
+
     @Column({ type: 'date', default: null, nullable: true })
     start_at: Date = null;
 
@@ -25,6 +34,9 @@ export class MillionsCampaignEntity {
 
     @Column({ type: 'varchar', length: 64 })
     password: string;
+
+    @OneToMany(() => MillionsCampaignMemberEntity, (member) => member.campaign)
+    members: Relation<MillionsCampaignMemberEntity>[];
 
     @CreateDateColumn()
     created_at: Date = new Date();

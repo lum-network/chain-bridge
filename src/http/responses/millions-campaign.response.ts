@@ -1,6 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { Exclude, Expose } from 'class-transformer';
+import { Exclude, Expose, Type } from 'class-transformer';
+
+import { BalanceResponse } from '@app/http';
 
 @Exclude()
 export class MillionsCampaignResponse {
@@ -23,6 +25,15 @@ export class MillionsCampaignResponse {
     @ApiProperty()
     @Expose()
     image: string;
+
+    @ApiProperty()
+    @Expose()
+    drops: number;
+
+    @ApiProperty({ type: () => BalanceResponse })
+    @Expose()
+    @Type(() => BalanceResponse)
+    amount: BalanceResponse;
 
     @ApiProperty()
     @Expose()
