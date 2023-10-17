@@ -301,6 +301,7 @@ export class MillionsController {
         await this._millionsCampaignMemberService.save({
             campaign_id: request.campaign_id,
             wallet_address: request.wallet_address,
+            campaign: campaign,
         });
 
         return new DataResponse({
