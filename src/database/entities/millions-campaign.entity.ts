@@ -1,7 +1,7 @@
 import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, Relation, UpdateDateColumn } from 'typeorm';
 
 import { AmountModel } from '@app/database/entities/amount.model';
-import { MillionsCampaignMemberEntity } from '@app/database';
+import { MillionsCampaignMemberEntity } from '@app/database/entities/millions-campaign-member.entity';
 
 @Entity({ name: 'millions_campaign' })
 export class MillionsCampaignEntity {

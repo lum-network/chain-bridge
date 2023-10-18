@@ -1,6 +1,6 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, Relation, UpdateDateColumn } from 'typeorm';
 
-import { MillionsCampaignEntity } from '@app/database';
+import { MillionsCampaignEntity } from '@app/database/entities/millions-campaign.entity';
 
 @Entity({ name: 'millions_campaign_member' })
 export class MillionsCampaignMemberEntity {

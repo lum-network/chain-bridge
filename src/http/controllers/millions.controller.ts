@@ -1,5 +1,5 @@
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
-import { Controller, Get, NotFoundException, Param, Post, Req, UseInterceptors } from '@nestjs/common';
+import { Controller, ForbiddenException, Get, NotFoundException, Param, Post, Req, UnprocessableEntityException, UseInterceptors } from '@nestjs/common';
 import { CacheInterceptor } from '@nestjs/cache-manager';
 
 import * as bcrypt from 'bcrypt';
@@ -291,11 +291,11 @@ export class MillionsController {
         }
 
         if (!(await bcrypt.compare(request.password, campaign.password))) {
-            throw new Error('Password is incorrect');
+            throw new ForbiddenException('Password is incorrect');
         }
 
         if (await this._millionsCampaignMemberService.getByCampaignIdAndWalletAddress(request.campaign_id, request.wallet_address)) {
-            throw new Error('You already participated in this campaign');
+            throw new UnprocessableEntityException('You already participated in this campaign');
         }
 
         await this._millionsCampaignMemberService.save({

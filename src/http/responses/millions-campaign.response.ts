@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 
 import { Exclude, Expose, Type } from 'class-transformer';
 
-import { BalanceResponse } from '@app/http';
+import { BalanceResponse } from '@app/http/responses/balance.response';
 
 @Exclude()
 export class MillionsCampaignResponse {
