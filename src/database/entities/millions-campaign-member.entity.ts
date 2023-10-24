@@ -7,14 +7,14 @@ export class MillionsCampaignMemberEntity {
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
-    @Column({ type: 'varchar', length: 128 })
+    @Column({ type: 'varchar' })
     campaign_id: string;
 
     @Column({ type: 'varchar', length: 64 })
     wallet_address: string;
 
     @ManyToOne(() => MillionsCampaignEntity, (campaign) => campaign.members)
-    @JoinColumn({ name: 'campaign_id', referencedColumnName: 'campaign_id' })
+    @JoinColumn({ name: 'campaign_id', referencedColumnName: 'id' })
     campaign: Relation<MillionsCampaignEntity>;
 
     @CreateDateColumn()
