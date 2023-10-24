@@ -30,8 +30,8 @@ export class MillionsBiggestWinnerService {
     createOrUpdateAccordingToApr = async (entity: Partial<MillionsBiggestWinnerEntity>): Promise<MillionsBiggestWinnerEntity> => {
         const existingEntity = await this.getById(entity.id);
 
-        // If the user does not exists, simply persist it
-        if(!existingEntity){
+        // If the user does not exist, simply persist it
+        if (!existingEntity) {
             return this._repository.save(entity);
         }
 
