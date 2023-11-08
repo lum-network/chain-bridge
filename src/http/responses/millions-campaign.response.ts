@@ -3,6 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Exclude, Expose, Type } from 'class-transformer';
 
 import { BalanceResponse } from '@app/http/responses/balance.response';
+import { MillionsCampaignMemberResponse } from '@app/http/responses/millions-campaign-member.response';
 
 @Exclude()
 export class MillionsCampaignResponse {
@@ -34,6 +35,9 @@ export class MillionsCampaignResponse {
     @Expose()
     @Type(() => BalanceResponse)
     amount: BalanceResponse;
+
+    @ApiProperty({ type: () => MillionsCampaignMemberResponse })
+    members: MillionsCampaignMemberResponse[];
 
     @ApiProperty()
     @Expose()
