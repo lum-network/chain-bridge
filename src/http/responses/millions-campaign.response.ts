@@ -21,6 +21,10 @@ export class MillionsCampaignResponse {
 
     @ApiProperty()
     @Expose()
+    pool_id: string;
+
+    @ApiProperty()
+    @Expose()
     username: string;
 
     @ApiProperty()
