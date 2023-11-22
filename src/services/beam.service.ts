@@ -10,7 +10,10 @@ import { Job, Queue } from 'bull';
 
 @Injectable()
 export class BeamService {
-    constructor(@InjectRepository(BeamEntity) private readonly _repository: Repository<BeamEntity>, @InjectQueue(Queues.BEAMS) private readonly _queue: Queue) {}
+    constructor(
+        @InjectRepository(BeamEntity) private readonly _repository: Repository<BeamEntity>,
+        @InjectQueue(Queues.BEAMS) private readonly _queue: Queue,
+    ) {}
 
     countTotal = async (): Promise<number> => {
         return this._repository.count();

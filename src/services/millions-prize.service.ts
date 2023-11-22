@@ -8,7 +8,11 @@ import { MarketService, MillionsPoolService } from '@app/services';
 
 @Injectable()
 export class MillionsPrizeService {
-    constructor(@InjectRepository(MillionsPrizeEntity) private readonly _repository: Repository<MillionsPrizeEntity>, private readonly _marketService: MarketService, private readonly _millionsPoolService: MillionsPoolService) {}
+    constructor(
+        @InjectRepository(MillionsPrizeEntity) private readonly _repository: Repository<MillionsPrizeEntity>,
+        private readonly _marketService: MarketService,
+        private readonly _millionsPoolService: MillionsPoolService,
+    ) {}
 
     get repository(): Repository<MillionsPrizeEntity> {
         return this._repository;

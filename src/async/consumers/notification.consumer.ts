@@ -9,7 +9,10 @@ import { QueueJobs, Queues, makeRequest } from '@app/utils';
 
 @Processor(Queues.NOTIFICATIONS)
 export class NotificationConsumer {
-    constructor(@Inject('API') private readonly _client: ClientProxy, private readonly _configService: ConfigService) {}
+    constructor(
+        @Inject('API') private readonly _client: ClientProxy,
+        private readonly _configService: ConfigService,
+    ) {}
 
     @Process(QueueJobs.NOTIFICATION_SOCKET)
     async dispatchNotificationSocket(job: Job<{ channel: string; event: string; data: string }>) {

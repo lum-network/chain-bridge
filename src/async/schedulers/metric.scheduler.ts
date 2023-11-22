@@ -15,6 +15,7 @@ import { WithdrawalState } from '@lum-network/sdk-javascript/build/codec/lum/net
 import { AssetSymbol, CLIENT_PRECISION, depositStateToString, MetricNames, sleep, withdrawalStateToString } from '@app/utils';
 import { ChainService, DfractService } from '@app/services';
 import { LumChain } from '@app/services/chains';
+import { IdentifiedChannel, State } from '@lum-network/sdk-javascript/build/codec/ibc/core/channel/v1/channel';
 
 @Injectable()
 export class MetricScheduler {
@@ -41,6 +42,11 @@ export class MetricScheduler {
         @InjectMetric(MetricNames.MILLIONS_POOL_PRIZE_WINNERS) private readonly _millionsPoolPrizeWinners: Gauge<string>,
         @InjectMetric(MetricNames.MILLIONS_DEPOSITS) private readonly _millionsDeposits: Gauge<string>,
         @InjectMetric(MetricNames.MILLIONS_WITHDRAWALS) private readonly _millionsWithdrawals: Gauge<string>,
+        // IBC metrics constructors
+        @InjectMetric(MetricNames.IBC_OPEN_CHANNELS) private readonly _ibcOpenChannels: Gauge<string>,
+        @InjectMetric(MetricNames.IBC_CLOSED_CHANNELS) private readonly _ibcClosedChannels: Gauge<string>,
+        @InjectMetric(MetricNames.IBC_OTHER_CHANNELS) private readonly _ibcOtherChannels: Gauge<string>,
+        @InjectMetric(MetricNames.IBC_PENDING_PACKETS) private readonly _ibcPendingPackets: Gauge<string>,
         // General metrics constructors
         @InjectMetric(MetricNames.TWITTER_FOLLOWERS) private readonly _twitterFollowers: Gauge<string>,
         private readonly _configService: ConfigService,
@@ -73,6 +79,10 @@ export class MetricScheduler {
         metrics.set(MetricNames.MILLIONS_POOL_PRIZE_WINNERS, this._millionsPoolPrizeWinners);
         metrics.set(MetricNames.MILLIONS_DEPOSITS, this._millionsDeposits);
         metrics.set(MetricNames.MILLIONS_WITHDRAWALS, this._millionsWithdrawals);
+        metrics.set(MetricNames.IBC_OPEN_CHANNELS, this._ibcOpenChannels);
+        metrics.set(MetricNames.IBC_CLOSED_CHANNELS, this._ibcClosedChannels);
+        metrics.set(MetricNames.IBC_OTHER_CHANNELS, this._ibcOtherChannels);
+        metrics.set(MetricNames.IBC_PENDING_PACKETS, this._ibcPendingPackets);
 
         const setter = metrics.get(data.name);
         if (!setter) {
@@ -253,5 +263,45 @@ export class MetricScheduler {
             await this.updateMetric({ name: MetricNames.MILLIONS_POOL_PRIZE_WINNERS, value: Number(draw.totalWinCount.toNumber()), labels: { pool_id: draw.poolId.toNumber(), draw_id: draw.drawId.toNumber() } });
         }
         this._logger.debug(`[MillionsDraws] Metrics broadcasted`);
+    }
+
+    @Cron(CronExpression.EVERY_MINUTE)
+    async updateIbc() {
+        if (!this._configService.get<boolean>('METRIC_SYNC_ENABLED')) {
+            return;
+        }
+
+        this._logger.debug(`[IBC] Syncing...`);
+
+        // Grab our channels
+        let page: Uint8Array | undefined = undefined;
+        const channels: IdentifiedChannel[] = [];
+        while (true) {
+            const lChannels = await this._chainService.getChain<LumChain>(AssetSymbol.LUM).client.queryClient.ibc.channel.channels(page);
+            channels.push(...lChannels.channels);
+            if (lChannels.pagination && lChannels.pagination.nextKey && lChannels.pagination.nextKey.length > 0) {
+                page = lChannels.pagination.nextKey;
+            } else {
+                break;
+            }
+        }
+
+        // Process our stats
+        let openChannels = 0;
+        let closedChannels = 0;
+        let otherChannels = 0;
+        for (const channel of channels) {
+            if (channel.state === State.STATE_OPEN) {
+                openChannels++;
+            } else if (channel.state === State.STATE_CLOSED) {
+                closedChannels++;
+            } else {
+                otherChannels++;
+            }
+        }
+
+        await this.updateMetric({ name: MetricNames.IBC_OPEN_CHANNELS, value: Number(openChannels), labels: {} });
+        await this.updateMetric({ name: MetricNames.IBC_CLOSED_CHANNELS, value: Number(closedChannels), labels: {} });
+        await this.updateMetric({ name: MetricNames.IBC_OTHER_CHANNELS, value: Number(otherChannels), labels: {} });
     }
 }

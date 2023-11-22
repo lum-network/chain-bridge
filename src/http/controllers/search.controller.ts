@@ -10,7 +10,10 @@ import { DataResponse, SearchResponse } from '@app/http/responses';
 @ApiTags('search')
 @Controller('search')
 export class SearchController {
-    constructor(private readonly _blockService: BlockService, private readonly _transactionService: TransactionService) {}
+    constructor(
+        private readonly _blockService: BlockService,
+        private readonly _transactionService: TransactionService,
+    ) {}
 
     @ApiOkResponse({ status: 200, type: SearchResponse })
     @Get(':data')

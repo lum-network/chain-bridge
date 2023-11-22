@@ -8,7 +8,10 @@ import { LumChain } from '@app/services/chains';
 export class DfractService {
     private readonly _logger: Logger = new Logger(DfractService.name);
 
-    constructor(private readonly _assetService: AssetService, private readonly _chainService: ChainService) {}
+    constructor(
+        private readonly _assetService: AssetService,
+        private readonly _chainService: ChainService,
+    ) {}
 
     /*
      * This method returns the actual DFR token supply

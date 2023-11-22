@@ -17,7 +17,10 @@ import { LumChain } from '@app/services/chains';
 export class CoreController {
     private readonly _logger: Logger = new Logger(CoreController.name);
 
-    constructor(private readonly _chainService: ChainService, private readonly _messageGateway: GatewayWebsocket) {}
+    constructor(
+        private readonly _chainService: ChainService,
+        private readonly _messageGateway: GatewayWebsocket,
+    ) {}
 
     @UseInterceptors(CacheInterceptor)
     @ApiOkResponse({ status: 200, type: LumResponse })

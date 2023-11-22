@@ -15,7 +15,11 @@ import { AssetSymbol, CLIENT_PRECISION, ExplorerRequest } from '@app/utils';
 @Controller('accounts')
 @UseInterceptors(CacheInterceptor)
 export class AccountsController {
-    constructor(private readonly _chainService: ChainService, private readonly _transactionService: TransactionService, private readonly _validatorDelegationService: ValidatorDelegationService) {}
+    constructor(
+        private readonly _chainService: ChainService,
+        private readonly _transactionService: TransactionService,
+        private readonly _validatorDelegationService: ValidatorDelegationService,
+    ) {}
 
     @ApiOkResponse({ status: 200, type: [DelegationResponse] })
     @DefaultTake(25)

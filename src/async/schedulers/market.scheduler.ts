@@ -10,7 +10,10 @@ import { MarketData } from '@app/database';
 export class MarketScheduler {
     private _logger: Logger = new Logger(MarketScheduler.name);
 
-    constructor(private readonly _configService: ConfigService, private readonly _marketService: MarketService) {}
+    constructor(
+        private readonly _configService: ConfigService,
+        private readonly _marketService: MarketService,
+    ) {}
 
     @Cron(CronExpression.EVERY_HOUR)
     async MarketSync() {

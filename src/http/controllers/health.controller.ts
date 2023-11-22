@@ -5,7 +5,10 @@ import { LumNetworkIndicator } from '@app/http/indicators';
 
 @Controller('health')
 export class HealthController {
-    constructor(private readonly _health: HealthCheckService, private readonly _lm: LumNetworkIndicator) {}
+    constructor(
+        private readonly _health: HealthCheckService,
+        private readonly _lm: LumNetworkIndicator,
+    ) {}
 
     @Get()
     @HealthCheck()

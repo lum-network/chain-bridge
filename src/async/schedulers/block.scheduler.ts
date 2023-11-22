@@ -12,7 +12,11 @@ import { AssetSymbol, QueueJobs, QueuePriority, Queues } from '@app/utils';
 @Injectable()
 export class BlockScheduler {
     private readonly _logger: Logger = new Logger(BlockScheduler.name);
-    constructor(@InjectQueue(Queues.BLOCKS) private readonly _queue: Queue, private readonly _configService: ConfigService, private readonly _chainService: ChainService) {}
+    constructor(
+        @InjectQueue(Queues.BLOCKS) private readonly _queue: Queue,
+        private readonly _configService: ConfigService,
+        private readonly _chainService: ChainService,
+    ) {}
 
     @Cron(CronExpression.EVERY_DAY_AT_4AM, { name: 'blocks_backward_ingest' })
     async backwardIngest() {

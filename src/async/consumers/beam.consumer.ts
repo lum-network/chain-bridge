@@ -10,7 +10,10 @@ import { BeamService, ChainService } from '@app/services';
 export class BeamConsumer {
     private readonly _logger: Logger = new Logger(BeamConsumer.name);
 
-    constructor(private readonly _beamService: BeamService, private readonly _chainService: ChainService) {}
+    constructor(
+        private readonly _beamService: BeamService,
+        private readonly _chainService: ChainService,
+    ) {}
 
     @Process(QueueJobs.INGEST)
     async ingestBeam(job: Job<{ id: string; value: BeamEventValue; url: string; time: Date }>) {

@@ -97,7 +97,11 @@ import { DatabaseConfig, DatabaseFeatures } from '@app/database';
 export class SyncSchedulerModule implements OnModuleInit, OnApplicationBootstrap {
     private readonly _logger: Logger = new Logger(SyncSchedulerModule.name);
 
-    constructor(@InjectQueue(Queues.BLOCKS) private readonly _queue: Queue, private readonly _chainService: ChainService, private readonly _configService: ConfigService) {}
+    constructor(
+        @InjectQueue(Queues.BLOCKS) private readonly _queue: Queue,
+        private readonly _chainService: ChainService,
+        private readonly _configService: ConfigService,
+    ) {}
 
     async onModuleInit() {
         // Pause queues until application bootstrap

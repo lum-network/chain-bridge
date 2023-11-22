@@ -9,7 +9,10 @@ import { QueueJobs, QueuePriority, Queues } from '@app/utils';
 
 @Injectable()
 export class AssetScheduler {
-    constructor(@InjectQueue(Queues.ASSETS) private readonly _queue: Queue, private readonly _configService: ConfigService) {}
+    constructor(
+        @InjectQueue(Queues.ASSETS) private readonly _queue: Queue,
+        private readonly _configService: ConfigService,
+    ) {}
 
     // Every 10 minutes, every day, between 05:00 am and 05:59 PM
     @Cron('0 */10 05-17 * * *')

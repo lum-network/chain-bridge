@@ -13,7 +13,12 @@ import { AssetSymbol, ExplorerRequest } from '@app/utils';
 @Controller('validators')
 @UseInterceptors(CacheInterceptor)
 export class ValidatorsController {
-    constructor(private readonly _blockService: BlockService, private readonly _chainService: ChainService, private readonly _validatorService: ValidatorService, private readonly _validatorDelegationService: ValidatorDelegationService) {}
+    constructor(
+        private readonly _blockService: BlockService,
+        private readonly _chainService: ChainService,
+        private readonly _validatorService: ValidatorService,
+        private readonly _validatorDelegationService: ValidatorDelegationService,
+    ) {}
 
     @ApiOkResponse({ status: 200, type: [ValidatorResponse] })
     @DefaultTake(100)

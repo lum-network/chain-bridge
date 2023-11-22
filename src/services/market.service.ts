@@ -33,7 +33,10 @@ export class MarketService {
     private _informations: TokenInformation[] = [];
     private _marketCaps: TokenMarketCap[] = [];
 
-    constructor(@InjectRepository(MarketEntity) private readonly _repository: Repository<MarketEntity>, private readonly _httpService: HttpService) {}
+    constructor(
+        @InjectRepository(MarketEntity) private readonly _repository: Repository<MarketEntity>,
+        private readonly _httpService: HttpService,
+    ) {}
 
     refreshTokenInformations = async (): Promise<TokenInformation[]> => {
         try {
