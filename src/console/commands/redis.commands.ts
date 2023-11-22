@@ -1,8 +1,7 @@
 import { Inject } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 
-import { Command, Console, createSpinner } from 'nestjs-console';
-
+import { Command, Console } from 'nestjs-console';
 import { Cache } from 'cache-manager';
 
 @Console({ command: 'redis', description: 'Redis related commands' })
@@ -11,10 +10,7 @@ export class RedisCommands {
 
     @Command({ command: 'clear', description: 'Clear the whole cache' })
     async clear(): Promise<void> {
-        const spin = createSpinner();
-        spin.start('Clearing the cache...');
         await this._cacheManager.reset();
-        spin.succeed('Cache cleared');
         process.exit(0);
     }
 }

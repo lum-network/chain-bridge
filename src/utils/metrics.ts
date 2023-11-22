@@ -93,4 +93,20 @@ export const metrics = [
         name: MetricNames.TWITTER_FOLLOWERS,
         help: 'Current number of Twitter followers',
     }),
+    makeGaugeProvider({
+        name: MetricNames.IBC_OPEN_CHANNELS,
+        help: 'Current number of open IBC channels',
+    }),
+    makeGaugeProvider({
+        name: MetricNames.IBC_CLOSED_CHANNELS,
+        help: 'Current number of closed IBC channels',
+    }),
+    makeGaugeProvider({
+        name: MetricNames.IBC_OTHER_CHANNELS,
+        help: 'Current number of other IBC channels in unknown state',
+    }),
+    makeGaugeProvider({
+        name: MetricNames.IBC_PENDING_PACKETS,
+        help: 'Current number of pending IBC packets',
+    }),
 ];

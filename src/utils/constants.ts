@@ -47,6 +47,11 @@ export enum MetricNames {
     MILLIONS_POOL_PRIZE_AMOUNT = 'millions_pool_prize_amount',
     MILLIONS_DEPOSITS = 'millions_deposits',
     MILLIONS_WITHDRAWALS = 'millions_withdrawals',
+    // IBC Enum
+    IBC_OPEN_CHANNELS = 'ibc_open_channels',
+    IBC_CLOSED_CHANNELS = 'ibc_closed_channels',
+    IBC_OTHER_CHANNELS = 'ibc_other_channels',
+    IBC_PENDING_PACKETS = 'ibc_pending_packets',
     // General metrics enums
     DISCORD_MEMBERS = 'discord_members',
     TWITTER_FOLLOWERS = 'twitter_followers',
