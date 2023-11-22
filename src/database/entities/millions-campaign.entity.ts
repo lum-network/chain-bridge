@@ -14,6 +14,9 @@ export class MillionsCampaignEntity {
     @Column({ type: 'varchar', length: 1024 })
     description: string;
 
+    @Column({ type: 'integer', default: 0 })
+    pool_id: number;
+
     @Column({ type: 'varchar', length: 64 })
     username: string;
 
