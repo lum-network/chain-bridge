@@ -3,7 +3,8 @@ import { InjectQueue, Process, Processor } from '@nestjs/bull';
 
 import { Job, Queue } from 'bull';
 import dayjs from 'dayjs';
-import { LumConstants, LumMessages, LumRegistry, LumUtils } from '@lum-network/sdk-javascript';
+import { LumRegistry, parseRawLogs, sha256, toHex, toJSON, MICRO_LUM_DENOM } from '@lum-network/sdk-javascript';
+import { MsgMultiSend } from '@lum-network/sdk-javascript/build/codegen/cosmos/bank/v1beta1/tx';
 
 import { BlockEntity, TransactionEntity } from '@app/database';
 import { BlockService, ChainService, TransactionService, ValidatorService } from '@app/services';
@@ -43,7 +44,7 @@ export class BlockConsumer {
             const block = await this._chainService.getChain(AssetSymbol.LUM).client.getBlock(job.data.blockHeight);
 
             // Get the operator address
-            const proposerAddress = LumUtils.toHex(block.block.header.proposerAddress).toUpperCase();
+            const proposerAddress = toHex(block.block.header.proposerAddress).toUpperCase();
             const validator = await this._validatorService.getByProposerAddress(proposerAddress);
             if (!validator) {
                 throw new Error(`Failed to find validator for ${proposerAddress}, exiting for retry`);
@@ -51,30 +52,30 @@ export class BlockConsumer {
 
             // Format block data
             const blockDoc: Partial<BlockEntity> = {
-                hash: LumUtils.toHex(block.blockId.hash).toUpperCase(),
+                hash: toHex(block.blockId.hash).toUpperCase(),
                 height: block.block.header.height,
                 time: dayjs(block.block.header.time as Date).toDate(),
                 tx_count: block.block.txs.length,
-                tx_hashes: block.block.txs.map((tx) => LumUtils.toHex(LumUtils.sha256(tx)).toUpperCase()),
+                tx_hashes: block.block.txs.map((tx) => toHex(sha256(tx)).toUpperCase()),
                 proposer_address: proposerAddress,
                 operator_address: validator.operator_address,
-                raw_block: LumUtils.toJSON(block) as string,
+                raw_block: toJSON(block) as string,
             };
 
             // Fetch and format transactions data
             const getFormattedTx = async (rawTx: Uint8Array): Promise<Partial<TransactionEntity>> => {
                 // Acquire raw TX
-                const tx = await this._chainService.getChain(AssetSymbol.LUM).client.getTx(LumUtils.sha256(rawTx));
+                const tx = await this._chainService.getChain(AssetSymbol.LUM).client.getTx(sha256(rawTx));
 
                 // Decode TX to human-readable format
-                const txData = LumRegistry.decodeTx(tx.tx);
+                const txData = LumRegistry.decode(tx.tx);
 
                 // Parse the raw logs
-                const logs = LumUtils.parseRawLogs(tx.result.log);
+                const logs = parseRawLogs(tx.result.log);
 
                 // Build the transaction document from information
                 const res: Partial<TransactionEntity> = {
-                    hash: LumUtils.toHex(tx.hash).toUpperCase(),
+                    hash: toHex(tx.hash).toUpperCase(),
                     height: tx.height,
                     time: blockDoc.time,
                     proposer_address: blockDoc.proposer_address,
@@ -89,14 +90,14 @@ export class BlockConsumer {
                     gas_used: (tx.result as unknown as { gasUsed: number }).gasUsed,
                     memo: txData.body.memo,
                     messages: txData.body.messages.map((msg) => {
-                        return { type_url: msg.typeUrl, value: LumUtils.toJSON(LumRegistry.decode(msg)) };
+                        return { type_url: msg.typeUrl, value: toJSON(LumRegistry.decode(msg)) };
                     }),
                     message_type: txData.body.messages.length ? txData.body.messages[0].typeUrl : null,
                     messages_count: txData.body.messages.length,
                     raw_logs: logs as any[],
-                    raw_events: tx.result.events.map((ev) => LumUtils.toJSON(ev)),
-                    raw_tx: LumUtils.toJSON(tx) as string,
-                    raw_tx_data: LumUtils.toJSON(txData) as string,
+                    raw_events: tx.result.events.map((ev) => toJSON(ev)),
+                    raw_tx: toJSON(tx) as string,
+                    raw_tx_data: toJSON(txData) as string,
                 };
 
                 // Add addresses in case of transaction failure
@@ -185,13 +186,13 @@ export class BlockConsumer {
                 }
 
                 // Multisend case
-                if (res.messages.length === 1 && res.messages[0].type_url === LumMessages.MsgMultiSendUrl) {
+                if (res.messages.length === 1 && res.messages[0].type_url === MsgMultiSend.typeUrl) {
                     res.amount = {
-                        denom: LumConstants.MicroLumDenom,
+                        denom: MICRO_LUM_DENOM,
                         amount: !res.messages[0].value.inputs
                             ? '0'
                             : res.messages[0].value.inputs
-                                  .map((i: any) => (!i.coins ? 0 : i.coins.map((c: any) => (c.denom === LumConstants.MicroLumDenom ? parseInt(c.amount) : 0)).reduce((a: number, b: number) => a + b)))
+                                  .map((i: any) => (!i.coins ? 0 : i.coins.map((c: any) => (c.denom === MICRO_LUM_DENOM ? parseInt(c.amount) : 0)).reduce((a: number, b: number) => a + b)))
                                   .reduce((a: number, b: number) => a + b),
                     };
                 }

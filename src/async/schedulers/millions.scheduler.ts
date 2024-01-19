@@ -2,10 +2,10 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Cron, CronExpression } from '@nestjs/schedule';
 
-import { LumUtils, LumConstants } from '@lum-network/sdk-javascript';
-import { Deposit } from '@lum-network/sdk-javascript/build/codec/lum/network/millions/deposit';
 import dayjs from 'dayjs';
 import long from 'long';
+import { convertUnit, LUM_DENOM, MICRO_LUM_DENOM } from '@lum-network/sdk-javascript';
+import { Deposit } from '@lum-network/sdk-javascript/build/codegen/lum/network/millions/deposit';
 
 import { MillionsBiggestWinnerEntity, MillionsDepositorEntity, MillionsDrawEntity, MillionsPoolEntity, MillionsPrizeEntity } from '@app/database';
 import { ChainService, MarketService, MillionsBiggestWinnerService, MillionsDepositorService, MillionsDrawService, MillionsPoolService, MillionsPrizeService } from '@app/services';
@@ -196,7 +196,7 @@ export class MillionsScheduler {
                                 draw_id: draw.drawId.toNumber(),
                                 prize_id: prizeRef.prizeId.toNumber(),
                                 winner_address: prizeRef.winnerAddress,
-                                raw_amount: Number(LumUtils.convertUnit({ amount: prizeRef.amount, denom: LumConstants.MicroLumDenom }, LumConstants.LumDenom)),
+                                raw_amount: Number(convertUnit({ amount: prizeRef.amount, denom: MICRO_LUM_DENOM }, LUM_DENOM)),
                                 denom_native: pool.denom_native,
                                 amount: {
                                     amount: prizeRef.amount,
@@ -241,7 +241,7 @@ export class MillionsScheduler {
                                 // Sum up all deposits before this draw
                                 sumOfDepositsBeforeDraw += deposits.deposits.reduce((acc, deposit) => {
                                     if (deposit.createdAtHeight.toNumber() < draw.createdAtHeight.toNumber() && !deposit.isSponsor) {
-                                        return acc + Number(LumUtils.convertUnit({ amount: deposit.amount.amount, denom: LumConstants.MicroLumDenom }, LumConstants.LumDenom));
+                                        return acc + Number(convertUnit({ amount: deposit.amount.amount, denom: MICRO_LUM_DENOM }, LUM_DENOM));
                                     }
 
                                     return acc;

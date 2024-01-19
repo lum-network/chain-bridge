@@ -1,16 +1,16 @@
 import { LoggerService } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 
-import { LumClient, LumUtils } from '@lum-network/sdk-javascript';
 import { Stream } from 'xstream';
 import { NewBlockEvent } from '@cosmjs/tendermint-rpc';
 import { lastValueFrom, map } from 'rxjs';
-import * as Sentry from '@sentry/node';
+import { fromBech32, lum, toBech32 } from '@lum-network/sdk-javascript';
 
 import { ApiUrl, apy, AssetDenom, AssetMicroDenom, CLIENT_PRECISION, computeTotalApy, computeTotalTokenAmount, GenericAssetInfo, LUM_STAKING_ADDRESS, TEN_EXPONENT_SIX } from '@app/utils';
 import { AssetService, MarketService } from '@app/services';
 
 export type Callback = (instance: any) => void;
+export type LumClient = Awaited<ReturnType<typeof lum.ClientFactory.createRPCQueryClient>>;
 
 interface GenericChainConfig {
     assetService: AssetService;
@@ -30,14 +30,14 @@ export class GenericChain {
     private readonly _config: GenericChainConfig;
     private _chainId: string;
     private _clientStream: Stream<NewBlockEvent> = null;
-    private _client: LumClient;
+    private _queryClient: LumClient | null = null;
 
     constructor(config: GenericChainConfig) {
         this._config = config;
     }
 
-    get client(): LumClient {
-        return this._client;
+    get client(): LumClient | null {
+        return this._queryClient;
     }
 
     get endpoint(): string {
@@ -88,15 +88,15 @@ export class GenericChain {
         // If we want to connect to RPC WS, we have to patch the connection URI
         const useEndpoint = this._config.subscribeToRPC ? this._config.endpoint.replace('https://', 'wss://').replace('http://', 'ws://') : this._config.endpoint;
 
-        // Bind and acquire the chain id
-        this._client = await LumClient.connect(useEndpoint, (error) => {
-            Sentry.captureException(error);
+        const queryClient = await lum.ClientFactory.createRPCQueryClient({
+            rpcEndpoint: useEndpoint,
         });
-        this._chainId = await this._client.getChainId();
+        this._queryClient = queryClient;
+        this._chainId = (await queryClient.cosmos.base.tendermint.v1beta1.getNodeInfo()).nodeInfo?.network || 'lum-network-1';
 
         // If we want to subscribe to RPC, we have to create a stream
         if (this._config.subscribeToRPC) {
-            this._clientStream = this._client.tmClient.subscribeNewBlock();
+            // this._clientStream = this._queryClient.cosmos.base.tendermint.v1beta1.subscribeNewBlock();
         }
 
         // If we have a post init callback, just mention it
@@ -104,11 +104,11 @@ export class GenericChain {
         if (this._config.postInitCallback) {
             this._config.postInitCallback(this);
         }
-        return this._client;
+        return this._queryClient;
     };
 
     isInitialized = (): boolean => {
-        return this._client !== undefined;
+        return this._queryClient !== undefined;
     };
 
     getTokenInformationFromOsmosis = async (): Promise<any> => {
@@ -140,7 +140,7 @@ export class GenericChain {
 
     getTokenSupply = async (): Promise<number> => {
         try {
-            const supply = Number((await this.client.getSupply(this.microDenom)).amount) / TEN_EXPONENT_SIX;
+            const supply = Number(await this.client.cosmos.bank.v1beta1.totalSupply()) / TEN_EXPONENT_SIX;
             return supply;
         } catch (error) {
             return 0;
@@ -149,7 +149,7 @@ export class GenericChain {
 
     getAPY = async (): Promise<number> => {
         try {
-            const inflation = Number(await this.client.queryClient.mint.inflation()) / CLIENT_PRECISION;
+            const inflation = Number(await this.client.cosmos.mint.v1beta1.inflation()) / CLIENT_PRECISION;
             const metrics = await computeTotalApy(this.client, Number(await this.getTokenSupply()), inflation, CLIENT_PRECISION, TEN_EXPONENT_SIX);
             return apy(metrics.inflation, metrics.communityTaxRate, metrics.stakingRatio);
         } catch (error) {
@@ -159,8 +159,8 @@ export class GenericChain {
 
     getTotalAllocatedToken = async (): Promise<number> => {
         try {
-            const decode = LumUtils.fromBech32(LUM_STAKING_ADDRESS);
-            const getDecodedAddress = LumUtils.toBech32(this.prefix, decode.data);
+            const decode = fromBech32(LUM_STAKING_ADDRESS);
+            const getDecodedAddress = toBech32(this.prefix, decode.data);
             return Number(await computeTotalTokenAmount(getDecodedAddress, this.client, this.microDenom, CLIENT_PRECISION, TEN_EXPONENT_SIX));
         } catch (error) {
             return 0;

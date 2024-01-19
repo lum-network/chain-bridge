@@ -5,17 +5,16 @@ import { Payload } from '@nestjs/microservices';
 
 import { Gauge } from 'prom-client';
 import { InjectMetric } from '@willsoto/nestjs-prometheus';
-
-import { LumConstants } from '@lum-network/sdk-javascript';
-import { Pool } from '@lum-network/sdk-javascript/build/codec/lum/network/millions/pool';
-import { Draw } from '@lum-network/sdk-javascript/build/codec/lum/network/millions/draw';
-import { DepositState } from '@lum-network/sdk-javascript/build/codec/lum/network/millions/deposit';
-import { WithdrawalState } from '@lum-network/sdk-javascript/build/codec/lum/network/millions/withdrawal';
+import { MICRO_LUM_DENOM } from '@lum-network/sdk-javascript';
+import { DepositState } from '@lum-network/sdk-javascript/build/codegen/lum/network/millions/deposit';
+import { Pool } from '@lum-network/sdk-javascript/build/codegen/lum/network/millions/pool';
+import { WithdrawalState } from '@lum-network/sdk-javascript/build/codegen/lum/network/millions/withdrawal';
+import { Draw } from '@lum-network/sdk-javascript/build/codegen/lum/network/millions/draw';
+import { IdentifiedChannel, State } from '@lum-network/sdk-javascript/build/codegen/ibc/core/channel/v1/channel';
 
 import { AssetSymbol, CLIENT_PRECISION, depositStateToString, MetricNames, sleep, withdrawalStateToString } from '@app/utils';
 import { ChainService, DfractService } from '@app/services';
 import { LumChain } from '@app/services/chains';
-import { IdentifiedChannel, State } from '@lum-network/sdk-javascript/build/codec/ibc/core/channel/v1/channel';
 
 @Injectable()
 export class MetricScheduler {
@@ -123,7 +122,7 @@ export class MetricScheduler {
         ]);
 
         // Compute community pool supply
-        const communityPoolSupply = lumCommunityPool.pool.find((coin) => coin.denom === LumConstants.MicroLumDenom);
+        const communityPoolSupply = lumCommunityPool.pool.find((coin) => coin.denom === MICRO_LUM_DENOM);
 
         await Promise.all([
             // LUM metrics
@@ -220,9 +219,9 @@ export class MetricScheduler {
         // Broadcast metrics
         this._logger.debug(`[MillionsBasics] Broadcasting metrics...`);
         for (const pool of pools) {
-            await this.updateMetric({ name: MetricNames.MILLIONS_POOL_VALUE_LOCKED, value: Number(pool.tvlAmount), labels: { pool_id: pool.poolId.toNumber() } });
+            await this.updateMetric({ name: MetricNames.MILLIONS_POOL_VALUE_LOCKED, value: Number(pool.tvlAmount), labels: { pool_id: pool.poolId } });
             await sleep(500);
-            await this.updateMetric({ name: MetricNames.MILLIONS_POOL_DEPOSITORS, value: Number(pool.depositorsCount.toNumber()), labels: { pool_id: pool.poolId.toNumber() } });
+            await this.updateMetric({ name: MetricNames.MILLIONS_POOL_DEPOSITORS, value: Number(pool.depositorsCount), labels: { pool_id: pool.poolId } });
         }
         await sleep(1000);
         for (const depositState of Object.keys(depositMetas)) {
@@ -259,8 +258,8 @@ export class MetricScheduler {
         // Broadcast metrics
         this._logger.debug(`[MillionsDraws] Metrics acquired, now broadcasting...`);
         for (const draw of draws) {
-            await this.updateMetric({ name: MetricNames.MILLIONS_POOL_PRIZE_AMOUNT, value: Number(draw.totalWinAmount), labels: { pool_id: draw.poolId.toNumber(), draw_id: draw.drawId.toNumber() } });
-            await this.updateMetric({ name: MetricNames.MILLIONS_POOL_PRIZE_WINNERS, value: Number(draw.totalWinCount.toNumber()), labels: { pool_id: draw.poolId.toNumber(), draw_id: draw.drawId.toNumber() } });
+            await this.updateMetric({ name: MetricNames.MILLIONS_POOL_PRIZE_AMOUNT, value: Number(draw.totalWinAmount), labels: { pool_id: draw.poolId, draw_id: draw.drawId } });
+            await this.updateMetric({ name: MetricNames.MILLIONS_POOL_PRIZE_WINNERS, value: Number(draw.totalWinCount), labels: { pool_id: draw.poolId, draw_id: draw.drawId } });
         }
         this._logger.debug(`[MillionsDraws] Metrics broadcasted`);
     }
