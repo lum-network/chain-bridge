@@ -2,7 +2,7 @@ import { Controller, Get, NotFoundException, Param, Req, UseInterceptors } from 
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { CacheInterceptor } from '@nestjs/cache-manager';
 
-import {estimatedVesting, fromBech32, LumBech32Prefixes, toBech32} from '@lum-network/sdk-javascript';
+import { estimatedVesting, fromBech32, LumBech32Prefixes, toBech32 } from '@lum-network/sdk-javascript';
 
 import { plainToInstance } from 'class-transformer';
 
