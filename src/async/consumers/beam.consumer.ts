@@ -26,7 +26,7 @@ export class BeamConsumer {
         this._logger.debug(`Ingesting beam ${job.data.id}`);
 
         // Get beam by passing the id received by the tx dispatch in block consumer
-        const remoteBeam = await this._chainService.getChain(AssetSymbol.LUM).client.queryClient.beam.get(job.data.id);
+        const { beam: remoteBeam } = await this._chainService.getChain(AssetSymbol.LUM).client.lum.network.beam.beam({ id: job.data.id });
 
         // We format the remote beam to match it against our schema
         const formattedBeam = {

@@ -2,7 +2,7 @@ import { Controller, Get, NotFoundException, Param, UseInterceptors } from '@nes
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { CacheInterceptor } from '@nestjs/cache-manager';
 
-import { LumConstants } from '@lum-network/sdk-javascript';
+import { LumBech32Prefixes } from '@lum-network/sdk-javascript';
 
 import { BlockService, TransactionService } from '@app/services';
 import { DataResponse, SearchResponse } from '@app/http/responses';
@@ -24,9 +24,9 @@ export class SearchController {
         // We check the different combinations
         if (/^\d+$/.test(String(data))) {
             retn = { type: 'block', data };
-        } else if (String(data).startsWith(LumConstants.LumBech32PrefixValAddr)) {
+        } else if (String(data).startsWith(LumBech32Prefixes.VAL_ADDR)) {
             retn = { type: 'validator', data };
-        } else if (String(data).startsWith(LumConstants.LumBech32PrefixAccAddr)) {
+        } else if (String(data).startsWith(LumBech32Prefixes.ACC_ADDR)) {
             retn = { type: 'account', data };
         } else {
             if (await this._blockService.get(parseInt(String(data), 10))) {

@@ -70,7 +70,7 @@ export class GovernanceScheduler {
 
             // Create or update the entity
             await this._governanceProposalService.createOrUpdateProposal({
-                id: proposal.id.toNumber(),
+                id: Number(proposal.id),
                 type_url: typeUrl,
                 status: proposal.status,
                 metadata: proposal.metadata,
@@ -95,7 +95,7 @@ export class GovernanceScheduler {
                 voting_end_time: proposal.votingEndTime,
             });
 
-            this._logger.debug(`Synced proposal #${proposal.id.toNumber()}`);
+            this._logger.debug(`Synced proposal #${proposal.id}`);
         }
     }
 
@@ -117,7 +117,7 @@ export class GovernanceScheduler {
         // Only start the patch process if there are actual proposalId
         for (const id of proposalIds) {
             // Fetch the votes based on the proposalId
-            const getVotes = await this._chainService.getChain(AssetSymbol.LUM).client.queryClient.gov.votes(id);
+            const getVotes = await this._chainService.getChain(AssetSymbol.LUM).client.cosmos.gov.v1.votes({ proposalId: id });
 
             // Map the votes to get the voters, the voteOption and the voteWeight
             const getVoterAndOptions = getVotes.votes.map((voteArgs) => ({
@@ -155,7 +155,7 @@ export class GovernanceScheduler {
         // Only start the patch process if there are actual proposalId
         for (const id of proposalIds) {
             // Fetch the deposits based on the proposalId
-            const getDeposits = await this._chainService.getChain(AssetSymbol.LUM).client.queryClient.gov.deposits(id);
+            const getDeposits = await this._chainService.getChain(AssetSymbol.LUM).client.cosmos.gov.v1.deposits({ proposalId: id });
 
             // Map the deposits to get the depositors and the amount
             const getDepositor = getDeposits.deposits.map((deposit) => ({

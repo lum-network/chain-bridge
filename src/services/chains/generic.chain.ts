@@ -4,13 +4,17 @@ import { HttpService } from '@nestjs/axios';
 import { Stream } from 'xstream';
 import { NewBlockEvent } from '@cosmjs/tendermint-rpc';
 import { lastValueFrom, map } from 'rxjs';
-import { fromBech32, lum, toBech32 } from '@lum-network/sdk-javascript';
+import * as Sentry from '@sentry/node';
+import { fromBech32, ibc, lum, toBech32 } from '@lum-network/sdk-javascript';
+import { LumClient as LumLegacyClient } from '@lum-network/sdk-javascript-legacy';
+import { Tendermint37Client } from '@lum-network/sdk-javascript-legacy/node_modules/@cosmjs/tendermint-rpc';
 
-import { ApiUrl, apy, AssetDenom, AssetMicroDenom, CLIENT_PRECISION, computeTotalApy, computeTotalTokenAmount, GenericAssetInfo, LUM_STAKING_ADDRESS, TEN_EXPONENT_SIX } from '@app/utils';
+import { ApiUrl, apy, AssetDenom, AssetMicroDenom, computeTotalApy, computeTotalTokenAmount, GenericAssetInfo, LUM_STAKING_ADDRESS, TEN_EXPONENT_SIX } from '@app/utils';
 import { AssetService, MarketService } from '@app/services';
 
 export type Callback = (instance: any) => void;
 export type LumClient = Awaited<ReturnType<typeof lum.ClientFactory.createRPCQueryClient>>;
+export type IbcQueryClient = Awaited<ReturnType<typeof ibc.ClientFactory.createRPCQueryClient>>;
 
 interface GenericChainConfig {
     assetService: AssetService;
@@ -31,6 +35,8 @@ export class GenericChain {
     private _chainId: string;
     private _clientStream: Stream<NewBlockEvent> = null;
     private _queryClient: LumClient | null = null;
+    private _tmClient: Tendermint37Client | null = null;
+    private _ibcQueryClient: IbcQueryClient | null = null;
 
     constructor(config: GenericChainConfig) {
         this._config = config;
@@ -38,6 +44,14 @@ export class GenericChain {
 
     get client(): LumClient | null {
         return this._queryClient;
+    }
+
+    get tmClient(): Tendermint37Client | null {
+        return this._tmClient;
+    }
+
+    get ibcQueryClient(): IbcQueryClient | null {
+        return this._ibcQueryClient;
     }
 
     get endpoint(): string {
@@ -91,12 +105,28 @@ export class GenericChain {
         const queryClient = await lum.ClientFactory.createRPCQueryClient({
             rpcEndpoint: useEndpoint,
         });
+
+        const { createRPCQueryClient: createIbcRPCQueryClient } = ibc.ClientFactory;
+        const ibcQueryClient = await createIbcRPCQueryClient({
+            rpcEndpoint: useEndpoint,
+        });
+
         this._queryClient = queryClient;
+        this._ibcQueryClient = ibcQueryClient;
+
+        // Bind and acquire the chain id
         this._chainId = (await queryClient.cosmos.base.tendermint.v1beta1.getNodeInfo()).nodeInfo?.network || 'lum-network-1';
+        const legacyClient = await LumLegacyClient.connect(useEndpoint, (error) => {
+            Sentry.captureException(error);
+        });
+
+        this._tmClient = legacyClient.tmClient;
+
+        console.log('______________________ TEST ______________________', this._tmClient);
 
         // If we want to subscribe to RPC, we have to create a stream
         if (this._config.subscribeToRPC) {
-            // this._clientStream = this._queryClient.cosmos.base.tendermint.v1beta1.subscribeNewBlock();
+            this._clientStream = this._tmClient.subscribeNewBlock();
         }
 
         // If we have a post init callback, just mention it
@@ -108,7 +138,7 @@ export class GenericChain {
     };
 
     isInitialized = (): boolean => {
-        return this._queryClient !== undefined;
+        return this._queryClient !== undefined && this._tmClient !== undefined;
     };
 
     getTokenInformationFromOsmosis = async (): Promise<any> => {
@@ -149,8 +179,8 @@ export class GenericChain {
 
     getAPY = async (): Promise<number> => {
         try {
-            const inflation = Number(await this.client.cosmos.mint.v1beta1.inflation()) / CLIENT_PRECISION;
-            const metrics = await computeTotalApy(this.client, Number(await this.getTokenSupply()), inflation, CLIENT_PRECISION, TEN_EXPONENT_SIX);
+            const inflation = Number(await this.client.cosmos.mint.v1beta1.inflation());
+            const metrics = await computeTotalApy(this.client, Number(await this.getTokenSupply()), inflation, TEN_EXPONENT_SIX);
             return apy(metrics.inflation, metrics.communityTaxRate, metrics.stakingRatio);
         } catch (error) {
             return 0;
@@ -161,7 +191,7 @@ export class GenericChain {
         try {
             const decode = fromBech32(LUM_STAKING_ADDRESS);
             const getDecodedAddress = toBech32(this.prefix, decode.data);
-            return Number(await computeTotalTokenAmount(getDecodedAddress, this.client, this.microDenom, CLIENT_PRECISION, TEN_EXPONENT_SIX));
+            return Number(await computeTotalTokenAmount(getDecodedAddress, this.client, this.microDenom, TEN_EXPONENT_SIX));
         } catch (error) {
             return 0;
         }

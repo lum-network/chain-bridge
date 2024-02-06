@@ -9,7 +9,7 @@ import { fromUtf8 } from '@lum-network/sdk-javascript/build/utils';
 import { ChainService } from '@app/services';
 import { BalanceResponse, DataResponse, LumResponse } from '@app/http/responses';
 import { GatewayWebsocket } from '@app/websocket';
-import { AssetSymbol, CLIENT_PRECISION } from '@app/utils';
+import { AssetSymbol } from '@app/utils';
 import { LumChain } from '@app/services/chains';
 
 @ApiTags('core')
@@ -60,9 +60,9 @@ export class CoreController {
     @ApiOkResponse({ status: 200, type: [BalanceResponse] })
     @Get('assets')
     async assets(): Promise<DataResponse> {
-        const assets = await this._chainService.getChain(AssetSymbol.LUM).client.queryClient.bank.totalSupply();
+        const assets = await this._chainService.getChain(AssetSymbol.LUM).client.cosmos.bank.v1beta1.totalSupply();
         return {
-            result: assets.map((asset) => {
+            result: assets.supply.map((asset) => {
                 return {
                     denom: asset.denom,
                     amount: parseInt(asset.amount, 10),
@@ -74,42 +74,40 @@ export class CoreController {
     @UseInterceptors(CacheInterceptor)
     @Get('params')
     async params(): Promise<DataResponse> {
-        const [chainId, mintingInflation, mintingParams, stakingParams, govDepositParams, govVoteParams, govTallyParams, distributionParams, slashingParams, communityPoolParams] = await Promise.all([
-            this._chainService.getChain(AssetSymbol.LUM).client.getChainId(),
-            this._chainService.getChain(AssetSymbol.LUM).client.queryClient.mint.inflation(),
-            this._chainService.getChain(AssetSymbol.LUM).client.queryClient.mint.params(),
-            this._chainService.getChain(AssetSymbol.LUM).client.queryClient.staking.params(),
-            this._chainService.getChain(AssetSymbol.LUM).client.queryClient.gov.params('deposit'),
-            this._chainService.getChain(AssetSymbol.LUM).client.queryClient.gov.params('voting'),
-            this._chainService.getChain(AssetSymbol.LUM).client.queryClient.gov.params('tallying'),
-            this._chainService.getChain(AssetSymbol.LUM).client.queryClient.distribution.params(),
-            this._chainService.getChain(AssetSymbol.LUM).client.queryClient.slashing.params(),
-            this._chainService.getChain(AssetSymbol.LUM).client.queryClient.distribution.communityPool(),
+        const [chainId, mintingParams, stakingParams, govDepositParams, govVoteParams, govTallyParams, distributionParams, slashingParams, communityPoolParams] = await Promise.all([
+            this._chainService.getChain(AssetSymbol.LUM).chainId,
+            this._chainService.getChain(AssetSymbol.LUM).client.cosmos.mint.v1beta1.params(),
+            this._chainService.getChain(AssetSymbol.LUM).client.cosmos.staking.v1beta1.params(),
+            this._chainService.getChain(AssetSymbol.LUM).client.cosmos.gov.v1.params({ paramsType: 'deposit' }),
+            this._chainService.getChain(AssetSymbol.LUM).client.cosmos.gov.v1.params({ paramsType: 'voting' }),
+            this._chainService.getChain(AssetSymbol.LUM).client.cosmos.gov.v1.params({ paramsType: 'tallying' }),
+            this._chainService.getChain(AssetSymbol.LUM).client.cosmos.distribution.v1beta1.params(),
+            this._chainService.getChain(AssetSymbol.LUM).client.cosmos.slashing.v1beta1.params(),
+            this._chainService.getChain(AssetSymbol.LUM).client.cosmos.distribution.v1beta1.communityPool(),
         ]);
         return {
             result: {
                 chain_id: chainId,
                 mint: {
-                    denom: mintingParams.mintDenom,
+                    denom: mintingParams.params.mintDenom,
                     inflation: {
-                        rate_change: parseInt(mintingParams.inflationRateChange, 10) / CLIENT_PRECISION,
-                        max: parseInt(mintingParams.inflationMax, 10) / CLIENT_PRECISION,
-                        min: parseInt(mintingParams.inflationMin, 10) / CLIENT_PRECISION,
-                        current: parseInt(mintingInflation, 10) / CLIENT_PRECISION,
+                        rate_change: parseInt(mintingParams.params.inflationRateChange, 10),
+                        max: parseInt(mintingParams.params.inflationMax, 10),
+                        min: parseInt(mintingParams.params.inflationMin, 10),
                     },
-                    goal_bonded: parseInt(mintingParams.goalBonded, 10) / CLIENT_PRECISION,
-                    blocks_per_year: mintingParams.blocksPerYear.low,
+                    goal_bonded: parseInt(mintingParams.params.goalBonded, 10),
+                    blocks_per_year: mintingParams.params.blocksPerYear,
                 },
                 staking: {
                     max_validators: stakingParams.params.maxValidators,
                     max_entries: stakingParams.params.maxEntries,
                     historical_entries: stakingParams.params.historicalEntries,
                     denom: stakingParams.params.bondDenom,
-                    unbonding_time: stakingParams.params.unbondingTime.seconds.low,
+                    unbonding_time: stakingParams.params.unbondingTime.seconds,
                 },
                 gov: {
                     vote: {
-                        period: govVoteParams.votingParams.votingPeriod.seconds.low,
+                        period: govVoteParams.votingParams.votingPeriod.seconds,
                     },
                     deposit: {
                         minimum: govDepositParams.depositParams.minDeposit.map((bal) => {
@@ -118,7 +116,7 @@ export class CoreController {
                                 amount: parseInt(bal.amount, 10),
                             };
                         }),
-                        period: govDepositParams.depositParams.maxDepositPeriod.seconds.low,
+                        period: govDepositParams.depositParams.maxDepositPeriod.seconds,
                     },
                     tally: {
                         quorum: govTallyParams.tallyParams.quorum,
@@ -127,23 +125,23 @@ export class CoreController {
                     },
                 },
                 distribution: {
-                    community_tax: parseInt(distributionParams.params.communityTax, 10) / CLIENT_PRECISION,
-                    base_proposer_reward: parseInt(distributionParams.params.baseProposerReward, 10) / CLIENT_PRECISION,
-                    bonus_proposer_reward: parseInt(distributionParams.params.bonusProposerReward, 10) / CLIENT_PRECISION,
+                    community_tax: parseInt(distributionParams.params.communityTax, 10),
+                    base_proposer_reward: parseInt(distributionParams.params.baseProposerReward, 10),
+                    bonus_proposer_reward: parseInt(distributionParams.params.bonusProposerReward, 10),
                     withdraw_address_enabled: distributionParams.params.withdrawAddrEnabled,
                     community_pool: communityPoolParams.pool.map((p) => {
                         return {
                             denom: p.denom,
-                            amount: parseInt(p.amount, 10) / CLIENT_PRECISION,
+                            amount: parseInt(p.amount, 10),
                         };
                     }),
                 },
                 slashing: {
-                    signed_blocks_window: slashingParams.params.signedBlocksWindow.low,
-                    min_signed_per_window: parseInt(fromUtf8(slashingParams.params.minSignedPerWindow), 10) / CLIENT_PRECISION,
-                    slash_fraction_double_sign: parseInt(fromUtf8(slashingParams.params.slashFractionDoubleSign), 10) / CLIENT_PRECISION,
-                    slash_fraction_downtime: parseInt(fromUtf8(slashingParams.params.slashFractionDowntime), 10) / CLIENT_PRECISION,
-                    downtime_jail_duration: slashingParams.params.downtimeJailDuration.seconds.low,
+                    signed_blocks_window: slashingParams.params.signedBlocksWindow,
+                    min_signed_per_window: parseInt(fromUtf8(slashingParams.params.minSignedPerWindow), 10),
+                    slash_fraction_double_sign: parseInt(fromUtf8(slashingParams.params.slashFractionDoubleSign), 10),
+                    slash_fraction_downtime: parseInt(fromUtf8(slashingParams.params.slashFractionDowntime), 10),
+                    downtime_jail_duration: slashingParams.params.downtimeJailDuration.seconds,
                 },
             },
         };

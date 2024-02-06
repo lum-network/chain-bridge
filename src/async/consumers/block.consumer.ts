@@ -41,7 +41,7 @@ export class BlockConsumer {
             this._logger.debug(`Ingesting block ${job.data.blockHeight} (attempt ${job.attemptsMade})`);
 
             // Get block data
-            const block = await this._chainService.getChain(AssetSymbol.LUM).client.getBlock(job.data.blockHeight);
+            const block = await this._chainService.getChain(AssetSymbol.LUM).client.cosmos.base.tendermint.v1beta1.getBlockByHeight({ height: BigInt(job.data.blockHeight) });
 
             // Get the operator address
             const proposerAddress = toHex(block.block.header.proposerAddress).toUpperCase();
@@ -53,156 +53,155 @@ export class BlockConsumer {
             // Format block data
             const blockDoc: Partial<BlockEntity> = {
                 hash: toHex(block.blockId.hash).toUpperCase(),
-                height: block.block.header.height,
+                height: Number(block.block.header.height),
                 time: dayjs(block.block.header.time as Date).toDate(),
-                tx_count: block.block.txs.length,
-                tx_hashes: block.block.txs.map((tx) => toHex(sha256(tx)).toUpperCase()),
+                tx_count: block.block.data.txs.length,
+                tx_hashes: block.block.data.txs.map((tx) => toHex(sha256(tx)).toUpperCase()),
                 proposer_address: proposerAddress,
                 operator_address: validator.operator_address,
                 raw_block: toJSON(block) as string,
             };
 
             // Fetch and format transactions data
-            const getFormattedTx = async (rawTx: Uint8Array): Promise<Partial<TransactionEntity>> => {
-                // Acquire raw TX
-                const tx = await this._chainService.getChain(AssetSymbol.LUM).client.getTx(sha256(rawTx));
-
-                // Decode TX to human-readable format
-                const txData = LumRegistry.decode(tx.tx);
-
-                // Parse the raw logs
-                const logs = parseRawLogs(tx.result.log);
-
-                // Build the transaction document from information
-                const res: Partial<TransactionEntity> = {
-                    hash: toHex(tx.hash).toUpperCase(),
-                    height: tx.height,
-                    time: blockDoc.time,
-                    proposer_address: blockDoc.proposer_address,
-                    operator_address: blockDoc.operator_address,
-                    success: tx.result.code === 0,
-                    code: tx.result.code,
-                    fees: txData.authInfo.fee.amount.map((coin) => {
-                        return { denom: coin.denom, amount: parseFloat(coin.amount) };
-                    }),
-                    addresses: [],
-                    gas_wanted: (tx.result as unknown as { gasWanted: number }).gasWanted,
-                    gas_used: (tx.result as unknown as { gasUsed: number }).gasUsed,
-                    memo: txData.body.memo,
-                    messages: txData.body.messages.map((msg) => {
-                        return { type_url: msg.typeUrl, value: toJSON(LumRegistry.decode(msg)) };
-                    }),
-                    message_type: txData.body.messages.length ? txData.body.messages[0].typeUrl : null,
-                    messages_count: txData.body.messages.length,
-                    raw_logs: logs as any[],
-                    raw_events: tx.result.events.map((ev) => toJSON(ev)),
-                    raw_tx: toJSON(tx) as string,
-                    raw_tx_data: toJSON(txData) as string,
-                };
-
-                // Add addresses in case of transaction failure
-                if (!res.success) {
-                    res.addresses = getAddressesRelatedToTransaction(res);
-                }
-
-                for (const log of logs) {
-                    for (const ev of log.events) {
-                        for (const attr of ev.attributes) {
-                            if (attr.key === 'sender' || attr.key === 'recipient' || attr.key === 'validator') {
-                                if (!res.addresses.includes(attr.value)) {
-                                    // Unique addresses
-                                    res.addresses.push(attr.value);
-                                }
-                            } else if (attr.key === 'amount') {
-                                const amount = parseFloat(attr.value);
-                                const denom = attr.value.substring(amount.toString().length);
-
-                                if (!res.amount) {
-                                    res.amount = { amount, denom };
-                                }
-
-                                // We get auto claim reward amount with unbond
-                                if (ev.type === 'unbond') {
-                                    res.auto_claim_reward = res.amount;
-                                }
-
-                                // We get relevant amount with particular types
-                                if (ev.type === 'delegate' || ev.type === 'unbond' || ev.type === 'withdraw_rewards') {
-                                    res.amount = { amount, denom };
-                                }
-                            }
-                        }
-
-                        // Get Millions deposit/edit/withdrawal information
-                        if (ev.type === 'deposit' || ev.type === 'withdraw_deposit' || ev.type === 'deposit_edit') {
-                            const keyArray = ev.attributes.map((a) => a.key);
-
-                            if (keyArray.includes('pool_id') && keyArray.includes('deposit_id') && keyArray.includes('depositor')) {
-                                const id = ev.attributes.find((a) => a.key === 'deposit_id').value;
-
-                                // Parse amount
-                                let amountObj: { amount: number; denom: string } | undefined = undefined;
-                                const amountAttr = ev.attributes.find((a) => a.key === 'amount');
-
-                                if (amountAttr) {
-                                    const amountValue = amountAttr.value;
-                                    const amount = parseFloat(amountValue);
-                                    const denom = amountValue.substring(amount.toString().length);
-
-                                    amountObj = { amount, denom };
-                                }
-
-                                // Dispatch Millions Deposits for ingest
-                                await this._millionsQueue.add(
-                                    QueueJobs.INGEST,
-                                    {
-                                        id: id,
-                                        value: {
-                                            poolId: Number(ev.attributes.find((a) => a.key === 'pool_id')?.value || undefined),
-                                            withdrawalId: Number(ev.attributes.find((a) => a.key === 'withdrawal_id')?.value || undefined),
-                                            depositorAddress: ev.attributes.find((a) => a.key === 'depositor')?.value || undefined,
-                                            winnerAddress: ev.attributes.find((a) => a.key === 'winner')?.value || ev.attributes.find((a) => a.key === 'recipient')?.value || undefined,
-                                            isSponsor: (ev.attributes.find((a) => a.key === 'sponsor')?.value || false) as boolean,
-                                            amount: amountObj,
-                                        },
-                                        height: blockDoc.height,
-                                    },
-                                    {
-                                        jobId: `millions-deposit-${id}-${blockDoc.height}`,
-                                        attempts: 5,
-                                        backoff: 60000,
-                                        priority: QueuePriority.NORMAL,
-                                    },
-                                );
-                            }
-                        }
-
-                        // Sync Millions Draw
-                        if (ev.type === 'draw_success') {
-                            // FAULTY AF - NEED REVAMP - DISABLED FOR NOW
-                            // this._millionsScheduler.drawsSync().finally(() => null);
-                        }
-                    }
-                }
-
-                // Multisend case
-                if (res.messages.length === 1 && res.messages[0].type_url === MsgMultiSend.typeUrl) {
-                    res.amount = {
-                        denom: MICRO_LUM_DENOM,
-                        amount: !res.messages[0].value.inputs
-                            ? '0'
-                            : res.messages[0].value.inputs
-                                  .map((i: any) => (!i.coins ? 0 : i.coins.map((c: any) => (c.denom === MICRO_LUM_DENOM ? parseInt(c.amount) : 0)).reduce((a: number, b: number) => a + b)))
-                                  .reduce((a: number, b: number) => a + b),
-                    };
-                }
-
-                return res;
+            const getFormattedTx = async (rawTx: any): Promise<Partial<TransactionEntity>> => {
+                console.log(rawTx);
+                // // Acquire raw TX
+                // const tx = await this._chainService.getChain(AssetSymbol.LUM).client.cosmos.tx.v1beta1.getTx({ hash });
+                //
+                // // Parse the raw logs
+                // const logs = parseRawLogs(tx.txResponse.rawLog);
+                //
+                // // Build the transaction document from information
+                // const res: Partial<TransactionEntity> = {
+                //     hash: hash,
+                //     height: Number(tx.txResponse.height),
+                //     time: blockDoc.time,
+                //     proposer_address: blockDoc.proposer_address,
+                //     operator_address: blockDoc.operator_address,
+                //     success: tx.result.code === 0,
+                //     code: tx.result.code,
+                //     fees: txData.authInfo.fee.amount.map((coin) => {
+                //         return { denom: coin.denom, amount: parseFloat(coin.amount) };
+                //     }),
+                //     addresses: [],
+                //     gas_wanted: (tx.result as unknown as { gasWanted: number }).gasWanted,
+                //     gas_used: (tx.result as unknown as { gasUsed: number }).gasUsed,
+                //     memo: txData.body.memo,
+                //     messages: txData.body.messages.map((msg) => {
+                //         return { type_url: msg.typeUrl, value: toJSON(LumRegistry.decode(msg)) };
+                //     }),
+                //     message_type: txData.body.messages.length ? txData.body.messages[0].typeUrl : null,
+                //     messages_count: txData.body.messages.length,
+                //     raw_logs: logs as any[],
+                //     raw_events: tx.result.events.map((ev) => toJSON(ev)),
+                //     raw_tx: toJSON(tx) as string,
+                //     raw_tx_data: toJSON(txData) as string,
+                // };
+                //
+                // // Add addresses in case of transaction failure
+                // if (!res.success) {
+                //     res.addresses = getAddressesRelatedToTransaction(res);
+                // }
+                //
+                // for (const log of logs) {
+                //     for (const ev of log.events) {
+                //         for (const attr of ev.attributes) {
+                //             if (attr.key === 'sender' || attr.key === 'recipient' || attr.key === 'validator') {
+                //                 if (!res.addresses.includes(attr.value)) {
+                //                     // Unique addresses
+                //                     res.addresses.push(attr.value);
+                //                 }
+                //             } else if (attr.key === 'amount') {
+                //                 const amount = parseFloat(attr.value);
+                //                 const denom = attr.value.substring(amount.toString().length);
+                //
+                //                 if (!res.amount) {
+                //                     res.amount = { amount, denom };
+                //                 }
+                //
+                //                 // We get auto claim reward amount with unbond
+                //                 if (ev.type === 'unbond') {
+                //                     res.auto_claim_reward = res.amount;
+                //                 }
+                //
+                //                 // We get relevant amount with particular types
+                //                 if (ev.type === 'delegate' || ev.type === 'unbond' || ev.type === 'withdraw_rewards') {
+                //                     res.amount = { amount, denom };
+                //                 }
+                //             }
+                //         }
+                //
+                //         // Get Millions deposit/edit/withdrawal information
+                //         if (ev.type === 'deposit' || ev.type === 'withdraw_deposit' || ev.type === 'deposit_edit') {
+                //             const keyArray = ev.attributes.map((a) => a.key);
+                //
+                //             if (keyArray.includes('pool_id') && keyArray.includes('deposit_id') && keyArray.includes('depositor')) {
+                //                 const id = ev.attributes.find((a) => a.key === 'deposit_id').value;
+                //
+                //                 // Parse amount
+                //                 let amountObj: { amount: number; denom: string } | undefined = undefined;
+                //                 const amountAttr = ev.attributes.find((a) => a.key === 'amount');
+                //
+                //                 if (amountAttr) {
+                //                     const amountValue = amountAttr.value;
+                //                     const amount = parseFloat(amountValue);
+                //                     const denom = amountValue.substring(amount.toString().length);
+                //
+                //                     amountObj = { amount, denom };
+                //                 }
+                //
+                //                 // Dispatch Millions Deposits for ingest
+                //                 await this._millionsQueue.add(
+                //                     QueueJobs.INGEST,
+                //                     {
+                //                         id: id,
+                //                         value: {
+                //                             poolId: Number(ev.attributes.find((a) => a.key === 'pool_id')?.value || undefined),
+                //                             withdrawalId: Number(ev.attributes.find((a) => a.key === 'withdrawal_id')?.value || undefined),
+                //                             depositorAddress: ev.attributes.find((a) => a.key === 'depositor')?.value || undefined,
+                //                             winnerAddress: ev.attributes.find((a) => a.key === 'winner')?.value || ev.attributes.find((a) => a.key === 'recipient')?.value || undefined,
+                //                             isSponsor: (ev.attributes.find((a) => a.key === 'sponsor')?.value || false) as boolean,
+                //                             amount: amountObj,
+                //                         },
+                //                         height: blockDoc.height,
+                //                     },
+                //                     {
+                //                         jobId: `millions-deposit-${id}-${blockDoc.height}`,
+                //                         attempts: 5,
+                //                         backoff: 60000,
+                //                         priority: QueuePriority.NORMAL,
+                //                     },
+                //                 );
+                //             }
+                //         }
+                //
+                //         // Sync Millions Draw
+                //         if (ev.type === 'draw_success') {
+                //             // FAULTY AF - NEED REVAMP - DISABLED FOR NOW
+                //             // this._millionsScheduler.drawsSync().finally(() => null);
+                //         }
+                //     }
+                // }
+                //
+                // // Multisend case
+                // if (res.messages.length === 1 && res.messages[0].type_url === MsgMultiSend.typeUrl) {
+                //     res.amount = {
+                //         denom: MICRO_LUM_DENOM,
+                //         amount: !res.messages[0].value.inputs
+                //             ? '0'
+                //             : res.messages[0].value.inputs
+                //                   .map((i: any) => (!i.coins ? 0 : i.coins.map((c: any) => (c.denom === MICRO_LUM_DENOM ? parseInt(c.amount) : 0)).reduce((a: number, b: number) => a + b)))
+                //                   .reduce((a: number, b: number) => a + b),
+                //     };
+                // }
+                //
+                // return res;
+                return {};
             };
 
             // Save entities
             await this._blockService.save(blockDoc);
-            const transactions = await Promise.all(block.block.txs.map(getFormattedTx));
+            const transactions = await Promise.all(block.block.data.txs.map(getFormattedTx));
             await this._transactionService.saveBulk(transactions);
 
             // Dispatch beams for ingest

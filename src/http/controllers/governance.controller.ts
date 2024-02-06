@@ -52,7 +52,7 @@ export class GovernanceController {
     @ApiOkResponse({ status: 200, type: ResultResponse })
     @Get('proposals/:id/tally')
     async getTallyResults(@Param('id') id: string): Promise<DataResponse> {
-        const result = await this._chainService.getChain(AssetSymbol.LUM).client.queryClient.gov.tally(id);
+        const result = await this._chainService.getChain(AssetSymbol.LUM).client.cosmos.gov.v1.tallyResult({ proposalId: BigInt(id) });
 
         if (!result || !result.tally) {
             throw new NotFoundException('tally_not_found');

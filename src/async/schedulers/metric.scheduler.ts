@@ -11,8 +11,9 @@ import { Pool } from '@lum-network/sdk-javascript/build/codegen/lum/network/mill
 import { WithdrawalState } from '@lum-network/sdk-javascript/build/codegen/lum/network/millions/withdrawal';
 import { Draw } from '@lum-network/sdk-javascript/build/codegen/lum/network/millions/draw';
 import { IdentifiedChannel, State } from '@lum-network/sdk-javascript/build/codegen/ibc/core/channel/v1/channel';
+import { PageRequest } from '@lum-network/sdk-javascript/build/codegen/helpers';
 
-import { AssetSymbol, CLIENT_PRECISION, depositStateToString, MetricNames, sleep, withdrawalStateToString } from '@app/utils';
+import { AssetSymbol, depositStateToString, MetricNames, sleep, withdrawalStateToString } from '@app/utils';
 import { ChainService, DfractService } from '@app/services';
 import { LumChain } from '@app/services/chains';
 
@@ -107,7 +108,7 @@ export class MetricScheduler {
 
         // Acquire data
         const [lumCommunityPool, lumSupply, lumPrice, lumPriceEUR, lumCommunityData, dfrApy, dfrBackingPrice, dfrSupply, dfrMcap, dfrBalance, newDfrToMint, dfrMintRatio] = await Promise.all([
-            this._chainService.getChain<LumChain>(AssetSymbol.LUM).client.queryClient.distribution.communityPool(),
+            this._chainService.getChain<LumChain>(AssetSymbol.LUM).client.cosmos.distribution.v1beta1.communityPool(),
             this._chainService.getChain<LumChain>(AssetSymbol.LUM).getTokenSupply(),
             this._chainService.getChain<LumChain>(AssetSymbol.LUM).getPrice(),
             this._chainService.getChain<LumChain>(AssetSymbol.LUM).getPriceEUR(),
@@ -126,7 +127,7 @@ export class MetricScheduler {
 
         await Promise.all([
             // LUM metrics
-            communityPoolSupply && this.updateMetric({ name: MetricNames.COMMUNITY_POOL_SUPPLY, value: parseInt(communityPoolSupply.amount, 10) / CLIENT_PRECISION, labels: null }),
+            communityPoolSupply && this.updateMetric({ name: MetricNames.COMMUNITY_POOL_SUPPLY, value: parseInt(communityPoolSupply.amount, 10), labels: null }),
             lumSupply && this.updateMetric({ name: MetricNames.LUM_CURRENT_SUPPLY, value: lumSupply, labels: null }),
             lumSupply && this.updateMetric({ name: MetricNames.MARKET_CAP, value: lumSupply * lumPrice, labels: null }),
             lumPrice && this.updateMetric({ name: MetricNames.LUM_PRICE_EUR, value: lumPriceEUR, labels: null }),
@@ -158,7 +159,7 @@ export class MetricScheduler {
         let page: Uint8Array | undefined = undefined;
         const pools: Pool[] = [];
         while (true) {
-            const lPools = await this._chainService.getChain<LumChain>(AssetSymbol.LUM).client.queryClient.millions.pools(page);
+            const lPools = await this._chainService.getChain<LumChain>(AssetSymbol.LUM).client.lum.network.millions.pools({ pagination: page ? ({ key: page } as PageRequest) : undefined });
             pools.push(...lPools.pools);
             if (lPools.pagination && lPools.pagination.nextKey && lPools.pagination.nextKey.length > 0) {
                 page = lPools.pagination.nextKey;
@@ -177,7 +178,7 @@ export class MetricScheduler {
         };
         page = undefined;
         while (true) {
-            const deposits = await this._chainService.getChain<LumChain>(AssetSymbol.LUM).client.queryClient.millions.deposits(page);
+            const deposits = await this._chainService.getChain<LumChain>(AssetSymbol.LUM).client.lum.network.millions.deposits({ pagination: page ? ({ key: page } as PageRequest) : undefined });
 
             // Increase the given state
             for (const deposit of deposits.deposits) {
@@ -202,7 +203,7 @@ export class MetricScheduler {
         };
         page = undefined;
         while (true) {
-            const withdrawals = await this._chainService.getChain<LumChain>(AssetSymbol.LUM).client.queryClient.millions.withdrawals(page);
+            const withdrawals = await this._chainService.getChain<LumChain>(AssetSymbol.LUM).client.lum.network.millions.withdrawals({ pagination: page ? ({ key: page } as PageRequest) : undefined });
 
             // Increase the given state
             for (const withdrawal of withdrawals.withdrawals) {
@@ -246,7 +247,7 @@ export class MetricScheduler {
         let page: Uint8Array | undefined = undefined;
         const draws: Draw[] = [];
         while (true) {
-            const lDraws = await this._chainService.getChain<LumChain>(AssetSymbol.LUM).client.queryClient.millions.draws(page);
+            const lDraws = await this._chainService.getChain<LumChain>(AssetSymbol.LUM).client.lum.network.millions.draws({ pagination: page ? ({ key: page } as PageRequest) : undefined });
             draws.push(...lDraws.draws);
             if (lDraws.pagination && lDraws.pagination.nextKey && lDraws.pagination.nextKey.length > 0) {
                 page = lDraws.pagination.nextKey;
@@ -276,7 +277,7 @@ export class MetricScheduler {
         let page: Uint8Array | undefined = undefined;
         const channels: IdentifiedChannel[] = [];
         while (true) {
-            const lChannels = await this._chainService.getChain<LumChain>(AssetSymbol.LUM).client.queryClient.ibc.channel.channels(page);
+            const lChannels = await this._chainService.getChain<LumChain>(AssetSymbol.LUM).ibcQueryClient.ibc.core.channel.v1.channels({ pagination: page ? ({ key: page } as PageRequest) : undefined });
             channels.push(...lChannels.channels);
             if (lChannels.pagination && lChannels.pagination.nextKey && lChannels.pagination.nextKey.length > 0) {
                 page = lChannels.pagination.nextKey;

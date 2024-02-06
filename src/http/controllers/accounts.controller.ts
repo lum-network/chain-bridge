@@ -2,14 +2,14 @@ import { Controller, Get, NotFoundException, Param, Req, UseInterceptors } from 
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { CacheInterceptor } from '@nestjs/cache-manager';
 
-import { LumConstants, LumUtils } from '@lum-network/sdk-javascript';
+import {estimatedVesting, fromBech32, LumBech32Prefixes, toBech32} from '@lum-network/sdk-javascript';
 
 import { plainToInstance } from 'class-transformer';
 
 import { ChainService, TransactionService, ValidatorDelegationService } from '@app/services';
 import { AccountResponse, DataResponse, DataResponseMetadata, DelegationResponse, RedelegationResponse, TransactionResponse, UnbondingResponse } from '@app/http/responses';
 import { DefaultTake } from '@app/http/decorators';
-import { AssetSymbol, CLIENT_PRECISION, ExplorerRequest } from '@app/utils';
+import { AssetSymbol, ExplorerRequest } from '@app/utils';
 
 @ApiTags('accounts')
 @Controller('accounts')
@@ -56,7 +56,7 @@ export class AccountsController {
     @ApiOkResponse({ status: 200, type: [RedelegationResponse] })
     @Get(':address/redelegations')
     async showRedelegations(@Req() request: ExplorerRequest, @Param('address') address: string): Promise<DataResponse> {
-        const redelegations = await this._chainService.getChain(AssetSymbol.LUM).client.queryClient.staking.redelegations(address, '', '');
+        const redelegations = await this._chainService.getChain(AssetSymbol.LUM).client.cosmos.staking.v1beta1.redelegations({ delegatorAddr: address, dstValidatorAddr: '', srcValidatorAddr: '' });
         return new DataResponse({
             result: redelegations.redelegationResponses.map((redelegation) => plainToInstance(RedelegationResponse, redelegation)),
             metadata: new DataResponseMetadata({
@@ -71,7 +71,7 @@ export class AccountsController {
     @ApiOkResponse({ status: 200, type: [UnbondingResponse] })
     @Get(':address/unbondings')
     async showUnbondings(@Req() request: ExplorerRequest, @Param('address') address: string): Promise<DataResponse> {
-        const unbondings = await this._chainService.getChain(AssetSymbol.LUM).client.queryClient.staking.delegatorUnbondingDelegations(address);
+        const unbondings = await this._chainService.getChain(AssetSymbol.LUM).client.cosmos.staking.v1beta1.delegatorUnbondingDelegations({ delegatorAddr: address });
         return new DataResponse({
             result: unbondings.unbondingResponses.map((unbonding) => plainToInstance(UnbondingResponse, unbonding)),
             metadata: new DataResponseMetadata({
@@ -86,30 +86,26 @@ export class AccountsController {
     @ApiOkResponse({ status: 200, type: AccountResponse })
     @Get(':address')
     async show(@Param('address') address: string): Promise<DataResponse> {
-        const [account, balances, rewards, withdrawAddress, commissions, airdrop, totalShares] = await Promise.all([
+        const [account, balances, rewards, withdrawAddress, commissions, totalShares] = await Promise.all([
             this._chainService
                 .getChain(AssetSymbol.LUM)
-                .client.getAccount(address)
+                .client.cosmos.auth.v1beta1.account({ address })
                 .catch(() => null),
             this._chainService
                 .getChain(AssetSymbol.LUM)
-                .client.getAllBalances(address)
+                .client.cosmos.bank.v1beta1.allBalances({ address })
                 .catch(() => null),
             this._chainService
                 .getChain(AssetSymbol.LUM)
-                .client.queryClient.distribution.delegationTotalRewards(address)
+                .client.cosmos.distribution.v1beta1.delegationTotalRewards({ delegatorAddress: address })
                 .catch(() => null),
             this._chainService
                 .getChain(AssetSymbol.LUM)
-                .client.queryClient.distribution.delegatorWithdrawAddress(address)
+                .client.cosmos.distribution.v1beta1.delegatorWithdrawAddress({ delegatorAddress: address })
                 .catch(() => null),
             this._chainService
                 .getChain(AssetSymbol.LUM)
-                .client.queryClient.distribution.validatorCommission(LumUtils.toBech32(LumConstants.LumBech32PrefixValAddr, LumUtils.fromBech32(address).data))
-                .catch(() => null),
-            this._chainService
-                .getChain(AssetSymbol.LUM)
-                .client.queryClient.airdrop.claimRecord(address)
+                .client.cosmos.distribution.v1beta1.validatorCommission({ validatorAddress: toBech32(LumBech32Prefixes.VAL_ADDR, fromBech32(address).data) })
                 .catch(() => null),
             this._validatorDelegationService.sumTotalSharesForDelegator(address).catch(() => null),
         ]);
@@ -121,7 +117,7 @@ export class AccountsController {
         let vesting: any;
 
         try {
-            vesting = LumUtils.estimatedVesting(account);
+            vesting = estimatedVesting(account);
         } catch (e) {
             vesting = null;
         }
@@ -133,7 +129,7 @@ export class AccountsController {
                     total: rewards.total.map((rwd) => {
                         return {
                             denom: rwd.denom,
-                            amount: parseInt(rwd.amount, 10) / CLIENT_PRECISION,
+                            amount: parseInt(rwd.amount, 10),
                         };
                     }),
                     rewards: rewards.rewards.map((rwd) => {
@@ -142,13 +138,12 @@ export class AccountsController {
                             reward: rwd.reward.map((rwd2) => {
                                 return {
                                     denom: rwd2.denom,
-                                    amount: parseInt(rwd2.amount, 10) / CLIENT_PRECISION,
+                                    amount: parseInt(rwd2.amount, 10),
                                 };
                             }),
                         };
                     }),
                 },
-                airdrop: airdrop.claimRecord,
                 balances: balances.map((balance) => {
                     return {
                         denom: balance.denom,
@@ -158,7 +153,7 @@ export class AccountsController {
                 commissions: commissions.commission.commission.map((com) => {
                     return {
                         denom: com.denom,
-                        amount: parseInt(com.amount, 10) / CLIENT_PRECISION,
+                        amount: parseInt(com.amount, 10),
                     };
                 }),
                 vesting: vesting

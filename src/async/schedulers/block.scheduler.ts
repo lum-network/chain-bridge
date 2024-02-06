@@ -22,13 +22,14 @@ export class BlockScheduler {
     async backwardIngest() {
         // Daily check that we did not miss a block sync somehow
         const chainId = this._chainService.getChain<LumChain>(AssetSymbol.LUM).chainId;
-        const blockHeight = await this._chainService.getChain<LumChain>(AssetSymbol.LUM).client.getBlockHeight();
+        const lastedBlock = await this._chainService.getChain<LumChain>(AssetSymbol.LUM).client.cosmos.base.tendermint.v1beta1.getLatestBlock();
+
         await this._queue.add(
             QueueJobs.TRIGGER_VERIFY_BLOCKS_BACKWARD,
             {
                 chainId: chainId,
                 fromBlock: this._configService.get<number>('STARTING_HEIGHT'),
-                toBlock: blockHeight,
+                toBlock: lastedBlock.block.header.height,
             },
             {
                 priority: QueuePriority.LOW,
@@ -39,7 +40,7 @@ export class BlockScheduler {
     @Cron(CronExpression.EVERY_10_SECONDS, { name: 'blocks_live_ingest' })
     async liveIngest() {
         const chainId = this._chainService.getChain<LumChain>(AssetSymbol.LUM).chainId;
-        const lastBlocks = await this._chainService.getChain<LumChain>(AssetSymbol.LUM).client.tmClient.blockchain();
+        const lastBlocks = await this._chainService.getChain<LumChain>(AssetSymbol.LUM).tmClient.blockchain();
         this._logger.debug(`Dispatching last 20 blocks for ingestion at height ${lastBlocks.lastHeight}`);
 
         // For each block, dispatch the ingestion job to the queue

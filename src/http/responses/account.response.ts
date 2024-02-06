@@ -53,22 +53,6 @@ class VestingResponse {
 }
 
 @Exclude()
-class AirdropResponse {
-    @ApiProperty()
-    @Expose()
-    address: string;
-
-    @ApiProperty()
-    @Expose({ name: 'actionCompleted' })
-    action_completed: boolean[];
-
-    @ApiProperty({ type: () => [BalanceResponse] })
-    @Expose({ name: 'initialClaimableAmount' })
-    @Type(() => BalanceResponse)
-    initial_claimable_amount: BalanceResponse[];
-}
-
-@Exclude()
 export class AccountResponse {
     @ApiProperty({})
     @Expose()
@@ -124,11 +108,6 @@ export class AccountResponse {
     @Expose()
     @Type(() => VestingResponse)
     vesting: VestingResponse;
-
-    @ApiProperty({ type: () => AirdropResponse })
-    @Expose()
-    @Type(() => AirdropResponse)
-    airdrop: AirdropResponse;
 
     constructor(data: Partial<AccountResponse>) {
         Object.assign(this, data);

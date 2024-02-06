@@ -46,7 +46,7 @@ export class DfractService {
      * This method returns the current available deposited cash in the module account
      */
     getAccountBalance = async (): Promise<number> => {
-        return Number((await this._chainService.getChain(AssetSymbol.DFR).client.queryClient.dfract.getAccountBalance()).map((el) => el.amount)) / TEN_EXPONENT_SIX || 0;
+        return Number((await this._chainService.getChain(AssetSymbol.DFR).client.lum.network.dfract.moduleAccountBalance()).moduleAccountBalance.map((el) => el.amount)) / TEN_EXPONENT_SIX || 0;
     };
 
     getPersistedAccountBalance = async (): Promise<number> => {

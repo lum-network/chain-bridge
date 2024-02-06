@@ -83,7 +83,7 @@ export class ValidatorsController {
     async showRewards(@Req() request: ExplorerRequest, @Param('address') address: string): Promise<DataResponse> {
         const {
             rewards: { rewards },
-        } = await this._chainService.getChain(AssetSymbol.LUM).client.queryClient.distribution.validatorOutstandingRewards(address);
+        } = await this._chainService.getChain(AssetSymbol.LUM).client.cosmos.distribution.v1beta1.validatorOutstandingRewards({ validatorAddress: address });
         return new DataResponse({
             result: rewards.map((rwd) => plainToInstance(BalanceResponse, rwd)),
             metadata: new DataResponseMetadata({
