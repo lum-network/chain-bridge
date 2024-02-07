@@ -2,8 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { ConfigService } from '@nestjs/config';
 
-import { toBech32, toHex, LumBech32Prefixes, fromBech32 } from '@lum-network/sdk-javascript';
-import { LumRegistry as LumLegacyRegistery } from '@lum-network/sdk-javascript-legacy';
+import { toBech32, LumBech32Prefixes, fromBech32, LumRegistry } from '@lum-network/sdk-javascript';
 import { PageRequest } from '@lum-network/sdk-javascript/build/codegen/helpers';
 
 import { ChainService, ValidatorDelegationService, ValidatorService } from '@app/services';
@@ -66,15 +65,16 @@ export class ValidatorScheduler {
 
         try {
             // Fetch tendermint validators
-            const tmValidators = await this._chainService.getChain(AssetSymbol.LUM).tmClient.validatorsAll(this._configService.get<number>('STARTING_HEIGHT'));
+            // const tmValidators = await this._chainService.getChain(AssetSymbol.LUM).tmClient.validatorsAll(this._configService.get<number>('STARTING_HEIGHT'));
+            const tmValidators = await this._chainService.getChain(AssetSymbol.LUM).client.cosmos.base.tendermint.v1beta1.getValidatorSetByHeight({ height: this._configService.get<bigint>('STARTING_HEIGHT') });
 
             // Build validators list
             const validators: Partial<ValidatorEntity>[] = [];
             for (const val of tmValidators.validators) {
                 validators.push({
-                    proposer_address: toHex(val.address).toUpperCase(),
-                    consensus_address: toBech32(LumBech32Prefixes.CONS_ADDR, val.address),
-                    consensus_pubkey: toBech32(LumBech32Prefixes.CONS_PUB, val.pubkey.data),
+                    proposer_address: val.address,
+                    consensus_address: toBech32(LumBech32Prefixes.CONS_ADDR, fromBech32(val.address).data),
+                    consensus_pubkey: toBech32(LumBech32Prefixes.CONS_PUB, LumRegistry.decode(val.pubKey)),
                 });
             }
 
@@ -88,7 +88,7 @@ export class ValidatorScheduler {
                     const stakingValidators = await this._chainService.getChain(AssetSymbol.LUM).client.cosmos.staking.v1beta1.validators({ status: s as any, pagination: page ? ({ key: page } as PageRequest) : undefined });
 
                     for (const val of stakingValidators.validators) {
-                        const pubKey = LumLegacyRegistery.decode(val.consensusPubkey) as any;
+                        const pubKey = LumRegistry.decode(val.consensusPubkey) as any;
                         const consensus_pubkey = toBech32(LumBech32Prefixes.CONS_PUB, pubKey.key);
 
                         // Find the tendermint validator and add the operator address to it

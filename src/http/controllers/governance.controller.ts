@@ -5,7 +5,7 @@ import { CacheInterceptor } from '@nestjs/cache-manager';
 import { plainToInstance } from 'class-transformer';
 
 import { ChainService, ProposalDepositService, ProposalService, ProposalVoteService } from '@app/services';
-import { DataResponse, DataResponseMetadata, DepositorResponse, ProposalResponse, ResultResponse, VoterResponse } from '@app/http/responses/';
+import { DataResponse, DataResponseMetadata, DepositorResponse, ProposalResponse, ResultResponse, VoterResponse } from '@app/http/responses';
 import { AssetSymbol, ExplorerRequest } from '@app/utils';
 import { DefaultTake } from '@app/http/decorators';
 
@@ -52,7 +52,7 @@ export class GovernanceController {
     @ApiOkResponse({ status: 200, type: ResultResponse })
     @Get('proposals/:id/tally')
     async getTallyResults(@Param('id') id: string): Promise<DataResponse> {
-        const result = await this._chainService.getChain(AssetSymbol.LUM).client.cosmos.gov.v1.tallyResult({ proposalId: BigInt(id) });
+        const result = await this._chainService.getChain(AssetSymbol.LUM).client.cosmos.gov.v1beta1.tallyResult({ proposalId: BigInt(id) });
 
         if (!result || !result.tally) {
             throw new NotFoundException('tally_not_found');

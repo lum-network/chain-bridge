@@ -39,7 +39,7 @@ export class GovernanceScheduler {
                 // Acquire the typeUrl
                 typeUrl = proposal.messages[0].typeUrl.split('/')[1];
                 // If it's an old system, we have to take the inner typeUrl
-                if (typeUrl === 'cosmos.gov.v1.MsgExecLegacyContent') {
+                if (typeUrl === 'cosmos.gov.v1beta1.MsgExecLegacyContent') {
                     typeUrl = decodedMsg.content.typeUrl.split('/')[1];
                 }
 
@@ -117,7 +117,7 @@ export class GovernanceScheduler {
         // Only start the patch process if there are actual proposalId
         for (const id of proposalIds) {
             // Fetch the votes based on the proposalId
-            const getVotes = await this._chainService.getChain(AssetSymbol.LUM).client.cosmos.gov.v1.votes({ proposalId: id });
+            const getVotes = await this._chainService.getChain(AssetSymbol.LUM).client.cosmos.gov.v1beta1.votes({ proposalId: id });
 
             // Map the votes to get the voters, the voteOption and the voteWeight
             const getVoterAndOptions = getVotes.votes.map((voteArgs) => ({
@@ -155,7 +155,7 @@ export class GovernanceScheduler {
         // Only start the patch process if there are actual proposalId
         for (const id of proposalIds) {
             // Fetch the deposits based on the proposalId
-            const getDeposits = await this._chainService.getChain(AssetSymbol.LUM).client.cosmos.gov.v1.deposits({ proposalId: id });
+            const getDeposits = await this._chainService.getChain(AssetSymbol.LUM).client.cosmos.gov.v1beta1.deposits({ proposalId: id });
 
             // Map the deposits to get the depositors and the amount
             const getDepositor = getDeposits.deposits.map((deposit) => ({

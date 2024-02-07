@@ -4,10 +4,7 @@ import { HttpService } from '@nestjs/axios';
 import { Stream } from 'xstream';
 import { NewBlockEvent } from '@cosmjs/tendermint-rpc';
 import { lastValueFrom, map } from 'rxjs';
-import * as Sentry from '@sentry/node';
 import { fromBech32, ibc, lum, toBech32 } from '@lum-network/sdk-javascript';
-import { LumClient as LumLegacyClient } from '@lum-network/sdk-javascript-legacy';
-import { Tendermint37Client } from '@lum-network/sdk-javascript-legacy/node_modules/@cosmjs/tendermint-rpc';
 
 import { ApiUrl, apy, AssetDenom, AssetMicroDenom, computeTotalApy, computeTotalTokenAmount, GenericAssetInfo, LUM_STAKING_ADDRESS, TEN_EXPONENT_SIX } from '@app/utils';
 import { AssetService, MarketService } from '@app/services';
@@ -35,7 +32,6 @@ export class GenericChain {
     private _chainId: string;
     private _clientStream: Stream<NewBlockEvent> = null;
     private _queryClient: LumClient | null = null;
-    private _tmClient: Tendermint37Client | null = null;
     private _ibcQueryClient: IbcQueryClient | null = null;
 
     constructor(config: GenericChainConfig) {
@@ -44,10 +40,6 @@ export class GenericChain {
 
     get client(): LumClient | null {
         return this._queryClient;
-    }
-
-    get tmClient(): Tendermint37Client | null {
-        return this._tmClient;
     }
 
     get ibcQueryClient(): IbcQueryClient | null {
@@ -72,10 +64,6 @@ export class GenericChain {
 
     get microDenom(): string {
         return this._config.microDenom;
-    }
-
-    get clientStream(): any {
-        return this._clientStream;
     }
 
     get chainId(): string {
@@ -116,16 +104,6 @@ export class GenericChain {
 
         // Bind and acquire the chain id
         this._chainId = (await queryClient.cosmos.base.tendermint.v1beta1.getNodeInfo()).nodeInfo?.network || 'lum-network-1';
-        const legacyClient = await LumLegacyClient.connect(useEndpoint, (error) => {
-            Sentry.captureException(error);
-        });
-
-        this._tmClient = legacyClient.tmClient;
-
-        // If we want to subscribe to RPC, we have to create a stream
-        if (this._config.subscribeToRPC) {
-            this._clientStream = this._tmClient.subscribeNewBlock();
-        }
 
         // If we have a post init callback, just mention it
         this.loggerService.debug(`Connected to ${this.symbol} chain = ${useEndpoint} (${this._chainId})`);
@@ -136,7 +114,7 @@ export class GenericChain {
     };
 
     isInitialized = (): boolean => {
-        return this._queryClient !== undefined && this._tmClient !== undefined;
+        return this._queryClient !== undefined && this._ibcQueryClient !== undefined;
     };
 
     getTokenInformationFromOsmosis = async (): Promise<any> => {

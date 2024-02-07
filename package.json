@@ -35,7 +35,6 @@
         "@bull-board/api": "^5.9.1",
         "@bull-board/express": "^5.9.1",
         "@lum-network/sdk-javascript": "^1.0.0-beta.2",
-        "@lum-network/sdk-javascript-legacy": "npm:@lum-network/sdk-javascript@0.8.9",
         "@nestjs/axios": "^3.0.1",
         "@nestjs/bull": "^10.0.1",
         "@nestjs/cache-manager": "^2.1.1",
