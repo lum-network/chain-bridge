@@ -1,6 +1,6 @@
 import { HttpStatus, INestApplication } from '@nestjs/common';
 import { TestingModule, Test } from '@nestjs/testing';
-import { LumConstants } from '@lum-network/sdk-javascript';
+import { MICRO_LUM_DENOM } from '@lum-network/sdk-javascript';
 import request from 'supertest';
 
 import { ApiModule } from '@app/modules';
@@ -56,7 +56,7 @@ describe('Governance (e2e)', () => {
         expect(response.status).toEqual(HttpStatus.OK);
         expect(response.body.result.length).toBeGreaterThan(0);
         expect(Number(response.body.result[0].amount.amount)).toBeGreaterThanOrEqual(100000000000);
-        expect(response.body.result[0].amount.denom).toEqual(LumConstants.MicroLumDenom);
+        expect(response.body.result[0].amount.denom).toEqual(MICRO_LUM_DENOM);
         expect(response.body.result[0].proposal_id).toBe(depositSeed.proposalId);
         expect(response.body.result[0].depositor_address).toEqual(expect.stringMatching(/^lumvaloper/));
         expect(response.body.metadata.items_count).toBeGreaterThan(0);
