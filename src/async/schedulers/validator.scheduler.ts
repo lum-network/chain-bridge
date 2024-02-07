@@ -2,7 +2,8 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { ConfigService } from '@nestjs/config';
 
-import { LumRegistry, toBech32, toHex, LumBech32Prefixes, fromBech32 } from '@lum-network/sdk-javascript';
+import { toBech32, toHex, LumBech32Prefixes, fromBech32 } from '@lum-network/sdk-javascript';
+import { LumRegistry as LumLegacyRegistery } from '@lum-network/sdk-javascript-legacy';
 import { PageRequest } from '@lum-network/sdk-javascript/build/codegen/helpers';
 
 import { ChainService, ValidatorDelegationService, ValidatorService } from '@app/services';
@@ -67,9 +68,6 @@ export class ValidatorScheduler {
             // Fetch tendermint validators
             const tmValidators = await this._chainService.getChain(AssetSymbol.LUM).tmClient.validatorsAll(this._configService.get<number>('STARTING_HEIGHT'));
 
-            console.log('__________________ tmValidators __________________');
-            console.log(tmValidators);
-
             // Build validators list
             const validators: Partial<ValidatorEntity>[] = [];
             for (const val of tmValidators.validators) {
@@ -90,7 +88,7 @@ export class ValidatorScheduler {
                     const stakingValidators = await this._chainService.getChain(AssetSymbol.LUM).client.cosmos.staking.v1beta1.validators({ status: s as any, pagination: page ? ({ key: page } as PageRequest) : undefined });
 
                     for (const val of stakingValidators.validators) {
-                        const pubKey = LumRegistry.decode(val.consensusPubkey) as any;
+                        const pubKey = LumLegacyRegistery.decode(val.consensusPubkey) as any;
                         const consensus_pubkey = toBech32(LumBech32Prefixes.CONS_PUB, pubKey.key);
 
                         // Find the tendermint validator and add the operator address to it
@@ -119,7 +117,7 @@ export class ValidatorScheduler {
                                 validators[v].jailed = val.jailed;
                                 validators[v].status = val.status;
                                 validators[v].tokens = parseInt(val.tokens, 10);
-                                validators[v].delegator_shares = Number(val.delegatorShares);
+                                validators[v].delegator_shares = Number(Number(val.delegatorShares).toFixed());
                                 validators[v].commission = {
                                     rates: {
                                         current_rate: parseInt(val.commission.commissionRates.rate, 10),
@@ -133,7 +131,7 @@ export class ValidatorScheduler {
                                 // Hence we convert falsy values in case we receive them
                                 validators[v].self_bonded = Number(selfBonded.delegationResponses.map((el) => el.balance.amount)[0]) || 0;
                                 validators[v].tombstoned = signingInfos.valSigningInfo.tombstoned;
-                                validators[v].uptime = ((SIGNED_BLOCK_WINDOW - Number(signingInfos.valSigningInfo.missedBlocksCounter)) / SIGNED_BLOCK_WINDOW) * 100;
+                                validators[v].uptime = ((SIGNED_BLOCK_WINDOW - Number(Number(signingInfos.valSigningInfo.missedBlocksCounter).toFixed())) / SIGNED_BLOCK_WINDOW) * 100;
                                 break;
                             }
                         }

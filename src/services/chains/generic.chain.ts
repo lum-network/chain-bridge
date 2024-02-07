@@ -122,8 +122,6 @@ export class GenericChain {
 
         this._tmClient = legacyClient.tmClient;
 
-        console.log('______________________ TEST ______________________', this._tmClient);
-
         // If we want to subscribe to RPC, we have to create a stream
         if (this._config.subscribeToRPC) {
             this._clientStream = this._tmClient.subscribeNewBlock();
