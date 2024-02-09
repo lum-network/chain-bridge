@@ -10,10 +10,6 @@ import { BlockEntity, TransactionEntity } from '@app/database';
 import { BlockService, ChainService, TransactionService, ValidatorService } from '@app/services';
 import { AssetSymbol, getAddressesRelatedToTransaction, isBeam, NotificationChannels, NotificationEvents, QueueJobs, QueuePriority, Queues } from '@app/utils';
 
-(BigInt.prototype as any).toJSON = function () {
-    return this.toString();
-};
-
 @Processor(Queues.BLOCKS)
 export class BlockConsumer {
     private readonly _logger: Logger = new Logger(BlockConsumer.name);
