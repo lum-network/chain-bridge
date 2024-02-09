@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { ConfigService } from '@nestjs/config';
 
-import {toBech32, LumBech32Prefixes, fromBech32, LumRegistry, toHex} from '@lum-network/sdk-javascript';
+import { toBech32, LumBech32Prefixes, fromBech32 } from '@lum-network/sdk-javascript';
 import { PageRequest } from '@lum-network/sdk-javascript/build/codegen/helpers';
 
 import { ChainService, ValidatorDelegationService, ValidatorService } from '@app/services';

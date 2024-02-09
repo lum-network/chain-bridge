@@ -30,7 +30,6 @@ interface GenericChainConfig {
 export class GenericChain {
     private readonly _config: GenericChainConfig;
     private _chainId: string;
-    private _clientStream: Stream<NewBlockEvent> = null;
     private _queryClient: LumClient | null = null;
     private _ibcQueryClient: IbcQueryClient | null = null;
 
