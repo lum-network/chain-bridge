@@ -2,12 +2,13 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { ConfigService } from '@nestjs/config';
 
-import { toBech32, LumBech32Prefixes, fromBech32, LumRegistry } from '@lum-network/sdk-javascript';
+import {toBech32, LumBech32Prefixes, fromBech32, LumRegistry, toHex} from '@lum-network/sdk-javascript';
 import { PageRequest } from '@lum-network/sdk-javascript/build/codegen/helpers';
 
 import { ChainService, ValidatorDelegationService, ValidatorService } from '@app/services';
 import { ValidatorEntity } from '@app/database';
 import { AssetPrefix, AssetSymbol, SIGNED_BLOCK_WINDOW } from '@app/utils';
+import { PubKey } from '@lum-network/sdk-javascript/build/codegen/cosmos/crypto/ed25519/keys';
 
 @Injectable()
 export class ValidatorScheduler {
@@ -74,7 +75,7 @@ export class ValidatorScheduler {
                 validators.push({
                     proposer_address: val.address,
                     consensus_address: toBech32(LumBech32Prefixes.CONS_ADDR, fromBech32(val.address).data),
-                    consensus_pubkey: toBech32(LumBech32Prefixes.CONS_PUB, LumRegistry.decode(val.pubKey)),
+                    consensus_pubkey: toBech32(LumBech32Prefixes.CONS_PUB, PubKey.fromProtoMsg(val.pubKey as any).key),
                 });
             }
 
@@ -88,7 +89,7 @@ export class ValidatorScheduler {
                     const stakingValidators = await this._chainService.getChain(AssetSymbol.LUM).client.cosmos.staking.v1beta1.validators({ status: s as any, pagination: page ? ({ key: page } as PageRequest) : undefined });
 
                     for (const val of stakingValidators.validators) {
-                        const pubKey = LumRegistry.decode(val.consensusPubkey) as any;
+                        const pubKey = PubKey.fromProtoMsg(val.consensusPubkey as any);
                         const consensus_pubkey = toBech32(LumBech32Prefixes.CONS_PUB, pubKey.key);
 
                         // Find the tendermint validator and add the operator address to it

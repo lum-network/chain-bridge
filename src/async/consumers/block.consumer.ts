@@ -3,7 +3,7 @@ import { InjectQueue, Process, Processor } from '@nestjs/bull';
 
 import { Job, Queue } from 'bull';
 import dayjs from 'dayjs';
-import { LumRegistry, parseRawLogs, sha256, toHex, toJSON, MICRO_LUM_DENOM } from '@lum-network/sdk-javascript';
+import { LumRegistry, parseRawLogs, sha256, toHex, toJSON, MICRO_LUM_DENOM, toBech32, LumBech32Prefixes } from '@lum-network/sdk-javascript';
 import { MsgMultiSend } from '@lum-network/sdk-javascript/build/codegen/cosmos/bank/v1beta1/tx';
 
 import { BlockEntity, TransactionEntity } from '@app/database';
@@ -48,11 +48,8 @@ export class BlockConsumer {
             const block = await this._chainService.getChain(AssetSymbol.LUM).client.cosmos.base.tendermint.v1beta1.getBlockByHeight({ height: BigInt(job.data.blockHeight) });
 
             // Get the operator address
-            const proposerAddress = toHex(block.block.header.proposerAddress).toUpperCase();
+            const proposerAddress = toBech32(LumBech32Prefixes.CONS_ADDR, block.block.header.proposerAddress);
             const validator = await this._validatorService.getByProposerAddress(proposerAddress);
-            if (!validator) {
-                throw new Error(`Failed to find validator for ${proposerAddress}, exiting for retry`);
-            }
 
             // Format block data
             const blockDoc: Partial<BlockEntity> = {
@@ -62,7 +59,7 @@ export class BlockConsumer {
                 tx_count: block.block.data.txs.length,
                 tx_hashes: block.block.data.txs.map((tx) => toHex(sha256(tx)).toUpperCase()),
                 proposer_address: proposerAddress,
-                operator_address: validator.operator_address,
+                operator_address: validator?.operator_address ?? '',
                 raw_block: toJSON(block) as string,
             };
 
@@ -70,14 +67,11 @@ export class BlockConsumer {
             const getFormattedTx = async (rawTx: any): Promise<Partial<TransactionEntity>> => {
                 const hash = toHex(sha256(rawTx)).toUpperCase();
 
-                console.log(hash);
                 // Acquire raw TX
                 const tx = await this._chainService.getChain(AssetSymbol.LUM).client.cosmos.tx.v1beta1.getTx({ hash: hash });
 
                 // Parse the raw logs
                 const logs = parseRawLogs(tx.txResponse.rawLog);
-
-                console.log('Logs: ', logs);
 
                 // Build the transaction document from information
                 const res: Partial<TransactionEntity> = {
@@ -91,6 +85,7 @@ export class BlockConsumer {
                     addresses: [],
                     gas_wanted: Number(tx.txResponse.gasWanted),
                     gas_used: Number(tx.txResponse.gasUsed),
+                    fees: [],
                     memo: tx.tx.body.memo,
                     messages: tx.tx.body.messages.map((msg) => {
                         return { type_url: msg.typeUrl, value: toJSON(LumRegistry.decode(msg)) };

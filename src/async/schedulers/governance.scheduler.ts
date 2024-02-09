@@ -49,7 +49,7 @@ export class GovernanceScheduler {
 
                     // If the decoded content is a MsgSubmitProposal it contains plan, we need to patch the height value to store raw int
                     if (decodedContent.plan !== undefined && decodedContent.plan !== null) {
-                        decodedContent.plan.height = decodedContent.plan.height.toNumber();
+                        decodedContent.plan.height = Number(decodedContent.plan.height);
                     }
                 }
             }
