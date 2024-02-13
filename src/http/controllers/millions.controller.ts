@@ -1,5 +1,5 @@
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
-import {Body, Controller, ForbiddenException, Get, NotFoundException, Param, Post, Req, UnprocessableEntityException, UseInterceptors} from '@nestjs/common';
+import { Body, Controller, ForbiddenException, Get, NotFoundException, Param, Post, Req, UnprocessableEntityException, UseInterceptors } from '@nestjs/common';
 import { CacheInterceptor } from '@nestjs/cache-manager';
 
 import bcrypt from 'bcrypt';
