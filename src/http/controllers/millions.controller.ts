@@ -1,8 +1,8 @@
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
-import { Controller, ForbiddenException, Get, NotFoundException, Param, Post, Req, UnprocessableEntityException, UseInterceptors } from '@nestjs/common';
+import {Body, Controller, ForbiddenException, Get, NotFoundException, Param, Post, Req, UnprocessableEntityException, UseInterceptors} from '@nestjs/common';
 import { CacheInterceptor } from '@nestjs/cache-manager';
 
-import * as bcrypt from 'bcrypt';
+import bcrypt from 'bcrypt';
 import { plainToInstance } from 'class-transformer';
 import { Deposit } from '@lum-network/sdk-javascript/build/codec/lum/network/millions/deposit';
 import { Withdrawal } from '@lum-network/sdk-javascript/build/codec/lum/network/millions/withdrawal';
@@ -283,24 +283,24 @@ export class MillionsController {
 
     @ApiOkResponse({ status: 200, type: MillionsCampaignResponse })
     @Post('campaigns/participate')
-    async participateCampaign(@Req() request: MillionsCampaignParticipationRequest): Promise<DataResponse> {
-        const campaign = await this._millionsCampaignService.getById(request.campaign_id);
+    async participateCampaign(@Body() body: MillionsCampaignParticipationRequest): Promise<DataResponse> {
+        const campaign = await this._millionsCampaignService.getById(body.campaign_id);
 
         if (!campaign) {
             throw new NotFoundException('Campaign not found');
         }
 
-        if (!(await bcrypt.compare(request.password, campaign.password))) {
+        if (!(await bcrypt.compare(body.password, campaign.password))) {
             throw new ForbiddenException('Password is incorrect');
         }
 
-        if (await this._millionsCampaignMemberService.getByCampaignIdAndWalletAddress(request.campaign_id, request.wallet_address)) {
+        if (await this._millionsCampaignMemberService.getByCampaignIdAndWalletAddress(body.campaign_id, body.wallet_address)) {
             throw new UnprocessableEntityException('You already participated in this campaign');
         }
 
         await this._millionsCampaignMemberService.save({
-            campaign_id: request.campaign_id,
-            wallet_address: request.wallet_address,
+            campaign_id: body.campaign_id,
+            wallet_address: body.wallet_address,
             campaign: campaign,
         });
 
