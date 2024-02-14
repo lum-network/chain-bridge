@@ -3,7 +3,8 @@ import { InjectQueue, Process, Processor } from '@nestjs/bull';
 
 import { Job, Queue } from 'bull';
 import dayjs from 'dayjs';
-import { LumConstants, LumMessages, LumRegistry, LumUtils } from '@lum-network/sdk-javascript';
+import { LumRegistry, parseRawLogs, sha256, toHex, toJSON, MICRO_LUM_DENOM, toBech32, LumBech32Prefixes } from '@lum-network/sdk-javascript';
+import { MsgMultiSend } from '@lum-network/sdk-javascript/build/codegen/cosmos/bank/v1beta1/tx';
 
 import { BlockEntity, TransactionEntity } from '@app/database';
 import { BlockService, ChainService, TransactionService, ValidatorService } from '@app/services';
@@ -40,63 +41,57 @@ export class BlockConsumer {
             this._logger.debug(`Ingesting block ${job.data.blockHeight} (attempt ${job.attemptsMade})`);
 
             // Get block data
-            const block = await this._chainService.getChain(AssetSymbol.LUM).client.getBlock(job.data.blockHeight);
+            const block = await this._chainService.getChain(AssetSymbol.LUM).client.cosmos.base.tendermint.v1beta1.getBlockByHeight({ height: BigInt(job.data.blockHeight) });
 
             // Get the operator address
-            const proposerAddress = LumUtils.toHex(block.block.header.proposerAddress).toUpperCase();
+            const proposerAddress = toBech32(LumBech32Prefixes.CONS_ADDR, block.block.header.proposerAddress);
             const validator = await this._validatorService.getByProposerAddress(proposerAddress);
-            if (!validator) {
-                throw new Error(`Failed to find validator for ${proposerAddress}, exiting for retry`);
-            }
 
             // Format block data
             const blockDoc: Partial<BlockEntity> = {
-                hash: LumUtils.toHex(block.blockId.hash).toUpperCase(),
-                height: block.block.header.height,
+                hash: toHex(block.blockId.hash).toUpperCase(),
+                height: Number(block.block.header.height),
                 time: dayjs(block.block.header.time as Date).toDate(),
-                tx_count: block.block.txs.length,
-                tx_hashes: block.block.txs.map((tx) => LumUtils.toHex(LumUtils.sha256(tx)).toUpperCase()),
+                tx_count: block.block.data.txs.length,
+                tx_hashes: block.block.data.txs.map((tx) => toHex(sha256(tx)).toUpperCase()),
                 proposer_address: proposerAddress,
-                operator_address: validator.operator_address,
-                raw_block: LumUtils.toJSON(block) as string,
+                operator_address: validator?.operator_address ?? '',
+                raw_block: toJSON(block) as string,
             };
 
             // Fetch and format transactions data
-            const getFormattedTx = async (rawTx: Uint8Array): Promise<Partial<TransactionEntity>> => {
-                // Acquire raw TX
-                const tx = await this._chainService.getChain(AssetSymbol.LUM).client.getTx(LumUtils.sha256(rawTx));
+            const getFormattedTx = async (rawTx: any): Promise<Partial<TransactionEntity>> => {
+                const hash = toHex(sha256(rawTx)).toUpperCase();
 
-                // Decode TX to human-readable format
-                const txData = LumRegistry.decodeTx(tx.tx);
+                // Acquire raw TX
+                const tx = await this._chainService.getChain(AssetSymbol.LUM).client.cosmos.tx.v1beta1.getTx({ hash: hash });
 
                 // Parse the raw logs
-                const logs = LumUtils.parseRawLogs(tx.result.log);
+                const logs = parseRawLogs(tx.txResponse.rawLog);
 
                 // Build the transaction document from information
                 const res: Partial<TransactionEntity> = {
-                    hash: LumUtils.toHex(tx.hash).toUpperCase(),
-                    height: tx.height,
+                    hash: hash,
+                    height: Number(tx.txResponse.height),
                     time: blockDoc.time,
                     proposer_address: blockDoc.proposer_address,
                     operator_address: blockDoc.operator_address,
-                    success: tx.result.code === 0,
-                    code: tx.result.code,
-                    fees: txData.authInfo.fee.amount.map((coin) => {
-                        return { denom: coin.denom, amount: parseFloat(coin.amount) };
-                    }),
+                    success: tx.txResponse.code === 0,
+                    code: tx.txResponse.code,
                     addresses: [],
-                    gas_wanted: (tx.result as unknown as { gasWanted: number }).gasWanted,
-                    gas_used: (tx.result as unknown as { gasUsed: number }).gasUsed,
-                    memo: txData.body.memo,
-                    messages: txData.body.messages.map((msg) => {
-                        return { type_url: msg.typeUrl, value: LumUtils.toJSON(LumRegistry.decode(msg)) };
+                    gas_wanted: Number(tx.txResponse.gasWanted),
+                    gas_used: Number(tx.txResponse.gasUsed),
+                    fees: [],
+                    memo: tx.tx.body.memo,
+                    messages: tx.tx.body.messages.map((msg) => {
+                        return { type_url: msg.typeUrl, value: toJSON(LumRegistry.decode(msg)) };
                     }),
-                    message_type: txData.body.messages.length ? txData.body.messages[0].typeUrl : null,
-                    messages_count: txData.body.messages.length,
+                    message_type: tx.tx.body.messages.length ? tx.tx.body.messages[0].typeUrl : null,
+                    messages_count: tx.tx.body.messages.length,
                     raw_logs: logs as any[],
-                    raw_events: tx.result.events.map((ev) => LumUtils.toJSON(ev)),
-                    raw_tx: LumUtils.toJSON(tx) as string,
-                    raw_tx_data: LumUtils.toJSON(txData) as string,
+                    raw_events: tx.txResponse.events.map((ev) => toJSON(ev)),
+                    raw_tx: toJSON(tx) as string,
+                    raw_tx_data: toJSON(tx.txResponse.data) as string,
                 };
 
                 // Add addresses in case of transaction failure
@@ -185,13 +180,13 @@ export class BlockConsumer {
                 }
 
                 // Multisend case
-                if (res.messages.length === 1 && res.messages[0].type_url === LumMessages.MsgMultiSendUrl) {
+                if (res.messages.length === 1 && res.messages[0].type_url === MsgMultiSend.typeUrl) {
                     res.amount = {
-                        denom: LumConstants.MicroLumDenom,
+                        denom: MICRO_LUM_DENOM,
                         amount: !res.messages[0].value.inputs
                             ? '0'
                             : res.messages[0].value.inputs
-                                  .map((i: any) => (!i.coins ? 0 : i.coins.map((c: any) => (c.denom === LumConstants.MicroLumDenom ? parseInt(c.amount) : 0)).reduce((a: number, b: number) => a + b)))
+                                  .map((i: any) => (!i.coins ? 0 : i.coins.map((c: any) => (c.denom === MICRO_LUM_DENOM ? parseInt(c.amount) : 0)).reduce((a: number, b: number) => a + b)))
                                   .reduce((a: number, b: number) => a + b),
                     };
                 }
@@ -201,7 +196,7 @@ export class BlockConsumer {
 
             // Save entities
             await this._blockService.save(blockDoc);
-            const transactions = await Promise.all(block.block.txs.map(getFormattedTx));
+            const transactions = await Promise.all(block.block.data.txs.map(getFormattedTx));
             await this._transactionService.saveBulk(transactions);
 
             // Dispatch beams for ingest

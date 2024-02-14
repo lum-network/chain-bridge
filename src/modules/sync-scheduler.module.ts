@@ -129,13 +129,13 @@ export class SyncSchedulerModule implements OnModuleInit, OnApplicationBootstrap
 
         // Trigger block backward ingestion at startup
         const chainId = this._chainService.getChain(AssetSymbol.LUM).chainId;
-        const blockHeight = await this._chainService.getChain(AssetSymbol.LUM).client.getBlockHeight();
+        const latestBlock = await this._chainService.getChain(AssetSymbol.LUM).client.cosmos.base.tendermint.v1beta1.getLatestBlock();
         await this._queue.add(
             QueueJobs.TRIGGER_VERIFY_BLOCKS_BACKWARD,
             {
                 chainId: chainId,
                 fromBlock: this._configService.get<number>('STARTING_HEIGHT'),
-                toBlock: blockHeight,
+                toBlock: Number(latestBlock.block.header.height),
             },
             {
                 priority: QueuePriority.URGENT,

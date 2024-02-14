@@ -1,7 +1,7 @@
-import { LumConstants, LumUtils } from '@lum-network/sdk-javascript';
+import { LumBech32Prefixes, toBech32, fromBech32 } from '@lum-network/sdk-javascript';
 
-export const convertValAddressToAccAddress = (address: string, prefix = LumConstants.LumBech32PrefixAccAddr): string => {
-    const words = LumUtils.fromBech32(address).data;
+export const convertValAddressToAccAddress = (address: string, prefix = LumBech32Prefixes.ACC_ADDR): string => {
+    const words = fromBech32(address).data;
 
-    return LumUtils.toBech32(prefix, words);
+    return toBech32(prefix, words);
 };

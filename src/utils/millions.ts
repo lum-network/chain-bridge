@@ -1,5 +1,5 @@
-import { Deposit, DepositState } from '@lum-network/sdk-javascript/build/codec/lum/network/millions/deposit';
-import { WithdrawalState } from '@lum-network/sdk-javascript/build/codec/lum/network/millions/withdrawal';
+import { Deposit, DepositState } from '@lum-network/sdk-javascript/build/codegen/lum/network/millions/deposit';
+import { WithdrawalState } from '@lum-network/sdk-javascript/build/codegen/lum/network/millions/withdrawal';
 
 export type DepositWithRawAmount = Deposit & { rawAmount: number };
 

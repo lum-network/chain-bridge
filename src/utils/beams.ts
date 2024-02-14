@@ -1,10 +1,11 @@
-import { LumMessages } from '@lum-network/sdk-javascript';
-import { BeamData } from '@lum-network/sdk-javascript/build/codec/lum/network/beam/beam';
-import { Coin } from '@lum-network/sdk-javascript/build/codec/cosmos/base/v1beta1/coin';
+import { MsgClaimBeam, MsgOpenBeam, MsgUpdateBeam } from '@lum-network/sdk-javascript/build/codegen/lum/network/beam/tx';
+import { Coin } from '@lum-network/sdk-javascript';
+import { BeamData } from '@lum-network/sdk-javascript/build/codegen/lum/network/beam/beam';
+
 import { BeamStatus, ChartGroupType } from './constants';
 
 export const isBeam = (type: string) => {
-    return type === LumMessages.MsgOpenBeamUrl || type === LumMessages.MsgUpdateBeamUrl || type === LumMessages.MsgClaimBeamUrl;
+    return type === MsgOpenBeam.typeUrl || type === MsgUpdateBeam.typeUrl || type === MsgClaimBeam.typeUrl;
 };
 
 // Convert group_type to time matching string

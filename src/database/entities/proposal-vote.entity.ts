@@ -1,4 +1,4 @@
-import { VoteOption } from '@lum-network/sdk-javascript/build/codec/cosmos/gov/v1beta1/gov';
+import { VoteOption } from '@lum-network/sdk-javascript/build/codegen/cosmos/gov/v1/gov';
 import { Column, Entity, PrimaryColumn } from 'typeorm';
 
 @Entity({ name: 'proposals_votes' })

@@ -1,4 +1,4 @@
-import { Coin } from '@lum-network/sdk-javascript/build/codec/cosmos/base/v1beta1/coin';
+import { Coin } from '@lum-network/sdk-javascript';
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
 

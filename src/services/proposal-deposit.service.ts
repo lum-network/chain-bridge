@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { Repository } from 'typeorm';
-import { Coin } from '@lum-network/sdk-javascript/build/codec/cosmos/base/v1beta1/coin';
+import { Coin } from '@lum-network/sdk-javascript';
 
 import { ProposalDepositEntity } from '@app/database';
 

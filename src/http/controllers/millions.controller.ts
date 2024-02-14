@@ -4,8 +4,9 @@ import { CacheInterceptor } from '@nestjs/cache-manager';
 
 import bcrypt from 'bcrypt';
 import { plainToInstance } from 'class-transformer';
-import { Deposit } from '@lum-network/sdk-javascript/build/codec/lum/network/millions/deposit';
-import { Withdrawal } from '@lum-network/sdk-javascript/build/codec/lum/network/millions/withdrawal';
+import { Withdrawal } from '@lum-network/sdk-javascript/build/codegen/lum/network/millions/withdrawal';
+import { Deposit } from '@lum-network/sdk-javascript/build/codegen/lum/network/millions/deposit';
+import { PageRequest } from '@lum-network/sdk-javascript/build/codegen/helpers';
 
 import {
     DataResponse,
@@ -317,7 +318,7 @@ export class MillionsController {
         let page = undefined;
         const deposits: Deposit[] = [];
         while (true) {
-            const lDeps = await chain.client.queryClient.millions.deposits(page);
+            const lDeps = await chain.client.lum.network.millions.deposits({ pagination: page ? ({ key: page } as PageRequest) : undefined });
             deposits.push(...lDeps.deposits);
 
             if (lDeps.pagination && lDeps.pagination.nextKey && lDeps.pagination.nextKey.length > 0) {
@@ -346,7 +347,7 @@ export class MillionsController {
         let page = undefined;
         const withdrawals: Withdrawal[] = [];
         while (true) {
-            const lWdls = await chain.client.queryClient.millions.withdrawals(page);
+            const lWdls = await chain.client.lum.network.millions.withdrawals({ pagination: page ? ({ key: page } as PageRequest) : undefined });
             withdrawals.push(...lWdls.withdrawals);
 
             if (lWdls.pagination && lWdls.pagination.nextKey && lWdls.pagination.nextKey.length > 0) {

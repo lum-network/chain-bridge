@@ -3,7 +3,7 @@ import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import dayjs from 'dayjs';
-import { ProposalStatus } from '@lum-network/sdk-javascript/build/codec/cosmos/gov/v1beta1/gov';
+import { ProposalStatus } from '@lum-network/sdk-javascript/build/codegen/cosmos/gov/v1beta1/gov';
 
 import { hasFalsyProperties, LUM_DFR_ALLOCATION_TYPE_URL, QueueJobs, Queues } from '@app/utils';
 import { AssetService, ChainService, DfractService, ProposalService } from '@app/services';

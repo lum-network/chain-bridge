@@ -14,6 +14,10 @@ export * from './transactions';
 export * from './validation';
 export * from './validators';
 
+(BigInt.prototype as any).toJSON = function () {
+    return this.toString();
+};
+
 export const sleep = async (ms: number): Promise<void> => {
     return new Promise((resolve) => setTimeout(resolve, ms));
 };

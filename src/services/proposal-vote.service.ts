@@ -1,11 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
+import { fromBech32, LumBech32Prefixes, toBech32 } from '@lum-network/sdk-javascript';
 import { Repository } from 'typeorm';
 
 import { ProposalVoteEntity } from '@app/database';
-import { LumConstants, LumUtils } from '@lum-network/sdk-javascript';
-import { LumBech32PrefixValAddr } from '@lum-network/sdk-javascript/build/constants';
 
 @Injectable()
 export class ProposalVoteService {
@@ -35,15 +34,15 @@ export class ProposalVoteService {
         let operatorAddress: string = null;
 
         // Verify if the voterAddress is an operator
-        const isAddressOperator: boolean = voterAddress.startsWith(LumBech32PrefixValAddr);
+        const isAddressOperator: boolean = voterAddress.startsWith(LumBech32Prefixes.VAL_ADDR);
 
         // Based on the voterAddress address we either encode the operator to have the account address
         // Or we encode the operatorAddress to get the account one
         if (isAddressOperator) {
-            accountAddress = LumUtils.toBech32(LumConstants.LumBech32PrefixAccAddr, LumUtils.fromBech32(voterAddress).data);
+            accountAddress = toBech32(LumBech32Prefixes.ACC_ADDR, fromBech32(voterAddress).data);
             operatorAddress = voterAddress;
         } else {
-            operatorAddress = LumUtils.toBech32(LumConstants.LumBech32PrefixValAddr, LumUtils.fromBech32(voterAddress).data);
+            operatorAddress = toBech32(LumBech32Prefixes.VAL_ADDR, fromBech32(voterAddress).data);
             accountAddress = voterAddress;
         }
 
