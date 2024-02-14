@@ -50,15 +50,6 @@ export const DatabaseConfig: TypeOrmModuleAsyncOptions = {
         ],
         synchronize: true,
         logging: false,
-        extra:
-            configService.get('ENV') === 'production'
-                ? {
-                      ssl: {
-                          rejectUnauthorized: false,
-                      },
-                  }
-                : {},
-        ssl: configService.get('ENV') === 'production',
     }),
 };
 
