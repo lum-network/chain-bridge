@@ -1,20 +1,17 @@
 import { LoggerService } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 
-import { Stream } from 'xstream';
-import { NewBlockEvent } from '@cosmjs/tendermint-rpc';
 import { lastValueFrom, map } from 'rxjs';
-import { fromBech32, ibc, lum, toBech32 } from '@lum-network/sdk-javascript';
+import { ibc, lum } from '@lum-network/sdk-javascript';
 
-import { ApiUrl, apy, AssetDenom, AssetMicroDenom, computeTotalApy, computeTotalTokenAmount, GenericAssetInfo, LUM_STAKING_ADDRESS, TEN_EXPONENT_SIX } from '@app/utils';
-import { AssetService, MarketService } from '@app/services';
+import { ApiUrl, AssetDenom, AssetMicroDenom, TEN_EXPONENT_SIX } from '@app/utils';
+import { MarketService } from '@app/services';
 
 export type Callback = (instance: any) => void;
 export type LumClient = Awaited<ReturnType<typeof lum.ClientFactory.createRPCQueryClient>>;
 export type IbcQueryClient = Awaited<ReturnType<typeof ibc.ClientFactory.createRPCQueryClient>>;
 
 interface GenericChainConfig {
-    assetService: AssetService;
     httpService: HttpService;
     marketService: MarketService;
     loggerService: LoggerService;
@@ -67,10 +64,6 @@ export class GenericChain {
 
     get chainId(): string {
         return this._chainId;
-    }
-
-    get assetService(): AssetService {
-        return this._config.assetService;
     }
 
     get httpService(): HttpService {
@@ -149,53 +142,6 @@ export class GenericChain {
             return supply;
         } catch (error) {
             return 0;
-        }
-    };
-
-    getAPY = async (): Promise<number> => {
-        try {
-            const inflation = Number(await this.client.cosmos.mint.v1beta1.inflation());
-            const metrics = await computeTotalApy(this.client, Number(await this.getTokenSupply()), inflation, TEN_EXPONENT_SIX);
-            return apy(metrics.inflation, metrics.communityTaxRate, metrics.stakingRatio);
-        } catch (error) {
-            return 0;
-        }
-    };
-
-    getTotalAllocatedToken = async (): Promise<number> => {
-        try {
-            const decode = fromBech32(LUM_STAKING_ADDRESS);
-            const getDecodedAddress = toBech32(this.prefix, decode.data);
-            return Number(await computeTotalTokenAmount(getDecodedAddress, this.client, this.microDenom, TEN_EXPONENT_SIX));
-        } catch (error) {
-            return 0;
-        }
-    };
-
-    getTVL = async (): Promise<number> => {
-        let [price, totalToken] = await Promise.all([this.assetService.getPriceForSymbol(this.symbol), this.assetService.getTotalAllocatedTokensForSymbol(this.symbol)]);
-
-        if (!price) {
-            price = await this.getPrice();
-        }
-        if (!totalToken) {
-            totalToken = await this.getTotalAllocatedToken();
-        }
-        return price * totalToken;
-    };
-
-    getAssetInfo = async (): Promise<GenericAssetInfo> => {
-        try {
-            const [supply, price, marketCap, apy, totalAllocatedToken] = await Promise.all([this.getTokenSupply(), this.getPrice(), this.getMarketCap(), this.getAPY(), this.getTotalAllocatedToken()]);
-            return {
-                supply,
-                unit_price_usd: price,
-                total_value_usd: marketCap,
-                apy,
-                total_allocated_token: totalAllocatedToken,
-            };
-        } catch (error) {
-            return null;
         }
     };
 }

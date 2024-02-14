@@ -6,7 +6,7 @@ import bcrypt from 'bcrypt';
 import { plainToInstance } from 'class-transformer';
 import { Withdrawal } from '@lum-network/sdk-javascript/build/codegen/lum/network/millions/withdrawal';
 import { Deposit } from '@lum-network/sdk-javascript/build/codegen/lum/network/millions/deposit';
-import { PageRequest } from '@lum-network/sdk-javascript/build/codegen/helpers';
+import { PageRequest } from '@lum-network/sdk-javascript/build/codegen/cosmos/base/query/v1beta1/pagination';
 
 import {
     DataResponse,
@@ -315,14 +315,22 @@ export class MillionsController {
         const chain = this._chainService.getChain<LumChain>(AssetSymbol.LUM);
 
         // Acquire deposits
-        let page = undefined;
+        let nextPageKey: Uint8Array = new Uint8Array();
         const deposits: Deposit[] = [];
         while (true) {
-            const lDeps = await chain.client.lum.network.millions.deposits({ pagination: page ? ({ key: page } as PageRequest) : undefined });
+            const lDeps = await chain.client.lum.network.millions.deposits({
+                pagination: PageRequest.fromPartial({
+                    key: nextPageKey,
+                    offset: BigInt(0),
+                    limit: BigInt(100),
+                    reverse: false,
+                    countTotal: false,
+                }),
+            });
             deposits.push(...lDeps.deposits);
 
             if (lDeps.pagination && lDeps.pagination.nextKey && lDeps.pagination.nextKey.length > 0) {
-                page = lDeps.pagination.nextKey;
+                nextPageKey = lDeps.pagination.nextKey;
             } else {
                 break;
             }
@@ -344,14 +352,22 @@ export class MillionsController {
         const chain = this._chainService.getChain<LumChain>(AssetSymbol.LUM);
 
         // Acquire deposits
-        let page = undefined;
+        let nextPageKey: Uint8Array = new Uint8Array();
         const withdrawals: Withdrawal[] = [];
         while (true) {
-            const lWdls = await chain.client.lum.network.millions.withdrawals({ pagination: page ? ({ key: page } as PageRequest) : undefined });
+            const lWdls = await chain.client.lum.network.millions.withdrawals({
+                pagination: PageRequest.fromPartial({
+                    key: nextPageKey,
+                    offset: BigInt(0),
+                    limit: BigInt(100),
+                    reverse: false,
+                    countTotal: false,
+                }),
+            });
             withdrawals.push(...lWdls.withdrawals);
 
             if (lWdls.pagination && lWdls.pagination.nextKey && lWdls.pagination.nextKey.length > 0) {
-                page = lWdls.pagination.nextKey;
+                nextPageKey = lWdls.pagination.nextKey;
             } else {
                 break;
             }

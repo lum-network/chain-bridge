@@ -3,12 +3,12 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { ConfigService } from '@nestjs/config';
 
 import { toBech32, LumBech32Prefixes, fromBech32 } from '@lum-network/sdk-javascript';
-import { PageRequest } from '@lum-network/sdk-javascript/build/codegen/helpers';
+import { PubKey } from '@lum-network/sdk-javascript/build/codegen/cosmos/crypto/ed25519/keys';
+import { PageRequest } from '@lum-network/sdk-javascript/build/codegen/cosmos/base/query/v1beta1/pagination';
 
 import { ChainService, ValidatorDelegationService, ValidatorService } from '@app/services';
 import { ValidatorEntity } from '@app/database';
 import { AssetPrefix, AssetSymbol, SIGNED_BLOCK_WINDOW } from '@app/utils';
-import { PubKey } from '@lum-network/sdk-javascript/build/codegen/cosmos/crypto/ed25519/keys';
 
 @Injectable()
 export class ValidatorScheduler {
@@ -86,12 +86,21 @@ export class ValidatorScheduler {
 
             // Go through all staking validators to match them with tendermint ones
             const statuses = ['BOND_STATUS_BONDED', 'BOND_STATUS_UNBONDED', 'BOND_STATUS_UNBONDING'];
-            let page: Uint8Array | undefined = undefined;
+            let nextPageKey: Uint8Array = new Uint8Array();
 
             for (const s of statuses) {
-                page = undefined;
+                nextPageKey = new Uint8Array();
                 while (true) {
-                    const stakingValidators = await this._chainService.getChain(AssetSymbol.LUM).client.cosmos.staking.v1beta1.validators({ status: s as any, pagination: page ? ({ key: page } as PageRequest) : undefined });
+                    const stakingValidators = await this._chainService.getChain(AssetSymbol.LUM).client.cosmos.staking.v1beta1.validators({
+                        status: s as any,
+                        pagination: PageRequest.fromPartial({
+                            key: nextPageKey,
+                            limit: BigInt(100),
+                            offset: BigInt(0),
+                            reverse: false,
+                            countTotal: false,
+                        }),
+                    });
 
                     for (const val of stakingValidators.validators) {
                         const pubKey = PubKey.fromProtoMsg(val.consensusPubkey as any);
@@ -143,7 +152,7 @@ export class ValidatorScheduler {
                         }
                     }
                     if (stakingValidators.pagination && stakingValidators.pagination.nextKey && stakingValidators.pagination.nextKey.length > 0) {
-                        page = stakingValidators.pagination.nextKey;
+                        nextPageKey = stakingValidators.pagination.nextKey;
                     } else {
                         break;
                     }

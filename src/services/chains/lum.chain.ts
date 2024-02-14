@@ -73,11 +73,6 @@ export class LumChain extends GenericChain {
         );
     };
 
-    getTVL = async (): Promise<number> => {
-        const [totalAllocatedToken, price] = await Promise.all([this.getTotalAllocatedToken(), this.getPrice()]);
-        return totalAllocatedToken * price;
-    };
-
     getProposals = async (): Promise<QueryProposalsResponse> => {
         // We want to sync all proposals and get the proposal_id
         return await this.client.cosmos.gov.v1.proposals({

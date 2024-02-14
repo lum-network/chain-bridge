@@ -2,7 +2,7 @@ import { HttpModule } from '@nestjs/axios';
 import { Module, OnModuleInit, OnApplicationBootstrap, ValidationPipe, HttpException } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { BullModule } from '@nestjs/bull';
-import { APP_FILTER, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
+import { APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { TerminusModule } from '@nestjs/terminus';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ScheduleModule } from '@nestjs/schedule';
@@ -21,10 +21,8 @@ import {
     BeamsController,
     BlocksController,
     CoreController,
-    DfractController,
     GovernanceController,
     HealthController,
-    HttpExceptionFilter,
     LumNetworkIndicator,
     MarketController,
     MillionsController,
@@ -37,7 +35,6 @@ import {
 } from '@app/http';
 
 import {
-    AssetService,
     BeamService,
     BlockService,
     ChainService,
@@ -95,23 +92,8 @@ import { AsyncQueues, MetricScheduler } from '@app/async';
         TypeOrmModule.forRootAsync(DatabaseConfig),
         TypeOrmModule.forFeature(DatabaseFeatures),
     ],
-    controllers: [
-        AccountsController,
-        BeamsController,
-        BlocksController,
-        DfractController,
-        CoreController,
-        GovernanceController,
-        HealthController,
-        MarketController,
-        MillionsController,
-        SearchController,
-        StatsController,
-        TransactionsController,
-        ValidatorsController,
-    ],
+    controllers: [AccountsController, BeamsController, BlocksController, CoreController, GovernanceController, HealthController, MarketController, MillionsController, SearchController, StatsController, TransactionsController, ValidatorsController],
     providers: [
-        AssetService,
         BeamService,
         BlockService,
         ChainService,
@@ -135,7 +117,6 @@ import { AsyncQueues, MetricScheduler } from '@app/async';
         TransactionService,
         ValidatorService,
         ValidatorDelegationService,
-        { provide: APP_FILTER, useClass: HttpExceptionFilter },
         { provide: APP_INTERCEPTOR, useClass: PaginationInterceptor },
         { provide: APP_INTERCEPTOR, useClass: ResponseInterceptor },
         {

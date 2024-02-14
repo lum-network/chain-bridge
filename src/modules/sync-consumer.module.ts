@@ -12,7 +12,6 @@ import * as parseRedisUrl from 'parse-redis-url-simple';
 import { AsyncQueues, BeamConsumer, BlockConsumer, MillionsDepositConsumer, NotificationConsumer } from '@app/async';
 
 import {
-    AssetService,
     BeamService,
     BlockService,
     ChainService,
@@ -60,7 +59,6 @@ import { DatabaseConfig, DatabaseFeatures } from '@app/database';
     ],
     controllers: [],
     providers: [
-        AssetService,
         ChainService,
         BeamService,
         BlockService,

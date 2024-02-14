@@ -2,7 +2,6 @@ export * from './accounts.controller';
 export * from './beams.controller';
 export * from './blocks.controller';
 export * from './core.controller';
-export * from './dfract.controller';
 export * from './governance.controller';
 export * from './health.controller';
 export * from './market.controller';

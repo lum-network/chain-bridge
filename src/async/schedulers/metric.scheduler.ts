@@ -11,7 +11,7 @@ import { Pool } from '@lum-network/sdk-javascript/build/codegen/lum/network/mill
 import { WithdrawalState } from '@lum-network/sdk-javascript/build/codegen/lum/network/millions/withdrawal';
 import { Draw } from '@lum-network/sdk-javascript/build/codegen/lum/network/millions/draw';
 import { IdentifiedChannel, State } from '@lum-network/sdk-javascript/build/codegen/ibc/core/channel/v1/channel';
-import { PageRequest } from '@lum-network/sdk-javascript/build/codegen/helpers';
+import { PageRequest } from '@lum-network/sdk-javascript/build/codegen/cosmos/base/query/v1beta1/pagination';
 
 import { AssetSymbol, depositStateToString, MetricNames, sleep, withdrawalStateToString } from '@app/utils';
 import { ChainService } from '@app/services';
@@ -124,13 +124,21 @@ export class MetricScheduler {
         this._logger.log(`[MillionsBasics] Syncing...`);
 
         // Acquire list of pools
-        let page: Uint8Array | undefined = undefined;
+        let nextPageKey: Uint8Array = new Uint8Array();
         const pools: Pool[] = [];
         while (true) {
-            const lPools = await this._chainService.getChain<LumChain>(AssetSymbol.LUM).client.lum.network.millions.pools({ pagination: page ? ({ key: page } as PageRequest) : undefined });
+            const lPools = await this._chainService.getChain<LumChain>(AssetSymbol.LUM).client.lum.network.millions.pools({
+                pagination: PageRequest.fromPartial({
+                    key: nextPageKey,
+                    limit: BigInt(0),
+                    offset: BigInt(0),
+                    reverse: false,
+                    countTotal: false,
+                }),
+            });
             pools.push(...lPools.pools);
             if (lPools.pagination && lPools.pagination.nextKey && lPools.pagination.nextKey.length > 0) {
-                page = lPools.pagination.nextKey;
+                nextPageKey = lPools.pagination.nextKey;
             } else {
                 break;
             }
@@ -144,9 +152,17 @@ export class MetricScheduler {
             [DepositState.DEPOSIT_STATE_SUCCESS]: 0,
             [DepositState.DEPOSIT_STATE_FAILURE]: 0,
         };
-        page = undefined;
+        nextPageKey = new Uint8Array();
         while (true) {
-            const deposits = await this._chainService.getChain<LumChain>(AssetSymbol.LUM).client.lum.network.millions.deposits({ pagination: page ? ({ key: page } as PageRequest) : undefined });
+            const deposits = await this._chainService.getChain<LumChain>(AssetSymbol.LUM).client.lum.network.millions.deposits({
+                pagination: PageRequest.fromPartial({
+                    key: nextPageKey,
+                    limit: BigInt(0),
+                    offset: BigInt(0),
+                    reverse: false,
+                    countTotal: false,
+                })
+            });
 
             // Increase the given state
             for (const deposit of deposits.deposits) {
@@ -154,7 +170,7 @@ export class MetricScheduler {
             }
 
             if (deposits.pagination && deposits.pagination.nextKey && deposits.pagination.nextKey.length > 0) {
-                page = deposits.pagination.nextKey;
+                nextPageKey = deposits.pagination.nextKey;
             } else {
                 break;
             }
@@ -169,9 +185,17 @@ export class MetricScheduler {
             [WithdrawalState.WITHDRAWAL_STATE_PENDING]: 0,
             [WithdrawalState.WITHDRAWAL_STATE_FAILURE]: 0,
         };
-        page = undefined;
+        nextPageKey = new Uint8Array();
         while (true) {
-            const withdrawals = await this._chainService.getChain<LumChain>(AssetSymbol.LUM).client.lum.network.millions.withdrawals({ pagination: page ? ({ key: page } as PageRequest) : undefined });
+            const withdrawals = await this._chainService.getChain<LumChain>(AssetSymbol.LUM).client.lum.network.millions.withdrawals({
+                pagination: PageRequest.fromPartial({
+                    key: nextPageKey,
+                    limit: BigInt(0),
+                    offset: BigInt(0),
+                    reverse: false,
+                    countTotal: false,
+                }),
+            });
 
             // Increase the given state
             for (const withdrawal of withdrawals.withdrawals) {
@@ -179,7 +203,7 @@ export class MetricScheduler {
             }
 
             if (withdrawals.pagination && withdrawals.pagination.nextKey && withdrawals.pagination.nextKey.length > 0) {
-                page = withdrawals.pagination.nextKey;
+                nextPageKey = withdrawals.pagination.nextKey;
             } else {
                 break;
             }
@@ -212,13 +236,21 @@ export class MetricScheduler {
         this._logger.debug(`[MillionsDraws] Syncing...`);
 
         // Acquire pool draws
-        let page: Uint8Array | undefined = undefined;
+        let nextPageKey: Uint8Array = new Uint8Array();
         const draws: Draw[] = [];
         while (true) {
-            const lDraws = await this._chainService.getChain<LumChain>(AssetSymbol.LUM).client.lum.network.millions.draws({ pagination: page ? ({ key: page } as PageRequest) : undefined });
+            const lDraws = await this._chainService.getChain<LumChain>(AssetSymbol.LUM).client.lum.network.millions.draws({
+                pagination: PageRequest.fromPartial({
+                    key: nextPageKey,
+                    limit: BigInt(0),
+                    offset: BigInt(0),
+                    reverse: false,
+                    countTotal: false,
+                }),
+            });
             draws.push(...lDraws.draws);
             if (lDraws.pagination && lDraws.pagination.nextKey && lDraws.pagination.nextKey.length > 0) {
-                page = lDraws.pagination.nextKey;
+                nextPageKey = lDraws.pagination.nextKey;
             } else {
                 break;
             }
@@ -242,13 +274,21 @@ export class MetricScheduler {
         this._logger.debug(`[IBC] Syncing...`);
 
         // Grab our channels
-        let page: Uint8Array | undefined = undefined;
+        let nextPageKey: Uint8Array = new Uint8Array();
         const channels: IdentifiedChannel[] = [];
         while (true) {
-            const lChannels = await this._chainService.getChain<LumChain>(AssetSymbol.LUM).ibcQueryClient.ibc.core.channel.v1.channels({ pagination: page ? ({ key: page } as PageRequest) : undefined });
+            const lChannels = await this._chainService.getChain<LumChain>(AssetSymbol.LUM).ibcQueryClient.ibc.core.channel.v1.channels({
+                pagination: PageRequest.fromPartial({
+                    key: nextPageKey,
+                    limit: BigInt(0),
+                    offset: BigInt(0),
+                    reverse: false,
+                    countTotal: false,
+                }),
+            });
             channels.push(...lChannels.channels);
             if (lChannels.pagination && lChannels.pagination.nextKey && lChannels.pagination.nextKey.length > 0) {
-                page = lChannels.pagination.nextKey;
+                nextPageKey = lChannels.pagination.nextKey;
             } else {
                 break;
             }

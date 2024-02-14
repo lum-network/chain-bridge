@@ -5,7 +5,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import dayjs from 'dayjs';
 import { convertUnit, LUM_DENOM, MICRO_LUM_DENOM } from '@lum-network/sdk-javascript';
 import { Deposit } from '@lum-network/sdk-javascript/build/codegen/lum/network/millions/deposit';
-import { PageRequest } from '@lum-network/sdk-javascript/build/codegen/helpers';
+import { PageRequest } from '@lum-network/sdk-javascript/build/codegen/cosmos/base/query/v1beta1/pagination';
 
 import { MillionsBiggestWinnerEntity, MillionsDepositorEntity, MillionsDrawEntity, MillionsPoolEntity, MillionsPrizeEntity } from '@app/database';
 import { ChainService, MarketService, MillionsBiggestWinnerService, MillionsDepositorService, MillionsDrawService, MillionsPoolService, MillionsPrizeService } from '@app/services';
@@ -134,11 +134,20 @@ export class MillionsScheduler {
         } = await lumChain.client.lum.network.millions.params();
 
         for (const pool of pools) {
-            let page: Uint8Array | undefined = undefined;
+            let nextPageKey: Uint8Array = new Uint8Array();
 
             // Get draws for the pool
             while (true) {
-                const draws = await lumChain.client.lum.network.millions.poolDraws({ poolId: BigInt(pool.id), pagination: page ? ({ key: page } as PageRequest) : undefined });
+                const draws = await lumChain.client.lum.network.millions.poolDraws({
+                    poolId: BigInt(pool.id),
+                    pagination: PageRequest.fromPartial({
+                        key: nextPageKey,
+                        limit: BigInt(100),
+                        offset: BigInt(0),
+                        reverse: false,
+                        countTotal: false,
+                    }),
+                });
 
                 for (const draw of draws.draws) {
                     const id = `${pool.id}-${draw.drawId}`;
@@ -254,7 +263,7 @@ export class MillionsScheduler {
 
                 // If we have pagination key, we just patch it, and it will process in the next loop
                 if (draws.pagination && draws.pagination.nextKey && draws.pagination.nextKey.length) {
-                    page = draws.pagination.nextKey;
+                    nextPageKey = draws.pagination.nextKey;
                 } else {
                     break;
                 }
@@ -276,18 +285,27 @@ export class MillionsScheduler {
         const lumChain = this._chainService.getChain<LumChain>(AssetSymbol.LUM);
 
         for (const pool of pools) {
-            let page: Uint8Array | undefined = undefined;
+            let nextPageKey: Uint8Array = new Uint8Array();
             const allDeposits: Deposit[] = [];
 
             // Get all deposits for the pool
             while (true) {
-                const deposits = await lumChain.client.lum.network.millions.poolDeposits({ poolId: BigInt(pool.id), pagination: page ? ({ key: page } as PageRequest) : undefined });
+                const deposits = await lumChain.client.lum.network.millions.poolDeposits({
+                    poolId: BigInt(pool.id),
+                    pagination: PageRequest.fromPartial({
+                        key: nextPageKey,
+                        limit: BigInt(100),
+                        offset: BigInt(0),
+                        reverse: false,
+                        countTotal: false,
+                    }),
+                });
 
                 allDeposits.push(...deposits.deposits);
 
                 // If we have pagination key, we just patch it, and it will process in the next loop
                 if (deposits.pagination && deposits.pagination.nextKey && deposits.pagination.nextKey.length) {
-                    page = deposits.pagination.nextKey;
+                    nextPageKey = deposits.pagination.nextKey;
                 } else {
                     break;
                 }

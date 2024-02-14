@@ -1,4 +1,3 @@
-export * from './asset.service';
 export * from './beam.service';
 export * from './block.service';
 export * from './chain.service';
