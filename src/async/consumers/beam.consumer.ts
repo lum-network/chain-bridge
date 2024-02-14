@@ -77,5 +77,7 @@ export class BeamConsumer {
 
             this._logger.debug(`Updated beam event ${job.data.url}`);
         }
+
+        return beam;
     }
 }

@@ -227,6 +227,8 @@ export class BlockConsumer {
                     data: blockDoc,
                 });
             }
+
+            return blockDoc;
         } catch (error) {
             this._logger.error(`Failed to ingest block ${job.data.blockHeight}: ${error}`, error.stack);
             throw error;

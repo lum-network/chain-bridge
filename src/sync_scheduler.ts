@@ -13,9 +13,12 @@ async function bootstrap() {
             host: redisUrl[0].host,
             port: redisUrl[0].port,
             password: redisUrl[0].password,
-            tls: {
-                rejectUnauthorized: false,
-            },
+            tls:
+                process.env.ENV === 'production'
+                    ? {
+                          rejectUnauthorized: false,
+                      }
+                    : null,
         },
     });
 

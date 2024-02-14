@@ -57,6 +57,7 @@ export class MillionsDepositConsumer {
 
         try {
             await this._millionsDepositService.update(formattedMillionsDeposit);
+            return formattedMillionsDeposit;
         } catch {
             this._logger.error(`MillionsDepositEntity with id ${job.data.id} does not exist`);
             return;
