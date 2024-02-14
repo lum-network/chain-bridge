@@ -11,19 +11,7 @@ import * as parseRedisUrl from 'parse-redis-url-simple';
 
 import { AsyncQueues, BeamConsumer, BlockConsumer, MillionsDepositConsumer, NotificationConsumer } from '@app/async';
 
-import {
-    BeamService,
-    BlockService,
-    ChainService,
-    MarketService,
-    MillionsDepositService,
-    ProposalDepositService,
-    ProposalService,
-    ProposalVoteService,
-    TransactionService,
-    ValidatorDelegationService,
-    ValidatorService,
-} from '@app/services';
+import { BeamService, BlockService, ChainService, MarketService, MillionsDepositService, ProposalDepositService, ProposalService, ProposalVoteService, TransactionService, ValidatorDelegationService, ValidatorService } from '@app/services';
 import { ConfigMap, SentryModuleOptions } from '@app/utils';
 import { DatabaseConfig, DatabaseFeatures } from '@app/database';
 

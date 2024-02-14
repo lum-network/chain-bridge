@@ -8,7 +8,7 @@ import { MsgMultiSend } from '@lum-network/sdk-javascript/build/codegen/cosmos/b
 
 import { BlockEntity, TransactionEntity } from '@app/database';
 import { BlockService, ChainService, TransactionService, ValidatorService } from '@app/services';
-import { LumChain } from "@app/services/chains";
+import { LumChain } from '@app/services/chains';
 import { AssetSymbol, getAddressesRelatedToTransaction, isBeam, NotificationChannels, NotificationEvents, QueueJobs, QueuePriority, Queues } from '@app/utils';
 
 @Processor(Queues.BLOCKS)

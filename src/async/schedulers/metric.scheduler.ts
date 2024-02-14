@@ -161,7 +161,7 @@ export class MetricScheduler {
                     offset: BigInt(0),
                     reverse: false,
                     countTotal: false,
-                })
+                }),
             });
 
             // Increase the given state

@@ -44,21 +44,7 @@ import { AsyncQueues } from '@app/async';
         TypeOrmModule.forRootAsync(DatabaseConfig),
         TypeOrmModule.forFeature(DatabaseFeatures),
     ],
-    providers: [
-        ChainService,
-        BeamService,
-        BlockService,
-        MarketService,
-        StatService,
-        ProposalService,
-        TransactionService,
-        ValidatorService,
-        ValidatorDelegationService,
-        BlocksCommands,
-        RedisCommands,
-        TransactionsCommands,
-        ValidatorsCommands,
-    ],
+    providers: [ChainService, BeamService, BlockService, MarketService, StatService, ProposalService, TransactionService, ValidatorService, ValidatorDelegationService, BlocksCommands, RedisCommands, TransactionsCommands, ValidatorsCommands],
 })
 export class CliModule implements OnModuleInit {
     constructor(private readonly _chainService: ChainService) {}
