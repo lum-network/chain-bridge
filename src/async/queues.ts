@@ -10,6 +10,11 @@ export const AsyncQueues: BullModuleAsyncOptions[] = [
         inject: [ConfigService],
         useFactory: (configService: ConfigService) => ({
             url: configService.get<string>('REDIS_URL'),
+            redis: {
+                tls: {
+                    rejectUnauthorized: false,
+                },
+            },
             limiter: {
                 max: 1,
                 duration: 30,
@@ -26,6 +31,11 @@ export const AsyncQueues: BullModuleAsyncOptions[] = [
         inject: [ConfigService],
         useFactory: (configService: ConfigService) => ({
             url: configService.get<string>('REDIS_URL'),
+            redis: {
+                tls: {
+                    rejectUnauthorized: false,
+                },
+            },
             defaultJobOptions: {
                 removeOnComplete: false,
                 removeOnFail: false,
@@ -38,6 +48,11 @@ export const AsyncQueues: BullModuleAsyncOptions[] = [
         inject: [ConfigService],
         useFactory: (configService: ConfigService) => ({
             url: configService.get<string>('REDIS_URL'),
+            redis: {
+                tls: {
+                    rejectUnauthorized: false,
+                },
+            },
             defaultJobOptions: {
                 removeOnComplete: false,
                 removeOnFail: false,
@@ -50,6 +65,11 @@ export const AsyncQueues: BullModuleAsyncOptions[] = [
         inject: [ConfigService],
         useFactory: (configService: ConfigService) => ({
             url: configService.get<string>('REDIS_URL'),
+            redis: {
+                tls: {
+                    rejectUnauthorized: false,
+                },
+            },
             defaultJobOptions: {
                 removeOnComplete: false,
                 removeOnFail: false,
@@ -62,6 +82,11 @@ export const AsyncQueues: BullModuleAsyncOptions[] = [
         inject: [ConfigService],
         useFactory: (configService: ConfigService) => ({
             url: configService.get<string>('REDIS_URL'),
+            redis: {
+                tls: {
+                    rejectUnauthorized: false,
+                },
+            },
             limiter: {
                 max: 1,
                 duration: 30,
