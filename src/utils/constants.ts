@@ -1,10 +1,5 @@
-export const MODULE_NAMES = ['SyncConsumerModule', 'SyncSchedulerModule', 'ApiModule'];
 export const TEN_EXPONENT_SIX = 1_000_000;
 export const SIGNED_BLOCK_WINDOW = 10000;
-export const PERCENTAGE = 100;
-
-export const LUM_STAKING_ADDRESS = 'lum1euhszjasgkeskujz6zr42r3lsxv58mfgsmlps0';
-export const EVMOS_STAKING_ADDRESS = 'evmos1evap49dune5ffh6w3h6ueqv9hyyyyeargtp6gw';
 
 export enum BeamStatus {
     UNSPECIFIED,
@@ -87,16 +82,9 @@ export enum NotificationEvents {
 }
 
 export enum ApiUrl {
-    GET_EVMOS_INFLATION = 'https://rest.bd.evmos.org:1317/evmos/inflation/v1/inflation_rate',
-    GET_EVMOS_SUPPLY = 'https://rest.bd.evmos.org:1317/evmos/inflation/v1/circulating_supply',
-    GET_EVMOS_INFLATION_PARAMS = 'https://rest.bd.evmos.org:1317/evmos/inflation/v1/params',
     GET_CHAIN_TOKENS_MCAP = 'https://api-osmosis.imperator.co/tokens/v2/mcap',
-    GET_CHAIN_TOKENS_ALL = 'https://api-osmosis.imperator.co/tokens/v2/all',
     GET_CHAIN_TOKENS = 'https://api-osmosis.imperator.co/tokens/v2',
-    GET_LUM_PRICE = 'https://api.coingecko.com/api/v3/coins/lum-network',
-    GET_JUNO_APY = 'https://supply-api.junonetwork.io/apr',
-    GET_OSMOSIS_APY = 'https://api-osmosis.imperator.co/apr/v2/staking',
-    GET_STARGAZE_APY = 'https://supply-api.publicawesome.dev/apr',
+    GET_LUM_PRICE = 'https://api.coingecko.com/api/v3/coins/lum-network'
 }
 
 export enum AssetSymbol {
@@ -179,22 +167,3 @@ export enum MillionsPoolState {
     KILLED,
     UNRECOGNIZED = -1,
 }
-
-// If we map the enums first, we encounter an error on the initialization onModuleInit
-// Hence, we hardcod the endpoint env
-export const CHAIN_ENV_CONFIG = [
-    'COSMOS_NETWORK_ENDPOINT',
-    'AKASH_NETWORK_ENDPOINT',
-    'COMDEX_NETWORK_ENDPOINT',
-    'SENTINEL_NETWORK_ENDPOINT',
-    'KICHAIN_NETWORK_ENDPOINT',
-    'OSMOSIS_NETWORK_ENDPOINT',
-    'JUNO_NETWORK_ENDPOINT',
-    'STARGAZE_NETWORK_ENDPOINT',
-    'EVMOS_NETWORK_ENDPOINT',
-];
-
-// Lum endpoint
-export const LUM_ENV_CONFIG = 'LUM_NETWORK_ENDPOINT';
-
-export const LUM_DFR_ALLOCATION_TYPE_URL = 'lum.network.dfract.WithdrawAndMintProposal';
