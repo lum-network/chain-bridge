@@ -61,7 +61,7 @@ async function bootstrap() {
     );
 
     await app.startAllMicroservices();
-    await app.listen(config.get<string>('API_PORT'));
+    await app.listen(config.getOrThrow<number>('PORT') || 3000);
 }
 
 bootstrap();

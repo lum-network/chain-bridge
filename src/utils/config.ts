@@ -2,6 +2,7 @@ import * as Joi from 'joi';
 
 export const ConfigMap = {
     ENV: Joi.string().optional().valid('development', 'production').default('development'),
+    PORT: Joi.number().required(),
     LUM_NETWORK_ENDPOINT: Joi.string().required(),
     DATABASE_URL: Joi.string().required(),
     REDIS_URL: Joi.string().optional(),
@@ -12,7 +13,6 @@ export const ConfigMap = {
     METRIC_SYNC_ENABLED: Joi.boolean().required(),
     VALIDATOR_SYNC_ENABLED: Joi.boolean().required(),
     PUSH_NOTIF_ENABLED: Joi.boolean().required(),
-    API_PORT: Joi.number().required(),
     SENTRY_DSN: Joi.string().optional(),
     STARTING_HEIGHT: Joi.number().required(),
     BULLBOARD_PASSWORD: Joi.string().required(),
