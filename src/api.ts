@@ -1,15 +1,12 @@
 import { NestFactory } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { RedisOptions, Transport } from '@nestjs/microservices';
 
 import { Queue } from 'bull';
 import { BullAdapter } from '@bull-board/api/bullAdapter';
 import { ExpressAdapter } from '@bull-board/express';
 import { createBullBoard } from '@bull-board/api';
 import expressBasicAuth from 'express-basic-auth';
-
-import * as parseRedisUrl from 'parse-redis-url-simple';
 
 import { ApiModule } from '@app/modules';
 import { AsyncQueues } from '@app/async';
@@ -18,20 +15,6 @@ async function bootstrap() {
     // API module setup
     const app = await NestFactory.create(ApiModule);
     app.enableCors();
-
-    // Microservice module setup
-    const redisUrl = parseRedisUrl.parseRedisUrl(process.env.REDIS_URL);
-    app.connectMicroservice<RedisOptions>(
-        {
-            transport: Transport.REDIS,
-            options: {
-                host: redisUrl[0].host,
-                port: redisUrl[0].port,
-                password: redisUrl[0].password,
-            },
-        },
-        { inheritAppConfig: true },
-    );
 
     // Acquire the config service
     const config = app.get(ConfigService);
