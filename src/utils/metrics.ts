@@ -24,35 +24,6 @@ export const metrics = [
         name: MetricNames.LUM_PRICE_EUR,
         help: 'Current price of LUM in EUR',
     }),
-    // DFR Metrics
-    makeGaugeProvider({
-        name: MetricNames.DFRACT_APY,
-        help: 'Current apy for Dfract in USD',
-    }),
-    makeGaugeProvider({
-        name: MetricNames.DFRACT_BACKING_PRICE,
-        help: 'Current dfr backing price in USD',
-    }),
-    makeGaugeProvider({
-        name: MetricNames.DFRACT_CURRENT_SUPPLY,
-        help: 'Current supply of udfr',
-    }),
-    makeGaugeProvider({
-        name: MetricNames.DFRACT_MARKET_CAP,
-        help: 'Current dfr market cap in USD',
-    }),
-    makeGaugeProvider({
-        name: MetricNames.DFRACT_MA_BALANCE,
-        help: 'Current balance of dfract Module Account',
-    }),
-    makeGaugeProvider({
-        name: MetricNames.DFRACT_MINT_RATIO,
-        help: 'Current Dfract mint ratio',
-    }),
-    makeGaugeProvider({
-        name: MetricNames.DFRACT_NEW_DFR_TO_MINT,
-        help: 'Current number of DFR to mint',
-    }),
     // Millions Metrics
     makeGaugeProvider({
         name: MetricNames.MILLIONS_POOL_VALUE_LOCKED,

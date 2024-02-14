@@ -14,7 +14,7 @@ import { IdentifiedChannel, State } from '@lum-network/sdk-javascript/build/code
 import { PageRequest } from '@lum-network/sdk-javascript/build/codegen/helpers';
 
 import { AssetSymbol, depositStateToString, MetricNames, sleep, withdrawalStateToString } from '@app/utils';
-import { ChainService, DfractService } from '@app/services';
+import { ChainService } from '@app/services';
 import { LumChain } from '@app/services/chains';
 
 @Injectable()
@@ -27,14 +27,6 @@ export class MetricScheduler {
         @InjectMetric(MetricNames.MARKET_CAP) private readonly _marketCap: Gauge<string>,
         @InjectMetric(MetricNames.LUM_PRICE_EUR) private readonly _lumPriceEUR: Gauge<string>,
         @InjectMetric(MetricNames.LUM_PRICE_USD) private readonly _lumPriceUSD: Gauge<string>,
-        // Dfr metrics constructors
-        @InjectMetric(MetricNames.DFRACT_CURRENT_SUPPLY) private readonly _dfractCurrentSupply: Gauge<string>,
-        @InjectMetric(MetricNames.DFRACT_MA_BALANCE) private readonly _dfractMaBalance: Gauge<string>,
-        @InjectMetric(MetricNames.DFRACT_APY) private readonly _dfractApy: Gauge<string>,
-        @InjectMetric(MetricNames.DFRACT_NEW_DFR_TO_MINT) private readonly _dfractNewDfrToMint: Gauge<string>,
-        @InjectMetric(MetricNames.DFRACT_BACKING_PRICE) private readonly _dfractBackingPrice: Gauge<string>,
-        @InjectMetric(MetricNames.DFRACT_MINT_RATIO) private readonly _dfractMintRatio: Gauge<string>,
-        @InjectMetric(MetricNames.DFRACT_MARKET_CAP) private readonly _dfractMarketCap: Gauge<string>,
         // Millions metrics constructors
         @InjectMetric(MetricNames.MILLIONS_POOL_VALUE_LOCKED) private readonly _millionsPoolValueLocked: Gauge<string>,
         @InjectMetric(MetricNames.MILLIONS_POOL_DEPOSITORS) private readonly _millionsPoolDepositors: Gauge<string>,
@@ -50,7 +42,6 @@ export class MetricScheduler {
         // General metrics constructors
         @InjectMetric(MetricNames.TWITTER_FOLLOWERS) private readonly _twitterFollowers: Gauge<string>,
         private readonly _configService: ConfigService,
-        private readonly _dfrService: DfractService,
         private readonly _chainService: ChainService,
     ) {}
 
@@ -65,13 +56,6 @@ export class MetricScheduler {
         metrics.set(MetricNames.MARKET_CAP, this._marketCap);
         metrics.set(MetricNames.LUM_PRICE_EUR, this._lumPriceEUR);
         metrics.set(MetricNames.LUM_PRICE_USD, this._lumPriceUSD);
-        metrics.set(MetricNames.DFRACT_APY, this._dfractApy);
-        metrics.set(MetricNames.DFRACT_BACKING_PRICE, this._dfractBackingPrice);
-        metrics.set(MetricNames.DFRACT_CURRENT_SUPPLY, this._dfractCurrentSupply);
-        metrics.set(MetricNames.DFRACT_MARKET_CAP, this._dfractMarketCap);
-        metrics.set(MetricNames.DFRACT_MA_BALANCE, this._dfractMaBalance);
-        metrics.set(MetricNames.DFRACT_MINT_RATIO, this._dfractMintRatio);
-        metrics.set(MetricNames.DFRACT_NEW_DFR_TO_MINT, this._dfractNewDfrToMint);
         metrics.set(MetricNames.TWITTER_FOLLOWERS, this._twitterFollowers);
         metrics.set(MetricNames.MILLIONS_POOL_VALUE_LOCKED, this._millionsPoolValueLocked);
         metrics.set(MetricNames.MILLIONS_POOL_DEPOSITORS, this._millionsPoolDepositors);
@@ -107,19 +91,12 @@ export class MetricScheduler {
         this._logger.log(`Syncing global metrics...`);
 
         // Acquire data
-        const [lumCommunityPool, lumSupply, lumPrice, lumPriceEUR, lumCommunityData, dfrApy, dfrBackingPrice, dfrSupply, dfrMcap, dfrBalance, newDfrToMint, dfrMintRatio] = await Promise.all([
+        const [lumCommunityPool, lumSupply, lumPrice, lumPriceEUR, lumCommunityData] = await Promise.all([
             this._chainService.getChain<LumChain>(AssetSymbol.LUM).client.cosmos.distribution.v1beta1.communityPool(),
             this._chainService.getChain<LumChain>(AssetSymbol.LUM).getTokenSupply(),
             this._chainService.getChain<LumChain>(AssetSymbol.LUM).getPrice(),
             this._chainService.getChain<LumChain>(AssetSymbol.LUM).getPriceEUR(),
             this._chainService.getChain<LumChain>(AssetSymbol.LUM).getCommunityData(),
-            this._dfrService.getApy(),
-            this._dfrService.getDfrBackingPrice(),
-            this._dfrService.getTokenSupply(),
-            this._dfrService.getMcap(),
-            this._dfrService.getAccountBalance(),
-            this._dfrService.getNewDfrToMint(),
-            this._dfrService.getDfrMintRatio(),
         ]);
 
         // Compute community pool supply
@@ -132,15 +109,6 @@ export class MetricScheduler {
             lumSupply && this.updateMetric({ name: MetricNames.MARKET_CAP, value: lumSupply * lumPrice, labels: null }),
             lumPrice && this.updateMetric({ name: MetricNames.LUM_PRICE_EUR, value: lumPriceEUR, labels: null }),
             lumPrice && this.updateMetric({ name: MetricNames.LUM_PRICE_USD, value: lumPrice, labels: null }),
-
-            // DFR metrics
-            dfrApy && this.updateMetric({ name: MetricNames.DFRACT_APY, value: dfrApy, labels: null }),
-            dfrBackingPrice && this.updateMetric({ name: MetricNames.DFRACT_BACKING_PRICE, value: dfrBackingPrice, labels: null }),
-            dfrSupply && this.updateMetric({ name: MetricNames.DFRACT_CURRENT_SUPPLY, value: dfrSupply, labels: null }),
-            dfrMcap && this.updateMetric({ name: MetricNames.DFRACT_MARKET_CAP, value: dfrMcap, labels: null }),
-            dfrBalance && this.updateMetric({ name: MetricNames.DFRACT_MA_BALANCE, value: dfrBalance, labels: null }),
-            newDfrToMint && this.updateMetric({ name: MetricNames.DFRACT_NEW_DFR_TO_MINT, value: newDfrToMint, labels: null }),
-            dfrMintRatio && this.updateMetric({ name: MetricNames.DFRACT_MINT_RATIO, value: dfrMintRatio, labels: null }),
 
             // General metrics
             lumPrice && this.updateMetric({ name: MetricNames.TWITTER_FOLLOWERS, value: lumCommunityData.twitter_followers, labels: null }),

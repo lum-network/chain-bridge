@@ -66,8 +66,13 @@ export class ValidatorScheduler {
 
         try {
             // Fetch tendermint validators
-            // const tmValidators = await this._chainService.getChain(AssetSymbol.LUM).tmClient.validatorsAll(this._configService.get<number>('STARTING_HEIGHT'));
-            const tmValidators = await this._chainService.getChain(AssetSymbol.LUM).client.cosmos.base.tendermint.v1beta1.getValidatorSetByHeight({ height: this._configService.get<bigint>('STARTING_HEIGHT') });
+            let tmValidators: any = null;
+            try {
+                tmValidators = await this._chainService.getChain(AssetSymbol.LUM).client.cosmos.base.tendermint.v1beta1.getValidatorSetByHeight({ height: this._configService.get<bigint>('STARTING_HEIGHT') });
+            } catch (error) {
+                this._logger.error(`Failed to fetch validators: ${error}`, error.stack);
+                return;
+            }
 
             // Build validators list
             const validators: Partial<ValidatorEntity>[] = [];

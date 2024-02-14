@@ -10,12 +10,12 @@ import * as Joi from 'joi';
 import * as redisStore from 'cache-manager-redis-store';
 import * as parseRedisUrl from 'parse-redis-url-simple';
 
-import { AssetService, BeamService, BlockService, ChainService, DfractService, MarketService, ProposalService, StatService, TransactionService, ValidatorDelegationService, ValidatorService } from '@app/services';
+import { AssetService, BeamService, BlockService, ChainService, MarketService, ProposalService, StatService, TransactionService, ValidatorDelegationService, ValidatorService } from '@app/services';
 
-import { BlocksCommands, CronsCommands, RedisCommands, TransactionsCommands, ValidatorsCommands } from '@app/console';
+import { BlocksCommands, RedisCommands, TransactionsCommands, ValidatorsCommands } from '@app/console';
 import { DatabaseConfig, DatabaseFeatures } from '@app/database';
 import { ConfigMap } from '@app/utils';
-import { AssetScheduler, AsyncQueues } from '@app/async';
+import { AsyncQueues } from '@app/async';
 
 @Module({
     imports: [
@@ -49,16 +49,13 @@ import { AssetScheduler, AsyncQueues } from '@app/async';
         AssetService,
         BeamService,
         BlockService,
-        DfractService,
         MarketService,
         StatService,
         ProposalService,
         TransactionService,
         ValidatorService,
         ValidatorDelegationService,
-        AssetScheduler,
         BlocksCommands,
-        CronsCommands,
         RedisCommands,
         TransactionsCommands,
         ValidatorsCommands,

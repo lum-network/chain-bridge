@@ -15,6 +15,9 @@ export * from './validation';
 export * from './validators';
 
 (BigInt.prototype as any).toJSON = function () {
+    if (!this || !this.toString) {
+        return null;
+    }
     return this.toString();
 };
 

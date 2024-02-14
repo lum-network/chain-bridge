@@ -12,7 +12,7 @@ import { AssetPrefix, AssetSymbol, AssetMicroDenom, AssetDenom, GenericAssetInfo
 
 import { AssetService } from '@app/services/asset.service';
 import { MarketService } from '@app/services/market.service';
-import { EvmosChain, GenericChain, JunoChain, LumChain, OsmosisChain, StargazeChain } from '@app/services/chains';
+import { GenericChain, LumChain } from '@app/services/chains';
 
 @Injectable()
 export class ChainService {
@@ -27,130 +27,6 @@ export class ChainService {
         private readonly _marketService: MarketService,
         private readonly _modulesContainer: ModulesContainer,
     ) {
-        // Only initialize other chains if dfract sync enabled
-        if (this._configService.get<boolean>('DFRACT_SYNC_ENABLED')) {
-            this._clients[AssetSymbol.COSMOS] = new GenericChain({
-                assetService: this._assetService,
-                httpService: this._httpService,
-                marketService: this._marketService,
-                loggerService: this._logger,
-                prefix: AssetPrefix.COSMOS,
-                symbol: AssetSymbol.COSMOS,
-                endpoint: this._configService.get<string>('COSMOS_NETWORK_ENDPOINT'),
-                denom: AssetDenom.COSMOS,
-                microDenom: AssetMicroDenom.COSMOS,
-                subscribeToRPC: false,
-            });
-            this._clients[AssetSymbol.AKASH_NETWORK] = new GenericChain({
-                assetService: this._assetService,
-                httpService: this._httpService,
-                marketService: this._marketService,
-                loggerService: this._logger,
-                prefix: AssetPrefix.AKASH_NETWORK,
-                symbol: AssetSymbol.AKASH_NETWORK,
-                endpoint: this._configService.get<string>('AKASH_NETWORK_ENDPOINT'),
-                denom: AssetDenom.AKASH_NETWORK,
-                microDenom: AssetMicroDenom.AKASH_NETWORK,
-                subscribeToRPC: false,
-            });
-            this._clients[AssetSymbol.COMDEX] = new GenericChain({
-                assetService: this._assetService,
-                httpService: this._httpService,
-                marketService: this._marketService,
-                loggerService: this._logger,
-                prefix: AssetPrefix.COMDEX,
-                symbol: AssetSymbol.COMDEX,
-                endpoint: this._configService.get<string>('COMDEX_NETWORK_ENDPOINT'),
-                denom: AssetDenom.COMDEX,
-                microDenom: AssetMicroDenom.COMDEX,
-                subscribeToRPC: false,
-            });
-            this._clients[AssetSymbol.SENTINEL] = new GenericChain({
-                assetService: this._assetService,
-                httpService: this._httpService,
-                marketService: this._marketService,
-                loggerService: this._logger,
-                prefix: AssetPrefix.SENTINEL,
-                symbol: AssetSymbol.SENTINEL,
-                endpoint: this._configService.get<string>('SENTINEL_NETWORK_ENDPOINT'),
-                denom: AssetDenom.SENTINEL,
-                microDenom: AssetMicroDenom.SENTINEL,
-                subscribeToRPC: false,
-            });
-            this._clients[AssetSymbol.KI] = new GenericChain({
-                assetService: this._assetService,
-                httpService: this._httpService,
-                marketService: this._marketService,
-                loggerService: this._logger,
-                prefix: AssetPrefix.KI,
-                symbol: AssetSymbol.KI,
-                endpoint: this._configService.get<string>('KICHAIN_NETWORK_ENDPOINT'),
-                denom: AssetDenom.KI,
-                microDenom: AssetMicroDenom.KI,
-                subscribeToRPC: false,
-            });
-            this._clients[AssetSymbol.OSMOSIS] = new OsmosisChain({
-                assetService: this._assetService,
-                httpService: this._httpService,
-                marketService: this._marketService,
-                loggerService: this._logger,
-                prefix: AssetPrefix.OSMOSIS,
-                symbol: AssetSymbol.OSMOSIS,
-                endpoint: this._configService.get<string>('OSMOSIS_NETWORK_ENDPOINT'),
-                denom: AssetDenom.OSMOSIS,
-                microDenom: AssetMicroDenom.OSMOSIS,
-                subscribeToRPC: false,
-            });
-            this._clients[AssetSymbol.JUNO] = new JunoChain({
-                assetService: this._assetService,
-                httpService: this._httpService,
-                marketService: this._marketService,
-                loggerService: this._logger,
-                prefix: AssetPrefix.JUNO,
-                symbol: AssetSymbol.JUNO,
-                endpoint: this._configService.get<string>('JUNO_NETWORK_ENDPOINT'),
-                denom: AssetDenom.JUNO,
-                microDenom: AssetMicroDenom.JUNO,
-                subscribeToRPC: false,
-            });
-            this._clients[AssetSymbol.STARGAZE] = new StargazeChain({
-                assetService: this._assetService,
-                httpService: this._httpService,
-                marketService: this._marketService,
-                loggerService: this._logger,
-                prefix: AssetPrefix.STARGAZE,
-                symbol: AssetSymbol.STARGAZE,
-                endpoint: this._configService.get<string>('STARGAZE_NETWORK_ENDPOINT'),
-                denom: AssetDenom.STARGAZE,
-                microDenom: AssetMicroDenom.STARGAZE,
-                subscribeToRPC: false,
-            });
-            this._clients[AssetSymbol.EVMOS] = new EvmosChain({
-                assetService: this._assetService,
-                httpService: this._httpService,
-                marketService: this._marketService,
-                loggerService: this._logger,
-                prefix: AssetPrefix.EVMOS,
-                symbol: AssetSymbol.EVMOS,
-                endpoint: this._configService.get<string>('EVMOS_NETWORK_ENDPOINT'),
-                denom: AssetDenom.EVMOS,
-                microDenom: AssetMicroDenom.EVMOS,
-                subscribeToRPC: false,
-            });
-        }
-
-        this._clients[AssetSymbol.DFR] = new LumChain({
-            assetService: this._assetService,
-            httpService: this._httpService,
-            marketService: this._marketService,
-            loggerService: this._logger,
-            prefix: AssetPrefix.LUM,
-            symbol: AssetSymbol.DFR,
-            endpoint: this._configService.get<string>('LUM_NETWORK_ENDPOINT'),
-            denom: AssetDenom.DFR,
-            microDenom: AssetMicroDenom.DFR,
-            subscribeToRPC: false,
-        });
         this._clients[AssetSymbol.LUM] = new LumChain({
             assetService: this._assetService,
             httpService: this._httpService,

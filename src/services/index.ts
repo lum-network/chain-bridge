@@ -2,7 +2,6 @@ export * from './asset.service';
 export * from './beam.service';
 export * from './block.service';
 export * from './chain.service';
-export * from './dfract.service';
 export * from './market.service';
 export * from './millions-biggest-winner.service';
 export * from './millions-campaign.service';

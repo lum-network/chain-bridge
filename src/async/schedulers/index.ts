@@ -1,4 +1,3 @@
-export * from './asset.scheduler';
 export * from './block.scheduler';
 export * from './governance.scheduler';
 export * from './market.scheduler';

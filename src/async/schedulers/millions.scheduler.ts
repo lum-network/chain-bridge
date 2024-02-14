@@ -90,7 +90,7 @@ export class MillionsScheduler {
                 created_at_height: Number(pool.createdAtHeight),
                 updated_at_height: Number(pool.updatedAtHeight),
                 draw_schedule: {
-                    initial_draw_at: pool.drawSchedule.initialDrawAt.toString(),
+                    initial_draw_at: String(pool.drawSchedule.initialDrawAt),
                     draw_delta: {
                         seconds: Number(pool.drawSchedule.drawDelta.seconds),
                         nanos: pool.drawSchedule.drawDelta.nanos,
@@ -148,16 +148,13 @@ export class MillionsScheduler {
                         continue;
                     }
 
-                    // Get Draw from db if exists
-                    const savedDraw = await this._millionsDrawService.getById(id);
-
                     const formattedDraw: Partial<MillionsDrawEntity> = {
                         id: id,
                         pool_id: pool.id,
                         draw_id: Number(draw.drawId),
                         state: draw.state,
                         error_state: draw.errorState,
-                        rand_seed: draw.randSeed.toString(),
+                        rand_seed: String(draw.randSeed),
                         prize_pool: draw.prizePool,
                         prize_pool_fresh_amount: draw.prizePoolFreshAmount,
                         prize_pool_remains_amount: draw.prizePoolRemainsAmount,
@@ -171,6 +168,7 @@ export class MillionsScheduler {
                     };
 
                     // If draw doesn't exist in db, we save it
+                    const savedDraw = await this._millionsDrawService.getById(id);
                     if (!savedDraw) {
                         await this._millionsDrawService.save(formattedDraw);
                     }

@@ -8,6 +8,7 @@ import { MsgMultiSend } from '@lum-network/sdk-javascript/build/codegen/cosmos/b
 
 import { BlockEntity, TransactionEntity } from '@app/database';
 import { BlockService, ChainService, TransactionService, ValidatorService } from '@app/services';
+import { LumChain } from "@app/services/chains";
 import { AssetSymbol, getAddressesRelatedToTransaction, isBeam, NotificationChannels, NotificationEvents, QueueJobs, QueuePriority, Queues } from '@app/utils';
 
 @Processor(Queues.BLOCKS)
@@ -41,7 +42,7 @@ export class BlockConsumer {
             this._logger.debug(`Ingesting block ${job.data.blockHeight} (attempt ${job.attemptsMade})`);
 
             // Get block data
-            const block = await this._chainService.getChain(AssetSymbol.LUM).client.cosmos.base.tendermint.v1beta1.getBlockByHeight({ height: BigInt(job.data.blockHeight) });
+            const block = await this._chainService.getChain<LumChain>(AssetSymbol.LUM).client.cosmos.base.tendermint.v1beta1.getBlockByHeight({ height: BigInt(job.data.blockHeight) });
 
             // Get the operator address
             const proposerAddress = toBech32(LumBech32Prefixes.CONS_ADDR, block.block.header.proposerAddress);
@@ -109,7 +110,7 @@ export class BlockConsumer {
                                 }
                             } else if (attr.key === 'amount') {
                                 const amount = parseFloat(attr.value);
-                                const denom = attr.value.substring(amount.toString().length);
+                                const denom = attr.value.substring(Number(amount).toString().length);
 
                                 if (!res.amount) {
                                     res.amount = { amount, denom };
@@ -141,7 +142,7 @@ export class BlockConsumer {
                                 if (amountAttr) {
                                     const amountValue = amountAttr.value;
                                     const amount = parseFloat(amountValue);
-                                    const denom = amountValue.substring(amount.toString().length);
+                                    const denom = amountValue.substring(Number(amount).toString().length);
 
                                     amountObj = { amount, denom };
                                 }
