@@ -1,7 +1,7 @@
 import * as Joi from 'joi';
 
 export const ConfigMap = {
-    ENV: Joi.string().optional().valid('development', 'mainnet', 'testnet').default('development'),
+    ENV: Joi.string().optional().valid('development', 'production').default('development'),
     LUM_NETWORK_ENDPOINT: Joi.string().required(),
     DATABASE_URL: Joi.string().required(),
     REDIS_URL: Joi.string().optional(),
