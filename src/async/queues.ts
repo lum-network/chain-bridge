@@ -23,7 +23,7 @@ export const AsyncQueues: BullModuleAsyncOptions[] = [
                 duration: 30,
             },
             defaultJobOptions: {
-                removeOnComplete: false,
+                removeOnComplete: true,
                 removeOnFail: false,
             },
         }),
@@ -43,7 +43,7 @@ export const AsyncQueues: BullModuleAsyncOptions[] = [
                       }
                     : {},
             defaultJobOptions: {
-                removeOnComplete: false,
+                removeOnComplete: true,
                 removeOnFail: false,
             },
         }),
@@ -63,7 +63,7 @@ export const AsyncQueues: BullModuleAsyncOptions[] = [
                       }
                     : {},
             defaultJobOptions: {
-                removeOnComplete: false,
+                removeOnComplete: true,
                 removeOnFail: false,
             },
         }),
@@ -83,7 +83,7 @@ export const AsyncQueues: BullModuleAsyncOptions[] = [
                       }
                     : {},
             defaultJobOptions: {
-                removeOnComplete: false,
+                removeOnComplete: true,
                 removeOnFail: false,
             },
         }),
