@@ -10,7 +10,7 @@ import { SentryModule } from '@ntegral/nestjs-sentry';
 import { LoggerModule } from 'nestjs-pino';
 import * as parseRedisUrl from 'parse-redis-url-simple';
 
-import { AsyncQueues, BeamConsumer, BlockConsumer, MillionsDepositConsumer, NotificationConsumer } from '@app/async';
+import { AsyncQueues, BeamConsumer, BlockConsumer, MillionsDepositConsumer } from '@app/async';
 
 import { BeamService, BlockService, ChainService, MarketService, MillionsDepositService, ProposalDepositService, ProposalService, ProposalVoteService, TransactionService, ValidatorDelegationService, ValidatorService } from '@app/services';
 import { ConfigMap, SentryModuleOptions } from '@app/utils';
@@ -63,7 +63,6 @@ import { DatabaseConfig, DatabaseFeatures } from '@app/database';
         BeamConsumer,
         BlockConsumer,
         MillionsDepositConsumer,
-        NotificationConsumer,
     ],
 })
 export class SyncConsumerModule implements OnModuleInit, OnApplicationBootstrap {

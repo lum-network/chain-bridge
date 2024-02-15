@@ -1,6 +1,5 @@
 import { Controller, Get, Logger, UseInterceptors } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
-import { MessagePattern, Payload } from '@nestjs/microservices';
 import { CacheInterceptor } from '@nestjs/cache-manager';
 
 import { plainToInstance } from 'class-transformer';
@@ -8,7 +7,6 @@ import { fromUtf8 } from '@lum-network/sdk-javascript/build/utils';
 
 import { ChainService } from '@app/services';
 import { BalanceResponse, DataResponse, LumResponse } from '@app/http/responses';
-import { GatewayWebsocket } from '@app/websocket';
 import { AssetSymbol } from '@app/utils';
 import { LumChain } from '@app/services/chains';
 
@@ -17,10 +15,7 @@ import { LumChain } from '@app/services/chains';
 export class CoreController {
     private readonly _logger: Logger = new Logger(CoreController.name);
 
-    constructor(
-        private readonly _chainService: ChainService,
-        private readonly _messageGateway: GatewayWebsocket,
-    ) {}
+    constructor(private readonly _chainService: ChainService) {}
 
     @UseInterceptors(CacheInterceptor)
     @ApiOkResponse({ status: 200, type: LumResponse })
@@ -145,13 +140,5 @@ export class CoreController {
                 },
             },
         };
-    }
-
-    @MessagePattern('notifySocket')
-    async notifySocket(@Payload() data: { channel: string; event: string; data: string }): Promise<void> {
-        this._logger.log(`Dispatching notification on channel ${data.channel}...`);
-        if (this._messageGateway && this._messageGateway._server) {
-            this._messageGateway._server.to(data.channel).emit(data.event, data.data);
-        }
     }
 }

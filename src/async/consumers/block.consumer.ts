@@ -9,7 +9,7 @@ import { MsgMultiSend } from '@lum-network/sdk-javascript/build/codegen/cosmos/b
 import { BlockEntity, TransactionEntity } from '@app/database';
 import { BlockService, ChainService, TransactionService, ValidatorService } from '@app/services';
 import { LumChain } from '@app/services/chains';
-import { AssetSymbol, getAddressesRelatedToTransaction, isBeam, NotificationChannels, NotificationEvents, QueueJobs, QueuePriority, Queues } from '@app/utils';
+import { AssetSymbol, getAddressesRelatedToTransaction, isBeam, QueueJobs, QueuePriority, Queues } from '@app/utils';
 
 @Processor(Queues.BLOCKS)
 export class BlockConsumer {
@@ -19,7 +19,6 @@ export class BlockConsumer {
         @InjectQueue(Queues.BLOCKS) private readonly _blockQueue: Queue,
         @InjectQueue(Queues.BEAMS) private readonly _beamQueue: Queue,
         @InjectQueue(Queues.MILLIONS_DEPOSITS) private readonly _millionsQueue: Queue,
-        @InjectQueue(Queues.NOTIFICATIONS) private readonly _notificationQueue: Queue,
         private readonly _blockService: BlockService,
         private readonly _chainService: ChainService,
         private readonly _transactionService: TransactionService,
@@ -216,16 +215,6 @@ export class BlockConsumer {
                         );
                     }
                 }
-            }
-
-            // If it's intended to notify frontend of incoming block
-            if (job.data.notify) {
-                // Dispatch notification on websockets for frontend
-                await this._notificationQueue.add(QueueJobs.NOTIFICATION_SOCKET, {
-                    channel: NotificationChannels.BLOCKS,
-                    event: NotificationEvents.NEW_BLOCK,
-                    data: blockDoc,
-                });
             }
 
             return blockDoc;

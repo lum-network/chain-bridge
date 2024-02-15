@@ -52,7 +52,6 @@ export enum Queues {
     ASSETS = 'assets',
     BEAMS = 'beams',
     BLOCKS = 'blocks',
-    NOTIFICATIONS = 'notifications',
     MILLIONS_DEPOSITS = 'millions_deposits',
 }
 
@@ -61,7 +60,6 @@ export enum QueueJobs {
     PROCESS_DAILY = 'process_daily',
     PROCESS_WEEKLY = 'process_weekly',
     TRIGGER_VERIFY_BLOCKS_BACKWARD = 'trigger_verify_blocks_backward',
-    NOTIFICATION_SOCKET = 'push_notification',
 }
 
 export enum QueuePriority {
@@ -69,16 +67,6 @@ export enum QueuePriority {
     HIGH = 2,
     NORMAL = 3,
     LOW = 4,
-}
-
-export enum NotificationChannels {
-    BLOCKS = 'blocks',
-    TRANSACTIONS = 'transactions',
-}
-
-export enum NotificationEvents {
-    NEW_BLOCK = 'new-block',
-    NEW_TRANSACTION = 'new-transaction',
 }
 
 export enum ApiUrl {
@@ -149,14 +137,6 @@ export enum MillionsMarketSymbol {
     LUM = 'LUM',
     OSMOSIS = 'OSMO',
     STARGAZE = 'STARS',
-}
-
-export enum DfractOnChainApy {
-    COSMOS = 'atom',
-    AKASH_NETWORK = 'akt',
-    COMDEX = 'ucmdx',
-    SENTINEL = 'dvpn',
-    KI = 'xki',
 }
 
 export enum MillionsPoolState {

@@ -105,7 +105,7 @@ export class SyncSchedulerModule implements OnModuleInit, OnApplicationBootstrap
         await this._queue.pause();
 
         // Log out
-        this._logger.log(`AppModule ingestion: ${ this._configService.get<boolean>('INGEST_ENABLED') ? 'enabled' : 'disabled'}`);
+        this._logger.log(`AppModule ingestion: ${this._configService.get<boolean>('INGEST_ENABLED') ? 'enabled' : 'disabled'}`);
 
         await this._chainService.initialize();
     }

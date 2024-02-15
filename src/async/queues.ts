@@ -88,28 +88,4 @@ export const AsyncQueues: BullModuleAsyncOptions[] = [
             },
         }),
     },
-    {
-        name: Queues.NOTIFICATIONS,
-        imports: [ConfigModule],
-        inject: [ConfigService],
-        useFactory: (configService: ConfigService) => ({
-            url: configService.get<string>('REDIS_URL'),
-            redis:
-                configService.get<string>('ENV') === 'production'
-                    ? {
-                          tls: {
-                              rejectUnauthorized: false,
-                          },
-                      }
-                    : {},
-            limiter: {
-                max: 1,
-                duration: 30,
-            },
-            defaultJobOptions: {
-                removeOnComplete: true,
-                removeOnFail: true,
-            },
-        }),
-    },
 ];

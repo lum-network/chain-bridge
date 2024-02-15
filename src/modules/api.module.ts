@@ -59,7 +59,6 @@ import {
 
 import { ConfigMap, metrics, PayloadValidationOptions, SentryModuleOptions } from '@app/utils';
 
-import { GatewayWebsocket } from '@app/websocket';
 import { DatabaseConfig, DatabaseFeatures } from '@app/database';
 import { AsyncQueues, MetricScheduler } from '@app/async';
 
@@ -99,7 +98,6 @@ import { AsyncQueues, MetricScheduler } from '@app/async';
         BeamService,
         BlockService,
         ChainService,
-        GatewayWebsocket,
         LumNetworkIndicator,
         MarketService,
         ...metrics,
