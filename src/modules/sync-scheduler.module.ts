@@ -32,7 +32,7 @@ import {
     ValidatorDelegationService,
     ValidatorService,
 } from '@app/services';
-import { AssetSymbol, ConfigMap, QueueJobs, QueuePriority, Queues, SentryModuleOptions } from '@app/utils';
+import { ConfigMap, Queues, SentryModuleOptions } from '@app/utils';
 import { DatabaseConfig, DatabaseFeatures } from '@app/database';
 
 @Module({
@@ -105,8 +105,7 @@ export class SyncSchedulerModule implements OnModuleInit, OnApplicationBootstrap
         await this._queue.pause();
 
         // Log out
-        const ingestEnabled = this._configService.get<boolean>('INGEST_ENABLED') ? 'enabled' : 'disabled';
-        this._logger.log(`AppModule ingestion: ${ingestEnabled}`);
+        this._logger.log(`AppModule ingestion: ${ this._configService.get<boolean>('INGEST_ENABLED') ? 'enabled' : 'disabled'}`);
 
         await this._chainService.initialize();
     }
@@ -118,26 +117,5 @@ export class SyncSchedulerModule implements OnModuleInit, OnApplicationBootstrap
 
         // Resume queues
         await this._queue.resume();
-
-        // If the backward ingest is disabled, don't ship the job
-        if (this._configService.get<boolean>('INGEST_BACKWARD_ENABLED') === false) {
-            return;
-        }
-
-        // Trigger block backward ingestion at startup
-        const chainId = this._chainService.getChain(AssetSymbol.LUM).chainId;
-        const latestBlock = await this._chainService.getChain(AssetSymbol.LUM).client.cosmos.base.tendermint.v1beta1.getLatestBlock();
-        await this._queue.add(
-            QueueJobs.TRIGGER_VERIFY_BLOCKS_BACKWARD,
-            {
-                chainId: chainId,
-                fromBlock: this._configService.get<number>('STARTING_HEIGHT'),
-                toBlock: Number(latestBlock.block.header.height),
-            },
-            {
-                priority: QueuePriority.URGENT,
-            },
-        );
-        this._logger.log(`Dispatched the backward blocks ingest`);
     }
 }
