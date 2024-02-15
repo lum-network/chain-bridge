@@ -10,6 +10,7 @@ import * as Joi from 'joi';
 
 import { Queue } from 'bull';
 import { SentryModule } from '@ntegral/nestjs-sentry';
+import { LoggerModule } from 'nestjs-pino';
 import * as parseRedisUrl from 'parse-redis-url-simple';
 
 import { AsyncQueues, BlockScheduler, GovernanceScheduler, MarketScheduler, MillionsScheduler, ValidatorScheduler } from '@app/async';
@@ -59,6 +60,7 @@ import { DatabaseConfig, DatabaseFeatures } from '@app/database';
                 },
             },
         ]),
+        LoggerModule.forRoot(),
         ScheduleModule.forRoot(),
         HttpModule,
         SentryModule.forRootAsync(SentryModuleOptions),

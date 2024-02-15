@@ -10,6 +10,7 @@ import { CacheModule, CacheStore } from '@nestjs/cache-manager';
 
 import type { RedisClientOptions } from 'redis';
 import { PrometheusModule } from '@willsoto/nestjs-prometheus';
+import { LoggerModule } from 'nestjs-pino';
 import * as redisStore from 'cache-manager-redis-store';
 import { SentryInterceptor, SentryModule } from '@ntegral/nestjs-sentry';
 import * as parseRedisUrl from 'parse-redis-url-simple';
@@ -84,6 +85,7 @@ import { AsyncQueues, MetricScheduler } from '@app/async';
             },
             inject: [ConfigService],
         }),
+        LoggerModule.forRoot(),
         ScheduleModule.forRoot(),
         SentryModule.forRootAsync(SentryModuleOptions),
         TerminusModule,

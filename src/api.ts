@@ -8,6 +8,7 @@ import { BullAdapter } from '@bull-board/api/bullAdapter';
 import { ExpressAdapter } from '@bull-board/express';
 import { createBullBoard } from '@bull-board/api';
 import expressBasicAuth from 'express-basic-auth';
+import { Logger } from 'nestjs-pino';
 
 import * as parseRedisUrl from 'parse-redis-url-simple';
 
@@ -16,8 +17,9 @@ import { AsyncQueues } from '@app/async';
 
 async function bootstrap() {
     // API module setup
-    const app = await NestFactory.create(ApiModule);
+    const app = await NestFactory.create(ApiModule, { bufferLogs: true });
     app.enableCors();
+    app.useLogger(app.get(Logger));
 
     // Microservice module setup
     const redisUrl = parseRedisUrl.parseRedisUrl(process.env.REDIS_URL);

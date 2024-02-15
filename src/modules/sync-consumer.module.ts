@@ -7,6 +7,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import * as Joi from 'joi';
 import { SentryModule } from '@ntegral/nestjs-sentry';
+import { LoggerModule } from 'nestjs-pino';
 import * as parseRedisUrl from 'parse-redis-url-simple';
 
 import { AsyncQueues, BeamConsumer, BlockConsumer, MillionsDepositConsumer, NotificationConsumer } from '@app/async';
@@ -40,6 +41,7 @@ import { DatabaseConfig, DatabaseFeatures } from '@app/database';
                 },
             },
         ]),
+        LoggerModule.forRoot(),
         HttpModule,
         SentryModule.forRootAsync(SentryModuleOptions),
         TypeOrmModule.forRootAsync(DatabaseConfig),

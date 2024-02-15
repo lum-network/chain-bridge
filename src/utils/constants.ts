@@ -84,7 +84,7 @@ export enum NotificationEvents {
 export enum ApiUrl {
     GET_CHAIN_TOKENS_MCAP = 'https://api-osmosis.imperator.co/tokens/v2/mcap',
     GET_CHAIN_TOKENS = 'https://api-osmosis.imperator.co/tokens/v2',
-    GET_LUM_PRICE = 'https://api.coingecko.com/api/v3/coins/lum-network'
+    GET_LUM_PRICE = 'https://api.coingecko.com/api/v3/coins/lum-network',
 }
 
 export enum AssetSymbol {
