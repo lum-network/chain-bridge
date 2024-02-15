@@ -41,15 +41,6 @@ jobs:
               timeout-minutes: 15
               env:
                   LUM_NETWORK_ENDPOINT: https://node0.testnet.lum.network/rpc
-                  COSMOS_NETWORK_ENDPOINT: https://rpc-cosmos.imperator.co
-                  AKASH_NETWORK_ENDPOINT: https://rpc-akash.imperator.co
-                  COMDEX_NETWORK_ENDPOINT: https://rpc-comdex.imperator.co
-                  SENTINEL_NETWORK_ENDPOINT: https://rpc-sentinel.imperator.co
-                  KICHAIN_NETWORK_ENDPOINT: https://rpc-kichain.imperator.co
-                  OSMOSIS_NETWORK_ENDPOINT: https://rpc-osmosis.imperator.co
-                  JUNO_NETWORK_ENDPOINT: https://rpc-juno.imperator.co
-                  EVMOS_NETWORK_ENDPOINT: https://rpc-evmos.imperator.co
-                  STARGAZE_NETWORK_ENDPOINT: https://rpc-stargaze.imperator.co
                   DATABASE_URL: postgresql://postgres:emulator@127.0.0.1:5432/postgres
                   GOVERNANCE_SYNC_ENABLED: true
                   METRIC_SYNC_ENABLED: true
@@ -63,7 +54,8 @@ jobs:
                   INGEST_BACKWARD_ENABLED: false
                   PUSH_NOTIF_ENABLED: true
                   FAUCET_MNEMONIC: 'my mnemonic phrase'
-                  API_PORT: 3000
+                  PORT: 3000
+                  ENV: development
                   STARTING_HEIGHT: 1
 
             - name: Stop docker containers
