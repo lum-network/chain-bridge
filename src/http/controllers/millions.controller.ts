@@ -239,7 +239,9 @@ export class MillionsController {
         const depositor = await this._millionsDepositorService.getByPoolIdAndAddress(poolId, address);
 
         if (!depositor) {
-            throw new NotFoundException('Depositor not found');
+            return new DataResponse({
+                result: [],
+            });
         }
 
         const before = await this._millionsDepositorService.getByPoolIdAndRank(poolId, depositor.rank - 1);
