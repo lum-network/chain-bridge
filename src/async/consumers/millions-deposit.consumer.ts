@@ -27,12 +27,12 @@ export class MillionsDepositConsumer {
 
         const formattedMillionsDeposit: MillionsDepositEntity = {
             id: job.data.id,
-            amount: job.data.value.amount,
+            amount: job.data.value.amount || deposit.amount,
             pool_id: job.data.value.poolId,
             withdrawal_id: job.data.value.withdrawalId || 0,
-            depositor_address: job.data.value.depositorAddress || undefined,
-            winner_address: job.data.value.winnerAddress || undefined,
-            is_sponsor: job.data.value.isSponsor || false,
+            depositor_address: job.data.value.depositorAddress || deposit.depositor_address,
+            winner_address: job.data.value.winnerAddress || deposit.winner_address,
+            is_sponsor: job.data.value.isSponsor || deposit.is_sponsor,
             block_height: job.data.height,
         };
 

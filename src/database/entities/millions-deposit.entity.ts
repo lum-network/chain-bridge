@@ -25,6 +25,6 @@ export class MillionsDepositEntity {
     @Column({ type: 'integer' })
     block_height: number;
 
-    @Column({ type: 'jsonb' })
+    @Column({ type: 'jsonb', nullable: true })
     amount: AmountModel;
 }
