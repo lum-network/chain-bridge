@@ -32,7 +32,8 @@ export class MillionsConsumer {
                 depositId: BigInt(job.data.depositId),
                 poolId: BigInt(job.data.poolId),
             });
-        } catch(e){
+        } catch (e) {
+            await job.log(`Deposit does not exist on the chain: ${e.message}`);
         }
 
         let deposit = await this._millionsDepositService.getById(job.data.depositId);
@@ -50,7 +51,7 @@ export class MillionsConsumer {
                 is_sponsor: liveDeposit.deposit.isSponsor,
                 withdrawal_id: job.data.withdrawalId || 0,
             });
-        } else if(deposit && liveDeposit) {
+        } else if (deposit && liveDeposit) {
             if (deposit.block_height > job.data.height) {
                 this._logger.debug(`Millions deposit ${job.data.depositId} already ingested`);
                 return;
@@ -72,6 +73,6 @@ export class MillionsConsumer {
         }
 
         await this._millionsDepositService.save(deposit);
-        this._logger.debug(`Millions deposit ${job.data.depositId} saved`);
+        await job.log(`Millions deposit ${job.data.depositId} ingested`);
     }
 }
