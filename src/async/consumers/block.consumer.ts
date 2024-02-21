@@ -133,31 +133,13 @@ export class BlockConsumer {
                             if (keyArray.includes('pool_id') && keyArray.includes('deposit_id') && keyArray.includes('depositor')) {
                                 const id = ev.attributes.find((a) => a.key === 'deposit_id').value;
 
-                                // Parse amount
-                                let amountObj: { amount: number; denom: string } | undefined = undefined;
-                                const amountAttr = ev.attributes.find((a) => a.key === 'amount');
-
-                                if (amountAttr) {
-                                    const amountValue = amountAttr.value;
-                                    const amount = parseFloat(amountValue);
-                                    const denom = amountValue.substring(Number(amount).toString().length);
-
-                                    amountObj = { amount, denom };
-                                }
-
-                                // Dispatch Millions Deposits for ingest
+                                // Dispatch Millions Deposits for update
                                 await this._millionsQueue.add(
                                     QueueJobs.INGEST,
                                     {
-                                        id: id,
-                                        value: {
-                                            poolId: Number(ev.attributes.find((a) => a.key === 'pool_id')?.value || undefined),
-                                            withdrawalId: Number(ev.attributes.find((a) => a.key === 'withdrawal_id')?.value || undefined),
-                                            depositorAddress: ev.attributes.find((a) => a.key === 'depositor')?.value || undefined,
-                                            winnerAddress: ev.attributes.find((a) => a.key === 'winner')?.value || ev.attributes.find((a) => a.key === 'recipient')?.value || undefined,
-                                            isSponsor: (ev.attributes.find((a) => a.key === 'sponsor')?.value || false) as boolean,
-                                            amount: amountObj,
-                                        },
+                                        depositId: id,
+                                        poolId: Number(ev.attributes.find((a) => a.key === 'pool_id')?.value || undefined),
+                                        withdrawalId: Number(ev.attributes.find((a) => a.key === 'withdrawal_id')?.value || undefined),
                                         height: blockDoc.height,
                                     },
                                     {
@@ -168,12 +150,6 @@ export class BlockConsumer {
                                     },
                                 );
                             }
-                        }
-
-                        // Sync Millions Draw
-                        if (ev.type === 'draw_success') {
-                            // FAULTY AF - NEED REVAMP - DISABLED FOR NOW
-                            // this._millionsScheduler.drawsSync().finally(() => null);
                         }
                     }
                 }

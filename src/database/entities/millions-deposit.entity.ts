@@ -27,4 +27,8 @@ export class MillionsDepositEntity {
 
     @Column({ type: 'jsonb', nullable: true })
     amount: AmountModel;
+
+    constructor(data?: Partial<MillionsDepositEntity>) {
+        Object.assign(this, data);
+    }
 }
