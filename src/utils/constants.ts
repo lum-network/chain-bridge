@@ -1,7 +1,7 @@
 export const TEN_EXPONENT_SIX = 1_000_000;
 export const SIGNED_BLOCK_WINDOW = 10000;
 
-export const JOB_MAX_AGE = 60 * 60; // 1 hour
+export const JOB_MAX_AGE = 60 * 10; // 10 minutes
 
 export enum BeamStatus {
     UNSPECIFIED,
