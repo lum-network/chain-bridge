@@ -20,6 +20,7 @@ export const QueueConfig: SharedBullAsyncConfiguration = {
             max: 1,
             duration: 30,
         },
+        prefix: 'chain-bridge',
         defaultJobOptions: {
             removeOnComplete: {
                 age: JOB_MAX_AGE,
