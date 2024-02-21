@@ -14,13 +14,12 @@ async function bootstrap() {
         options: {
             host: redisUrl[0].host,
             port: redisUrl[0].port,
+            username: 'root',
             password: redisUrl[0].password,
-            tls:
-                process.env.ENV === 'production'
-                    ? {
-                          rejectUnauthorized: false,
-                      }
-                    : null,
+            tls: {
+                rejectUnauthorized: false,
+                requestCert: true,
+            },
         },
     });
 

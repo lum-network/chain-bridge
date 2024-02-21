@@ -8,14 +8,12 @@ export const QueueConfig: SharedBullAsyncConfiguration = {
     inject: [ConfigService],
     useFactory: (configService: ConfigService) => ({
         url: configService.get<string>('REDIS_URL'),
-        redis:
-            configService.get<string>('ENV') === 'production'
-                ? {
-                      tls: {
-                          rejectUnauthorized: false,
-                      },
-                  }
-                : {},
+        redis: {
+            tls: {
+                rejectUnauthorized: false,
+                requestCert: true,
+            },
+        },
         limiter: {
             max: 1,
             duration: 30,

@@ -8,7 +8,6 @@ import { BullAdapter } from '@bull-board/api/bullAdapter';
 import { ExpressAdapter } from '@bull-board/express';
 import { createBullBoard } from '@bull-board/api';
 import expressBasicAuth from 'express-basic-auth';
-import { Logger } from 'nestjs-pino';
 
 import * as parseRedisUrl from 'parse-redis-url-simple';
 
@@ -29,13 +28,12 @@ async function bootstrap() {
             options: {
                 host: redisUrl[0].host,
                 port: redisUrl[0].port,
+                username: 'root',
                 password: redisUrl[0].password,
-                tls:
-                    process.env.ENV === 'production'
-                        ? {
-                              rejectUnauthorized: false,
-                          }
-                        : null,
+                tls: {
+                    rejectUnauthorized: false,
+                    requestCert: true,
+                },
             },
         },
         { inheritAppConfig: true },
