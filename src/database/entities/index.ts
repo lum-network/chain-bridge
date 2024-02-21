@@ -1,5 +1,4 @@
 export * from './asset.entity';
-export * from './beam.entity';
 export * from './block.entity';
 export * from './market.entity';
 export * from './millions-biggest-winner.entity';

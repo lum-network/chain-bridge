@@ -3,7 +3,6 @@ import { TypeOrmModuleAsyncOptions } from '@nestjs/typeorm';
 
 import {
     AssetEntity,
-    BeamEntity,
     BlockEntity,
     MarketEntity,
     MillionsBiggestWinnerEntity,
@@ -28,26 +27,7 @@ export const DatabaseConfig: TypeOrmModuleAsyncOptions = {
     useFactory: async (configService: ConfigService) => ({
         type: 'postgres',
         url: configService.get('DATABASE_URL'),
-        entities: [
-            AssetEntity,
-            BeamEntity,
-            BlockEntity,
-            MarketEntity,
-            MillionsBiggestWinnerEntity,
-            MillionsCampaignEntity,
-            MillionsCampaignMemberEntity,
-            MillionsDepositEntity,
-            MillionsDepositorEntity,
-            MillionsDrawEntity,
-            MillionsPoolEntity,
-            MillionsPrizeEntity,
-            ProposalEntity,
-            ProposalDepositEntity,
-            ProposalVoteEntity,
-            TransactionEntity,
-            ValidatorDelegationEntity,
-            ValidatorEntity,
-        ],
+        autoLoadEntities: true,
         synchronize: true,
         logging: false,
         extra:
@@ -63,7 +43,6 @@ export const DatabaseConfig: TypeOrmModuleAsyncOptions = {
 
 export const DatabaseFeatures = [
     AssetEntity,
-    BeamEntity,
     BlockEntity,
     MarketEntity,
     MillionsBiggestWinnerEntity,

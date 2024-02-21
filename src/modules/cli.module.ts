@@ -14,8 +14,8 @@ import { BlockService, ChainService, MarketService, ProposalService, Transaction
 
 import { BlocksCommands, RedisCommands, TransactionsCommands, ValidatorsCommands } from '@app/console';
 import { DatabaseConfig, DatabaseFeatures } from '@app/database';
-import { ConfigMap } from '@app/utils';
-import { AsyncQueues } from '@app/async';
+import { ConfigMap, Queues } from '@app/utils';
+import { QueueConfig } from '@app/async';
 
 @Module({
     imports: [
@@ -23,7 +23,8 @@ import { AsyncQueues } from '@app/async';
             isGlobal: true,
             validationSchema: Joi.object(ConfigMap),
         }),
-        ...AsyncQueues.map((queue) => BullModule.registerQueueAsync(queue)),
+        BullModule.forRootAsync(QueueConfig),
+        BullModule.registerQueue(...Object.values(Queues).map((name) => ({ name }) as any)),
         CacheModule.registerAsync({
             imports: [ConfigModule],
             useFactory: (configService: ConfigService) => {

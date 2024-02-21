@@ -53,10 +53,10 @@ import {
     ValidatorDelegationService,
 } from '@app/services';
 
-import { ConfigMap, metrics, PayloadValidationOptions, SentryModuleOptions } from '@app/utils';
+import { ConfigMap, metrics, PayloadValidationOptions, Queues, SentryModuleOptions } from '@app/utils';
 
 import { DatabaseConfig, DatabaseFeatures } from '@app/database';
-import { AsyncQueues, MetricScheduler } from '@app/async';
+import { MetricScheduler, QueueConfig } from '@app/async';
 
 @Module({
     imports: [
@@ -64,7 +64,8 @@ import { AsyncQueues, MetricScheduler } from '@app/async';
             isGlobal: true,
             validationSchema: Joi.object(ConfigMap),
         }),
-        ...AsyncQueues.map((queue) => BullModule.registerQueueAsync(queue)),
+        BullModule.forRootAsync(QueueConfig),
+        BullModule.registerQueue(...Object.values(Queues).map((name) => ({ name }) as any)),
         CacheModule.registerAsync<RedisClientOptions>({
             imports: [ConfigModule],
             useFactory: (configService: ConfigService) => {

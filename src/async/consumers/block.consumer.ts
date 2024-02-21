@@ -9,7 +9,7 @@ import { MsgMultiSend } from '@lum-network/sdk-javascript/build/codegen/cosmos/b
 import { BlockEntity, TransactionEntity } from '@app/database';
 import { BlockService, ChainService, TransactionService, ValidatorService } from '@app/services';
 import { LumChain } from '@app/services/chains';
-import { AssetSymbol, getAddressesRelatedToTransaction, isBeam, QueueJobs, QueuePriority, Queues } from '@app/utils';
+import { AssetSymbol, getAddressesRelatedToTransaction, QueueJobs, QueuePriority, Queues } from '@app/utils';
 
 @Processor(Queues.BLOCKS)
 export class BlockConsumer {
@@ -17,8 +17,7 @@ export class BlockConsumer {
 
     constructor(
         @InjectQueue(Queues.BLOCKS) private readonly _blockQueue: Queue,
-        @InjectQueue(Queues.BEAMS) private readonly _beamQueue: Queue,
-        @InjectQueue(Queues.MILLIONS_DEPOSITS) private readonly _millionsQueue: Queue,
+        @InjectQueue(Queues.MILLIONS) private readonly _millionsQueue: Queue,
         private readonly _blockService: BlockService,
         private readonly _chainService: ChainService,
         private readonly _transactionService: TransactionService,
@@ -198,24 +197,6 @@ export class BlockConsumer {
             await this._blockService.save(blockDoc);
             const transactions = await Promise.all(block.block.data.txs.map(getFormattedTx));
             await this._transactionService.saveBulk(transactions);
-
-            // Dispatch beams for ingest
-            for (const txDoc of transactions) {
-                for (const message of txDoc.messages) {
-                    if (isBeam(message.type_url)) {
-                        await this._beamQueue.add(
-                            QueueJobs.INGEST,
-                            { id: message.value.id, value: message.value, url: message.type_url, time: txDoc.time },
-                            {
-                                jobId: `beam-${message.value.id}`,
-                                attempts: 5,
-                                backoff: 60000,
-                                priority: QueuePriority.NORMAL,
-                            },
-                        );
-                    }
-                }
-            }
 
             return blockDoc;
         } catch (error) {

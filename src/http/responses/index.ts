@@ -2,7 +2,6 @@ export * from './account.response';
 export * from './asset-historical.response';
 export * from './asset-info.response';
 export * from './balance.response';
-export * from './beam.response';
 export * from './block.response';
 export * from './commission.response';
 export * from './data.response';

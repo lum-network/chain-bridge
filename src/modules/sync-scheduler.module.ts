@@ -13,7 +13,7 @@ import { SentryModule } from '@ntegral/nestjs-sentry';
 import { LoggerModule } from 'nestjs-pino';
 import * as parseRedisUrl from 'parse-redis-url-simple';
 
-import { AsyncQueues, BlockScheduler, GovernanceScheduler, MarketScheduler, MillionsScheduler, ValidatorScheduler } from '@app/async';
+import { BlockScheduler, GovernanceScheduler, MarketScheduler, MillionsScheduler, QueueConfig, ValidatorScheduler } from '@app/async';
 
 import {
     BlockService,
@@ -40,7 +40,8 @@ import { DatabaseConfig, DatabaseFeatures } from '@app/database';
             isGlobal: true,
             validationSchema: Joi.object(ConfigMap),
         }),
-        ...AsyncQueues.map((queue) => BullModule.registerQueueAsync(queue)),
+        BullModule.forRootAsync(QueueConfig),
+        BullModule.registerQueue(...Object.values(Queues).map((name) => ({ name }) as any)),
         ClientsModule.registerAsync([
             {
                 name: 'API',

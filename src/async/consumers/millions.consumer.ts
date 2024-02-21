@@ -7,9 +7,9 @@ import { MillionsDepositEntity } from '@app/database';
 import { MillionsDepositService } from '@app/services';
 import { QueueJobs, Queues } from '@app/utils';
 
-@Processor(Queues.MILLIONS_DEPOSITS)
-export class MillionsDepositConsumer {
-    private readonly _logger: Logger = new Logger(MillionsDepositConsumer.name);
+@Processor(Queues.MILLIONS)
+export class MillionsConsumer {
+    private readonly _logger: Logger = new Logger(MillionsConsumer.name);
 
     constructor(private readonly _millionsDepositService: MillionsDepositService) {}
 

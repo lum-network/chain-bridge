@@ -13,7 +13,7 @@ import { Logger } from 'nestjs-pino';
 import * as parseRedisUrl from 'parse-redis-url-simple';
 
 import { ApiModule } from '@app/modules';
-import { AsyncQueues } from '@app/async';
+import { Queues } from '@app/utils';
 
 async function bootstrap() {
     // API module setup
@@ -54,7 +54,7 @@ async function bootstrap() {
     serverAdapter.setBasePath('/_debug/queues');
 
     createBullBoard({
-        queues: AsyncQueues.map((queue) => new BullAdapter(app.get<Queue>(`BullQueue_${queue.name}`))),
+        queues: Object.values(Queues).map((queue) => new BullAdapter(app.get<Queue>(`BullQueue_${queue}`))),
         serverAdapter,
     });
     app.use(

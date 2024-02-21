@@ -10,10 +10,10 @@ import { SentryModule } from '@ntegral/nestjs-sentry';
 import { LoggerModule } from 'nestjs-pino';
 import * as parseRedisUrl from 'parse-redis-url-simple';
 
-import { AsyncQueues, BlockConsumer, MillionsDepositConsumer } from '@app/async';
+import { BlockConsumer, MillionsConsumer, QueueConfig } from '@app/async';
 
 import { BlockService, ChainService, MarketService, MillionsDepositService, ProposalDepositService, ProposalService, ProposalVoteService, TransactionService, ValidatorDelegationService, ValidatorService } from '@app/services';
-import { ConfigMap, SentryModuleOptions } from '@app/utils';
+import { ConfigMap, Queues, SentryModuleOptions } from '@app/utils';
 import { DatabaseConfig, DatabaseFeatures } from '@app/database';
 
 @Module({
@@ -22,7 +22,8 @@ import { DatabaseConfig, DatabaseFeatures } from '@app/database';
             isGlobal: true,
             validationSchema: Joi.object(ConfigMap),
         }),
-        ...AsyncQueues.map((queue) => BullModule.registerQueueAsync(queue)),
+        BullModule.forRootAsync(QueueConfig),
+        BullModule.registerQueue(...Object.values(Queues).map((name) => ({ name }) as any)),
         ClientsModule.registerAsync([
             {
                 name: 'API',
@@ -48,20 +49,7 @@ import { DatabaseConfig, DatabaseFeatures } from '@app/database';
         TypeOrmModule.forFeature(DatabaseFeatures),
     ],
     controllers: [],
-    providers: [
-        ChainService,
-        BlockService,
-        MarketService,
-        MillionsDepositService,
-        ProposalService,
-        ProposalDepositService,
-        ProposalVoteService,
-        TransactionService,
-        ValidatorService,
-        ValidatorDelegationService,
-        BlockConsumer,
-        MillionsDepositConsumer,
-    ],
+    providers: [ChainService, BlockService, MarketService, MillionsDepositService, ProposalService, ProposalDepositService, ProposalVoteService, TransactionService, ValidatorService, ValidatorDelegationService, BlockConsumer, MillionsConsumer],
 })
 export class SyncConsumerModule implements OnModuleInit, OnApplicationBootstrap {
     constructor(private readonly _chainService: ChainService) {}

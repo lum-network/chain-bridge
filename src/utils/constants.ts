@@ -51,16 +51,13 @@ export enum ChartGroupType {
 }
 
 export enum Queues {
-    ASSETS = 'assets',
-    BEAMS = 'beams',
     BLOCKS = 'blocks',
-    MILLIONS_DEPOSITS = 'millions_deposits',
+    MILLIONS = 'millions',
+    TRANSACTIONS = 'transactions',
 }
 
 export enum QueueJobs {
     INGEST = 'ingest',
-    PROCESS_DAILY = 'process_daily',
-    PROCESS_WEEKLY = 'process_weekly',
     TRIGGER_VERIFY_BLOCKS_BACKWARD = 'trigger_verify_blocks_backward',
 }
 
