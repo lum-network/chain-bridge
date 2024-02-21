@@ -1,7 +1,7 @@
 import { BullModuleAsyncOptions } from '@nestjs/bull';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
-import { Queues } from '@app/utils';
+import { JOB_MAX_AGE, Queues } from "@app/utils";
 
 export const AsyncQueues: BullModuleAsyncOptions[] = [
     {
@@ -23,8 +23,12 @@ export const AsyncQueues: BullModuleAsyncOptions[] = [
                 duration: 30,
             },
             defaultJobOptions: {
-                removeOnComplete: true,
-                removeOnFail: false,
+                removeOnComplete: {
+                    age: JOB_MAX_AGE,
+                },
+                removeOnFail: {
+                    age: JOB_MAX_AGE,
+                },
             },
         }),
     },
@@ -43,8 +47,12 @@ export const AsyncQueues: BullModuleAsyncOptions[] = [
                       }
                     : {},
             defaultJobOptions: {
-                removeOnComplete: true,
-                removeOnFail: false,
+                removeOnComplete: {
+                    age: JOB_MAX_AGE,
+                },
+                removeOnFail: {
+                    age: JOB_MAX_AGE,
+                },
             },
         }),
     },
@@ -63,8 +71,12 @@ export const AsyncQueues: BullModuleAsyncOptions[] = [
                       }
                     : {},
             defaultJobOptions: {
-                removeOnComplete: true,
-                removeOnFail: false,
+                removeOnComplete: {
+                    age: JOB_MAX_AGE,
+                },
+                removeOnFail: {
+                    age: JOB_MAX_AGE,
+                },
             },
         }),
     },
@@ -83,8 +95,12 @@ export const AsyncQueues: BullModuleAsyncOptions[] = [
                       }
                     : {},
             defaultJobOptions: {
-                removeOnComplete: true,
-                removeOnFail: false,
+                removeOnComplete: {
+                    age: JOB_MAX_AGE,
+                },
+                removeOnFail: {
+                    age: JOB_MAX_AGE,
+                },
             },
         }),
     },
