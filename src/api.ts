@@ -19,7 +19,7 @@ async function bootstrap() {
     // API module setup
     const app = await NestFactory.create(ApiModule, { bufferLogs: true });
     app.enableCors();
-    app.useLogger(app.get(Logger));
+    // app.useLogger(app.get(Logger));
 
     // Microservice module setup
     const redisUrl = parseRedisUrl.parseRedisUrl(process.env.REDIS_URL);
