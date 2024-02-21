@@ -65,11 +65,10 @@ export class MillionsConsumer {
             if (deposit.depositor_address !== liveDeposit.deposit.depositorAddress) {
                 deposit.depositor_address = liveDeposit.deposit.depositorAddress;
             }
-            if (job.data.withdrawalId && deposit.withdrawal_id !== job.data.withdrawalId) {
-                deposit.withdrawal_id = job.data.withdrawalId;
-            }
-        } else {
-            throw new Error(`failed_to_process_deposit: cannot determine the case`);
+        }
+
+        if (job.data.withdrawalId && deposit.withdrawal_id !== job.data.withdrawalId) {
+            deposit.withdrawal_id = job.data.withdrawalId;
         }
 
         await this._millionsDepositService.save(deposit);
