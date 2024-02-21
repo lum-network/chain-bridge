@@ -26,17 +26,17 @@ export class MillionsConsumer {
         }
 
         // Grab the live deposit from chain
-        const liveDeposit = await this._chainService.getChain<LumChain>(AssetSymbol.LUM).client.lum.network.millions.poolDeposit({
-            depositId: BigInt(job.data.depositId),
-            poolId: BigInt(job.data.poolId),
-        });
-
-        if (!liveDeposit) {
-            throw new Error(`failed_to_fetch_live_deposit: ${job.data.depositId} (poolId: ${job.data.poolId})`);
+        let liveDeposit = null;
+        try {
+            liveDeposit = await this._chainService.getChain<LumChain>(AssetSymbol.LUM).client.lum.network.millions.poolDeposit({
+                depositId: BigInt(job.data.depositId),
+                poolId: BigInt(job.data.poolId),
+            });
+        } catch(e){
         }
 
         let deposit = await this._millionsDepositService.getById(job.data.depositId);
-        if (!deposit) {
+        if (!deposit && liveDeposit) {
             deposit = new MillionsDepositEntity({
                 id: job.data.depositId,
                 pool_id: job.data.poolId,
@@ -50,7 +50,7 @@ export class MillionsConsumer {
                 is_sponsor: liveDeposit.deposit.isSponsor,
                 withdrawal_id: job.data.withdrawalId || 0,
             });
-        } else {
+        } else if(deposit && liveDeposit) {
             if (deposit.block_height > job.data.height) {
                 this._logger.debug(`Millions deposit ${job.data.depositId} already ingested`);
                 return;
@@ -67,6 +67,8 @@ export class MillionsConsumer {
             if (job.data.withdrawalId && deposit.withdrawal_id !== job.data.withdrawalId) {
                 deposit.withdrawal_id = job.data.withdrawalId;
             }
+        } else {
+            throw new Error(`failed_to_process_deposit: cannot determine the case`);
         }
 
         await this._millionsDepositService.save(deposit);

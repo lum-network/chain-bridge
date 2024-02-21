@@ -137,7 +137,7 @@ export class BlockConsumer {
                                 await this._millionsQueue.add(
                                     QueueJobs.INGEST,
                                     {
-                                        depositId: id,
+                                        depositId: Number(id),
                                         poolId: Number(ev.attributes.find((a) => a.key === 'pool_id')?.value || undefined),
                                         withdrawalId: Number(ev.attributes.find((a) => a.key === 'withdrawal_id')?.value || undefined),
                                         height: blockDoc.height,
