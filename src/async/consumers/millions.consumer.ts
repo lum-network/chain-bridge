@@ -37,24 +37,36 @@ export class MillionsConsumer {
         }
 
         let deposit = await this._millionsDepositService.getById(job.data.depositId);
+
+        // If we have a withdrawal id, we are updating a deleted deposit
+        if (job.data.withdrawalId) {
+            if (!deposit) {
+                throw new Error(`failed_to_update_deposit_null_deposit`);
+            }
+            deposit.withdrawal_id = job.data.withdrawalId;
+            await this._millionsDepositService.save(deposit);
+            await job.log(`Millions deposit ${job.data.depositId} withdrawal id updated`);
+            return;
+        }
+
+        // Otherwise we are just doing a normal ingest
         if (deposit) {
             if (deposit.block_height > job.data.height) {
                 this._logger.debug(`Millions deposit ${job.data.depositId} already ingested`);
                 return;
             }
-            if (liveDeposit) {
-                if (deposit.is_sponsor !== liveDeposit.deposit.isSponsor) {
-                    deposit.is_sponsor = liveDeposit.deposit.isSponsor;
-                }
-                if (deposit.winner_address !== liveDeposit.deposit.winnerAddress) {
-                    deposit.winner_address = liveDeposit.deposit.winnerAddress;
-                }
-                if (deposit.depositor_address !== liveDeposit.deposit.depositorAddress) {
-                    deposit.depositor_address = liveDeposit.deposit.depositorAddress;
-                }
+            if (!liveDeposit) {
+                throw new Error(`failed_to_update_deposit_null_live_deposit`);
             }
-            if (job.data.withdrawalId) {
-                deposit.withdrawal_id = job.data.withdrawalId;
+
+            if (deposit.is_sponsor !== liveDeposit.deposit.isSponsor) {
+                deposit.is_sponsor = liveDeposit.deposit.isSponsor;
+            }
+            if (deposit.winner_address !== liveDeposit.deposit.winnerAddress) {
+                deposit.winner_address = liveDeposit.deposit.winnerAddress;
+            }
+            if (deposit.depositor_address !== liveDeposit.deposit.depositorAddress) {
+                deposit.depositor_address = liveDeposit.deposit.depositorAddress;
             }
             await this._millionsDepositService.save(deposit);
         } else {
