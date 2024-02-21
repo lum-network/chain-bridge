@@ -23,9 +23,7 @@ export const QueueConfig: SharedBullAsyncConfiguration = {
             removeOnComplete: {
                 age: JOB_MAX_AGE,
             },
-            removeOnFail: {
-                age: JOB_MAX_AGE,
-            },
+            removeOnFail: false,
         },
     }),
 };
