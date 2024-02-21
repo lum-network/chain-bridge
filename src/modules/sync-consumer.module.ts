@@ -10,9 +10,9 @@ import { SentryModule } from '@ntegral/nestjs-sentry';
 import { LoggerModule } from 'nestjs-pino';
 import * as parseRedisUrl from 'parse-redis-url-simple';
 
-import { AsyncQueues, BeamConsumer, BlockConsumer, MillionsDepositConsumer } from '@app/async';
+import { AsyncQueues, BlockConsumer, MillionsDepositConsumer } from '@app/async';
 
-import { BeamService, BlockService, ChainService, MarketService, MillionsDepositService, ProposalDepositService, ProposalService, ProposalVoteService, TransactionService, ValidatorDelegationService, ValidatorService } from '@app/services';
+import { BlockService, ChainService, MarketService, MillionsDepositService, ProposalDepositService, ProposalService, ProposalVoteService, TransactionService, ValidatorDelegationService, ValidatorService } from '@app/services';
 import { ConfigMap, SentryModuleOptions } from '@app/utils';
 import { DatabaseConfig, DatabaseFeatures } from '@app/database';
 
@@ -50,7 +50,6 @@ import { DatabaseConfig, DatabaseFeatures } from '@app/database';
     controllers: [],
     providers: [
         ChainService,
-        BeamService,
         BlockService,
         MarketService,
         MillionsDepositService,
@@ -60,7 +59,6 @@ import { DatabaseConfig, DatabaseFeatures } from '@app/database';
         TransactionService,
         ValidatorService,
         ValidatorDelegationService,
-        BeamConsumer,
         BlockConsumer,
         MillionsDepositConsumer,
     ],

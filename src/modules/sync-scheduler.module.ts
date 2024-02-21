@@ -16,7 +16,6 @@ import * as parseRedisUrl from 'parse-redis-url-simple';
 import { AsyncQueues, BlockScheduler, GovernanceScheduler, MarketScheduler, MillionsScheduler, ValidatorScheduler } from '@app/async';
 
 import {
-    BeamService,
     BlockService,
     ChainService,
     MarketService,
@@ -69,7 +68,6 @@ import { DatabaseConfig, DatabaseFeatures } from '@app/database';
     ],
     controllers: [],
     providers: [
-        BeamService,
         BlockScheduler,
         BlockService,
         ChainService,

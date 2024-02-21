@@ -19,7 +19,6 @@ import * as Joi from 'joi';
 
 import {
     AccountsController,
-    BeamsController,
     BlocksController,
     CoreController,
     GovernanceController,
@@ -30,13 +29,11 @@ import {
     PaginationInterceptor,
     ResponseInterceptor,
     SearchController,
-    StatsController,
     TransactionsController,
     ValidatorsController,
 } from '@app/http';
 
 import {
-    BeamService,
     BlockService,
     ChainService,
     MarketService,
@@ -51,7 +48,6 @@ import {
     ProposalDepositService,
     ProposalService,
     ProposalVoteService,
-    StatService,
     TransactionService,
     ValidatorService,
     ValidatorDelegationService,
@@ -93,9 +89,8 @@ import { AsyncQueues, MetricScheduler } from '@app/async';
         TypeOrmModule.forRootAsync(DatabaseConfig),
         TypeOrmModule.forFeature(DatabaseFeatures),
     ],
-    controllers: [AccountsController, BeamsController, BlocksController, CoreController, GovernanceController, HealthController, MarketController, MillionsController, SearchController, StatsController, TransactionsController, ValidatorsController],
+    controllers: [AccountsController, BlocksController, CoreController, GovernanceController, HealthController, MarketController, MillionsController, SearchController, TransactionsController, ValidatorsController],
     providers: [
-        BeamService,
         BlockService,
         ChainService,
         LumNetworkIndicator,
@@ -113,7 +108,6 @@ import { AsyncQueues, MetricScheduler } from '@app/async';
         ProposalService,
         ProposalVoteService,
         ProposalDepositService,
-        StatService,
         TransactionService,
         ValidatorService,
         ValidatorDelegationService,

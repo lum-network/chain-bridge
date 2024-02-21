@@ -10,7 +10,7 @@ import * as Joi from 'joi';
 import * as redisStore from 'cache-manager-redis-store';
 import * as parseRedisUrl from 'parse-redis-url-simple';
 
-import { BeamService, BlockService, ChainService, MarketService, ProposalService, StatService, TransactionService, ValidatorDelegationService, ValidatorService } from '@app/services';
+import { BlockService, ChainService, MarketService, ProposalService, TransactionService, ValidatorDelegationService, ValidatorService } from '@app/services';
 
 import { BlocksCommands, RedisCommands, TransactionsCommands, ValidatorsCommands } from '@app/console';
 import { DatabaseConfig, DatabaseFeatures } from '@app/database';
@@ -44,7 +44,7 @@ import { AsyncQueues } from '@app/async';
         TypeOrmModule.forRootAsync(DatabaseConfig),
         TypeOrmModule.forFeature(DatabaseFeatures),
     ],
-    providers: [ChainService, BeamService, BlockService, MarketService, StatService, ProposalService, TransactionService, ValidatorService, ValidatorDelegationService, BlocksCommands, RedisCommands, TransactionsCommands, ValidatorsCommands],
+    providers: [ChainService, BlockService, MarketService, ProposalService, TransactionService, ValidatorService, ValidatorDelegationService, BlocksCommands, RedisCommands, TransactionsCommands, ValidatorsCommands],
 })
 export class CliModule implements OnModuleInit {
     constructor(private readonly _chainService: ChainService) {}

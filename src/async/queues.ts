@@ -1,7 +1,7 @@
 import { BullModuleAsyncOptions } from '@nestjs/bull';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
-import { JOB_MAX_AGE, Queues } from "@app/utils";
+import { JOB_MAX_AGE, Queues } from '@app/utils';
 
 export const AsyncQueues: BullModuleAsyncOptions[] = [
     {
