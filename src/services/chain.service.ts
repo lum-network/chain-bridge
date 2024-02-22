@@ -67,6 +67,9 @@ export class ChainService {
     };
 
     getChain = <Type = GenericChain>(chainSymbol: AssetSymbol): Type => {
+        if (!this.isChainInitialized(chainSymbol)) {
+            this._clients[chainSymbol].initialize().finally(() => null);
+        }
         return this._clients[chainSymbol] as Type;
     };
 
