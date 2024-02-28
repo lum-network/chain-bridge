@@ -173,7 +173,8 @@ export class MillionsScheduler {
                         updated_at_height: Number(draw.updatedAtHeight),
                         created_at: draw.createdAt,
                         updated_at: draw.updatedAt,
-                        usd_token_value: await this._marketService.getTokenPrice(getAssetSymbol(pool.denom_native)),
+                        // We don't use this value anymore
+                        usd_token_value: 0,
                     };
 
                     // If draw doesn't exist in db, we save it
@@ -205,7 +206,8 @@ export class MillionsScheduler {
                                 expires_at: dayjs(draw.createdAt).add(Number(prizeExpirationDelta.seconds), 'seconds').toDate(),
                                 created_at: draw.createdAt,
                                 updated_at: draw.updatedAt,
-                                usd_token_value: savedDraw ? savedDraw.usd_token_value : formattedDraw.usd_token_value,
+                                // We don't use this value anymore
+                                usd_token_value: 0,
                             };
 
                             await this._millionsPrizeService.createOrUpdate(formattedPrize);
