@@ -135,22 +135,6 @@ export class MillionsController {
         });
     }
 
-    @ApiOkResponse({ status: 200, type: [MillionsPrizeResponse] })
-    @Get('prizes/biggest')
-    async biggestPrizes(@Req() request: ExplorerRequest): Promise<DataResponse> {
-        const [prizes, total] = await this._millionsPrizeService.fetchBiggest(request.pagination.skip, request.pagination.limit);
-
-        return new DataResponse({
-            result: prizes.map((prize) => plainToInstance(MillionsPrizeResponse, prize)),
-            metadata: new DataResponseMetadata({
-                page: request.pagination.page,
-                limit: request.pagination.limit,
-                items_count: prizes.length,
-                items_total: total,
-            }),
-        });
-    }
-
     @ApiOkResponse({ status: 200, type: [MillionsBiggestWinnerResponse] })
     @Get('prizes/biggest-apr')
     async biggestAprPrizes(@Req() request: ExplorerRequest): Promise<DataResponse> {
@@ -174,13 +158,12 @@ export class MillionsController {
         const totalPrizesAmount = await this._millionsPrizeService.getTotalAmountByPoolId(poolId);
 
         const biggestPrizeAmount = biggestPrize.length > 0 ? biggestPrize[0].amount.amount : 0;
-        const totalPrizesUsdAmount = totalPrizesAmount.sum ? totalPrizesAmount.sum.toFixed(2) : '0';
 
         return new DataResponse({
             result: plainToInstance(MillionsPrizeStatsResponse, {
                 total_pool_prizes: total,
                 biggest_prize_amount: biggestPrizeAmount,
-                total_prizes_usd_amount: totalPrizesUsdAmount,
+                total_prizes_amount: totalPrizesAmount?.sum ?? 0,
             }),
         });
     }

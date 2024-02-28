@@ -34,12 +34,6 @@ export class MillionsPrizeService {
         return query.getManyAndCount();
     };
 
-    fetchBiggest = async (skip: number, take: number): Promise<[MillionsPrizeEntity[], number]> => {
-        const query = this._repository.createQueryBuilder('millions_prizes').orderBy('millions_prizes.raw_amount * millions_prizes.usd_token_value', 'DESC').skip(skip).take(take);
-
-        return query.getManyAndCount();
-    };
-
     fetchBiggestByPoolId = async (poolId: string, skip: number, take: number): Promise<[MillionsPrizeEntity[], number]> => {
         const query = this._repository.createQueryBuilder('millions_prizes').where({ pool_id: poolId }).orderBy('millions_prizes.raw_amount', 'DESC').skip(skip).take(take);
 
@@ -47,7 +41,7 @@ export class MillionsPrizeService {
     };
 
     getTotalAmountByPoolId = async (poolId: string): Promise<{ sum: number }> => {
-        const query = this._repository.createQueryBuilder('millions_prizes').select('SUM(millions_prizes.raw_amount * millions_prizes.usd_token_value)').where({ pool_id: poolId });
+        const query = this._repository.createQueryBuilder('millions_prizes').select('SUM(millions_prizes.raw_amount)').where({ pool_id: poolId });
 
         return query.getRawOne();
     };
