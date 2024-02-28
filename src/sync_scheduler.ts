@@ -2,7 +2,6 @@ import { NestFactory } from '@nestjs/core';
 import { RedisOptions, Transport } from '@nestjs/microservices';
 
 import * as parseRedisUrl from 'parse-redis-url-simple';
-import { Logger } from 'nestjs-pino';
 
 import { SyncSchedulerModule } from '@app/modules';
 
@@ -23,7 +22,6 @@ async function bootstrap() {
         },
     });
 
-    // app.useLogger(app.get(Logger));
     await app.listen();
 }
 
