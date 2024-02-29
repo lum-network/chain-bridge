@@ -27,6 +27,13 @@ async function bootstrap() {
                 port: parseInt(redisUrl.port),
                 username: redisUrl.username,
                 password: redisUrl.password,
+                tls:
+                    process.env.ENV === 'production'
+                        ? {
+                              rejectUnauthorized: false,
+                              requestCert: true,
+                          }
+                        : null,
             },
         },
         { inheritAppConfig: true },

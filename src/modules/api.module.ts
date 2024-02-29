@@ -77,6 +77,13 @@ import { MetricScheduler, QueueConfig } from '@app/async';
                     password: redisUrl.password,
                     ttl: 10,
                     max: 50,
+                    tls:
+                        configService.get('ENV') === 'production'
+                            ? {
+                                  rejectUnauthorized: false,
+                                  requestCert: true,
+                              }
+                            : null,
                 };
             },
             inject: [ConfigService],
