@@ -1,14 +1,12 @@
 import { HttpModule } from '@nestjs/axios';
 import { Module, OnApplicationBootstrap, OnModuleInit } from '@nestjs/common';
 import { BullModule } from '@nestjs/bull';
-import { ClientsModule, Transport } from '@nestjs/microservices';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import * as Joi from 'joi';
 import { SentryModule } from '@ntegral/nestjs-sentry';
 import { LoggerModule } from 'nestjs-pino';
-import * as parseRedisUrl from 'parse-redis-url-simple';
 
 import { BlockConsumer, MillionsConsumer, QueueConfig } from '@app/async';
 
@@ -24,24 +22,6 @@ import { DatabaseConfig, DatabaseFeatures } from '@app/database';
         }),
         BullModule.forRootAsync(QueueConfig),
         BullModule.registerQueue(...Object.values(Queues).map((name) => ({ name }) as any)),
-        ClientsModule.registerAsync([
-            {
-                name: 'API',
-                imports: [ConfigModule],
-                inject: [ConfigService],
-                useFactory: (configService: ConfigService) => {
-                    const parsed = parseRedisUrl.parseRedisUrl(configService.get('REDIS_URL'));
-                    return {
-                        transport: Transport.REDIS,
-                        options: {
-                            host: parsed[0].host,
-                            port: parsed[0].port,
-                            password: parsed[0].password,
-                        },
-                    };
-                },
-            },
-        ]),
         LoggerModule.forRoot(),
         HttpModule,
         SentryModule.forRootAsync(SentryModuleOptions),

@@ -40,23 +40,22 @@ jobs:
               run: yarn start:api:dev & yarn test:e2e
               timeout-minutes: 15
               env:
-                  LUM_NETWORK_ENDPOINT: https://node0.testnet.lum.network/rpc
+                  LUM_NETWORK_ENDPOINT: https://node0.mainnet.lum.network/rpc
                   DATABASE_URL: postgresql://postgres:emulator@127.0.0.1:5432/postgres
+                  REDIS_URL: redis://127.0.0.1:6379
                   GOVERNANCE_SYNC_ENABLED: true
                   METRIC_SYNC_ENABLED: true
                   VALIDATOR_SYNC_ENABLED: true
-                  BULLBOARD_PASSWORD: true
+                  BULLBOARD_PASSWORD: admin
                   DFRACT_SYNC_ENABLED: true
-                  REDIS_HOST: 127.0.0.1
-                  REDIS_PORT: 6379
+                  MILLIONS_SYNC_ENABLED: true
                   REDIS_PREFIX: lm-bridge
                   INGEST_ENABLED: true
                   INGEST_BACKWARD_ENABLED: false
-                  PUSH_NOTIF_ENABLED: true
                   FAUCET_MNEMONIC: 'my mnemonic phrase'
                   PORT: 3000
                   ENV: development
-                  STARTING_HEIGHT: 1
+                  STARTING_HEIGHT: 9165230
 
             - name: Stop docker containers
               working-directory: tools

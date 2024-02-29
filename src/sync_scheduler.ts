@@ -1,24 +1,18 @@
 import { NestFactory } from '@nestjs/core';
 import { RedisOptions, Transport } from '@nestjs/microservices';
 
-import * as parseRedisUrl from 'parse-redis-url-simple';
-
 import { SyncSchedulerModule } from '@app/modules';
 
 async function bootstrap() {
-    const redisUrl = parseRedisUrl.parseRedisUrl(process.env.REDIS_URL);
+    const redisUrl = new URL(process.env.REDIS_URL || 'redis://localhost:6379');
     const app = await NestFactory.createMicroservice<RedisOptions>(SyncSchedulerModule, {
-        bufferLogs: true,
+        bufferLogs: false,
         transport: Transport.REDIS,
         options: {
-            host: redisUrl[0].host,
-            port: redisUrl[0].port,
-            username: 'root',
-            password: redisUrl[0].password,
-            tls: {
-                rejectUnauthorized: false,
-                requestCert: true,
-            },
+            host: redisUrl.hostname,
+            port: parseInt(redisUrl.port),
+            username: redisUrl.username,
+            password: redisUrl.password,
         },
     });
 

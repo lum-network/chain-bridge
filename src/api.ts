@@ -9,8 +9,6 @@ import { ExpressAdapter } from '@bull-board/express';
 import { createBullBoard } from '@bull-board/api';
 import expressBasicAuth from 'express-basic-auth';
 
-import * as parseRedisUrl from 'parse-redis-url-simple';
-
 import { ApiModule } from '@app/modules';
 import { Queues } from '@app/utils';
 
@@ -18,22 +16,17 @@ async function bootstrap() {
     // API module setup
     const app = await NestFactory.create(ApiModule, { bufferLogs: true });
     app.enableCors();
-    // app.useLogger(app.get(Logger));
 
     // Microservice module setup
-    const redisUrl = parseRedisUrl.parseRedisUrl(process.env.REDIS_URL);
+    const redisUrl = new URL(process.env.REDIS_URL || 'redis://localhost:6379');
     app.connectMicroservice<RedisOptions>(
         {
             transport: Transport.REDIS,
             options: {
-                host: redisUrl[0].host,
-                port: redisUrl[0].port,
-                username: 'root',
-                password: redisUrl[0].password,
-                tls: {
-                    rejectUnauthorized: false,
-                    requestCert: true,
-                },
+                host: redisUrl.hostname,
+                port: parseInt(redisUrl.port),
+                username: redisUrl.username,
+                password: redisUrl.password,
             },
         },
         { inheritAppConfig: true },

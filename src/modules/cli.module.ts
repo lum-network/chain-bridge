@@ -8,7 +8,6 @@ import { CacheModule, CacheStore } from '@nestjs/cache-manager';
 import { ConsoleModule } from 'nestjs-console';
 import * as Joi from 'joi';
 import * as redisStore from 'cache-manager-redis-store';
-import * as parseRedisUrl from 'parse-redis-url-simple';
 
 import { BlockService, ChainService, MarketService, ProposalService, TransactionService, ValidatorDelegationService, ValidatorService } from '@app/services';
 
@@ -28,12 +27,13 @@ import { QueueConfig } from '@app/async';
         CacheModule.registerAsync({
             imports: [ConfigModule],
             useFactory: (configService: ConfigService) => {
-                const parsed = parseRedisUrl.parseRedisUrl(configService.get('REDIS_URL'));
+                const redisUrl = new URL(configService.get('REDIS_URL'));
                 return {
                     store: redisStore as unknown as CacheStore,
-                    host: parsed[0].host,
-                    port: parsed[0].port,
-                    password: parsed[0].password,
+                    host: redisUrl.hostname,
+                    port: parseInt(redisUrl.port),
+                    username: redisUrl.username,
+                    password: redisUrl.password,
                     ttl: 10,
                     max: 50,
                 };

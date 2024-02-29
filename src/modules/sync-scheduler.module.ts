@@ -2,7 +2,6 @@ import { HttpModule } from '@nestjs/axios';
 import { Logger, Module, OnApplicationBootstrap, OnModuleInit } from '@nestjs/common';
 import { BullModule, InjectQueue } from '@nestjs/bull';
 import { ScheduleModule } from '@nestjs/schedule';
-import { ClientsModule, Transport } from '@nestjs/microservices';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
@@ -11,7 +10,6 @@ import * as Joi from 'joi';
 import { Queue } from 'bull';
 import { SentryModule } from '@ntegral/nestjs-sentry';
 import { LoggerModule } from 'nestjs-pino';
-import * as parseRedisUrl from 'parse-redis-url-simple';
 
 import { BlockScheduler, GovernanceScheduler, MarketScheduler, MillionsScheduler, QueueConfig, ValidatorScheduler } from '@app/async';
 
@@ -42,24 +40,6 @@ import { DatabaseConfig, DatabaseFeatures } from '@app/database';
         }),
         BullModule.forRootAsync(QueueConfig),
         BullModule.registerQueue(...Object.values(Queues).map((name) => ({ name }) as any)),
-        ClientsModule.registerAsync([
-            {
-                name: 'API',
-                imports: [ConfigModule],
-                inject: [ConfigService],
-                useFactory: (configService: ConfigService) => {
-                    const parsed = parseRedisUrl.parseRedisUrl(configService.get('REDIS_URL'));
-                    return {
-                        transport: Transport.REDIS,
-                        options: {
-                            host: parsed[0].host,
-                            port: parsed[0].port,
-                            password: parsed[0].password,
-                        },
-                    };
-                },
-            },
-        ]),
         LoggerModule.forRoot(),
         ScheduleModule.forRoot(),
         HttpModule,

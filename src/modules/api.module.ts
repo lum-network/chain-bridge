@@ -13,7 +13,6 @@ import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 import { LoggerModule } from 'nestjs-pino';
 import * as redisStore from 'cache-manager-redis-store';
 import { SentryInterceptor, SentryModule } from '@ntegral/nestjs-sentry';
-import * as parseRedisUrl from 'parse-redis-url-simple';
 
 import * as Joi from 'joi';
 
@@ -69,12 +68,13 @@ import { MetricScheduler, QueueConfig } from '@app/async';
         CacheModule.registerAsync<RedisClientOptions>({
             imports: [ConfigModule],
             useFactory: (configService: ConfigService) => {
-                const parsed = parseRedisUrl.parseRedisUrl(configService.get('REDIS_URL'));
+                const redisUrl = new URL(configService.get('REDIS_URL'));
                 return {
                     store: redisStore as unknown as CacheStore,
-                    host: parsed[0].host,
-                    port: parsed[0].port,
-                    password: parsed[0].password,
+                    host: redisUrl.hostname,
+                    port: parseInt(redisUrl.port),
+                    username: redisUrl.username,
+                    password: redisUrl.password,
                     ttl: 10,
                     max: 50,
                 };

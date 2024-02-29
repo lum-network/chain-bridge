@@ -12,7 +12,6 @@ export const ConfigMap = {
     GOVERNANCE_SYNC_ENABLED: Joi.boolean().required(),
     METRIC_SYNC_ENABLED: Joi.boolean().required(),
     VALIDATOR_SYNC_ENABLED: Joi.boolean().required(),
-    PUSH_NOTIF_ENABLED: Joi.boolean().required(),
     SENTRY_DSN: Joi.string().optional(),
     STARTING_HEIGHT: Joi.number().required(),
     BULLBOARD_PASSWORD: Joi.string().required(),
