@@ -68,7 +68,7 @@ export class MillionsPrizeStatsResponse {
 
     @ApiProperty()
     @Expose()
-    total_prizes_usd_amount: string;
+    total_prizes_amount: string;
 }
 
 @Exclude()
