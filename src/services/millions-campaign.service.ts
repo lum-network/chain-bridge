@@ -14,7 +14,7 @@ export class MillionsCampaignService {
     }
 
     getById = async (id: string): Promise<MillionsCampaignEntity> => {
-        return this._repository.findOne({ where: { id } });
+        return this._repository.findOne({ where: { id }, relations: ['members'] });
     };
 
     fetch = async (skip: number, take: number): Promise<[MillionsCampaignEntity[], number]> => {

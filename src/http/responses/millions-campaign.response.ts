@@ -43,7 +43,7 @@ export class MillionsCampaignResponse {
     @ApiProperty({ type: () => MillionsCampaignMemberResponse })
     @Expose()
     @Type(() => MillionsCampaignMemberResponse)
-    members: MillionsCampaignMemberResponse[];
+    members: MillionsCampaignMemberResponse[] = [];
 
     @ApiProperty()
     @Expose()
