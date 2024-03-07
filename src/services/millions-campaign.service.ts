@@ -18,12 +18,7 @@ export class MillionsCampaignService {
     };
 
     fetch = async (skip: number, take: number): Promise<[MillionsCampaignEntity[], number]> => {
-        const query = this._repository
-            .createQueryBuilder('millions_campaigns')
-            .leftJoinAndSelect('millions_campaigns.members', 'members')
-            .orderBy('millions_campaigns.end_at', 'DESC')
-            .skip(skip)
-            .take(take);
+        const query = this._repository.createQueryBuilder('millions_campaigns').leftJoinAndSelect('millions_campaigns.members', 'members').orderBy('millions_campaigns.end_at', 'DESC').skip(skip).take(take);
 
         query.distinct(true);
 
