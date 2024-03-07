@@ -41,6 +41,8 @@ export class MillionsCampaignResponse {
     amount: BalanceResponse;
 
     @ApiProperty({ type: () => MillionsCampaignMemberResponse })
+    @Expose()
+    @Type(() => MillionsCampaignMemberResponse)
     members: MillionsCampaignMemberResponse[];
 
     @ApiProperty()
