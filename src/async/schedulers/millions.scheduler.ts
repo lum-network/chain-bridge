@@ -40,11 +40,12 @@ export class MillionsScheduler {
 
         for (const pool of pools.pools) {
             // Get the chain for the pool
-            const chain = this._chainService.getChain(getAssetSymbol(pool.nativeDenom));
             let outstandingPrizePoolAmount = 0;
 
             try {
                 // Get rewards and balance from the ICA account
+                const chain = this._chainService.getChain(getAssetSymbol(pool.nativeDenom));
+
                 const [prizePoolRewards, prizePoolBalance] = await Promise.all([
                     chain.client.cosmos.distribution.v1beta1.delegationTotalRewards({ delegatorAddress: pool.icaDepositAddress }),
                     chain.client.cosmos.bank.v1beta1.balance({ address: pool.icaPrizepoolAddress, denom: pool.nativeDenom }),
