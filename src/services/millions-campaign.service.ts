@@ -14,11 +14,11 @@ export class MillionsCampaignService {
     }
 
     getById = async (id: string): Promise<MillionsCampaignEntity> => {
-        return this._repository.findOne({ where: { id } });
+        return this._repository.findOne({ where: { id }, relations: ['members'] });
     };
 
     fetch = async (skip: number, take: number): Promise<[MillionsCampaignEntity[], number]> => {
-        const query = this._repository.createQueryBuilder('millions_campaigns').orderBy('millions_campaigns.end_at', 'DESC').skip(skip).take(take);
+        const query = this._repository.createQueryBuilder('millions_campaigns').leftJoinAndSelect('millions_campaigns.members', 'members').orderBy('millions_campaigns.end_at', 'DESC').skip(skip).take(take);
 
         return query.getManyAndCount();
     };
