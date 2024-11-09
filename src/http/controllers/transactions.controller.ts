@@ -16,7 +16,7 @@ import { ExplorerRequest } from '@app/utils';
 export class TransactionsController {
     constructor(private readonly _transactionService: TransactionService) {}
 
-    @ApiOkResponse({ status: 200, type: [TransactionResponse] })
+    @ApiOkResponse({ type: () =>[TransactionResponse] })
     @DefaultTake(50)
     @Get('')
     async fetch(@Req() request: ExplorerRequest): Promise<DataResponse> {
@@ -36,7 +36,7 @@ export class TransactionsController {
         });
     }
 
-    @ApiOkResponse({ status: 200, type: TransactionResponse })
+    @ApiOkResponse({ type: () =>TransactionResponse })
     @Get(':hash')
     async show(@Param('hash') hash: string): Promise<DataResponse> {
         const tx = await this._transactionService.get(hash);

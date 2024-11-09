@@ -18,7 +18,7 @@ import { ExplorerRequest } from '@app/utils';
 export class BlocksController {
     constructor(private readonly _blockService: BlockService) {}
 
-    @ApiOkResponse({ status: 200, type: [BlockResponse] })
+    @ApiOkResponse({ type: () =>[BlockResponse] })
     @DefaultTake(50)
     @Get('')
     async fetch(@Req() request: ExplorerRequest): Promise<DataResponse> {

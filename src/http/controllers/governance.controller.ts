@@ -20,7 +20,7 @@ export class GovernanceController {
         private readonly _governanceProposalDepositService: ProposalDepositService,
     ) {}
 
-    @ApiOkResponse({ status: 200, type: [ProposalResponse] })
+    @ApiOkResponse({ type: () =>[ProposalResponse] })
     @Get('proposals')
     async fetch(@Req() request: ExplorerRequest): Promise<DataResponse> {
         const results = await this._proposalSevice.fetch();
@@ -35,7 +35,7 @@ export class GovernanceController {
         });
     }
 
-    @ApiOkResponse({ status: 200, type: ProposalResponse })
+    @ApiOkResponse({ type: () =>ProposalResponse })
     @Get('proposals/:id')
     async get(@Param('id') id: number): Promise<DataResponse> {
         const result = await this._proposalSevice.getById(id);
@@ -49,7 +49,7 @@ export class GovernanceController {
         };
     }
 
-    @ApiOkResponse({ status: 200, type: ResultResponse })
+    @ApiOkResponse({ type: () =>ResultResponse })
     @Get('proposals/:id/tally')
     async getTallyResults(@Param('id') id: string): Promise<DataResponse> {
         const result = await this._chainService.getChain(AssetSymbol.LUM).client.cosmos.gov.v1beta1.tallyResult({ proposalId: BigInt(id) });
@@ -63,7 +63,7 @@ export class GovernanceController {
         };
     }
 
-    @ApiOkResponse({ status: 200, type: VoterResponse })
+    @ApiOkResponse({ type: () =>VoterResponse })
     @DefaultTake(5)
     @Get('proposals/:id/voters')
     async getVoters(@Req() request: ExplorerRequest, @Param('id') id: string): Promise<DataResponse> {
@@ -82,7 +82,7 @@ export class GovernanceController {
         });
     }
 
-    @ApiOkResponse({ status: 200, type: DepositorResponse })
+    @ApiOkResponse({ type: () =>DepositorResponse })
     @DefaultTake(5)
     @Get('proposals/:id/depositors')
     async getDepositors(@Req() request: ExplorerRequest, @Param('id') id: string): Promise<DataResponse> {

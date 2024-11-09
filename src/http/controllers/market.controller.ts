@@ -16,7 +16,7 @@ import { DefaultTake } from '@app/http/decorators';
 export class MarketController {
     constructor(private readonly _marketService: MarketService) {}
 
-    @ApiOkResponse({ status: 200, type: MarketResponse })
+    @ApiOkResponse({ type: () =>MarketResponse })
     @DefaultTake(50)
     @Get('data')
     async getAllMarketData(@Req() request: ExplorerRequest): Promise<DataResponse> {
@@ -33,7 +33,7 @@ export class MarketController {
         });
     }
 
-    @ApiOkResponse({ status: 200, type: MarketResponse })
+    @ApiOkResponse({ type: () =>MarketResponse })
     @DefaultTake(50)
     @Post('data/since')
     async getHistoricalMarketData(@Req() request: ExplorerRequest, @Body() body: MarketRequest): Promise<DataResponse> {
@@ -50,7 +50,7 @@ export class MarketController {
         });
     }
 
-    @ApiOkResponse({ status: 200, type: MarketResponse })
+    @ApiOkResponse({ type: () =>MarketResponse })
     @Get('data/latest')
     async getLatestMarketData(): Promise<DataResponse> {
         const result = await this._marketService.fetchLatestMarketData();

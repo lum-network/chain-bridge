@@ -21,7 +21,7 @@ export class AccountsController {
         private readonly _validatorDelegationService: ValidatorDelegationService,
     ) {}
 
-    @ApiOkResponse({ status: 200, type: [DelegationResponse] })
+    @ApiOkResponse({ type: () =>[DelegationResponse] })
     @DefaultTake(25)
     @Get(':address/delegations')
     async showDelegations(@Req() request: ExplorerRequest, @Param('address') address: string): Promise<DataResponse> {
@@ -37,7 +37,7 @@ export class AccountsController {
         });
     }
 
-    @ApiOkResponse({ status: 200, type: [TransactionResponse] })
+    @ApiOkResponse({ type: () =>[TransactionResponse] })
     @DefaultTake(50)
     @Get(':address/transactions')
     async showTransactions(@Req() request: ExplorerRequest, @Param('address') address: string): Promise<DataResponse> {
@@ -53,7 +53,7 @@ export class AccountsController {
         });
     }
 
-    @ApiOkResponse({ status: 200, type: [RedelegationResponse] })
+    @ApiOkResponse({ type: () =>[RedelegationResponse] })
     @Get(':address/redelegations')
     async showRedelegations(@Req() request: ExplorerRequest, @Param('address') address: string): Promise<DataResponse> {
         const redelegations = await this._chainService.getChain(AssetSymbol.LUM).client.cosmos.staking.v1beta1.redelegations({ delegatorAddr: address, dstValidatorAddr: '', srcValidatorAddr: '' });
@@ -68,7 +68,7 @@ export class AccountsController {
         });
     }
 
-    @ApiOkResponse({ status: 200, type: [UnbondingResponse] })
+    @ApiOkResponse({ type: () =>[UnbondingResponse] })
     @Get(':address/unbondings')
     async showUnbondings(@Req() request: ExplorerRequest, @Param('address') address: string): Promise<DataResponse> {
         const unbondings = await this._chainService.getChain(AssetSymbol.LUM).client.cosmos.staking.v1beta1.delegatorUnbondingDelegations({ delegatorAddr: address });
@@ -83,7 +83,7 @@ export class AccountsController {
         });
     }
 
-    @ApiOkResponse({ status: 200, type: AccountResponse })
+    @ApiOkResponse({ type: () =>AccountResponse })
     @Get(':address')
     async show(@Param('address') address: string): Promise<DataResponse> {
         const [account, balances, rewards, withdrawAddress, commissions, totalShares] = await Promise.all([

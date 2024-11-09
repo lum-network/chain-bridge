@@ -20,7 +20,7 @@ export class ValidatorsController {
         private readonly _validatorDelegationService: ValidatorDelegationService,
     ) {}
 
-    @ApiOkResponse({ status: 200, type: [ValidatorResponse] })
+    @ApiOkResponse({ type: () =>[ValidatorResponse] })
     @DefaultTake(100)
     @Get('')
     async fetch(@Req() request: ExplorerRequest): Promise<DataResponse> {
@@ -36,7 +36,7 @@ export class ValidatorsController {
         });
     }
 
-    @ApiOkResponse({ status: 200, type: ValidatorResponse })
+    @ApiOkResponse({ type: () =>ValidatorResponse })
     @Get(':address')
     async show(@Param('address') address: string): Promise<DataResponse> {
         const result = await this._validatorService.getByOperatorAddress(address);
@@ -45,7 +45,7 @@ export class ValidatorsController {
         };
     }
 
-    @ApiOkResponse({ status: 200, type: [BlockResponse] })
+    @ApiOkResponse({ type: () =>[BlockResponse] })
     @DefaultTake(50)
     @Get(':address/blocks')
     async showBlocks(@Req() request: ExplorerRequest, @Param('address') address: string): Promise<DataResponse> {
@@ -61,7 +61,7 @@ export class ValidatorsController {
         });
     }
 
-    @ApiOkResponse({ status: 200, type: [DelegationResponse] })
+    @ApiOkResponse({ type: () =>[DelegationResponse] })
     @DefaultTake(50)
     @Get(':address/delegations')
     async showDelegations(@Req() request: ExplorerRequest, @Param('address') address: string): Promise<DataResponse> {
@@ -77,7 +77,7 @@ export class ValidatorsController {
         });
     }
 
-    @ApiOkResponse({ status: 200, type: [BalanceResponse] })
+    @ApiOkResponse({ type: () =>[BalanceResponse] })
     @DefaultTake(50)
     @Get(':address/rewards')
     async showRewards(@Req() request: ExplorerRequest, @Param('address') address: string): Promise<DataResponse> {
