@@ -2,17 +2,17 @@ import { HttpModule } from '@nestjs/axios';
 import { Module, OnModuleInit, OnApplicationBootstrap, ValidationPipe, HttpException } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { BullModule } from '@nestjs/bull';
-import { APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
+import { APP_FILTER, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { TerminusModule } from '@nestjs/terminus';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ScheduleModule } from '@nestjs/schedule';
 import { CacheModule, CacheStore } from '@nestjs/cache-manager';
 
+import { SentryGlobalFilter, SentryModule } from '@sentry/nestjs/setup';
 import type { RedisClientOptions } from 'redis';
 import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 import { LoggerModule } from 'nestjs-pino';
 import * as redisStore from 'cache-manager-redis-store';
-import { SentryInterceptor, SentryModule } from '@ntegral/nestjs-sentry';
 
 import * as Joi from 'joi';
 
@@ -52,13 +52,14 @@ import {
     ValidatorDelegationService,
 } from '@app/services';
 
-import { ConfigMap, metrics, PayloadValidationOptions, Queues, SentryModuleOptions } from '@app/utils';
+import { ConfigMap, metrics, PayloadValidationOptions, Queues } from '@app/utils';
 
 import { DatabaseConfig, DatabaseFeatures } from '@app/database';
 import { MetricScheduler, QueueConfig } from '@app/async';
 
 @Module({
     imports: [
+        SentryModule.forRoot(),
         ConfigModule.forRoot({
             isGlobal: true,
             validationSchema: Joi.object(ConfigMap),
@@ -90,7 +91,6 @@ import { MetricScheduler, QueueConfig } from '@app/async';
         }),
         LoggerModule.forRoot(),
         ScheduleModule.forRoot(),
-        SentryModule.forRootAsync(SentryModuleOptions),
         TerminusModule,
         HttpModule,
         PrometheusModule.register(),
@@ -122,16 +122,8 @@ import { MetricScheduler, QueueConfig } from '@app/async';
         { provide: APP_INTERCEPTOR, useClass: PaginationInterceptor },
         { provide: APP_INTERCEPTOR, useClass: ResponseInterceptor },
         {
-            provide: APP_INTERCEPTOR,
-            useFactory: () =>
-                new SentryInterceptor({
-                    filters: [
-                        {
-                            type: HttpException,
-                            filter: (exception: HttpException) => exception.getStatus() >= 500,
-                        },
-                    ],
-                }),
+            provide: APP_FILTER,
+            useClass: SentryGlobalFilter,
         },
         { provide: APP_PIPE, useFactory: () => new ValidationPipe(PayloadValidationOptions) },
     ],

@@ -1,3 +1,4 @@
+import './instrument';
 import { BootstrapConsole } from 'nestjs-console';
 
 import { CliModule } from '@app/modules';

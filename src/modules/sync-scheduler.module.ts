@@ -8,7 +8,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as Joi from 'joi';
 
 import { Queue } from 'bull';
-import { SentryModule } from '@ntegral/nestjs-sentry';
+import { SentryModule } from '@sentry/nestjs/setup';
 import { LoggerModule } from 'nestjs-pino';
 
 import { BlockScheduler, GovernanceScheduler, MarketScheduler, MillionsScheduler, QueueConfig, ValidatorScheduler } from '@app/async';
@@ -29,7 +29,7 @@ import {
     ValidatorDelegationService,
     ValidatorService,
 } from '@app/services';
-import { ConfigMap, Queues, SentryModuleOptions } from '@app/utils';
+import { ConfigMap, Queues } from '@app/utils';
 import { DatabaseConfig, DatabaseFeatures } from '@app/database';
 
 @Module({
@@ -43,7 +43,7 @@ import { DatabaseConfig, DatabaseFeatures } from '@app/database';
         LoggerModule.forRoot(),
         ScheduleModule.forRoot(),
         HttpModule,
-        SentryModule.forRootAsync(SentryModuleOptions),
+        SentryModule.forRoot(),
         TypeOrmModule.forRootAsync(DatabaseConfig),
         TypeOrmModule.forFeature(DatabaseFeatures),
     ],

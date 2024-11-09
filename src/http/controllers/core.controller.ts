@@ -18,7 +18,7 @@ export class CoreController {
     constructor(private readonly _chainService: ChainService) {}
 
     @UseInterceptors(CacheInterceptor)
-    @ApiOkResponse({ type: () =>LumResponse })
+    @ApiOkResponse({ type: () => LumResponse })
     @Get('price')
     async price(): Promise<DataResponse> {
         const [price, totalVolume, priceChange24h] = await Promise.all([
@@ -52,7 +52,7 @@ export class CoreController {
     }
 
     @UseInterceptors(CacheInterceptor)
-    @ApiOkResponse({ type: () =>[BalanceResponse] })
+    @ApiOkResponse({ type: () => [BalanceResponse] })
     @Get('assets')
     async assets(): Promise<DataResponse> {
         const assets = await this._chainService.getChain(AssetSymbol.LUM).client.cosmos.bank.v1beta1.totalSupply();

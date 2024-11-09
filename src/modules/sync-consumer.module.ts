@@ -5,13 +5,13 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import * as Joi from 'joi';
-import { SentryModule } from '@ntegral/nestjs-sentry';
+import { SentryModule } from '@sentry/nestjs/setup';
 import { LoggerModule } from 'nestjs-pino';
 
 import { BlockConsumer, MillionsConsumer, QueueConfig } from '@app/async';
 
 import { BlockService, ChainService, MarketService, MillionsDepositService, ProposalDepositService, ProposalService, ProposalVoteService, TransactionService, ValidatorDelegationService, ValidatorService } from '@app/services';
-import { ConfigMap, Queues, SentryModuleOptions } from '@app/utils';
+import { ConfigMap, Queues } from '@app/utils';
 import { DatabaseConfig, DatabaseFeatures } from '@app/database';
 
 @Module({
@@ -24,7 +24,7 @@ import { DatabaseConfig, DatabaseFeatures } from '@app/database';
         BullModule.registerQueue(...Object.values(Queues).map((name) => ({ name }) as any)),
         LoggerModule.forRoot(),
         HttpModule,
-        SentryModule.forRootAsync(SentryModuleOptions),
+        SentryModule.forRoot(),
         TypeOrmModule.forRootAsync(DatabaseConfig),
         TypeOrmModule.forFeature(DatabaseFeatures),
     ],

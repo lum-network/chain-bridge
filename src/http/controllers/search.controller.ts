@@ -15,7 +15,7 @@ export class SearchController {
         private readonly _transactionService: TransactionService,
     ) {}
 
-    @ApiOkResponse({ type: () =>SearchResponse })
+    @ApiOkResponse({ type: () => SearchResponse })
     @Get(':data')
     @UseInterceptors(CacheInterceptor)
     async search(@Param('data') data: string | number): Promise<DataResponse> {

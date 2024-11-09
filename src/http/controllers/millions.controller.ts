@@ -52,7 +52,7 @@ export class MillionsController {
         });
     }
 
-    @ApiOkResponse({ type: () =>[MillionsOutstandingPrizeResponse] })
+    @ApiOkResponse({ type: () => [MillionsOutstandingPrizeResponse] })
     @Get('pools/outstanding-prize')
     async poolsRewards(): Promise<DataResponse> {
         const pools = await this._millionsPoolService.fetch();
@@ -71,7 +71,7 @@ export class MillionsController {
         });
     }
 
-    @ApiOkResponse({ type: () =>[MillionsDrawResponse] })
+    @ApiOkResponse({ type: () => [MillionsDrawResponse] })
     @Get('draws')
     async draws(@Req() request: ExplorerRequest): Promise<DataResponse> {
         const [draws, total] = await this._millionsDrawService.fetch(request.pagination.skip, request.pagination.limit);
@@ -87,7 +87,7 @@ export class MillionsController {
         });
     }
 
-    @ApiOkResponse({ type: () =>[MillionsPrizeResponse] })
+    @ApiOkResponse({ type: () => [MillionsPrizeResponse] })
     @Get('prizes')
     async prizes(@Req() request: ExplorerRequest): Promise<DataResponse> {
         const [prizes, total] = await this._millionsPrizeService.fetch(request.pagination.skip, request.pagination.limit);
@@ -103,7 +103,7 @@ export class MillionsController {
         });
     }
 
-    @ApiOkResponse({ type: () =>[MillionsPrizeResponse] })
+    @ApiOkResponse({ type: () => [MillionsPrizeResponse] })
     @Get('prizes/address/:address')
     async prizesByAddress(@Req() request: ExplorerRequest, @Param('address') address: string): Promise<DataResponse> {
         const [prizes, total] = await this._millionsPrizeService.fetchByAddress(address, request.pagination.skip, request.pagination.limit);
@@ -119,7 +119,7 @@ export class MillionsController {
         });
     }
 
-    @ApiOkResponse({ type: () =>[MillionsPrizeResponse] })
+    @ApiOkResponse({ type: () => [MillionsPrizeResponse] })
     @Get('prizes/biggest/:poolId')
     async biggestPrizesByPoolId(@Req() request: ExplorerRequest, @Param('poolId') poolId: string): Promise<DataResponse> {
         const [prizes, total] = await this._millionsPrizeService.fetchBiggestByPoolId(poolId, request.pagination.skip, request.pagination.limit);
@@ -135,7 +135,7 @@ export class MillionsController {
         });
     }
 
-    @ApiOkResponse({ type: () =>[MillionsBiggestWinnerResponse] })
+    @ApiOkResponse({ type: () => [MillionsBiggestWinnerResponse] })
     @Get('prizes/biggest-apr')
     async biggestAprPrizes(@Req() request: ExplorerRequest): Promise<DataResponse> {
         const [prizes, total] = await this._millionsBiggestWinnerService.fetch(request.pagination.skip, request.pagination.limit);
@@ -151,7 +151,7 @@ export class MillionsController {
         });
     }
 
-    @ApiOkResponse({ type: () =>MillionsPrizeStatsResponse })
+    @ApiOkResponse({ type: () => MillionsPrizeStatsResponse })
     @Get('prizes/stats/:poolId')
     async prizeStatsByPoolId(@Param('poolId') poolId: string): Promise<DataResponse> {
         const [biggestPrize, total] = await this._millionsPrizeService.fetchBiggestByPoolId(poolId, 0, 1);
@@ -168,7 +168,7 @@ export class MillionsController {
         });
     }
 
-    @ApiOkResponse({ type: () =>MillionsDepositResponse })
+    @ApiOkResponse({ type: () => MillionsDepositResponse })
     @Get('deposits')
     async deposits(@Req() request: ExplorerRequest): Promise<DataResponse> {
         const [deposits, total] = await this._millionsDepositService.fetch(request.pagination.skip, request.pagination.limit);
@@ -184,7 +184,7 @@ export class MillionsController {
         });
     }
 
-    @ApiOkResponse({ type: () =>MillionsDepositResponse })
+    @ApiOkResponse({ type: () => MillionsDepositResponse })
     @Get('deposits/drops/:winnerAddress')
     async depositsByWinnerAddress(@Req() request: ExplorerRequest, @Param('winnerAddress') winnerAddress: string): Promise<DataResponse> {
         const [deposits, total] = await this._millionsDepositService.fetchDepositsDrops(winnerAddress, request.pagination.skip, request.pagination.limit);
@@ -200,7 +200,7 @@ export class MillionsController {
         });
     }
 
-    @ApiOkResponse({ type: () =>MillionsDepositorResponse })
+    @ApiOkResponse({ type: () => MillionsDepositorResponse })
     @Get('depositors/:poolId')
     async depositorsByPoolId(@Req() request: ExplorerRequest, @Param('poolId') poolId: number): Promise<DataResponse> {
         const [depositors, total] = await this._millionsDepositorService.fetchByPoolId(poolId, request.pagination.skip, request.pagination.limit);
@@ -216,7 +216,7 @@ export class MillionsController {
         });
     }
 
-    @ApiOkResponse({ type: () =>MillionsDepositorResponse })
+    @ApiOkResponse({ type: () => MillionsDepositorResponse })
     @Get('depositors/:poolId/:address')
     async depositorsByPoolIdAndAddress(@Req() request: ExplorerRequest, @Param('poolId') poolId: number, @Param('address') address: string): Promise<DataResponse> {
         const depositor = await this._millionsDepositorService.getByPoolIdAndAddress(poolId, address);
@@ -237,7 +237,7 @@ export class MillionsController {
         });
     }
 
-    @ApiOkResponse({ type: () =>MillionsCampaignResponse })
+    @ApiOkResponse({ type: () => MillionsCampaignResponse })
     @Get('campaigns')
     async campaigns(@Req() request: ExplorerRequest): Promise<DataResponse> {
         const [campaigns, total] = await this._millionsCampaignService.fetch(request.pagination.skip, request.pagination.limit);
@@ -253,7 +253,7 @@ export class MillionsController {
         });
     }
 
-    @ApiOkResponse({ type: () =>MillionsCampaignResponse })
+    @ApiOkResponse({ type: () => MillionsCampaignResponse })
     @Get('campaigns/:id')
     async campaignById(@Param('id') id: string): Promise<DataResponse> {
         const campaign = await this._millionsCampaignService.getById(id);
@@ -267,7 +267,7 @@ export class MillionsController {
         });
     }
 
-    @ApiOkResponse({ type: () =>MillionsCampaignResponse })
+    @ApiOkResponse({ type: () => MillionsCampaignResponse })
     @Post('campaigns/participate')
     async participateCampaign(@Body() body: MillionsCampaignParticipationRequest): Promise<DataResponse> {
         const campaign = await this._millionsCampaignService.getById(body.campaign_id);
