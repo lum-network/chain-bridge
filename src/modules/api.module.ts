@@ -1,18 +1,17 @@
 import { HttpModule } from '@nestjs/axios';
-import { Module, OnModuleInit, OnApplicationBootstrap, ValidationPipe, HttpException } from '@nestjs/common';
+import { Module, OnModuleInit, OnApplicationBootstrap, ValidationPipe } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { BullModule } from '@nestjs/bull';
 import { APP_FILTER, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { TerminusModule } from '@nestjs/terminus';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ScheduleModule } from '@nestjs/schedule';
-import { CacheModule, CacheStore } from '@nestjs/cache-manager';
+import { CacheModule } from '@nestjs/cache-manager';
 
 import { SentryGlobalFilter, SentryModule } from '@sentry/nestjs/setup';
-import type { RedisClientOptions } from 'redis';
 import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 import { LoggerModule } from 'nestjs-pino';
-import * as redisStore from 'cache-manager-redis-store';
+import { redisStore } from 'cache-manager-redis-yet';
 
 import * as Joi from 'joi';
 
@@ -66,28 +65,24 @@ import { MetricScheduler, QueueConfig } from '@app/async';
         }),
         BullModule.forRootAsync(QueueConfig),
         BullModule.registerQueue(...Object.values(Queues).map((name) => ({ name }) as any)),
-        CacheModule.registerAsync<RedisClientOptions>({
+        CacheModule.registerAsync({
             imports: [ConfigModule],
-            useFactory: (configService: ConfigService) => {
-                const redisUrl = new URL(configService.get('REDIS_URL'));
-                return {
-                    store: redisStore as unknown as CacheStore,
-                    host: redisUrl.hostname,
-                    port: parseInt(redisUrl.port),
-                    username: redisUrl.username,
-                    password: redisUrl.password,
-                    ttl: 10,
-                    max: 50,
-                    tls:
+            inject: [ConfigService],
+            useFactory: async (configService: ConfigService) => ({
+                store: await redisStore({
+                    ttl: 10000,
+                    url: configService.get('REDIS_URL'),
+                    keyPrefix: 'api',
+                    pingInterval: 1000,
+                    socket:
                         configService.get('ENV') === 'production'
                             ? {
+                                  tls: true,
                                   rejectUnauthorized: false,
-                                  requestCert: true,
                               }
                             : null,
-                };
-            },
-            inject: [ConfigService],
+                }),
+            }),
         }),
         LoggerModule.forRoot(),
         ScheduleModule.forRoot(),
